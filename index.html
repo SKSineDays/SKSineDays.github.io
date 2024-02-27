@@ -1,26 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SineDays App</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <div class="calculator">
-        <h2>Know Your Power</h2>
-        <h3>Unlock the secrets of your personal cycle</h3>
-        <p>Embark on a journey to understanding the unique rhythms that govern your energy and emotions. The SineDays App offers a personalized insight into how you can harness the power of your personal cycle to enhance your daily life.</p>
-        
-        <h2>Find out Your SineDay</h2>
-        <h3>Discover how the universe aligns with your birth</h3>
-        <p>Every individual is connected to the cosmic dance in a unique way. By entering your birth date, the SineDays App calculates your position within an 18-day sine wave cycle, revealing how universal energies play a role in your life's flow.</p>
-        
-        <form onsubmit="event.preventDefault(); sinedays()">
-            <label for="birthday">Enter your Birthday:</label><br>
-            <input type="date" id="birthday" name="birthday"><br><br>
-            <input type="submit" value="Submit">
-        </form>
-        <p id="result"></p>
-    </div>
+    <header>
+        <h1 class="app-title">SineDays App</h1>
+    </header>
+    <main>
+        <div class="container">
+            <section class="box">
+                <h2>Know Your Power</h2>
+                <p>Unlock the secrets of your personal cycle and discover the unique energies that govern your life.</p>
+            </section>
+            <section class="box">
+                <h2>Find out Your SineDay</h2>
+                <p>Explore how the universe aligns with your birth and impacts your daily existence.</p>
+            </section>
+            <section class="form-container">
+                <form onsubmit="event.preventDefault(); sinedays();">
+                    <label for="birthday">Enter your Birthday:</label><br>
+                    <input type="date" id="birthday" name="birthday" placeholder="MM/DD/YYYY"><br><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </section>
+            <section id="result" class="result-box"></section>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 SineDays App. All rights reserved.</p>
+    </footer>
     <script src="script.js"></script>
 </body>
 </html>
