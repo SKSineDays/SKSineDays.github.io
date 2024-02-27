@@ -53,7 +53,7 @@ function sinedays(event) {
 
     const selectedDay = dayDetails.find(d => d.day === mappedFraction);
     const message = selectedDay ? selectedDay.phrase : "An error occurred.";
-    const imageUrl = `https://github.com/SKSineDays/SKSineDays.github.io/blob/40689575c84cd91b4f98c2ff9a35ec1dd3564636/${selectedDay.imageUrl}?raw=true`;
+    const imageUrl = 'https://github.com/SKSineDays/SKSineDays.github.io/blob/main/${selectedDay.imageUrl}?raw=true`;
 
     displayMessage(message, imageUrl, 'success');
 }
