@@ -30,8 +30,8 @@ function sinedays(event) {
     let mappedFraction = Math.round(fractionalPart * 18);
     mappedFraction = mappedFraction === 0 ? 18 : mappedFraction;
 
-    const dayDetails = [
-        { day: 1, phrase: "Day 1: Fresh beginnings. Take the first step on new ventures with confidence.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day1.jpeg?raw=true },
+    const dayDetails = [ 
+         { day: 1, phrase: "Day 1: Fresh beginnings. Take the first step on new ventures with confidence.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day1.jpeg?raw=true },
         { day: 2, phrase: "Day 2: Build momentum. Great day for pushing forward with your plans.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day2.jpeg?raw=true" },
         { day: 3, phrase: "Day 3: Creativity peaks. Let your imagination lead the way.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day3.jpeg?raw=true" },
         { day: 4, phrase: "Day 4: Social connections flourish. Reach out to those around you.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day4.jpeg?raw=true" },
@@ -49,11 +49,12 @@ function sinedays(event) {
         { day: 16, phrase: "Day 16: Begin to look outward again. Plan for the next positive wave.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day16.jpeg?raw=true" },
         { day: 17, phrase: "Day 17: Energy starts to rise. Lay the groundwork for action.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day17.jpeg?raw=true" },
         { day: 18, phrase: "Day 18: A culmination of energy, preparing for a new cycle. Reflect on what you've learned.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day18.jpeg?raw=true" }
+
     ];
 
     const selectedDay = dayDetails.find(d => d.day === mappedFraction);
     const message = selectedDay ? selectedDay.phrase : "An error occurred.";
-    const imageUrl = 'https://github.com/SKSineDays/SKSineDays.github.io/blob/main/${selectedDay.imageUrl}?raw=true`;
+    const imageUrl = selectedDay.imageUrl; // Directly use the imageUrl from the array
 
     displayMessage(message, imageUrl, 'success');
 }
@@ -69,4 +70,3 @@ function displayMessage(message, imageUrl, type) {
         resultElement.style.opacity = 1;
     }, 100);
 }
-
