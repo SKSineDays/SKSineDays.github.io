@@ -31,7 +31,7 @@ function sinedays(event) {
     mappedFraction = mappedFraction === 0 ? 18 : mappedFraction;
 
     const dayDetails = [ 
-         { day: 1, phrase: "Day 1: Fresh beginnings. Take the first step on new ventures with confidence.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day1.jpeg?raw=true },
+         { day: 1, phrase: "Day 1: Fresh beginnings. Take the first step on new ventures with confidence.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day1.jpeg?raw=true" },
         { day: 2, phrase: "Day 2: Build momentum. Great day for pushing forward with your plans.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day2.jpeg?raw=true" },
         { day: 3, phrase: "Day 3: Creativity peaks. Let your imagination lead the way.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day3.jpeg?raw=true" },
         { day: 4, phrase: "Day 4: Social connections flourish. Reach out to those around you.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/main/Day4.jpeg?raw=true" },
