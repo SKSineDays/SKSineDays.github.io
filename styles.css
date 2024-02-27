@@ -25,9 +25,9 @@ html, body {
 }
 
 .calculator img {
-    max-width: 95%; /* Adjust based on preference */
-    max-height: 90%; /* Adjust based on preference */
-    border-radius: 10px; /* Optional: Adds rounded corners to the images */
+    max-width: 80%; /* Adjust based on preference */
+    max-height: 80%; /* Adjust based on preference */
+    border-radius: 20px; /* Optional: Adds rounded corners to the images */
 }
 
 .calculator p {
