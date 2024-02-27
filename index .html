@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SineDays App</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="calculator">
+        <h2>Know Your Power</h2>
+        <h3>Unlock the secrets of your personal cycle</h3>
+        <h2>Find out Your SineDay</h2>
+        <h3>Discover how the universe aligns with your birth</h3>
+        <form onsubmit="event.preventDefault(); sinedays()">
+            <label for="birthday">Enter your Birthday:</label><br>
+            <input type="date" id="birthday" name="birthday"><br><br>
+            <input type="submit" value="Submit">
+        </form>
+        <p id="result"></p>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

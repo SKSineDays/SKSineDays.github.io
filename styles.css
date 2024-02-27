@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('https://github.com/SKSineDays/SKSineDays.github.io/blob/627d86860d2154d9565b1826ab6d0aac8b593dc6/IMG_0010.png?raw=true');
+    background-size: cover;
+    background-position: center;
+    color: #000; /* Light text color for contrast */
+    font-family: 'Lora', 'Roboto', sans-serif;
+}
+
+.calculator {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.calculator img {
+    max-width: 95%; /* Adjust based on preference */
+    max-height: 90%; /* Adjust based on preference */
+    border-radius: 10px; /* Optional: Adds rounded corners to the images */
+}
+
+.calculator p {
+    margin-top: 20px;
+    font-size: 1.5rem; /* Larger font size for readability */
+    padding: 0 20px; /* Adds padding on the sides for narrower screens */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calculator p {
+        font-size: 1.2rem; /* Slightly smaller font size for mobile devices */
+    }
+    .calculator img {
+        max-width: 90%; /* Larger width for smaller devices */
+    }
+}
