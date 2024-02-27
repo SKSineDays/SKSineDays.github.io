@@ -26,7 +26,7 @@ function sinedays() {
         { day: 4, phrase: "Day 4: Social connections flourish. Reach out to those around you.", imageUrl: "Day4.webp" },
         { day: 5, phrase: "Day 5: A day of productivity. Focus on tasks that need completion.", imageUrl: "Day5.webp" },
         { day: 6, phrase: "Day 6: Balance is key today. Find harmony in your activities.", imageUrl: "Day6.webp" },
-        { day: 7, phrase: "Day 7: Insights emerge. Pay attention to your intuition.", imageUrl: "https://github.com/SKSineDays/SKSineDays.github.io/blob/40689575c84cd91b4f98c2ff9a35ec1dd3564636/Day7.webp" },
+        { day: 7, phrase: "Day 7: Insights emerge. Pay attention to your intuition.", imageUrl: "Day7" },
         { day: 8, phrase: "Day 8: Challenges may arise. Stand firm and face them head-on.", imageUrl: "Day8.webp" },
         { day: 9, phrase: "Day 9: Transition day. Prepare to reflect as the wave dips.", imageUrl: "Day9.webp" },
         { day: 10, phrase: "Day 10: Reflection begins. Look inward for growth opportunities.", imageUrl: "Day10.webp" },
