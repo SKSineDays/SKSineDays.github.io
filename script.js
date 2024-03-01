@@ -2,6 +2,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     form.addEventListener('submit', sinedays);
 });
+document.addEventListener('DOMContentLoaded', () => {
+  const interactiveElements = document.querySelectorAll('.interactive');
+
+  interactiveElements.forEach(element => {
+    element.addEventListener('mouseover', () => {
+      element.style.transform = 'scale(1.05)';
+      element.style.transition = 'transform 0.5s ease';
+    });
+
+    element.addEventListener('mouseout', () => {
+      element.style.transform = 'scale(1)';
+    });
+  });
+});
 
 function sinedays(event) {
     event.preventDefault();
