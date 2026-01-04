@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#05060A"/>
+
+  <!-- Sine Wave -->
+  <path d="M 50 256 Q 128 100, 206 256 T 362 256 T 518 256"
+        stroke="#7AA7FF"
+        stroke-width="6"
+        fill="none"
+        stroke-linecap="round"/>
+
+  <!-- Marker Dot -->
+  <circle cx="256" cy="200" r="12" fill="#7AA7FF">
+    <animate attributeName="cy"
+             values="200;312;200"
+             dur="3s"
+             repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Glow -->
+  <circle cx="256" cy="200" r="20" fill="#7AA7FF" opacity="0.3">
+    <animate attributeName="cy"
+             values="200;312;200"
+             dur="3s"
+             repeatCount="indefinite"/>
+    <animate attributeName="opacity"
+             values="0.3;0.1;0.3"
+             dur="2s"
+             repeatCount="indefinite"/>
+  </circle>
+</svg>
