@@ -11,6 +11,7 @@
 
 import { calculateSineDay } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
+import { duckUrlFromSinedayNumber } from './sineducks.js';
 
 export class SineDayUI {
   constructor() {
@@ -20,6 +21,7 @@ export class SineDayUI {
       calculateBtn: document.getElementById('calculate-btn'),
       resultCard: document.getElementById('result-card'),
       dayNumber: document.getElementById('day-number'),
+      todayDuck: document.getElementById('todayDuck'),
       dayPhase: document.getElementById('day-phase'),
       dayDescription: document.getElementById('day-description'),
       inputContainer: document.getElementById('input-container'),
@@ -137,6 +139,11 @@ export class SineDayUI {
     // Update result card content
     if (this.elements.dayNumber) {
       this.elements.dayNumber.textContent = `SineDay ${result.day}`;
+    }
+
+    // Update duck image
+    if (this.elements.todayDuck) {
+      this.elements.todayDuck.src = duckUrlFromSinedayNumber(result.day);
     }
 
     if (this.elements.dayPhase) {
