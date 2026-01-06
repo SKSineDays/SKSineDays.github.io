@@ -347,9 +347,26 @@ export class SineDayUI {
       url: window.location.href
     };
 
+    // Try to include the duck image for the current day
+    try {
+      const duckUrl = duckUrlFromSinedayNumber(this.currentDay.day);
+      const response = await fetch(duckUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `SineDuck${this.currentDay.day}.png`, { type: 'image/png' });
+      shareData.files = [file];
+    } catch (err) {
+      console.warn('Could not fetch duck image for sharing', err);
+      // Continue without image if fetch fails
+    }
+
     // Try Web Share API
     if (navigator.share) {
       try {
+        // Check if sharing files is supported
+        if (shareData.files && navigator.canShare && !navigator.canShare(shareData)) {
+          // If files aren't supported, remove them and try again
+          delete shareData.files;
+        }
         await navigator.share(shareData);
       } catch (err) {
         if (err.name !== 'AbortError') {
