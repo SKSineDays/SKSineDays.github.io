@@ -28,7 +28,9 @@ export class SineDayUI {
       waveCanvas: document.getElementById('wave-canvas'),
       backgroundImage: document.getElementById('background-image'),
       shareBtn: document.getElementById('share-btn'),
-      infoBtn: document.getElementById('info-btn')
+      infoBtn: document.getElementById('info-btn'),
+      dayImageCard: document.getElementById('day-image-card'),
+      dayImage: document.getElementById('dayImage')
     };
 
     // State
@@ -177,6 +179,25 @@ export class SineDayUI {
       this.elements.dayDescription.textContent = result.description;
     }
 
+    // Update day image card
+    if (this.elements.dayImage) {
+      this.elements.dayImage.src = result.imageUrl;
+      
+      // Add error handler for failed image loads
+      this.elements.dayImage.onerror = () => {
+        console.warn(`Failed to load day image for day ${result.day}`);
+        this.elements.dayImage.style.display = 'none';
+      };
+
+      // Show image when successfully loaded
+      this.elements.dayImage.onload = () => {
+        this.elements.dayImage.style.display = 'block';
+      };
+    }
+
+    // Show day image card
+    this.showDayImageCard();
+
     // Update background image
     this.updateBackgroundImage(result.imageUrl);
 
@@ -291,6 +312,24 @@ export class SineDayUI {
   }
 
   /**
+   * Show day image card with animation
+   */
+  showDayImageCard() {
+    if (!this.elements.dayImageCard) return;
+
+    this.elements.dayImageCard.classList.add('visible');
+  }
+
+  /**
+   * Hide day image card
+   */
+  hideDayImageCard() {
+    if (!this.elements.dayImageCard) return;
+
+    this.elements.dayImageCard.classList.remove('visible');
+  }
+
+  /**
    * Show input container
    */
   showInput() {
@@ -401,20 +440,20 @@ export class SineDayUI {
 
     const touchY = e.touches[0].clientY;
     const touchX = e.touches[0].clientX;
-    const deltaY = this.touchStartY - touchY;
-    const deltaX = Math.abs(this.touchStartX - touchX);
+    const deltaX = touchX - this.touchStartX;
+    const deltaY = Math.abs(this.touchStartY - touchY);
 
-    // Check if this is a vertical swipe (not horizontal)
-    if (deltaY > 10 && deltaX < 50) {
+    // Check if this is a horizontal swipe (not vertical)
+    if (deltaX > 10 && deltaY < 50) {
       this.isDragging = true;
 
       // Apply visual feedback during swipe with improved easing
-      if (deltaY > 0 && deltaY < 250) {
-        const opacity = Math.max(0.3, 1 - (deltaY / 200));
-        const translateY = deltaY;
-        const scale = Math.max(0.95, 1 - (deltaY / 500));
+      if (deltaX > 0 && deltaX < 250) {
+        const opacity = Math.max(0.3, 1 - (deltaX / 200));
+        const translateX = deltaX;
+        const scale = Math.max(0.95, 1 - (deltaX / 500));
 
-        this.elements.resultCard.style.transform = `translateY(-${translateY}px) scale(${scale})`;
+        this.elements.resultCard.style.transform = `translateX(${translateX}px) scale(${scale})`;
         this.elements.resultCard.style.opacity = opacity;
         this.elements.resultCard.style.transition = 'none';
 
@@ -430,10 +469,10 @@ export class SineDayUI {
   handleTouchEnd(e) {
     if (!this.isCardVisible) return;
 
-    const deltaY = this.touchStartY - (e.changedTouches[0]?.clientY || this.touchStartY);
+    const deltaX = (e.changedTouches[0]?.clientX || this.touchStartX) - this.touchStartX;
 
-    // If swiped up more than 60px, clear and show input (improved sensitivity)
-    if (deltaY > 60) {
+    // If swiped right more than 60px, clear and show input (improved sensitivity)
+    if (deltaX > 60) {
       this.resetToInput();
     } else {
       // Reset card position if swipe wasn't enough
@@ -460,6 +499,9 @@ export class SineDayUI {
 
     // Hide result card
     this.hideResultCard();
+
+    // Hide day image card
+    this.hideDayImageCard();
 
     // Clear the current day state
     this.currentDay = null;
