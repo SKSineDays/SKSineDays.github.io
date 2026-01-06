@@ -92,3 +92,22 @@ Each entry includes:
 
 
 ---
+
+## 2026-01-06
+
+**Files:** js/sineducks.js (new), index.html, js/ui.js, styles.css
+
+**Summary:** Integrated 18 SineDuck character images to display alongside SineDay results
+
+**Rationale:** Add personalized duck mascot for each of the 18 SineDay numbers to enhance user experience and visual appeal
+
+**Implementation Details:**
+- Created `/js/sineducks.js` module with DUCK_URLS array and `duckUrlFromSinedayNumber(n)` helper function
+- Added `<img id="todayDuck">` element to result card in `index.html`
+- Imported and integrated duck display in `ui.js` displayResult() method
+- Added `.duck-image` CSS styling (120px × 120px, centered, with drop shadow)
+- Uses GitHub Pages-compatible relative paths: `assets/sineducks/SineDuck[1-18]@3x.png`
+
+**Notes:** No changes to existing SineDay calculation logic. Duck image updates automatically when result is displayed. Maintains responsive design and glass-morphism aesthetic.
+
+---

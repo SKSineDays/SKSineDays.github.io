@@ -326,6 +326,16 @@ body {
   line-height: 1.1;
 }
 
+.duck-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin: 16px auto;
+  display: block;
+  border-radius: 12px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
 .day-phase {
   font-size: 12px;
   font-weight: 600;
