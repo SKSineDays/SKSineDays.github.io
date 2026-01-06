@@ -36,6 +36,11 @@ export class SineDayUI {
     this.waveRenderer = null;
     this.isCardVisible = false;
 
+    // Touch gesture state
+    this.touchStartY = 0;
+    this.touchStartX = 0;
+    this.isDragging = false;
+
     // Initialize
     this.init();
   }
@@ -89,11 +94,16 @@ export class SineDayUI {
       this.elements.infoBtn.addEventListener('click', () => this.handleInfo());
     }
 
-    // Card click to re-open input
+    // Swipe gesture on result card
     if (this.elements.resultCard) {
+      this.elements.resultCard.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: true });
+      this.elements.resultCard.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+      this.elements.resultCard.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+
+      // Fallback: click to show input (for desktop/accessibility)
       this.elements.resultCard.addEventListener('click', () => {
-        if (this.isCardVisible) {
-          this.showInput();
+        if (this.isCardVisible && !this.isDragging) {
+          this.resetToInput();
         }
       });
     }
@@ -322,6 +332,93 @@ export class SineDayUI {
       'Your personal 18-day cycle based on your birthdate.\n\n' +
       'Each day represents a different energy phase in the eternal rhythm of life.'
     );
+  }
+
+  /**
+   * Handle touch start for swipe gesture
+   */
+  handleTouchStart(e) {
+    if (!this.isCardVisible) return;
+
+    this.touchStartY = e.touches[0].clientY;
+    this.touchStartX = e.touches[0].clientX;
+    this.isDragging = false;
+  }
+
+  /**
+   * Handle touch move for swipe gesture
+   */
+  handleTouchMove(e) {
+    if (!this.isCardVisible) return;
+
+    const touchY = e.touches[0].clientY;
+    const touchX = e.touches[0].clientX;
+    const deltaY = this.touchStartY - touchY;
+    const deltaX = Math.abs(this.touchStartX - touchX);
+
+    // Check if this is a vertical swipe (not horizontal)
+    if (deltaY > 10 && deltaX < 50) {
+      this.isDragging = true;
+
+      // Apply visual feedback during swipe
+      if (deltaY > 0 && deltaY < 200) {
+        const opacity = 1 - (deltaY / 200);
+        const translateY = deltaY;
+        this.elements.resultCard.style.transform = `translateY(-${translateY}px)`;
+        this.elements.resultCard.style.opacity = opacity;
+
+        // Prevent scroll during swipe
+        e.preventDefault();
+      }
+    }
+  }
+
+  /**
+   * Handle touch end for swipe gesture
+   */
+  handleTouchEnd(e) {
+    if (!this.isCardVisible) return;
+
+    const deltaY = this.touchStartY - (e.changedTouches[0]?.clientY || this.touchStartY);
+
+    // If swiped up more than 80px, clear and show input
+    if (deltaY > 80) {
+      this.resetToInput();
+    } else {
+      // Reset card position if swipe wasn't enough
+      this.elements.resultCard.style.transform = '';
+      this.elements.resultCard.style.opacity = '';
+    }
+
+    // Small delay before allowing click again
+    setTimeout(() => {
+      this.isDragging = false;
+    }, 300);
+  }
+
+  /**
+   * Reset to input screen (clear result and show birthday input)
+   */
+  resetToInput() {
+    // Reset card styles
+    if (this.elements.resultCard) {
+      this.elements.resultCard.style.transform = '';
+      this.elements.resultCard.style.opacity = '';
+    }
+
+    // Hide result card
+    this.hideResultCard();
+
+    // Show input
+    this.showInput();
+
+    // Reset wave marker to center
+    if (this.waveRenderer) {
+      this.waveRenderer.setMarkerPosition(0.5, true);
+    }
+
+    // Clear the current day state
+    this.currentDay = null;
   }
 
   /**

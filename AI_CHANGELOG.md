@@ -93,7 +93,7 @@ Each entry includes:
 
 ---
 
-## 2026-01-06
+## 2026-01-06 - SineDuck Integration (Initial)
 
 **Files:** js/sineducks.js (new), index.html, js/ui.js, styles.css
 
@@ -109,5 +109,38 @@ Each entry includes:
 - Uses GitHub Pages-compatible relative paths: `assets/sineducks/SineDuck[1-18]@3x.png`
 
 **Notes:** No changes to existing SineDay calculation logic. Duck image updates automatically when result is displayed. Maintains responsive design and glass-morphism aesthetic.
+
+---
+
+## 2026-01-06 - Bug Fix & Swipe Gesture
+
+**Files:** assets/sineducks/ (new directory), index.html, js/ui.js, styles.css, all 18 SineDuck images
+
+**Summary:** Fixed SineDuck image loading and added intuitive swipe-up gesture to clear results
+
+**Bug Fix:**
+- Moved SineDuck images from root directory to `assets/sineducks/` for proper organization
+- Images now load correctly with relative paths compatible with GitHub Pages
+
+**New Feature - Swipe Gesture:**
+- Added touch event handlers (touchstart, touchmove, touchend) for swipe detection
+- Swipe up on result card to clear and return to birthday input
+- Visual feedback during swipe (opacity fade and position translation)
+- Swipe hint indicator with animated pulse effect showing "Swipe up to try another date"
+- Threshold of 80px upward swipe to trigger reset
+- Prevents accidental triggers during horizontal scrolling
+- Desktop fallback: click result card to return to input
+- Wave marker resets to center position on clear
+
+**Implementation Details:**
+- Created `assets/sineducks/` directory and organized all 18 duck images
+- Added touch gesture state tracking (touchStartY, touchStartX, isDragging)
+- Implemented `handleTouchStart()`, `handleTouchMove()`, `handleTouchEnd()` methods
+- Created `resetToInput()` method for clean state reset
+- Added swipe-hint element with upward arrow SVG icon
+- Styled swipe hint with pulse animation keyframes
+- Passive event listeners for performance, with preventDefault on touchmove during swipe
+
+**Notes:** Swipe gesture feels natural and intuitive on mobile. Desktop users can still click the card. No breaking changes to existing functionality.
 
 ---
