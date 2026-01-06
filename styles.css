@@ -336,6 +336,36 @@ body {
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
 
+.swipe-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+  animation: swipeHintPulse 2s ease-in-out infinite;
+}
+
+.swipe-hint svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+@keyframes swipeHintPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-4px);
+  }
+}
+
 .day-phase {
   font-size: 12px;
   font-weight: 600;
