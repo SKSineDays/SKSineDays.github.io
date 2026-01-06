@@ -366,6 +366,18 @@ body {
   }
 }
 
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
 .day-phase {
   font-size: 12px;
   font-weight: 600;

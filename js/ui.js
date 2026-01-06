@@ -151,9 +151,22 @@ export class SineDayUI {
       this.elements.dayNumber.textContent = `SineDay ${result.day}`;
     }
 
-    // Update duck image
+    // Update duck image with error handling
     if (this.elements.todayDuck) {
-      this.elements.todayDuck.src = duckUrlFromSinedayNumber(result.day);
+      const duckUrl = duckUrlFromSinedayNumber(result.day);
+      this.elements.todayDuck.src = duckUrl;
+
+      // Add error handler for failed image loads
+      this.elements.todayDuck.onerror = () => {
+        console.warn(`Failed to load duck image for day ${result.day}`);
+        // Hide image if it fails to load
+        this.elements.todayDuck.style.display = 'none';
+      };
+
+      // Show image when successfully loaded
+      this.elements.todayDuck.onload = () => {
+        this.elements.todayDuck.style.display = 'block';
+      };
     }
 
     if (this.elements.dayPhase) {
@@ -175,16 +188,38 @@ export class SineDayUI {
   }
 
   /**
-   * Show error message
+   * Show error message with better visual feedback
    */
   showError(message) {
-    // Could implement a toast/snackbar here
-    // For now, use browser alert
+    // Add visual feedback to the input field
+    if (this.elements.birthdateInput) {
+      this.elements.birthdateInput.style.borderColor = '#FF6B6B';
+      this.elements.birthdateInput.style.animation = 'shake 0.3s ease';
+
+      // Reset border color after 2 seconds
+      setTimeout(() => {
+        this.elements.birthdateInput.style.borderColor = '';
+        this.elements.birthdateInput.style.animation = '';
+      }, 2000);
+    }
+
+    // Show error in result card
     if (this.elements.resultCard) {
       this.elements.dayDescription.textContent = message;
-      this.elements.dayPhase.textContent = 'ERROR';
-      this.elements.dayNumber.textContent = '';
+      this.elements.dayPhase.textContent = 'PLEASE CHECK YOUR INPUT';
+      this.elements.dayNumber.textContent = '⚠️';
+
+      // Hide duck image for errors
+      if (this.elements.todayDuck) {
+        this.elements.todayDuck.style.display = 'none';
+      }
+
       this.showResultCard();
+
+      // Auto-hide error after 3 seconds
+      setTimeout(() => {
+        this.hideResultCard();
+      }, 3000);
     } else {
       alert(message);
     }
@@ -220,6 +255,19 @@ export class SineDayUI {
         }
       }
     }, 800);
+  }
+
+  /**
+   * Clear background image with fade out
+   */
+  clearBackgroundImage() {
+    if (!this.elements.backgroundImage) return;
+
+    const layers = this.elements.backgroundImage.querySelectorAll('.background-image-layer');
+    layers.forEach(layer => {
+      layer.style.opacity = '0';
+      setTimeout(() => layer.remove(), 800);
+    });
   }
 
   /**
@@ -360,12 +408,15 @@ export class SineDayUI {
     if (deltaY > 10 && deltaX < 50) {
       this.isDragging = true;
 
-      // Apply visual feedback during swipe
-      if (deltaY > 0 && deltaY < 200) {
-        const opacity = 1 - (deltaY / 200);
+      // Apply visual feedback during swipe with improved easing
+      if (deltaY > 0 && deltaY < 250) {
+        const opacity = Math.max(0.3, 1 - (deltaY / 200));
         const translateY = deltaY;
-        this.elements.resultCard.style.transform = `translateY(-${translateY}px)`;
+        const scale = Math.max(0.95, 1 - (deltaY / 500));
+
+        this.elements.resultCard.style.transform = `translateY(-${translateY}px) scale(${scale})`;
         this.elements.resultCard.style.opacity = opacity;
+        this.elements.resultCard.style.transition = 'none';
 
         // Prevent scroll during swipe
         e.preventDefault();
@@ -381,11 +432,12 @@ export class SineDayUI {
 
     const deltaY = this.touchStartY - (e.changedTouches[0]?.clientY || this.touchStartY);
 
-    // If swiped up more than 80px, clear and show input
-    if (deltaY > 80) {
+    // If swiped up more than 60px, clear and show input (improved sensitivity)
+    if (deltaY > 60) {
       this.resetToInput();
     } else {
       // Reset card position if swipe wasn't enough
+      this.elements.resultCard.style.transition = '';
       this.elements.resultCard.style.transform = '';
       this.elements.resultCard.style.opacity = '';
     }
@@ -409,16 +461,31 @@ export class SineDayUI {
     // Hide result card
     this.hideResultCard();
 
-    // Show input
+    // Clear the current day state
+    this.currentDay = null;
+
+    // Clear the birthdate input field
+    if (this.elements.birthdateInput) {
+      this.elements.birthdateInput.value = '';
+    }
+
+    // Clear background image
+    this.clearBackgroundImage();
+
+    // Show input container
     this.showInput();
+
+    // Focus on input field after a short delay (for better UX)
+    setTimeout(() => {
+      if (this.elements.birthdateInput) {
+        this.elements.birthdateInput.focus();
+      }
+    }, 400);
 
     // Reset wave marker to center
     if (this.waveRenderer) {
       this.waveRenderer.setMarkerPosition(0.5, true);
     }
-
-    // Clear the current day state
-    this.currentDay = null;
   }
 
   /**

@@ -151,28 +151,28 @@ export const DAY_DATA = [
  */
 export function validateBirthdate(birthdateInput) {
   if (!birthdateInput) {
-    return { valid: false, error: "Please enter your birthdate" };
+    return { valid: false, error: "Please enter your birthdate to continue" };
   }
 
   const birthdate = new Date(birthdateInput);
 
   // Check for invalid date
   if (isNaN(birthdate.getTime())) {
-    return { valid: false, error: "Please enter a valid date" };
+    return { valid: false, error: "Invalid date format - please select a valid date" };
   }
 
   const today = new Date();
 
   // Check for future date
   if (birthdate > today) {
-    return { valid: false, error: "Birthdate cannot be in the future" };
+    return { valid: false, error: "Birthdate cannot be in the future - please check the year" };
   }
 
   // Check for unreasonably old date (150 years)
   const maxAge = new Date();
   maxAge.setFullYear(maxAge.getFullYear() - 150);
   if (birthdate < maxAge) {
-    return { valid: false, error: "Please enter a valid birthdate" };
+    return { valid: false, error: "Please enter a birthdate within the last 150 years" };
   }
 
   return { valid: true };
