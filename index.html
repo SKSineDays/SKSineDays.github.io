@@ -82,6 +82,23 @@
                     aria-label="Birthdate"
                     max="9999-12-31"
                 />
+
+                <label for="email-input" class="input-label" style="margin-top:12px;">Email for daily SineDay (7:00 AM)</label>
+                <input
+                    type="email"
+                    id="email-input"
+                    class="date-input"
+                    placeholder="you@example.com"
+                    autocomplete="email"
+                />
+
+                <label class="input-label" style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                    <input type="checkbox" id="email-consent" />
+                    <span>I agree to receive daily SineDay emails.</span>
+                </label>
+
+                <p id="signup-status" class="input-label" style="margin-top:10px; opacity:.85;"></p>
+
                 <button id="calculate-btn" class="calculate-btn">
                     Show my wave
                 </button>
