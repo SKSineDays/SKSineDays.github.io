@@ -82,8 +82,19 @@
                     aria-label="Birthdate"
                     max="9999-12-31"
                 />
+                <button id="calculate-btn" class="calculate-btn">
+                    Show my wave
+                </button>
+            </div>
+        </div>
 
-                <label for="email-input" class="input-label" style="margin-top:12px;">Email for daily SineDay (7:00 AM)</label>
+        <!-- Email Signup Card (Card 2 initially, Card 3 after date entry) -->
+        <div id="email-card" class="email-card visible">
+            <div class="input-card">
+                <h2 class="input-label" style="font-size: 1.2em; margin-bottom: 8px;">Get your daily SineDay</h2>
+                <p class="input-label" style="opacity: 0.85; margin-bottom: 16px;">Receive personalized insights every morning at 7:00 AM</p>
+
+                <label for="email-input" class="input-label">Email address</label>
                 <input
                     type="email"
                     id="email-input"
@@ -97,11 +108,11 @@
                     <span>I agree to receive daily SineDay emails.</span>
                 </label>
 
-                <p id="signup-status" class="input-label" style="margin-top:10px; opacity:.85;"></p>
-
-                <button id="calculate-btn" class="calculate-btn">
-                    Show my wave
+                <button id="subscribe-btn" class="calculate-btn" style="margin-top: 16px;">
+                    Subscribe
                 </button>
+
+                <p id="signup-status" class="input-label" style="margin-top:10px; opacity:.85; text-align: center;"></p>
             </div>
         </div>
 

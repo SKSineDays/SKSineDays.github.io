@@ -31,9 +31,11 @@ export class SineDayUI {
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
       dayImage: document.getElementById('dayImage'),
+      emailCard: document.getElementById('email-card'),
       emailInput: document.getElementById('email-input'),
       emailConsent: document.getElementById('email-consent'),
-      signupStatus: document.getElementById('signup-status')
+      signupStatus: document.getElementById('signup-status'),
+      subscribeBtn: document.getElementById('subscribe-btn')
     };
 
     // State
@@ -67,8 +69,9 @@ export class SineDayUI {
     // Check for saved birthdate
     this.loadSavedBirthdate();
 
-    // Show input on first visit
+    // Show input and email card on first visit
     this.showInput();
+    this.showEmailCard();
   }
 
   /**
@@ -78,6 +81,11 @@ export class SineDayUI {
     // Calculate button
     if (this.elements.calculateBtn) {
       this.elements.calculateBtn.addEventListener('click', () => this.handleCalculate());
+    }
+
+    // Subscribe button
+    if (this.elements.subscribeBtn) {
+      this.elements.subscribeBtn.addEventListener('click', () => this.handleSubscribe());
     }
 
     // Enter key on input
@@ -126,19 +134,24 @@ export class SineDayUI {
   }
 
   /**
-   * Handle email signup (called after successful SineDay calculation)
+   * Handle subscribe button click
    */
-  async handleEmailSignup(birthdateValue, result) {
+  async handleSubscribe() {
     const emailValue = this.elements.emailInput?.value?.trim();
     const consentChecked = this.elements.emailConsent?.checked;
+    const birthdateValue = this.elements.birthdateInput?.value;
 
     // Clear previous status
     if (this.elements.signupStatus) {
       this.elements.signupStatus.textContent = '';
     }
 
-    // If no email entered, skip signup
+    // Validate email
     if (!emailValue) {
+      if (this.elements.signupStatus) {
+        this.elements.signupStatus.textContent = 'Please enter your email address';
+        this.elements.signupStatus.style.color = '#FF6B6B';
+      }
       return;
     }
 
@@ -156,10 +169,17 @@ export class SineDayUI {
       email: emailValue,
       consent: true,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago',
-      birth_day_of_year: this.calculateDayOfYear(birthdateValue),
-      sineday_index: result.day - 1, // Convert from 1-18 to 0-17
       source: 'homepage'
     };
+
+    // Add birth_day_of_year and sineday_index if we have a birthdate
+    if (birthdateValue) {
+      signupData.birth_day_of_year = this.calculateDayOfYear(birthdateValue);
+    }
+
+    if (this.currentDay) {
+      signupData.sineday_index = this.currentDay.day - 1; // Convert from 1-18 to 0-17
+    }
 
     // Show loading state
     if (this.elements.signupStatus) {
@@ -182,8 +202,20 @@ export class SineDayUI {
       if (response.ok && data.ok) {
         // Success
         if (this.elements.signupStatus) {
-          this.elements.signupStatus.textContent = '✓ Successfully subscribed! Check your email.';
+          this.elements.signupStatus.textContent = '✓ Successfully subscribed!';
           this.elements.signupStatus.style.color = '#4CAF50';
+        }
+
+        // Disable button and inputs after successful signup
+        if (this.elements.subscribeBtn) {
+          this.elements.subscribeBtn.disabled = true;
+          this.elements.subscribeBtn.textContent = 'Subscribed';
+        }
+        if (this.elements.emailInput) {
+          this.elements.emailInput.disabled = true;
+        }
+        if (this.elements.emailConsent) {
+          this.elements.emailConsent.disabled = true;
         }
       } else {
         // API returned error
@@ -205,7 +237,7 @@ export class SineDayUI {
   /**
    * Handle calculate button click
    */
-  async handleCalculate() {
+  handleCalculate() {
     const birthdateValue = this.elements.birthdateInput?.value;
 
     if (!birthdateValue) {
@@ -224,12 +256,7 @@ export class SineDayUI {
     // Save birthdate for next visit
     this.saveBirthdate(birthdateValue);
 
-    // Handle email signup if provided (don't block the wave display)
-    this.handleEmailSignup(birthdateValue, result).catch(err => {
-      console.error('Email signup failed:', err);
-    });
-
-    // Update UI with result (always show wave regardless of signup)
+    // Update UI with result
     this.displayResult(result);
   }
 
@@ -442,6 +469,22 @@ export class SineDayUI {
   }
 
   /**
+   * Show email card
+   */
+  showEmailCard() {
+    if (!this.elements.emailCard) return;
+    this.elements.emailCard.classList.add('visible');
+  }
+
+  /**
+   * Hide email card
+   */
+  hideEmailCard() {
+    if (!this.elements.emailCard) return;
+    this.elements.emailCard.classList.remove('visible');
+  }
+
+  /**
    * Save birthdate to localStorage
    */
   saveBirthdate(birthdate) {
@@ -607,12 +650,18 @@ export class SineDayUI {
       this.elements.birthdateInput.value = '';
     }
 
-    // Clear email signup fields
+    // Clear and re-enable email signup fields
     if (this.elements.emailInput) {
       this.elements.emailInput.value = '';
+      this.elements.emailInput.disabled = false;
     }
     if (this.elements.emailConsent) {
       this.elements.emailConsent.checked = false;
+      this.elements.emailConsent.disabled = false;
+    }
+    if (this.elements.subscribeBtn) {
+      this.elements.subscribeBtn.disabled = false;
+      this.elements.subscribeBtn.textContent = 'Subscribe';
     }
     if (this.elements.signupStatus) {
       this.elements.signupStatus.textContent = '';
@@ -621,8 +670,9 @@ export class SineDayUI {
     // Clear background image
     this.clearBackgroundImage();
 
-    // Show input container
+    // Show input container and email card
     this.showInput();
+    this.showEmailCard();
 
     // Focus on input field after a short delay (for better UX)
     setTimeout(() => {
