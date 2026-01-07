@@ -30,7 +30,10 @@ export class SineDayUI {
       shareBtn: document.getElementById('share-btn'),
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
-      dayImage: document.getElementById('dayImage')
+      dayImage: document.getElementById('dayImage'),
+      emailInput: document.getElementById('email-input'),
+      emailConsent: document.getElementById('email-consent'),
+      signupStatus: document.getElementById('signup-status')
     };
 
     // State
@@ -112,9 +115,97 @@ export class SineDayUI {
   }
 
   /**
+   * Calculate day of year from a date (1-366)
+   */
+  calculateDayOfYear(dateString) {
+    const date = new Date(dateString);
+    const start = new Date(date.getFullYear(), 0, 0);
+    const diff = date - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  }
+
+  /**
+   * Handle email signup (called after successful SineDay calculation)
+   */
+  async handleEmailSignup(birthdateValue, result) {
+    const emailValue = this.elements.emailInput?.value?.trim();
+    const consentChecked = this.elements.emailConsent?.checked;
+
+    // Clear previous status
+    if (this.elements.signupStatus) {
+      this.elements.signupStatus.textContent = '';
+    }
+
+    // If no email entered, skip signup
+    if (!emailValue) {
+      return;
+    }
+
+    // Check consent
+    if (!consentChecked) {
+      if (this.elements.signupStatus) {
+        this.elements.signupStatus.textContent = 'Check the box to subscribe';
+        this.elements.signupStatus.style.color = '#FF6B6B';
+      }
+      return;
+    }
+
+    // Prepare signup data
+    const signupData = {
+      email: emailValue,
+      consent: true,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago',
+      birth_day_of_year: this.calculateDayOfYear(birthdateValue),
+      sineday_index: result.day - 1, // Convert from 1-18 to 0-17
+      source: 'homepage'
+    };
+
+    // Show loading state
+    if (this.elements.signupStatus) {
+      this.elements.signupStatus.textContent = 'Signing up...';
+      this.elements.signupStatus.style.color = '#7AA7FF';
+    }
+
+    try {
+      // Call API
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(signupData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.ok) {
+        // Success
+        if (this.elements.signupStatus) {
+          this.elements.signupStatus.textContent = '✓ Successfully subscribed! Check your email.';
+          this.elements.signupStatus.style.color = '#4CAF50';
+        }
+      } else {
+        // API returned error
+        if (this.elements.signupStatus) {
+          this.elements.signupStatus.textContent = `Error: ${data.error || 'Failed to subscribe'}`;
+          this.elements.signupStatus.style.color = '#FF6B6B';
+        }
+      }
+    } catch (error) {
+      // Network or other error
+      console.error('Signup error:', error);
+      if (this.elements.signupStatus) {
+        this.elements.signupStatus.textContent = 'Network error. Please try again.';
+        this.elements.signupStatus.style.color = '#FF6B6B';
+      }
+    }
+  }
+
+  /**
    * Handle calculate button click
    */
-  handleCalculate() {
+  async handleCalculate() {
     const birthdateValue = this.elements.birthdateInput?.value;
 
     if (!birthdateValue) {
@@ -133,7 +224,12 @@ export class SineDayUI {
     // Save birthdate for next visit
     this.saveBirthdate(birthdateValue);
 
-    // Update UI with result
+    // Handle email signup if provided (don't block the wave display)
+    this.handleEmailSignup(birthdateValue, result).catch(err => {
+      console.error('Email signup failed:', err);
+    });
+
+    // Update UI with result (always show wave regardless of signup)
     this.displayResult(result);
   }
 
@@ -509,6 +605,17 @@ export class SineDayUI {
     // Clear the birthdate input field
     if (this.elements.birthdateInput) {
       this.elements.birthdateInput.value = '';
+    }
+
+    // Clear email signup fields
+    if (this.elements.emailInput) {
+      this.elements.emailInput.value = '';
+    }
+    if (this.elements.emailConsent) {
+      this.elements.emailConsent.checked = false;
+    }
+    if (this.elements.signupStatus) {
+      this.elements.signupStatus.textContent = '';
     }
 
     // Clear background image
