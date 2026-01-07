@@ -160,6 +160,7 @@ body {
   flex-direction: column;
   z-index: 1;
   padding-top: calc(52px + var(--safe-area-top));
+  padding-bottom: 600px; /* Extra space to allow scrolling to email card */
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -190,8 +191,8 @@ body {
 
 .input-container {
   position: fixed;
-  /* Position above email card - email card is ~280px, so start at 300px from bottom */
-  bottom: calc(300px + var(--safe-area-bottom));
+  /* Position close to bottom to leave space at top for wave graphic */
+  bottom: calc(20px + var(--safe-area-bottom));
   left: 0;
   right: 0;
   z-index: 50;
@@ -210,10 +211,7 @@ body {
 
 /* Email Signup Card */
 .email-card {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   width: 100%;
   z-index: 45;
   padding: 0 20px calc(20px + var(--safe-area-bottom));
@@ -221,14 +219,15 @@ body {
   transform: translateY(20px);
   pointer-events: none;
   transition: all var(--duration-slow) var(--ease-out);
+  margin-top: 20px;
 }
 
-/* When input is visible, keep email card at bottom (below input card) */
+/* When input is visible, email card is in normal flow (appears on scroll) */
 .email-card:not(.results-shown) {
-  position: fixed;
-  bottom: 0;
+  position: relative;
   padding: 0 20px calc(20px + var(--safe-area-bottom));
-  z-index: 45;
+  margin-top: 40px;
+  margin-bottom: 40px;
 }
 
 /* When results are shown, position email card in normal flow at bottom */
