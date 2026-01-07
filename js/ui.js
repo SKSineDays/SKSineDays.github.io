@@ -329,6 +329,11 @@ export class SineDayUI {
 
     // Hide input
     this.hideInput();
+
+    // Move email card to bottom (results shown state)
+    if (this.elements.emailCard) {
+      this.elements.emailCard.classList.add('results-shown');
+    }
   }
 
   /**
@@ -673,6 +678,11 @@ export class SineDayUI {
     // Show input container and email card
     this.showInput();
     this.showEmailCard();
+
+    // Move email card back to initial position (near input)
+    if (this.elements.emailCard) {
+      this.elements.emailCard.classList.remove('results-shown');
+    }
 
     // Focus on input field after a short delay (for better UX)
     setTimeout(() => {

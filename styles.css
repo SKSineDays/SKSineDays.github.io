@@ -209,14 +209,34 @@ body {
 
 /* Email Signup Card */
 .email-card {
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   z-index: 45;
-  padding: 0 20px calc(40px + var(--safe-area-bottom));
+  padding: 0 20px 20px;
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
   transition: all var(--duration-slow) var(--ease-out);
+}
+
+/* When input is visible, position email card above it */
+.email-card:not(.results-shown) {
+  bottom: auto;
+  top: auto;
+  position: fixed;
+  /* Position will be calculated to appear above input-container */
+  bottom: calc(120px + var(--safe-area-bottom));
+}
+
+/* When results are shown, position email card in normal flow at bottom */
+.email-card.results-shown {
+  position: relative;
+  bottom: auto;
+  top: auto;
+  padding: 0 20px calc(40px + var(--safe-area-bottom));
   margin-top: 20px;
 }
 
@@ -466,8 +486,17 @@ body {
   }
 
   .input-container,
-  .result-card,
-  .email-card {
+  .result-card {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .email-card:not(.results-shown) {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .email-card.results-shown {
     padding-left: 32px;
     padding-right: 32px;
   }
