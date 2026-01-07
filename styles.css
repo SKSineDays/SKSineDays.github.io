@@ -212,7 +212,7 @@ body {
   position: relative;
   width: 100%;
   z-index: 45;
-  padding: 0 20px 20px;
+  padding: 0 20px calc(40px + var(--safe-area-bottom));
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
