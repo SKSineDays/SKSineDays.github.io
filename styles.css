@@ -207,6 +207,25 @@ body {
   pointer-events: auto;
 }
 
+/* Email Signup Card */
+.email-card {
+  position: relative;
+  width: 100%;
+  z-index: 45;
+  padding: 0 20px 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all var(--duration-slow) var(--ease-out);
+  margin-top: 20px;
+}
+
+.email-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .input-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -447,7 +466,8 @@ body {
   }
 
   .input-container,
-  .result-card {
+  .result-card,
+  .email-card {
     padding-left: 32px;
     padding-right: 32px;
   }
