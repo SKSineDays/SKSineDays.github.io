@@ -224,11 +224,11 @@ body {
 
 /* When input is visible, position email card above it */
 .email-card:not(.results-shown) {
-  bottom: auto;
-  top: auto;
   position: fixed;
-  /* Position will be calculated to appear above input-container */
-  bottom: calc(120px + var(--safe-area-bottom));
+  /* Position above the input container so it stacks as a second card */
+  /* Input card is ~180px tall, so position email card at 200px from bottom */
+  bottom: calc(200px + var(--safe-area-bottom));
+  z-index: 51;
 }
 
 /* When results are shown, position email card in normal flow at bottom */
@@ -238,6 +238,7 @@ body {
   top: auto;
   padding: 0 20px calc(40px + var(--safe-area-bottom));
   margin-top: 20px;
+  z-index: 45;
 }
 
 .email-card.visible {
