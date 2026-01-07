@@ -190,11 +190,12 @@ body {
 
 .input-container {
   position: fixed;
-  bottom: 0;
+  /* Position above email card - email card is ~280px, so start at 300px from bottom */
+  bottom: calc(300px + var(--safe-area-bottom));
   left: 0;
   right: 0;
   z-index: 50;
-  padding: 0 20px calc(20px + var(--safe-area-bottom));
+  padding: 0 20px 20px;
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
@@ -215,20 +216,19 @@ body {
   right: 0;
   width: 100%;
   z-index: 45;
-  padding: 0 20px 20px;
+  padding: 0 20px calc(20px + var(--safe-area-bottom));
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
   transition: all var(--duration-slow) var(--ease-out);
 }
 
-/* When input is visible, position email card above it */
+/* When input is visible, keep email card at bottom (below input card) */
 .email-card:not(.results-shown) {
   position: fixed;
-  /* Position above the input container so it stacks as a second card */
-  /* Input card is ~180px tall, so position email card at 200px from bottom */
-  bottom: calc(200px + var(--safe-area-bottom));
-  z-index: 51;
+  bottom: 0;
+  padding: 0 20px calc(20px + var(--safe-area-bottom));
+  z-index: 45;
 }
 
 /* When results are shown, position email card in normal flow at bottom */
