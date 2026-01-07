@@ -88,7 +88,30 @@
             </div>
         </div>
 
-        <!-- Email Signup Card (Card 2 initially, Card 3 after date entry) -->
+        <!-- Result Card -->
+        <div id="result-card" class="result-card" role="region" aria-live="polite">
+            <div class="swipe-hint">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Swipe right to try another date</span>
+            </div>
+            <div class="result-content">
+                <h2 id="day-number" class="day-number">SineDay 1</h2>
+                <img id="todayDuck" class="duck-image" alt="Today's SineDuck" />
+                <p id="day-phase" class="day-phase">RISING • INITIATION</p>
+                <p id="day-description" class="day-description">Fresh beginnings call you forward</p>
+            </div>
+        </div>
+
+        <!-- Day Image Card -->
+        <div id="day-image-card" class="day-image-card" role="region">
+            <div class="day-image-content">
+                <img id="dayImage" class="day-full-image" alt="Your SineDay" />
+            </div>
+        </div>
+
+        <!-- Email Signup Card (positioned at bottom) -->
         <div id="email-card" class="email-card visible">
             <div class="input-card">
                 <h2 class="input-label" style="font-size: 1.2em; margin-bottom: 8px;">Get your daily SineDay</h2>
@@ -113,29 +136,6 @@
                 </button>
 
                 <p id="signup-status" class="input-label" style="margin-top:10px; opacity:.85; text-align: center;"></p>
-            </div>
-        </div>
-
-        <!-- Result Card -->
-        <div id="result-card" class="result-card" role="region" aria-live="polite">
-            <div class="swipe-hint">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Swipe right to try another date</span>
-            </div>
-            <div class="result-content">
-                <h2 id="day-number" class="day-number">SineDay 1</h2>
-                <img id="todayDuck" class="duck-image" alt="Today's SineDuck" />
-                <p id="day-phase" class="day-phase">RISING • INITIATION</p>
-                <p id="day-description" class="day-description">Fresh beginnings call you forward</p>
-            </div>
-        </div>
-
-        <!-- Day Image Card -->
-        <div id="day-image-card" class="day-image-card" role="region">
-            <div class="day-image-content">
-                <img id="dayImage" class="day-full-image" alt="Your SineDay" />
             </div>
         </div>
     </main>
