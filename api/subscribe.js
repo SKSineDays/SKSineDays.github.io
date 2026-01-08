@@ -158,6 +158,7 @@ export default async function handler(req, res) {
 
     // Detect if this is a new subscriber (compare timestamps)
     const isNewSubscriber = subscriber.created_at === subscriber.updated_at;
+    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${email})`);
 
     // 2. Upsert preferences
     const now = new Date().toISOString();
@@ -227,22 +228,29 @@ export default async function handler(req, res) {
         try {
           const resend = new Resend(resendApiKey);
 
+          console.log(`Sending welcome email to: ${email}`);
+
           // Send using the pre-existing Resend template "welcome-temp"
           // Template: "Welcome Temp." - contains the canonical 18-day SineDay explanation
-          // Subject: "Welcome to Your SineDay 🌊"
+          // Subject: "Welcome to Your SineDay 🌊" (defined in template)
           // From: Daily <daily@daily.sineday.app>
-          await resend.emails.send({
+          const response = await resend.emails.send({
             from: resendFrom,
             to: email,
             template: 'welcome-temp'
           });
 
-          console.log('Welcome email sent to:', email);
+          console.log(`✓ Welcome email sent successfully. Resend ID: ${response.data?.id || response.id}`);
         } catch (emailError) {
-          console.error('Failed to send welcome email:', emailError);
+          console.error('✗ Failed to send welcome email:', emailError);
+          console.error('Error details:', emailError.message || emailError);
           // Don't fail the whole request if email fails
         }
+      } else {
+        console.warn('Skipping welcome email: Missing RESEND_API_KEY or RESEND_FROM env vars');
       }
+    } else {
+      console.log('Skipping welcome email: Existing subscriber');
     }
 
     // Success response
