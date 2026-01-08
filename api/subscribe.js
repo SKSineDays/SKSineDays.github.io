@@ -122,12 +122,23 @@ export default async function handler(req, res) {
       }
     });
 
+    // Check if subscriber already exists BEFORE upserting
+    const normalizedEmail = email.toLowerCase().trim();
+    const { data: existingSubscriber } = await supabase
+      .from('subscribers')
+      .select('id, created_at')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    const isNewSubscriber = !existingSubscriber;
+    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${email})`);
+
     // 1. Upsert subscriber
     const { data: subscriber, error: subscriberError } = await supabase
       .from('subscribers')
       .upsert(
         {
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           timezone: validTimezone,
           status: 'active',
           source: source || 'homepage'
@@ -155,10 +166,6 @@ export default async function handler(req, res) {
         error: 'Failed to create subscriber'
       });
     }
-
-    // Detect if this is a new subscriber (compare timestamps)
-    const isNewSubscriber = subscriber.created_at === subscriber.updated_at;
-    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${email})`);
 
     // 2. Upsert preferences
     const now = new Date().toISOString();
