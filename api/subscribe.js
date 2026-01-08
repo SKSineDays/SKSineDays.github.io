@@ -231,40 +231,73 @@ export default async function handler(req, res) {
       const resendApiKey = process.env.RESEND_API_KEY;
       const resendFrom = process.env.RESEND_FROM;
 
+      console.log('[EMAIL] Checking Resend configuration:', {
+        hasApiKey: !!resendApiKey,
+        hasFrom: !!resendFrom,
+        fromValue: resendFrom ? `${resendFrom.substring(0, 10)}...` : 'missing'
+      });
+
       if (resendApiKey && resendFrom) {
         try {
           const resend = new Resend(resendApiKey);
 
-          console.log(`Sending welcome email to: ${email}`);
+          console.log(`[EMAIL] Attempting to send welcome email to: ${email}`);
+          console.log(`[EMAIL] Using template_id: welcome-temp`);
+          console.log(`[EMAIL] From address: ${resendFrom}`);
 
           // Send using the pre-existing Resend template "welcome-temp"
           // Template: "Welcome Temp." - contains the canonical 18-day SineDay explanation
           // Subject: "Welcome to Your SineDay 🌊" (defined in template)
           // From: Daily <daily@daily.sineday.app>
-          const response = await resend.emails.send({
+          // Note: When using template_id, don't include react or html/text fields
+          const emailPayload = {
             from: resendFrom,
             to: [email],
-            subject: 'Welcome to Your SineDay 🌊',
-            react: null,
             template_id: 'welcome-temp'
+          };
+          
+          // Only add subject if template doesn't define it
+          // (Some templates have subject defined, some don't)
+          emailPayload.subject = 'Welcome to Your SineDay 🌊';
+          
+          console.log('[EMAIL] Sending with payload:', {
+            from: emailPayload.from,
+            to: emailPayload.to,
+            template_id: emailPayload.template_id,
+            subject: emailPayload.subject
           });
+          
+          const response = await resend.emails.send(emailPayload);
 
-          console.log(`✓ Welcome email sent successfully. Resend ID: ${response.data?.id || response.id}`);
-        } catch (emailError) {
-          console.error('✗ Failed to send welcome email:', emailError);
-          console.error('Error details:', {
-            message: emailError.message,
-            name: emailError.name,
-            statusCode: emailError.statusCode,
-            response: emailError.response?.data || emailError.response
+          console.log(`[EMAIL] ✓ Welcome email sent successfully`);
+          console.log(`[EMAIL] Resend response:`, {
+            id: response.data?.id || response.id,
+            from: response.data?.from || 'unknown',
+            to: response.data?.to || 'unknown',
+            createdAt: response.data?.created_at || 'unknown'
           });
+        } catch (emailError) {
+          console.error('[EMAIL] ✗ Failed to send welcome email');
+          console.error('[EMAIL] Error type:', emailError.name);
+          console.error('[EMAIL] Error message:', emailError.message);
+          console.error('[EMAIL] Error statusCode:', emailError.statusCode);
+          console.error('[EMAIL] Full error object:', JSON.stringify({
+            name: emailError.name,
+            message: emailError.message,
+            statusCode: emailError.statusCode,
+            response: emailError.response?.data || emailError.response,
+            stack: emailError.stack
+          }, null, 2));
           // Don't fail the whole request if email fails
         }
       } else {
-        console.warn('Skipping welcome email: Missing RESEND_API_KEY or RESEND_FROM env vars');
+        console.warn('[EMAIL] Skipping welcome email: Missing environment variables');
+        console.warn('[EMAIL] RESEND_API_KEY present:', !!resendApiKey);
+        console.warn('[EMAIL] RESEND_FROM present:', !!resendFrom);
       }
     } else {
-      console.log('Skipping welcome email: Existing subscriber');
+      console.log(`[EMAIL] Skipping welcome email: Existing subscriber (${email})`);
+      console.log(`[EMAIL] Subscriber was created at: ${existingSubscriber?.created_at || 'unknown'}`);
     }
 
     // Success response
