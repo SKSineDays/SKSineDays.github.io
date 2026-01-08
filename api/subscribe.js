@@ -236,14 +236,21 @@ export default async function handler(req, res) {
           // From: Daily <daily@daily.sineday.app>
           const response = await resend.emails.send({
             from: resendFrom,
-            to: email,
-            template: 'welcome-temp'
+            to: [email],
+            subject: 'Welcome to Your SineDay 🌊',
+            react: null,
+            template_id: 'welcome-temp'
           });
 
           console.log(`✓ Welcome email sent successfully. Resend ID: ${response.data?.id || response.id}`);
         } catch (emailError) {
           console.error('✗ Failed to send welcome email:', emailError);
-          console.error('Error details:', emailError.message || emailError);
+          console.error('Error details:', {
+            message: emailError.message,
+            name: emailError.name,
+            statusCode: emailError.statusCode,
+            response: emailError.response?.data || emailError.response
+          });
           // Don't fail the whole request if email fails
         }
       } else {
