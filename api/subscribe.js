@@ -227,48 +227,14 @@ export default async function handler(req, res) {
         try {
           const resend = new Resend(resendApiKey);
 
-          // Build welcome email content
-          let emailHtml = `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h1 style="color: #7AA7FF; font-size: 28px; margin-bottom: 20px;">Welcome to SineDay Daily! 🌊</h1>
-
-              <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                Thank you for subscribing! You'll now receive your personalized SineDay insights every morning at 7:00 AM.
-              </p>`;
-
-          if (sineday_index !== null && sineday_index !== undefined) {
-            emailHtml += `
-              <div style="background: #f5f8ff; border-left: 4px solid #7AA7FF; padding: 16px; margin: 20px 0;">
-                <p style="margin: 0; font-size: 16px; color: #333;">
-                  <strong>Your SineDay Index:</strong> Day ${sineday_index + 1}
-                </p>
-              </div>`;
-          }
-
-          emailHtml += `
-              <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                Each day, you'll discover where you are in your personal 18-day energy cycle and receive guidance aligned with your natural rhythm.
-              </p>
-
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="https://sineday.app" style="display: inline-block; background: #7AA7FF; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-size: 16px;">
-                  Visit SineDay.app
-                </a>
-              </div>
-
-              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-
-              <p style="font-size: 14px; color: #666; text-align: center;">
-                Not interested anymore? <a href="https://sineday.app/api/unsubscribe?email=${encodeURIComponent(email)}" style="color: #7AA7FF;">Unsubscribe here</a>
-              </p>
-            </div>
-          `;
-
+          // Send using the pre-existing Resend template "welcome-temp"
+          // Template: "Welcome Temp." - contains the canonical 18-day SineDay explanation
+          // Subject: "Welcome to Your SineDay 🌊"
+          // From: Daily <daily@daily.sineday.app>
           await resend.emails.send({
             from: resendFrom,
             to: email,
-            subject: 'Welcome to SineDay Daily',
-            html: emailHtml
+            template: 'welcome-temp'
           });
 
           console.log('Welcome email sent to:', email);
