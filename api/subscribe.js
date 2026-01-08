@@ -9,6 +9,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 
 /**
  * Email validation regex
@@ -155,7 +156,11 @@ export default async function handler(req, res) {
       });
     }
 
+    // Detect if this is a new subscriber (compare timestamps)
+    const isNewSubscriber = subscriber.created_at === subscriber.updated_at;
+
     // 2. Upsert preferences
+    const now = new Date().toISOString();
     const { error: preferencesError } = await supabase
       .from('subscriber_preferences')
       .upsert(
@@ -165,9 +170,10 @@ export default async function handler(req, res) {
           sms_enabled: false,
           email_opt_in: true,
           sms_opt_in: false,
+          email_opt_in_at: now,
           send_hour_local: 7,
           send_minute_local: 0,
-          updated_at: new Date().toISOString()
+          updated_at: now
         },
         {
           onConflict: 'subscriber_id',
@@ -209,6 +215,33 @@ export default async function handler(req, res) {
       if (profileError) {
         console.error('Profile upsert error:', profileError);
         // Don't fail the whole request, just log it
+      }
+    }
+
+    // 4. Send welcome email (only for new subscribers)
+    if (isNewSubscriber) {
+      const resendApiKey = process.env.RESEND_API_KEY;
+      const resendFrom = process.env.RESEND_FROM;
+
+      if (resendApiKey && resendFrom) {
+        try {
+          const resend = new Resend(resendApiKey);
+
+          // Send using the pre-existing Resend template "welcome-temp"
+          // Template: "Welcome Temp." - contains the canonical 18-day SineDay explanation
+          // Subject: "Welcome to Your SineDay 🌊"
+          // From: Daily <daily@daily.sineday.app>
+          await resend.emails.send({
+            from: resendFrom,
+            to: email,
+            template: 'welcome-temp'
+          });
+
+          console.log('Welcome email sent to:', email);
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't fail the whole request if email fails
+        }
       }
     }
 
