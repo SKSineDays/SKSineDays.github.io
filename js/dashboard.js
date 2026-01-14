@@ -64,14 +64,34 @@ async function init() {
 }
 
 /**
- * Handle auth callback (magic link)
+ * Handle auth callback (magic link with PKCE support)
  */
 async function handleAuthCallback() {
   const url = new URL(window.location.href);
   const hashParams = new URLSearchParams(url.hash.substring(1));
+  const searchParams = new URLSearchParams(url.search);
 
+  // Check for PKCE code parameter
+  if (searchParams.has('code')) {
+    console.log('PKCE code detected, exchanging for session...');
+    try {
+      const client = await getSupabaseClient();
+      const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
+
+      if (error) {
+        console.error('Error exchanging code for session:', error);
+      } else {
+        console.log('Session exchanged successfully');
+      }
+
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard.html');
+    } catch (error) {
+      console.error('Error during PKCE exchange:', error);
+    }
+  }
   // Supabase auth uses hash params
-  if (hashParams.has('access_token')) {
+  else if (hashParams.has('access_token')) {
     console.log('Auth callback detected');
     // Supabase client will automatically handle this
     // Just wait a moment for it to process
