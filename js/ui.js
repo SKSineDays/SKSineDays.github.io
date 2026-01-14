@@ -12,6 +12,7 @@
 import { calculateSineDay } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
+import { getSupabaseClient, getAccessToken, getCurrentUser } from './supabase-client.js';
 
 export class SineDayUI {
   constructor() {
@@ -35,7 +36,9 @@ export class SineDayUI {
       emailInput: document.getElementById('email-input'),
       emailConsent: document.getElementById('email-consent'),
       signupStatus: document.getElementById('signup-status'),
-      subscribeBtn: document.getElementById('subscribe-btn')
+      subscribeBtn: document.getElementById('subscribe-btn'),
+      premiumCard: document.getElementById('premium-card'),
+      premiumBtn: document.getElementById('premium-btn')
     };
 
     // State
@@ -72,6 +75,7 @@ export class SineDayUI {
     // Show input and email card on first visit
     this.showInput();
     this.showEmailCard();
+    this.showPremiumCard();
   }
 
   /**
@@ -86,6 +90,11 @@ export class SineDayUI {
     // Subscribe button
     if (this.elements.subscribeBtn) {
       this.elements.subscribeBtn.addEventListener('click', () => this.handleSubscribe());
+    }
+
+    // Premium button
+    if (this.elements.premiumBtn) {
+      this.elements.premiumBtn.addEventListener('click', () => this.handlePremium());
     }
 
     // Enter key on input
@@ -131,6 +140,82 @@ export class SineDayUI {
     const diff = date - start;
     const oneDay = 1000 * 60 * 60 * 24;
     return Math.floor(diff / oneDay);
+  }
+
+  /**
+   * Handle premium button click
+   */
+  async handlePremium() {
+    const premiumBtn = this.elements.premiumBtn;
+    if (!premiumBtn) return;
+
+    // Show loading state
+    const originalText = premiumBtn.textContent;
+    premiumBtn.disabled = true;
+    premiumBtn.textContent = 'Loading...';
+
+    try {
+      // Check if user is authenticated
+      const user = await getCurrentUser();
+      
+      if (!user) {
+        // User not authenticated - redirect to Stripe checkout
+        // But first, they need to authenticate, so we'll redirect to dashboard
+        // which will handle authentication flow
+        window.location.href = '/dashboard.html';
+        return;
+      }
+
+      // User is authenticated - check subscription status
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        window.location.href = '/dashboard.html';
+        return;
+      }
+
+      const client = await getSupabaseClient();
+      const { data: subscription, error } = await client
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking subscription:', error);
+        // On error, try to create checkout session anyway
+      }
+
+      // Check if user has active subscription
+      const isSubscribed = subscription && subscription.status === 'active';
+
+      if (isSubscribed) {
+        // User is subscribed - navigate to dashboard
+        window.location.href = '/dashboard.html';
+      } else {
+        // User is not subscribed - redirect to Stripe Checkout
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.ok && data.url) {
+          // Redirect to Stripe Checkout
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Failed to create checkout session');
+        }
+      }
+    } catch (error) {
+      console.error('Premium button error:', error);
+      alert('Failed to start checkout. Please try again.');
+      premiumBtn.disabled = false;
+      premiumBtn.textContent = originalText;
+    }
   }
 
   /**
@@ -330,9 +415,12 @@ export class SineDayUI {
     // Hide input
     this.hideInput();
 
-    // Move email card to bottom (results shown state)
+    // Move email card and premium card to bottom (results shown state)
     if (this.elements.emailCard) {
       this.elements.emailCard.classList.add('results-shown');
+    }
+    if (this.elements.premiumCard) {
+      this.elements.premiumCard.classList.add('results-shown');
     }
   }
 
@@ -487,6 +575,22 @@ export class SineDayUI {
   hideEmailCard() {
     if (!this.elements.emailCard) return;
     this.elements.emailCard.classList.remove('visible');
+  }
+
+  /**
+   * Show premium card
+   */
+  showPremiumCard() {
+    if (!this.elements.premiumCard) return;
+    this.elements.premiumCard.classList.add('visible');
+  }
+
+  /**
+   * Hide premium card
+   */
+  hidePremiumCard() {
+    if (!this.elements.premiumCard) return;
+    this.elements.premiumCard.classList.remove('visible');
   }
 
   /**
@@ -678,10 +782,14 @@ export class SineDayUI {
     // Show input container and email card
     this.showInput();
     this.showEmailCard();
+    this.showPremiumCard();
 
-    // Move email card back to initial position (near input)
+    // Move email card and premium card back to initial position (near input)
     if (this.elements.emailCard) {
       this.elements.emailCard.classList.remove('results-shown');
+    }
+    if (this.elements.premiumCard) {
+      this.elements.premiumCard.classList.remove('results-shown');
     }
 
     // Focus on input field after a short delay (for better UX)
