@@ -549,19 +549,24 @@ async function checkCheckoutSuccess() {
  * Show loading view
  */
 function showLoading() {
-  const app = document.getElementById('app');
-  if (app) {
-    app.innerHTML = '<div class="loading">Loading...</div>';
-  }
+  const loading = document.getElementById('loading');
+  const loginSection = document.getElementById('login-section');
+  const dashboardSection = document.getElementById('dashboard-section');
+
+  if (loading) loading.style.display = 'block';
+  if (loginSection) loginSection.style.display = 'none';
+  if (dashboardSection) dashboardSection.style.display = 'none';
 }
 
 /**
  * Show login view
  */
 function showLoginView() {
+  const loading = document.getElementById('loading');
   const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
 
+  if (loading) loading.style.display = 'none';
   if (loginSection) loginSection.style.display = 'block';
   if (dashboardSection) dashboardSection.style.display = 'none';
 }
@@ -570,9 +575,11 @@ function showLoginView() {
  * Show authenticated view
  */
 function showAuthenticatedView() {
+  const loading = document.getElementById('loading');
   const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
 
+  if (loading) loading.style.display = 'none';
   if (loginSection) loginSection.style.display = 'none';
   if (dashboardSection) dashboardSection.style.display = 'block';
 
@@ -636,7 +643,17 @@ function escapeHtml(text) {
 
 // Initialize on DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    init().catch(err => {
+      console.error('Dashboard init failed:', err);
+      const loading = document.getElementById('loading');
+      if (loading) loading.innerText = 'Something went wrong. Please refresh.';
+    });
+  });
 } else {
-  init();
+  init().catch(err => {
+    console.error('Dashboard init failed:', err);
+    const loading = document.getElementById('loading');
+    if (loading) loading.innerText = 'Something went wrong. Please refresh.';
+  });
 }
