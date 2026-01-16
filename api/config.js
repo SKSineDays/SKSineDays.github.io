@@ -31,11 +31,31 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Runtime guards: ensure required environment variables are present
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl) {
+    console.error('CRITICAL: SUPABASE_URL environment variable is missing');
+    return res.status(500).json({
+      ok: false,
+      error: 'Server configuration error: SUPABASE_URL is not set'
+    });
+  }
+
+  if (!supabaseAnonKey) {
+    console.error('CRITICAL: SUPABASE_ANON_KEY environment variable is missing');
+    return res.status(500).json({
+      ok: false,
+      error: 'Server configuration error: SUPABASE_ANON_KEY is not set'
+    });
+  }
+
   // Return only PUBLIC configuration
   return res.status(200).json({
     ok: true,
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+    supabaseUrl: supabaseUrl,
+    supabaseAnonKey: supabaseAnonKey,
     appUrl: process.env.APP_URL || 'https://sineday.app'
   });
 }
