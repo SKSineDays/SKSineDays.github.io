@@ -17,7 +17,9 @@ async function fetchConfig() {
   }
 
   try {
-    const response = await fetch('/api/config');
+    // Add cache-busting timestamp to prevent stale config
+    const cacheBuster = Date.now();
+    const response = await fetch(`/api/config?t=${cacheBuster}`);
     if (!response.ok) {
       throw new Error('Failed to fetch config');
     }
@@ -32,6 +34,8 @@ async function fetchConfig() {
       supabaseAnonKey: data.supabaseAnonKey,
       appUrl: data.appUrl
     };
+
+    console.log('[Config Debug] Fetched config:', configCache);
 
     return configCache;
   } catch (error) {
@@ -102,10 +106,17 @@ export async function signInWithEmail(email) {
   const client = await getSupabaseClient();
   const config = await fetchConfig();
 
+  const redirectUrl = `${config.appUrl}/dashboard.html`;
+
+  // Debug logging to verify redirect URL
+  console.log('[Magic Link Debug] Config appUrl:', config.appUrl);
+  console.log('[Magic Link Debug] Full redirect URL:', redirectUrl);
+  console.log('[Magic Link Debug] Sending signInWithOtp with emailRedirectTo:', redirectUrl);
+
   const { data, error } = await client.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${config.appUrl}/dashboard.html`
+      emailRedirectTo: redirectUrl
     }
   });
 
