@@ -80,7 +80,7 @@ body {
   background-size: 50%;
   background-position: center top;
   background-repeat: no-repeat;
-  filter: blur(2px) brightness(0.8);
+  filter: brightness(0.8);
   opacity: 1;
   transition: opacity 800ms var(--ease-out), filter 800ms var(--ease-out);
 }
@@ -659,6 +659,7 @@ body {
   .wave-container {
     max-width: 800px;
     margin: 0 auto;
+    margin-top: 2.5in;
   }
 }
 
