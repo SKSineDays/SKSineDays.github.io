@@ -171,6 +171,51 @@
     <!-- Load JavaScript as modules -->
     <script type="module" src="js/ui.js"></script>
 
+    <!-- Info Modal -->
+    <div id="info-modal" class="sd-modal" aria-hidden="true">
+      <div class="sd-modal-backdrop" data-close="info-modal"></div>
+
+      <div class="sd-modal-panel" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+        <div class="sd-modal-header">
+          <h2 id="info-modal-title" class="sd-modal-title">About SineDay</h2>
+          <button id="info-modal-close" class="sd-modal-close" aria-label="Close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="sd-modal-body">
+          <p><strong>SineDay reflects an ancient truth:</strong><br>all living energy moves in waves.</p>
+
+          <p>
+            Across civilizations, observers of nature recognized that life rises, peaks, and rests in repeating cycles.
+            This rhythm is not external—it is the inner power wave of every living soul.
+          </p>
+
+          <p><strong>The 18-day SineDay cycle</strong> reveals where you are on that wave today.</p>
+
+          <p><strong>Some days naturally support:</strong></p>
+          <ul class="sd-modal-list">
+            <li>Initiation</li>
+            <li>Growth</li>
+            <li>Expression</li>
+            <li>Integration</li>
+            <li>Rest</li>
+          </ul>
+
+          <p>This is not belief—it is observation.</p>
+
+          <p>
+            SineDay does not tell you what to do.<br>
+            It shows you where you are.
+          </p>
+
+          <p><strong>There is no failure in rhythm.</strong><br>Only alignment.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {

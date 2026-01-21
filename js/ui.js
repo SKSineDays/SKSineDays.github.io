@@ -38,7 +38,10 @@ export class SineDayUI {
       signupStatus: document.getElementById('signup-status'),
       subscribeBtn: document.getElementById('subscribe-btn'),
       premiumCard: document.getElementById('premium-card'),
-      premiumBtn: document.getElementById('premium-btn')
+      premiumBtn: document.getElementById('premium-btn'),
+      infoModal: document.getElementById('info-modal'),
+      infoModalClose: document.getElementById('info-modal-close'),
+      infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop')
     };
 
     // State
@@ -115,6 +118,19 @@ export class SineDayUI {
     if (this.elements.infoBtn) {
       this.elements.infoBtn.addEventListener('click', () => this.handleInfo());
     }
+
+    // Info modal close controls
+    if (this.elements.infoModalClose) {
+      this.elements.infoModalClose.addEventListener('click', () => this.closeInfoModal());
+    }
+
+    if (this.elements.infoModalBackdrop) {
+      this.elements.infoModalBackdrop.addEventListener('click', () => this.closeInfoModal());
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') this.closeInfoModal();
+    });
 
     // Swipe gesture on result card
     if (this.elements.resultCard) {
@@ -680,13 +696,33 @@ export class SineDayUI {
    * Handle info button
    */
   handleInfo() {
-    // Could show a modal explaining SineDay
-    // For now, simple alert
-    alert(
-      'SineDay Wave\n\n' +
-      'Your personal 18-day cycle based on your birthdate.\n\n' +
-      'Each day represents a different energy phase in the eternal rhythm of life.'
-    );
+    this.openInfoModal();
+  }
+
+  openInfoModal() {
+    const modal = this.elements.infoModal;
+    if (!modal) return;
+
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+
+    // Move focus for accessibility
+    if (this.elements.infoModalClose) {
+      this.elements.infoModalClose.focus();
+    }
+  }
+
+  closeInfoModal() {
+    const modal = this.elements.infoModal;
+    if (!modal) return;
+
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+
+    // Return focus to the info button
+    if (this.elements.infoBtn) {
+      this.elements.infoBtn.focus();
+    }
   }
 
   /**

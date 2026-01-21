@@ -946,3 +946,92 @@ body.loading {
 .hidden {
   display: none !important;
 }
+
+/* =========================
+   SineDay Info Modal
+========================= */
+
+.sd-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+
+.sd-modal.is-open {
+  display: block;
+}
+
+.sd-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sd-modal-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+
+  background: rgba(10, 12, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.sd-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 16px 16px 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sd-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.2px;
+}
+
+.sd-modal-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  opacity: 0.9;
+}
+
+.sd-modal-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+}
+
+.sd-modal-body {
+  padding: 14px 16px 16px 16px;
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.sd-modal-body p {
+  margin: 0 0 12px 0;
+}
+
+.sd-modal-list {
+  margin: 8px 0 12px 18px;
+  padding: 0;
+}
+
+.sd-modal-list li {
+  margin: 6px 0;
+}
