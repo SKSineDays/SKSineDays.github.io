@@ -74,6 +74,23 @@ body {
   overflow: hidden;
 }
 
+/* Hero background for home screen (input state) */
+.background-image-container.hero-mode {
+  background-image: url('Sineback.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(8px) brightness(0.5);
+  opacity: 1;
+  transition: opacity 800ms var(--ease-out), filter 800ms var(--ease-out);
+}
+
+/* When showing results, fade out hero mode */
+.background-image-container.hero-mode.fade-out {
+  opacity: 0;
+  filter: blur(10px) brightness(0.4);
+}
+
 .background-image-layer {
   position: absolute;
   top: 0;

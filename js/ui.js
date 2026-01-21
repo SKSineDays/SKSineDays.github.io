@@ -551,6 +551,12 @@ export class SineDayUI {
   showInput() {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.add('visible');
+
+    // Show hero background when in input mode
+    if (this.elements.backgroundImage) {
+      this.elements.backgroundImage.classList.add('hero-mode');
+      this.elements.backgroundImage.classList.remove('fade-out');
+    }
   }
 
   /**
@@ -559,6 +565,11 @@ export class SineDayUI {
   hideInput() {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.remove('visible');
+
+    // Fade out hero background when hiding input
+    if (this.elements.backgroundImage) {
+      this.elements.backgroundImage.classList.add('fade-out');
+    }
   }
 
   /**
@@ -776,8 +787,14 @@ export class SineDayUI {
       this.elements.signupStatus.textContent = '';
     }
 
-    // Clear background image
+    // Clear background image and restore hero mode
     this.clearBackgroundImage();
+
+    // Restore hero background
+    if (this.elements.backgroundImage) {
+      this.elements.backgroundImage.classList.add('hero-mode');
+      this.elements.backgroundImage.classList.remove('fade-out');
+    }
 
     // Show input container and email card
     this.showInput();
