@@ -80,7 +80,7 @@ body {
   background-size: 50%;
   background-position: center top;
   background-repeat: no-repeat;
-  filter: blur(8px) brightness(0.5);
+  filter: blur(2px) brightness(0.8);
   opacity: 1;
   transition: opacity 800ms var(--ease-out), filter 800ms var(--ease-out);
 }
