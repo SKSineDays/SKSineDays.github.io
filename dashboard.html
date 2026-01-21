@@ -19,7 +19,7 @@
       overflow-x: hidden;
     }
 
-    /* Hero Background */
+    /* Hero Background for Dashboard */
     body::before {
       content: '';
       position: fixed;
@@ -34,6 +34,30 @@
       filter: blur(4px) brightness(0.25) saturate(0.7);
       z-index: -2;
       pointer-events: none;
+    }
+
+    /* Login Section Background Override */
+    #login-section::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('Sineback.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(4px) brightness(0.25) saturate(0.7);
+      z-index: -3;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Hide login background when dashboard is shown */
+    #login-section[style*="display: none"]::before {
+      opacity: 0;
     }
 
     /* Gradient overlay for better text readability */
