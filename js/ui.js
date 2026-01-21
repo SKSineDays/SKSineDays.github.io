@@ -66,6 +66,11 @@ export class SineDayUI {
       });
     }
 
+    // Set initial hero background
+    if (this.elements.backgroundImage) {
+      this.elements.backgroundImage.classList.add('hero-mode');
+    }
+
     // Bind event listeners
     this.bindEvents();
 
@@ -350,6 +355,15 @@ export class SineDayUI {
    */
   displayResult(result) {
     this.currentDay = result;
+
+    // Remove hero background and fade it out
+    if (this.elements.backgroundImage) {
+      this.elements.backgroundImage.classList.add('fade-out');
+      // Remove hero-mode after fade out completes
+      setTimeout(() => {
+        this.elements.backgroundImage.classList.remove('hero-mode', 'fade-out');
+      }, 800);
+    }
 
     // Update wave marker position
     if (this.waveRenderer) {
