@@ -76,7 +76,7 @@ body {
 
 /* Hero background for home screen (input state) */
 .background-image-container.hero-mode {
-  background-image: url('SineBack.png');
+  background-image: url('Sineback.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
