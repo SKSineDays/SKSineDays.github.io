@@ -83,6 +83,7 @@ body {
   filter: brightness(0.8);
   opacity: 1;
   transition: opacity 800ms var(--ease-out), filter 800ms var(--ease-out);
+  will-change: transform;
 }
 
 /* When showing results, fade out hero mode */
