@@ -18,9 +18,14 @@
   --color-accent-rgb: 122, 167, 255;
 
   /* Glass morphism */
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-bg: rgba(5, 6, 10, 0.85);
+  --glass-border: rgba(122, 167, 255, 0.3);
   --glass-blur: 20px;
+  
+  /* Neon glow colors */
+  --neon-blue: rgba(122, 167, 255, 0.6);
+  --neon-purple: rgba(138, 43, 226, 0.4);
+  --neon-cyan: rgba(0, 255, 255, 0.3);
 
   /* Spacing */
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -313,36 +318,63 @@ body {
   padding: 28px;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  position: relative;
   max-width: 460px;
   margin: 0 auto;
+  /* Neon UFO glow effect */
+  box-shadow: 
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-purple),
+    0 0 60px var(--neon-cyan),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.premium-card-content::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, 
+    var(--neon-blue) 0%, 
+    var(--neon-purple) 50%, 
+    var(--neon-cyan) 100%);
+  opacity: 0.5;
+  z-index: -1;
+  filter: blur(15px);
+  animation: neonPulse 3s ease-in-out infinite;
 }
 
 .premium-title {
   font-size: 1.5em;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 12px;
   text-align: center;
   letter-spacing: -0.01em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .premium-tagline {
   font-size: 1.1em;
-  font-weight: 400;
-  color: var(--color-text-secondary);
+  font-weight: 500;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   text-align: center;
   line-height: 1.5;
   font-style: italic;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .premium-body {
   font-size: 15px;
   line-height: 1.6;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   margin-bottom: 24px;
   text-align: left;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .premium-bullets {
@@ -354,10 +386,12 @@ body {
 .premium-bullets li {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   margin-bottom: 12px;
   padding-left: 24px;
   position: relative;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
 }
 
 .premium-bullets li:before {
@@ -375,18 +409,21 @@ body {
 
 .premium-invitation {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 8px;
   text-align: center;
   font-style: italic;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .premium-subtext {
   font-size: 13px;
-  color: var(--color-text-muted);
+  color: var(--color-text-primary);
   margin-bottom: 0;
   text-align: center;
+  opacity: 0.9;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .premium-btn {
@@ -404,18 +441,54 @@ body {
   padding: 24px;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  position: relative;
   max-width: 460px;
   margin: 0 auto;
+  /* Neon UFO glow effect */
+  box-shadow: 
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-purple),
+    0 0 60px var(--neon-cyan),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.input-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, 
+    var(--neon-blue) 0%, 
+    var(--neon-purple) 50%, 
+    var(--neon-cyan) 100%);
+  opacity: 0.5;
+  z-index: -1;
+  filter: blur(15px);
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 0.5;
+    filter: blur(15px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(20px);
+  }
 }
 
 .input-label {
   display: block;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   margin-bottom: 12px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .date-input {
@@ -496,25 +569,60 @@ body {
   padding: 32px 28px;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  position: relative;
   max-width: 460px;
   margin: 0 auto;
   text-align: center;
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out);
+  /* Neon UFO glow effect */
+  box-shadow: 
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-purple),
+    0 0 60px var(--neon-cyan),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.result-content::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, 
+    var(--neon-blue) 0%, 
+    var(--neon-purple) 50%, 
+    var(--neon-cyan) 100%);
+  opacity: 0.5;
+  z-index: -1;
+  filter: blur(15px);
+  animation: neonPulse 3s ease-in-out infinite;
 }
 
 .result-content:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: 
+    0 0 30px var(--neon-blue),
+    0 0 50px var(--neon-purple),
+    0 0 70px var(--neon-cyan),
+    0 25px 70px rgba(0, 0, 0, 0.7);
+}
+
+.result-content:hover::before {
+  opacity: 0.8;
+  filter: blur(20px);
 }
 
 .day-number {
   font-size: 38px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
   margin-bottom: 8px;
   line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .duck-image {
@@ -524,7 +632,17 @@ body {
   margin: 16px auto;
   display: block;
   border-radius: 12px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  /* White background behind black icon for contrast */
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px;
+  /* Ensure ducks are visible with proper brightness and glow */
+  filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 15px rgba(122, 167, 255, 0.6)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  /* Ensure proper rendering */
+  image-rendering: auto;
+  /* Add a subtle glow effect */
+  box-shadow: 
+    0 0 20px rgba(122, 167, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .swipe-hint {
@@ -571,18 +689,20 @@ body {
 
 .day-phase {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-accent);
   margin-bottom: 12px;
+  text-shadow: 0 0 10px rgba(122, 167, 255, 0.5);
 }
 
 .day-description {
   font-size: 17px;
-  font-weight: 450;
-  line-height: 1.35;
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* ================================
@@ -614,10 +734,34 @@ body {
   padding: 0;
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  position: relative;
   max-width: 460px;
   margin: 0 auto;
   overflow: hidden;
+  /* Neon UFO glow effect */
+  box-shadow: 
+    0 0 20px var(--neon-blue),
+    0 0 40px var(--neon-purple),
+    0 0 60px var(--neon-cyan),
+    0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.day-image-content::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, 
+    var(--neon-blue) 0%, 
+    var(--neon-purple) 50%, 
+    var(--neon-cyan) 100%);
+  opacity: 0.5;
+  z-index: -1;
+  filter: blur(15px);
+  animation: neonPulse 3s ease-in-out infinite;
 }
 
 .day-full-image {
