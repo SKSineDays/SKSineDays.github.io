@@ -569,10 +569,13 @@
   </style>
 </head>
 <body>
-  <div id="notifications" class="notifications"></div>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <div id="app">
-    <div id="loading" class="loading" style="display:none;">
+  <div id="notifications" class="notifications" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="main-content">
+    <div id="app">
+    <div id="loading" class="loading" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
       Loading...
     </div>
     <!-- Login Section -->
@@ -591,11 +594,11 @@
         <form id="login-form">
           <div class="form-group">
             <label for="login-email">Email Address</label>
-            <input type="email" id="login-email" placeholder="your@email.com" required>
+            <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email">
           </div>
 
           <button type="submit" class="btn btn-primary">Send Magic Link</button>
-          <div id="login-status" class="status-message" style="display: none;"></div>
+          <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
         </form>
       </div>
     </section>
@@ -672,7 +675,13 @@
         <div id="calendars-section"></div>
       </div>
     </section>
-  </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <a href="/accessibility.html">Accessibility</a>
+  </footer>
 
   <!-- Load Supabase from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

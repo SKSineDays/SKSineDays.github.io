@@ -54,6 +54,12 @@ export class SineDayUI {
     this.touchStartX = 0;
     this.isDragging = false;
 
+    // Modal state
+    this._modalOpen = false;
+    this._lastFocus = null;
+    this._modalFocusables = [];
+    this._boundModalKeydown = null;
+
     // Initialize
     this.init();
   }
@@ -129,7 +135,7 @@ export class SineDayUI {
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.closeInfoModal();
+      if (e.key === 'Escape' && this._modalOpen) this.closeInfoModal();
     });
 
     // Swipe gesture on result card
@@ -386,6 +392,7 @@ export class SineDayUI {
     if (this.elements.todayDuck) {
       const duckUrl = duckUrlFromSinedayNumber(result.day);
       this.elements.todayDuck.src = duckUrl;
+      this.elements.todayDuck.alt = `SineDuck for SineDay ${result.day}`;
 
       // Add error handler for failed image loads
       this.elements.todayDuck.onerror = () => {
@@ -411,6 +418,7 @@ export class SineDayUI {
     // Update day image card
     if (this.elements.dayImage) {
       this.elements.dayImage.src = result.imageUrl;
+      this.elements.dayImage.alt = `Full image for SineDay ${result.day}`;
       
       // Add error handler for failed image loads
       this.elements.dayImage.onerror = () => {
@@ -699,28 +707,110 @@ export class SineDayUI {
     this.openInfoModal();
   }
 
+  /**
+   * Get focusable elements within a container
+   */
+  getFocusableElements(rootEl) {
+    if (!rootEl) return [];
+    return Array.from(
+      rootEl.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(el => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden'));
+  }
+
+  /**
+   * Set app content as inert (or aria-hidden fallback)
+   */
+  setAppInert(isInert) {
+    const header = document.querySelector('header.top-bar');
+    const main = document.querySelector('main.main-content');
+    const targets = [header, main].filter(Boolean);
+
+    targets.forEach(el => {
+      // Prefer inert when available
+      if ('inert' in el) {
+        el.inert = isInert;
+      } else {
+        // Fallback: aria-hidden (not perfect, but helpful)
+        el.setAttribute('aria-hidden', isInert ? 'true' : 'false');
+      }
+    });
+  }
+
+  /**
+   * Handle keyboard events in modal (focus trap + Escape)
+   */
+  handleModalKeydown(e) {
+    if (!this._modalOpen) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.closeInfoModal();
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+
+    const focusables = this._modalFocusables || [];
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   openInfoModal() {
     const modal = this.elements.infoModal;
     if (!modal) return;
 
+    this._lastFocus = document.activeElement;
+    this._modalOpen = true;
+
+    document.body.classList.add('modal-open');
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
 
-    // Move focus for accessibility
-    if (this.elements.infoModalClose) {
-      this.elements.infoModalClose.focus();
-    }
+    this.setAppInert(true);
+
+    const panel = modal.querySelector('.sd-modal-panel');
+    this._modalFocusables = this.getFocusableElements(panel);
+
+    document.addEventListener('keydown', this._boundModalKeydown = (e) => this.handleModalKeydown(e));
+
+    // Focus first focusable element (close button is ideal)
+    const focusTarget = this.elements.infoModalClose || this._modalFocusables[0];
+    if (focusTarget) focusTarget.focus();
   }
 
   closeInfoModal() {
     const modal = this.elements.infoModal;
-    if (!modal) return;
+    if (!modal || !this._modalOpen) return;
 
+    this._modalOpen = false;
+
+    document.body.classList.remove('modal-open');
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
 
-    // Return focus to the info button
-    if (this.elements.infoBtn) {
+    this.setAppInert(false);
+
+    if (this._boundModalKeydown) {
+      document.removeEventListener('keydown', this._boundModalKeydown);
+      this._boundModalKeydown = null;
+    }
+
+    // Restore focus
+    if (this._lastFocus && typeof this._lastFocus.focus === 'function') {
+      this._lastFocus.focus();
+    } else if (this.elements.infoBtn) {
       this.elements.infoBtn.focus();
     }
   }

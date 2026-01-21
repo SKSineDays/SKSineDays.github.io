@@ -1035,3 +1035,56 @@ body.loading {
 .sd-modal-list li {
   margin: 6px 0;
 }
+
+/* ================================
+   Skip Link (Keyboard Users)
+   ================================ */
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 10px 12px;
+  background: rgba(5, 6, 10, 0.95);
+  border: 1px solid rgba(122, 167, 255, 0.45);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  z-index: 10000;
+  transform: translateY(-200%);
+  transition: transform 160ms ease;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ================================
+   Footer
+   ================================ */
+
+.site-footer {
+  padding: 18px 16px calc(18px + var(--safe-area-bottom));
+  text-align: center;
+  opacity: 0.85;
+}
+
+.site-footer a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer a:hover {
+  color: var(--color-text-primary);
+}
+
+/* ================================
+   Prevent Background Scroll When Modal Open
+   ================================ */
+
+body.modal-open {
+  overflow: hidden;
+}
