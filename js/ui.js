@@ -69,9 +69,6 @@ export class SineDayUI {
     // Bind event listeners
     this.bindEvents();
 
-    // Initialize parallax scrolling for background
-    this.initParallax();
-
     // Check for saved birthdate
     this.loadSavedBirthdate();
 
@@ -131,45 +128,6 @@ export class SineDayUI {
           this.resetToInput();
         }
       });
-    }
-
-    // Scroll event for parallax background
-    this.mainContent = document.querySelector('.main-content');
-    if (this.mainContent) {
-      this.mainContent.addEventListener('scroll', () => this.handleParallaxScroll(), { passive: true });
-      // Also handle window scroll as fallback
-      window.addEventListener('scroll', () => this.handleParallaxScroll(), { passive: true });
-    }
-  }
-
-  /**
-   * Initialize parallax scrolling effect
-   */
-  initParallax() {
-    // Parallax speed: 69% slower = 31% of normal scroll speed
-    this.parallaxSpeed = 0.31;
-    this.lastScrollY = 0;
-    this.ticking = false;
-  }
-
-  /**
-   * Handle parallax scroll for background image
-   */
-  handleParallaxScroll() {
-    if (!this.ticking) {
-      window.requestAnimationFrame(() => {
-        const scrollY = this.mainContent ? this.mainContent.scrollTop : window.scrollY;
-        
-        // Apply parallax transform to background image (only in hero-mode)
-        if (this.elements.backgroundImage && this.elements.backgroundImage.classList.contains('hero-mode')) {
-          const parallaxOffset = scrollY * this.parallaxSpeed;
-          this.elements.backgroundImage.style.transform = `translateY(${parallaxOffset}px)`;
-        }
-        
-        this.lastScrollY = scrollY;
-        this.ticking = false;
-      });
-      this.ticking = true;
     }
   }
 
@@ -514,10 +472,6 @@ export class SineDayUI {
    */
   updateBackgroundImage(imageUrl) {
     if (!this.elements.backgroundImage) return;
-
-    // Remove hero-mode class to ensure day images show properly
-    this.elements.backgroundImage.classList.remove('hero-mode');
-    this.elements.backgroundImage.classList.remove('fade-out');
 
     // Create new image element
     const newImage = document.createElement('div');
