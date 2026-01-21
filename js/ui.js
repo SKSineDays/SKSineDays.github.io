@@ -291,6 +291,11 @@ export class SineDayUI {
           this.elements.signupStatus.style.color = '#4CAF50';
         }
 
+        // Redirect to sineday.app after a short delay
+        setTimeout(() => {
+          window.location.href = 'https://sineday.app';
+        }, 2000);
+
         // Disable button and inputs after successful signup
         if (this.elements.subscribeBtn) {
           this.elements.subscribeBtn.disabled = true;
