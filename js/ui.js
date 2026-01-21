@@ -515,6 +515,10 @@ export class SineDayUI {
   updateBackgroundImage(imageUrl) {
     if (!this.elements.backgroundImage) return;
 
+    // Remove hero-mode class to ensure day images show properly
+    this.elements.backgroundImage.classList.remove('hero-mode');
+    this.elements.backgroundImage.classList.remove('fade-out');
+
     // Create new image element
     const newImage = document.createElement('div');
     newImage.className = 'background-image-layer';
