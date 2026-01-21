@@ -625,13 +625,17 @@ body {
   margin: 16px auto;
   display: block;
   border-radius: 12px;
+  /* White background behind black icon for contrast */
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px;
   /* Ensure ducks are visible with proper brightness and glow */
   filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 15px rgba(122, 167, 255, 0.6)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
   /* Ensure proper rendering */
   image-rendering: auto;
-  background: transparent;
   /* Add a subtle glow effect */
-  box-shadow: 0 0 20px rgba(122, 167, 255, 0.3);
+  box-shadow: 
+    0 0 20px rgba(122, 167, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .swipe-hint {
