@@ -77,8 +77,8 @@ body {
 /* Hero background for home screen (input state) */
 .background-image-container.hero-mode {
   background-image: url('SineDay Main BG.png');
-  background-size: cover;
-  background-position: center;
+  background-size: 50%;
+  background-position: center top;
   background-repeat: no-repeat;
   filter: blur(8px) brightness(0.5);
   opacity: 1;
