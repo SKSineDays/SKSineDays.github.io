@@ -41,6 +41,12 @@ export class DuckPond {
     this.h = 320;
     this.dpr = window.devicePixelRatio || 1;
 
+    // Stars, ripples, and double-tap tracking
+    this.stars = [];
+    this.starCount = 0;
+    this.ripples = [];           // for burst feedback rings
+    this.lastTap = { t: 0, id: null }; // double-tap tracking
+
     this.pointer = {
       active: false,
       id: null,
@@ -103,6 +109,9 @@ export class DuckPond {
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
+    // Reseed stars on resize
+    this._seedStars();
   }
 
   _getImage(url) {
@@ -144,7 +153,9 @@ export class DuckPond {
       vx: (Math.random() - 0.5) * 160,
       vy: (Math.random() - 0.5) * 120,
       seedA: Math.random() * Math.PI * 2,
-      seedB: Math.random() * Math.PI * 2
+      seedB: Math.random() * Math.PI * 2,
+      pinned: false,
+      pulseSeed: Math.random() * Math.PI * 2
     };
   }
 
@@ -211,6 +222,65 @@ export class DuckPond {
     return picked;
   }
 
+  _seedStars() {
+    // density-based count (cheap)
+    const target = Math.floor((this.w * this.h) / 16000); // tweak density here
+    this.starCount = clamp(target, 35, 120);
+
+    this.stars = Array.from({ length: this.starCount }).map(() => ({
+      x: Math.random() * this.w,
+      y: Math.random() * this.h,
+      r: 0.6 + Math.random() * 1.6,
+      a: 0.10 + Math.random() * 0.25,
+      tw: 0.6 + Math.random() * 1.8,
+      ph: Math.random() * Math.PI * 2
+    }));
+  }
+
+  _drawStars(t) {
+    const ctx = this.ctx;
+    ctx.save();
+    // keep it subtle
+    for (const s of this.stars) {
+      const twinkle = 0.65 + 0.35 * Math.sin(t * 0.0015 * s.tw + s.ph);
+      const alpha = s.a * twinkle;
+
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  _burst(x, y) {
+    const radius = Math.min(this.w, this.h) * 0.34;
+    const strength = 900; // tweak power
+
+    for (const d of this.ducks.values()) {
+      if (d.pinned) continue;
+
+      const dx = d.x - x;
+      const dy = d.y - y;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= 0.001 || dist > radius) continue;
+
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      const falloff = 1 - dist / radius;
+      const impulse = strength * falloff;
+
+      d.vx += nx * impulse;
+      d.vy += ny * impulse;
+    }
+
+    // ripple feedback
+    this.ripples.push({ x, y, t0: performance.now() });
+    this.setStatus("Burst ✨");
+  }
+
   _canvasPointFromEvent(e) {
     const rect = this.canvas.getBoundingClientRect();
     return {
@@ -224,7 +294,11 @@ export class DuckPond {
 
     const { x, y } = this._canvasPointFromEvent(e);
     const duck = this._pickDuck(x, y);
-    if (!duck) return;
+    
+    if (!duck) {
+      this._burst(x, y);
+      return;
+    }
 
     this.pointer.active = true;
     this.pointer.id = e.pointerId;
@@ -278,11 +352,23 @@ export class DuckPond {
     if (!this.pointer.active || e.pointerId !== this.pointer.id) return;
 
     const duck = this.ducks.get(this.pointer.duckId);
+    const now = performance.now();
+    
     if (duck) {
-      // Throw impulse
-      duck.vx = clamp(this.pointer.vx, -1200, 1200);
-      duck.vy = clamp(this.pointer.vy, -1200, 1200);
-      this.setStatus(`${duck.name} launched 🚀`);
+      const isDouble = (now - this.lastTap.t) < 280 && this.lastTap.id === duck.id;
+      this.lastTap = { t: now, id: duck.id };
+
+      if (isDouble) {
+        duck.pinned = !duck.pinned;
+        duck.vx = 0;
+        duck.vy = 0;
+        this.setStatus(duck.pinned ? `${duck.name} pinned 📍` : `${duck.name} unpinned`);
+      } else {
+        // normal throw impulse (your existing throw)
+        duck.vx = clamp(this.pointer.vx, -1200, 1200);
+        duck.vy = clamp(this.pointer.vy, -1200, 1200);
+        this.setStatus(`${duck.name} launched 🚀`);
+      }
     }
 
     this.pointer.active = false;
@@ -299,6 +385,13 @@ export class DuckPond {
 
     // Gentle "space drift" (smooth)
     for (const d of ducksArr) {
+      // Skip physics for pinned ducks
+      if (d.pinned) {
+        d.vx = 0;
+        d.vy = 0;
+        continue;
+      }
+
       if (this.pointer.active && this.pointer.duckId === d.id) continue;
 
       const ax = Math.sin(t * 0.001 + d.seedA) * 18;
@@ -384,15 +477,74 @@ export class DuckPond {
     ctx.fillRect(0, 0, this.w, this.h);
     ctx.restore();
 
-    // Ducks
+    // Stars behind ducks
+    this._drawStars(performance.now());
+
+    // Burst ripples (cheap visual feedback)
+    const now = performance.now();
+    this.ripples = this.ripples.filter(r => now - r.t0 < 700);
+    for (const r of this.ripples) {
+      const age = (now - r.t0) / 700; // 0..1
+      const rad = 12 + age * 140;
+
+      ctx.save();
+      ctx.globalAlpha = (1 - age) * 0.18;
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, rad, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Ducks with badges, halos, glows, and beat pulse
     for (const d of this.ducks.values()) {
       // Only draw if image is loaded
       if (!d.img.complete || d.img.naturalWidth === 0) continue;
-      
-      const size = d.r * 2;
+
+      const t = performance.now();
+      const beat = d.pinned ? 1 : (1 + 0.045 * Math.sin(t * 0.004 + d.pulseSeed));
+      const size = (d.r * 2) * beat;
+
+      // Pinned halo ring
+      if (d.pinned) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r * 1.22, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "rgba(255,255,255,0.55)";
+        ctx.shadowBlur = 20;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // White badge behind duck
       ctx.save();
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r * 1.08, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+
+      // add glow for floating ducks
+      if (!d.pinned) {
+        ctx.shadowColor = "rgba(255,255,255,0.20)";
+        ctx.shadowBlur = 16;
+      } else {
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "rgba(255,255,255,0.10)";
+      }
+
+      ctx.fill();
+      ctx.restore();
+
+      // Duck image (beat sizing)
+      ctx.save();
+      if (!d.pinned) {
+        ctx.shadowColor = "rgba(255,255,255,0.18)";
+        ctx.shadowBlur = 14;
+      }
       ctx.globalAlpha = 0.98;
-      ctx.drawImage(d.img, d.x - d.r, d.y - d.r, size, size);
+      ctx.drawImage(d.img, d.x - size / 2, d.y - size / 2, size, size);
       ctx.restore();
     }
   }

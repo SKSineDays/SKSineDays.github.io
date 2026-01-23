@@ -226,7 +226,11 @@ function renderProfiles() {
             </span>
           </div>
           <div class="profile-actions" style="display:flex; gap:10px; align-items:center;">
-            ${duckUrl ? `<img src="${duckUrl}" alt="SineDuck origin day ${originDay}" width="34" height="34" style="border-radius:10px; opacity:0.95;">` : ""}
+            ${duckUrl ? `
+              <div class="duck-avatar" title="Origin Day ${originDay}">
+                <img src="${duckUrl}" alt="SineDuck origin day ${originDay}" width="34" height="34">
+              </div>
+            ` : ""}
             <button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>
           </div>
         </div>
