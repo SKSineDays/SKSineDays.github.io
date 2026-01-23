@@ -44,7 +44,9 @@ export class SineDayUI {
       premiumBtn: document.getElementById('premium-btn'),
       infoModal: document.getElementById('info-modal'),
       infoModalClose: document.getElementById('info-modal-close'),
-      infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop')
+      infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop'),
+      scrollHint: document.getElementById('scroll-hint'),
+      mainContent: document.getElementById('main-content')
     };
 
     // State
@@ -80,6 +82,15 @@ export class SineDayUI {
 
     // Bind event listeners
     this.bindEvents();
+
+    // Add scroll listener to hide hint when user scrolls
+    this._onScroll = () => {
+      // Hide the hint once the user starts exploring downward
+      if (window.scrollY > 120) {
+        this.hideScrollHint();
+      }
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
 
     // Check for saved birthdate
     this.loadSavedBirthdate();
@@ -469,6 +480,17 @@ export class SineDayUI {
     if (this.elements.premiumCard) {
       this.elements.premiumCard.classList.add('results-shown');
     }
+
+    // Feature the Duck (Result Card) after calculation
+    setTimeout(() => {
+      this.showScrollHint();
+      this.scrollToElement(this.elements.resultCard, 90);
+    }, 120);
+
+    // Auto-hide hint after a few seconds even if they don't scroll
+    setTimeout(() => {
+      this.hideScrollHint();
+    }, 4500);
   }
 
   /**
@@ -983,6 +1005,14 @@ export class SineDayUI {
       this.elements.premiumCard.classList.remove('results-shown');
     }
 
+    // Bring the user back to the input section for a clean "new date" reset
+    setTimeout(() => {
+      this.scrollToElement(this.elements.inputContainer, 90);
+    }, 120);
+
+    // Reset scroll hint state
+    this.hideScrollHint();
+
     // Focus on input field after a short delay (for better UX)
     setTimeout(() => {
       if (this.elements.birthdateInput) {
@@ -997,11 +1027,39 @@ export class SineDayUI {
   }
 
   /**
+   * Scroll to an element smoothly
+   */
+  scrollToElement(el, offset = 80) {
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
+  /**
+   * Show scroll hint
+   */
+  showScrollHint() {
+    if (!this.elements.scrollHint) return;
+    this.elements.scrollHint.classList.remove('hidden');
+  }
+
+  /**
+   * Hide scroll hint
+   */
+  hideScrollHint() {
+    if (!this.elements.scrollHint) return;
+    this.elements.scrollHint.classList.add('hidden');
+  }
+
+  /**
    * Cleanup
    */
   destroy() {
     if (this.waveRenderer) {
       this.waveRenderer.destroy();
+    }
+    if (this._onScroll) {
+      window.removeEventListener('scroll', this._onScroll);
     }
   }
 }
