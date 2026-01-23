@@ -566,6 +566,63 @@
     .container:nth-child(3) {
       animation-delay: 0.3s;
     }
+
+    /* Duck Pond Styles */
+    .duck-pond-wrap { margin: 18px 0 10px; }
+    .duck-pond-title { margin: 0; }
+    .duck-pond-subtitle { margin: 6px 0 0; }
+
+    .duck-pond-stage {
+      position: relative;
+      width: 100%;
+      height: 360px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+      transition: height 220ms ease;
+    }
+
+    .duck-pond-stage[data-empty="true"] {
+      height: 120px; /* saves room when empty */
+    }
+
+    #duck-pond-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .duck-pond-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      color: rgba(245,247,255,0.78);
+      pointer-events: none;
+    }
+
+    .duck-pond-status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: rgba(245,247,255,0.75);
+    }
+
+    .profiles-details {
+      margin-top: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .profiles-details > summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: rgba(245,247,255,0.90);
+    }
   </style>
 </head>
 <body>
@@ -632,7 +689,32 @@
         <h2>Your Profiles</h2>
         <p class="text-muted">Manage up to 10 profiles for yourself or others.</p>
 
-        <div id="profiles-list"></div>
+        <!-- Duck Space -->
+        <div class="duck-pond-wrap">
+          <div class="duck-pond-header">
+            <div>
+              <h3 class="duck-pond-title">Your Origin Ducks</h3>
+              <p class="text-muted duck-pond-subtitle">
+                Each profile spawns a duck based on their DOB "origin wave" type. Drag & throw them.
+              </p>
+            </div>
+          </div>
+
+          <div id="duck-pond-stage" class="duck-pond-stage" data-empty="true" aria-label="Interactive duck space">
+            <canvas id="duck-pond-canvas"></canvas>
+            <div id="duck-pond-empty" class="duck-pond-empty">
+              Add a profile to spawn your first duck 🦆
+            </div>
+          </div>
+
+          <div id="duck-pond-status" class="duck-pond-status" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- Keep the list for management + accessibility -->
+        <details class="profiles-details">
+          <summary>Manage profiles (list)</summary>
+          <div id="profiles-list"></div>
+        </details>
 
         <div id="profile-limit-message">
           <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.

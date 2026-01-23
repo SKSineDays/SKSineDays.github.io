@@ -13,11 +13,15 @@ import {
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
+import { DuckPond } from "./duck-pond.js";
+import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
+import { duckUrlFromSinedayNumber } from "./sineducks.js";
 
 // State
 let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
+let duckPond = null;
 
 /**
  * Initialize dashboard on page load
@@ -52,6 +56,10 @@ async function init() {
       currentUser = null;
       currentSubscription = null;
       profiles = [];
+      if (duckPond) {
+        duckPond.destroy();
+        duckPond = null;
+      }
       showLoginView();
     }
   });
@@ -172,6 +180,29 @@ function isPaid() {
 }
 
 /**
+ * Ensure duck pond is initialized
+ */
+function ensureDuckPond() {
+  if (duckPond) return duckPond;
+
+  const canvas = document.getElementById("duck-pond-canvas");
+  const stageEl = document.getElementById("duck-pond-stage");
+  const emptyEl = document.getElementById("duck-pond-empty");
+  const statusEl = document.getElementById("duck-pond-status");
+
+  if (!canvas || !stageEl) return null;
+
+  duckPond = new DuckPond(canvas, {
+    stageEl,
+    emptyEl,
+    statusEl,
+    anchorDate: ORIGIN_ANCHOR_DATE
+  });
+
+  return duckPond;
+}
+
+/**
  * Render profiles list
  */
 function renderProfiles() {
@@ -180,20 +211,28 @@ function renderProfiles() {
 
   if (profiles.length === 0) {
     container.innerHTML = '<p class="text-muted">No profiles yet. Add your first profile below!</p>';
-    return;
-  }
+  } else {
+    container.innerHTML = profiles.map(profile => {
+      const originDay = getOriginTypeForDob(profile.birthdate, ORIGIN_ANCHOR_DATE);
+      const duckUrl = originDay ? duckUrlFromSinedayNumber(originDay) : "";
+      const originLabel = originDay ? `Origin: Day ${originDay}` : "Origin: N/A";
 
-  container.innerHTML = profiles.map(profile => `
-    <div class="profile-item" data-id="${profile.id}">
-      <div class="profile-info">
-        <strong>${escapeHtml(profile.display_name)}</strong>
-        <span class="text-muted">Born: ${profile.birthdate || 'N/A'} | ${profile.timezone || 'N/A'}</span>
-      </div>
-      <div class="profile-actions">
-        <button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>
-      </div>
-    </div>
-  `).join('');
+      return `
+        <div class="profile-item" data-id="${profile.id}">
+          <div class="profile-info">
+            <strong>${escapeHtml(profile.display_name)}</strong>
+            <span class="text-muted">
+              Born: ${profile.birthdate || "N/A"} | ${profile.timezone || "N/A"} | ${originLabel}
+            </span>
+          </div>
+          <div class="profile-actions" style="display:flex; gap:10px; align-items:center;">
+            ${duckUrl ? `<img src="${duckUrl}" alt="SineDuck origin day ${originDay}" width="34" height="34" style="border-radius:10px; opacity:0.95;">` : ""}
+            <button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
   // Update limit message
   const limitMsg = document.getElementById('profile-limit-message');
@@ -206,6 +245,13 @@ function renderProfiles() {
     if (limitMsg) limitMsg.style.display = 'none';
     if (addBtn) addBtn.disabled = false;
   }
+
+  // Update duck pond
+  const stageEl = document.getElementById("duck-pond-stage");
+  if (stageEl) stageEl.dataset.empty = profiles.length === 0 ? "true" : "false";
+
+  if (!duckPond) ensureDuckPond();
+  if (duckPond) duckPond.setProfiles(profiles);
 }
 
 /**
@@ -608,6 +654,10 @@ function showAuthenticatedView() {
   if (userEmailEl) {
     userEmailEl.textContent = currentUser.email;
   }
+
+  // Init duck pond once dashboard is visible (so sizing works)
+  ensureDuckPond();
+  if (duckPond) duckPond.setProfiles(profiles);
 }
 
 /**
