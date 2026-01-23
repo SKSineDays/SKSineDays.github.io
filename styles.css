@@ -79,29 +79,68 @@ body {
   overflow: hidden;
 }
 
-/* Hero background for home screen (input state) */
+/* Hero background for home screen (input state)
+   Adds fullscreen coverage behind the existing centered hero art.
+   The centered hero art remains unchanged (50% desktop / 90% mobile).
+*/
 .background-image-container.hero-mode {
+  position: fixed;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 800ms var(--ease-out);
+}
+
+/* Fullscreen layer (behind) */
+.background-image-container.hero-mode::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('SineDay Main BG.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.22;
+  filter: blur(10px) brightness(0.55) saturate(1.1);
+  transform: scale(1.06);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Existing centered hero art layer (front) — unchanged */
+.background-image-container.hero-mode::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: url('SineDay Main BG.png');
   background-size: 50%;
   background-position: center top;
   background-repeat: no-repeat;
-  filter: brightness(0.8);
   opacity: 1;
-  transition: opacity 800ms var(--ease-out), filter 800ms var(--ease-out);
+  z-index: 1;
+  pointer-events: none;
 }
 
-/* Larger hero background on mobile */
+/* Mobile keeps centered art exactly as you already had it */
 @media (max-width: 767px) {
-  .background-image-container.hero-mode {
+  .background-image-container.hero-mode::after {
     background-size: 90%;
     background-position: center top;
+  }
+
+  .background-image-container.hero-mode::before {
+    opacity: 0.16;
+    filter: blur(12px) brightness(0.5) saturate(1.05);
   }
 }
 
 /* When showing results, fade out hero mode */
 .background-image-container.hero-mode.fade-out {
   opacity: 0;
-  filter: blur(10px) brightness(0.4);
+}
+
+/* Optional: deepen the fullscreen layer as it fades */
+.background-image-container.hero-mode.fade-out::before {
+  filter: blur(14px) brightness(0.35) saturate(1.0);
 }
 
 .background-image-layer {
