@@ -9,7 +9,7 @@
  * - Background image transitions
  */
 
-import { calculateSineDay } from './sineday-engine.js';
+import { calculateSineDay, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
 import { getSupabaseClient, getAccessToken, getCurrentUser } from './supabase-client.js';
@@ -32,6 +32,9 @@ export class SineDayUI {
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
       dayImage: document.getElementById('dayImage'),
+      dayDetailsCard: document.getElementById('day-details-card'),
+      dayDetailsParagraph: document.getElementById('day-details-paragraph'),
+      dayDetailsBullets: document.getElementById('day-details-bullets'),
       emailCard: document.getElementById('email-card'),
       emailInput: document.getElementById('email-input'),
       emailConsent: document.getElementById('email-consent'),
@@ -435,6 +438,21 @@ export class SineDayUI {
     // Show day image card
     this.showDayImageCard();
 
+    // Update day details card
+    const details = getDayDetails(result.day);
+    if (details && this.elements.dayDetailsParagraph && this.elements.dayDetailsBullets) {
+      this.elements.dayDetailsParagraph.textContent = details.paragraph;
+      this.elements.dayDetailsBullets.innerHTML = '';
+      details.bullets.forEach((text) => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        this.elements.dayDetailsBullets.appendChild(li);
+      });
+      this.showDayDetailsCard();
+    } else {
+      this.hideDayDetailsCard();
+    }
+
     // Update background image
     this.updateBackgroundImage(result.imageUrl);
 
@@ -576,6 +594,22 @@ export class SineDayUI {
     if (!this.elements.dayImageCard) return;
 
     this.elements.dayImageCard.classList.remove('visible');
+  }
+
+  /**
+   * Show day details card with animation
+   */
+  showDayDetailsCard() {
+    if (!this.elements.dayDetailsCard) return;
+    this.elements.dayDetailsCard.classList.add('visible');
+  }
+
+  /**
+   * Hide day details card
+   */
+  hideDayDetailsCard() {
+    if (!this.elements.dayDetailsCard) return;
+    this.elements.dayDetailsCard.classList.remove('visible');
   }
 
   /**
@@ -896,6 +930,11 @@ export class SineDayUI {
 
     // Hide day image card
     this.hideDayImageCard();
+
+    // Hide day details card and clear content
+    this.hideDayDetailsCard();
+    if (this.elements.dayDetailsParagraph) this.elements.dayDetailsParagraph.textContent = '';
+    if (this.elements.dayDetailsBullets) this.elements.dayDetailsBullets.innerHTML = '';
 
     // Clear the current day state
     this.currentDay = null;
