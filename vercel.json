@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/stripe-webhook.js": {
+    "api/stripe/webhook.js": {
       "maxDuration": 10
     }
   }
