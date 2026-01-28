@@ -79,32 +79,61 @@ async function handleAuthCallback() {
   const hashParams = new URLSearchParams(url.hash.substring(1));
   const searchParams = new URLSearchParams(url.search);
 
-  // Check for PKCE code parameter
-  if (searchParams.has('code')) {
-    console.log('PKCE code detected, exchanging for session...');
-    try {
-      const client = await getSupabaseClient();
-      const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
+  // Create client early so we can explicitly set the session.
+  const client = await getSupabaseClient();
 
-      if (error) {
-        console.error('Error exchanging code for session:', error);
-      } else {
-        console.log('Session exchanged successfully');
+  // 1) HASH FLOW (implicit): #access_token=...&refresh_token=...
+  const access_token = hashParams.get('access_token');
+  const refresh_token = hashParams.get('refresh_token');
+
+  if (access_token && refresh_token) {
+    console.log('[Auth Callback] Hash tokens detected. Setting session explicitly...');
+
+    const { data, error } = await client.auth.setSession({
+      access_token,
+      refresh_token
+    });
+
+    if (error) {
+      console.error('[Auth Callback] setSession error:', error);
+    } else {
+      console.log('[Auth Callback] Session set OK for user:', data?.session?.user?.email);
+    }
+
+    // Clean URL (remove hash tokens)
+    window.history.replaceState({}, '', '/dashboard.html');
+    return;
+  }
+
+  // 2) PKCE FLOW: ?code=...
+  if (searchParams.has('code')) {
+    console.log('[Auth Callback] PKCE code detected. Exchanging code for session...');
+
+    try {
+      // Prefer passing the full URL; fallback to code only if needed.
+      let result = await client.auth.exchangeCodeForSession(window.location.href);
+
+      if (result?.error) {
+        console.warn('[Auth Callback] exchangeCodeForSession(full url) failed, retrying with code only...');
+        result = await client.auth.exchangeCodeForSession(searchParams.get('code'));
       }
 
-      // Clean up URL
-      window.history.replaceState({}, '', '/dashboard.html');
-    } catch (error) {
-      console.error('Error during PKCE exchange:', error);
+      if (result?.error) {
+        console.error('[Auth Callback] exchangeCodeForSession error:', result.error);
+      } else {
+        console.log('[Auth Callback] PKCE exchange OK');
+      }
+    } catch (e) {
+      console.error('[Auth Callback] PKCE exchange exception:', e);
     }
+
+    // Clean URL (remove code)
+    window.history.replaceState({}, '', '/dashboard.html');
+    return;
   }
-  // Supabase auth uses hash params
-  else if (hashParams.has('access_token')) {
-    console.log('Auth callback detected');
-    // Supabase client will automatically handle this
-    // Just wait a moment for it to process
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
+
+  // 3) No callback params present
+  return;
 }
 
 /**

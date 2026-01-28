@@ -104,14 +104,15 @@ export async function getAccessToken() {
  */
 export async function signInWithEmail(email) {
   const client = await getSupabaseClient();
-  const config = await fetchConfig();
 
-  const redirectUrl = `${config.appUrl}/dashboard.html`;
+  // Always redirect back to the exact origin the user is on.
+  // This prevents "www vs non-www" and preview-domain mismatches on mobile.
+  const origin = window.location.origin;
+  const redirectUrl = `${origin}/dashboard.html`;
 
-  // Debug logging to verify redirect URL
-  console.log('[Magic Link Debug] Config appUrl:', config.appUrl);
+  // Debug logging
+  console.log('[Magic Link Debug] window.location.origin:', origin);
   console.log('[Magic Link Debug] Full redirect URL:', redirectUrl);
-  console.log('[Magic Link Debug] Sending signInWithOtp with emailRedirectTo:', redirectUrl);
 
   const { data, error } = await client.auth.signInWithOtp({
     email,

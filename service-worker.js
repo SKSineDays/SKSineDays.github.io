@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v1';
+const CACHE_NAME = 'sineday-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -101,6 +101,21 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {
+        // JS/CSS: Stale-while-revalidate (serve cache fast, but refresh in background)
+        if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+          const fetchPromise = fetch(request)
+            .then((networkResponse) => {
+              if (networkResponse && networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+              }
+              return networkResponse;
+            })
+            .catch(() => cachedResponse);
+
+          return cachedResponse || fetchPromise;
+        }
+
         // HTML: Network-first (with cache fallback)
         if (request.headers.get('accept').includes('text/html')) {
           return fetch(request)
