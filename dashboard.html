@@ -642,12 +642,70 @@
       height: 34px;
       display: block;
     }
+
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(5,6,10,0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 9999;
+    }
+
+    .auth-overlay-card {
+      width: min(520px, calc(100vw - 40px));
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 18px 18px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      text-align: center;
+    }
+
+    .auth-overlay-title {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-top: 10px;
+    }
+
+    .auth-overlay-sub {
+      margin-top: 6px;
+      color: rgba(245,247,255,0.75);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 3px solid rgba(245,247,255,0.22);
+      border-top-color: rgba(122,167,255,0.95);
+      margin: 0 auto;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <div id="notifications" class="notifications" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="auth-overlay" class="auth-overlay" aria-hidden="true" style="display:none;">
+    <div class="auth-overlay-card" role="status" aria-live="polite" aria-atomic="true">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="auth-overlay-title">Sending magic link…</div>
+      <div class="auth-overlay-sub">Check your inbox (and spam/promotions). Keep this tab open.</div>
+    </div>
+  </div>
 
   <main id="main-content">
     <div id="app">

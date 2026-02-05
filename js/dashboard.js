@@ -29,46 +29,59 @@ let duckPond = null;
 async function init() {
   console.log('Initializing dashboard...');
 
-  // Show loading
-  showLoading();
-
-  // Check for auth callback
-  await handleAuthCallback();
-
-  // Get current session
-  const session = await getCurrentSession();
-  if (session) {
-    currentUser = session.user;
-    await loadUserData();
-    showAuthenticatedView();
-  } else {
-    showLoginView();
-  }
-
-  // Listen to auth changes
-  onAuthStateChange((event, session) => {
-    console.log('Auth state changed:', event);
-    if (event === 'SIGNED_IN' && session) {
-      currentUser = session.user;
-      loadUserData();
-      showAuthenticatedView();
-    } else if (event === 'SIGNED_OUT') {
-      currentUser = null;
-      currentSubscription = null;
-      profiles = [];
-      if (duckPond) {
-        duckPond.destroy();
-        duckPond = null;
-      }
-      showLoginView();
-    }
-  });
-
-  // Set up event listeners
+  // ✅ Always attach UI handlers first
   setupEventListeners();
 
-  // Check for checkout success and poll subscription
-  await checkCheckoutSuccess();
+  // Show loading (optional)
+  showLoading();
+
+  try {
+    // Check for auth callback
+    await handleAuthCallback();
+
+    // Get current session
+    const session = await getCurrentSession();
+
+    if (session) {
+      currentUser = session.user;
+      await loadUserData();
+      showAuthenticatedView();
+    } else {
+      showLoginView();
+    }
+
+    // Listen to auth changes
+    onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event);
+      if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        loadUserData();
+        showAuthenticatedView();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        currentSubscription = null;
+        profiles = [];
+        if (duckPond) {
+          duckPond.destroy();
+          duckPond = null;
+        }
+        showLoginView();
+      }
+    });
+
+    // Check checkout success
+    await checkCheckoutSuccess();
+  } catch (err) {
+    console.error('[Dashboard Init] Failed:', err);
+    showLoginView();
+    showError(
+      err?.message?.includes('config')
+        ? 'Server config failed (/api/config). Check Vercel env vars SUPABASE_URL + SUPABASE_ANON_KEY.'
+        : 'Dashboard init failed. Please refresh.'
+    );
+  } finally {
+    hideLoading?.();
+  }
 }
 
 /**
@@ -394,19 +407,42 @@ function setupEventListeners() {
 async function handleLogin(e) {
   e.preventDefault();
 
-  const email = document.getElementById('login-email').value;
+  const emailInput = document.getElementById('login-email');
+  const email = (emailInput?.value || '').trim();
   const statusEl = document.getElementById('login-status');
+  const overlay = document.getElementById('auth-overlay');
+  const form = document.getElementById('login-form');
+  const submitBtn = form?.querySelector('button[type="submit"]');
+
+  // show status area
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.className = 'status-message info';
+  }
 
   if (!email) {
-    if (statusEl) statusEl.textContent = 'Please enter an email';
+    if (statusEl) statusEl.textContent = 'Please enter an email.';
     return;
   }
 
+  // guard against spam clicks
+  if (form?.dataset?.sending === '1') return;
+  if (form) form.dataset.sending = '1';
+
+  // UI: disable + overlay
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.dataset.originalText = submitBtn.textContent || '';
+    submitBtn.textContent = 'Sending…';
+    submitBtn.setAttribute('aria-busy', 'true');
+  }
+  if (overlay) {
+    overlay.style.display = 'grid';
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
   try {
-    if (statusEl) {
-      statusEl.textContent = 'Sending magic link...';
-      statusEl.className = 'status-message info';
-    }
+    if (statusEl) statusEl.textContent = 'Sending magic link…';
 
     await signInWithEmail(email);
 
@@ -415,14 +451,30 @@ async function handleLogin(e) {
       statusEl.className = 'status-message success';
     }
 
-    // Clear form
-    document.getElementById('login-email').value = '';
+    if (emailInput) emailInput.value = '';
   } catch (error) {
     console.error('Login error:', error);
+
+    const msg =
+      error?.message?.includes('Failed to fetch config') || error?.message?.includes('Config')
+        ? 'Server config error (/api/config). Check Vercel env vars SUPABASE_URL and SUPABASE_ANON_KEY.'
+        : (error?.message || 'Unknown error');
+
     if (statusEl) {
-      statusEl.textContent = 'Failed to send magic link: ' + error.message;
+      statusEl.textContent = `Failed to send magic link: ${msg}`;
       statusEl.className = 'status-message error';
     }
+  } finally {
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.originalText || 'Send Magic Link';
+      submitBtn.removeAttribute('aria-busy');
+    }
+    if (form) form.dataset.sending = '0';
   }
 }
 
@@ -655,6 +707,14 @@ function showLoading() {
   if (loading) loading.style.display = 'block';
   if (loginSection) loginSection.style.display = 'none';
   if (dashboardSection) dashboardSection.style.display = 'none';
+}
+
+/**
+ * Hide loading view
+ */
+function hideLoading() {
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'none';
 }
 
 /**
