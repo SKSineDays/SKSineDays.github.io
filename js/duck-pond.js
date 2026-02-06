@@ -62,11 +62,27 @@ export class DuckPond {
 
     this.reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 
+    // Fullscreen state
+    this.isFullscreen = false;
+    this.fullscreenBtn = null;
+
+    // Performance monitoring
+    this.fps = 60;
+    this.fpsHistory = [];
+    this.lastFpsCheck = performance.now();
+    this.particlesDisabled = false;
+
+    // Gradient animation
+    this.gradientTime = 0;
+
     // Bind
     this._tick = this._tick.bind(this);
     this._onPointerDown = this._onPointerDown.bind(this);
     this._onPointerMove = this._onPointerMove.bind(this);
     this._onPointerUp = this._onPointerUp.bind(this);
+    this._toggleFullscreen = this._toggleFullscreen.bind(this);
+    this._onFullscreenChange = this._onFullscreenChange.bind(this);
+    this._onKeyDown = this._onKeyDown.bind(this);
 
     // Sizing
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -80,6 +96,9 @@ export class DuckPond {
     this.canvas.addEventListener("pointermove", this._onPointerMove);
     this.canvas.addEventListener("pointerup", this._onPointerUp);
     this.canvas.addEventListener("pointercancel", this._onPointerUp);
+
+    // Fullscreen setup
+    this._initFullscreen();
   }
 
   destroy() {
@@ -89,6 +108,108 @@ export class DuckPond {
     this.canvas.removeEventListener("pointermove", this._onPointerMove);
     this.canvas.removeEventListener("pointerup", this._onPointerUp);
     this.canvas.removeEventListener("pointercancel", this._onPointerUp);
+    
+    // Cleanup fullscreen
+    if (this.fullscreenBtn) {
+      this.fullscreenBtn.removeEventListener("click", this._toggleFullscreen);
+    }
+    document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+    document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+    document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+    document.removeEventListener("MSFullscreenChange", this._onFullscreenChange);
+    document.removeEventListener("keydown", this._onKeyDown);
+  }
+
+  _initFullscreen() {
+    // Find fullscreen button
+    this.fullscreenBtn = document.getElementById("duck-pond-fullscreen-btn");
+    if (this.fullscreenBtn) {
+      this.fullscreenBtn.addEventListener("click", this._toggleFullscreen);
+    }
+
+    // Listen for fullscreen changes
+    document.addEventListener("fullscreenchange", this._onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", this._onFullscreenChange);
+    document.addEventListener("mozfullscreenchange", this._onFullscreenChange);
+    document.addEventListener("MSFullscreenChange", this._onFullscreenChange);
+
+    // ESC key to exit fullscreen
+    document.addEventListener("keydown", this._onKeyDown);
+  }
+
+  _onKeyDown(e) {
+    if (e.key === "Escape" && this.isFullscreen) {
+      this._exitFullscreen();
+    }
+  }
+
+  _toggleFullscreen() {
+    if (this.isFullscreen) {
+      this._exitFullscreen();
+    } else {
+      this._enterFullscreen();
+    }
+  }
+
+  _enterFullscreen() {
+    const elem = this.stageEl || document.documentElement;
+    
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
+
+  _exitFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+
+  _onFullscreenChange() {
+    const isFullscreen = !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+
+    this.isFullscreen = isFullscreen;
+    
+    if (this.stageEl) {
+      this.stageEl.dataset.fullscreen = isFullscreen ? "true" : "false";
+    }
+
+    // Hide/show other UI elements
+    const header = document.querySelector(".duck-pond-header");
+    const status = document.querySelector(".duck-pond-status");
+    const subtitle = document.querySelector(".duck-pond-subtitle");
+    
+    if (isFullscreen) {
+      if (header) header.style.display = "none";
+      if (status) status.style.display = "none";
+      if (subtitle) subtitle.style.display = "none";
+      document.body.style.overflow = "hidden";
+    } else {
+      if (header) header.style.display = "";
+      if (status) status.style.display = "";
+      if (subtitle) subtitle.style.display = "";
+      document.body.style.overflow = "";
+    }
+
+    // Resize canvas when fullscreen changes
+    setTimeout(() => this.resize(), 100);
   }
 
   setStatus(text) {
@@ -96,9 +217,16 @@ export class DuckPond {
   }
 
   resize() {
-    const rect = this.stageEl?.getBoundingClientRect();
-    const w = Math.max(280, Math.floor(rect?.width || this.canvas.clientWidth || 600));
-    const h = Math.max(120, Math.floor(rect?.height || this.canvas.clientHeight || 320));
+    // In fullscreen, use viewport dimensions
+    let w, h;
+    if (this.isFullscreen) {
+      w = window.innerWidth;
+      h = window.innerHeight;
+    } else {
+      const rect = this.stageEl?.getBoundingClientRect();
+      w = Math.max(280, Math.floor(rect?.width || this.canvas.clientWidth || 600));
+      h = Math.max(120, Math.floor(rect?.height || this.canvas.clientHeight || 320));
+    }
 
     this.w = w;
     this.h = h;
@@ -110,7 +238,7 @@ export class DuckPond {
     this.canvas.style.height = `${h}px`;
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    // Reseed stars on resize
+    // Reseed stars on resize (with updated count for fullscreen)
     this._seedStars();
   }
 
@@ -223,25 +351,48 @@ export class DuckPond {
   }
 
   _seedStars() {
-    // density-based count (cheap)
-    const target = Math.floor((this.w * this.h) / 16000); // tweak density here
-    this.starCount = clamp(target, 35, 120);
+    // Increased density - more particles
+    const baseDensity = this.isFullscreen ? 8000 : 12000; // More particles in fullscreen
+    const target = Math.floor((this.w * this.h) / baseDensity);
+    this.starCount = clamp(target, 80, 250); // Increased from 35-120 to 80-250
 
     this.stars = Array.from({ length: this.starCount }).map(() => ({
       x: Math.random() * this.w,
       y: Math.random() * this.h,
       r: 0.6 + Math.random() * 1.6,
-      a: 0.10 + Math.random() * 0.25,
+      a: 0.05 + Math.random() * 0.15, // Subtle alpha (0.05-0.20)
       tw: 0.6 + Math.random() * 1.8,
-      ph: Math.random() * Math.PI * 2
+      ph: Math.random() * Math.PI * 2,
+      // Slow drift properties
+      vx: (Math.random() - 0.5) * 8, // Very slow horizontal drift
+      vy: (Math.random() - 0.5) * 6, // Very slow vertical drift
+      driftSeed: Math.random() * Math.PI * 2 // For parallax effect
     }));
   }
 
   _drawStars(t) {
+    if (this.particlesDisabled || this.reduceMotion) return;
+
     const ctx = this.ctx;
     ctx.save();
-    // keep it subtle
+    
+    // Update particle positions with slow drift
+    const dt = 0.016; // ~60fps delta
+    const driftSpeed = this.isFullscreen ? 0.3 : 0.5; // Slower in fullscreen
+    
     for (const s of this.stars) {
+      // Very slow drift with subtle parallax variation
+      const parallax = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 0.0003 + s.driftSeed));
+      s.x += s.vx * dt * driftSpeed * parallax;
+      s.y += s.vy * dt * driftSpeed * parallax;
+
+      // Wrap around edges
+      if (s.x < 0) s.x += this.w;
+      if (s.x > this.w) s.x -= this.w;
+      if (s.y < 0) s.y += this.h;
+      if (s.y > this.h) s.y -= this.h;
+
+      // Twinkle effect
       const twinkle = 0.65 + 0.35 * Math.sin(t * 0.0015 * s.tw + s.ph);
       const alpha = s.a * twinkle;
 
@@ -394,8 +545,10 @@ export class DuckPond {
 
       if (this.pointer.active && this.pointer.duckId === d.id) continue;
 
-      const ax = Math.sin(t * 0.001 + d.seedA) * 18;
-      const ay = Math.cos(t * 0.001 + d.seedB) * 14;
+      // Slower motion in fullscreen (0.85x speed)
+      const motionScale = this.isFullscreen ? 0.85 : 1.0;
+      const ax = Math.sin(t * 0.001 + d.seedA) * 18 * motionScale;
+      const ay = Math.cos(t * 0.001 + d.seedB) * 14 * motionScale;
 
       d.vx += ax * dt;
       d.vy += ay * dt;
@@ -470,15 +623,46 @@ export class DuckPond {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.w, this.h);
 
-    // Subtle "space glass" backdrop
+    // Breathing gradient backdrop (60-90 second cycle)
+    const t = performance.now();
+    this.gradientTime = t * 0.0005; // Slow cycle (~60 seconds for full rotation)
+    
+    // Hue shift: deep blue → indigo → soft teal → back
+    // Using sin wave to smoothly cycle through colors
+    const hueShift = Math.sin(this.gradientTime) * 0.5 + 0.5; // 0 to 1
+    
+    // Create radial gradient with subtle color shift
+    const centerX = this.w * 0.5;
+    const centerY = this.h * 0.5;
+    const maxRadius = Math.hypot(this.w, this.h) * 0.7;
+    
+    // Color stops: deep blue (0) → indigo (0.33) → teal (0.66) → deep blue (1)
+    const hue1 = 220 + hueShift * 40; // 220-260 (blue to indigo)
+    const hue2 = 200 + hueShift * 30; // 200-230 (indigo to teal)
+    const sat1 = 45 + hueShift * 15; // 45-60
+    const sat2 = 35 + hueShift * 20; // 35-55
+    const light1 = 8 + hueShift * 4; // 8-12
+    const light2 = 12 + hueShift * 6; // 12-18
+    
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius);
+    gradient.addColorStop(0, `hsla(${hue1}, ${sat1}%, ${light1}%, 0.15)`);
+    gradient.addColorStop(0.5, `hsla(${hue2}, ${sat2}%, ${light2}%, 0.08)`);
+    gradient.addColorStop(1, `hsla(220, 40%, 6%, 0.25)`);
+    
     ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, this.w, this.h);
+    ctx.restore();
+
+    // Subtle overlay for depth
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = "rgba(255,255,255,0.02)";
     ctx.fillRect(0, 0, this.w, this.h);
     ctx.restore();
 
     // Stars behind ducks
-    this._drawStars(performance.now());
+    this._drawStars(t);
 
     // Burst ripples (cheap visual feedback)
     const now = performance.now();
@@ -581,9 +765,40 @@ export class DuckPond {
     const dt = Math.min(0.033, Math.max(0.001, (t - this.lastT) / 1000));
     this.lastT = t;
 
+    // FPS monitoring and performance guardrails
+    this._updateFPS(t);
+    this._checkPerformance();
+
     this._physicsStep(dt, t);
     this._render();
 
     this.rafId = requestAnimationFrame(this._tick);
+  }
+
+  _updateFPS(t) {
+    const elapsed = t - this.lastFpsCheck;
+    if (elapsed >= 1000) {
+      // Calculate FPS from frame count
+      const frameCount = this.fpsHistory.length;
+      this.fps = frameCount > 0 ? frameCount : 60;
+      this.fpsHistory = [];
+      this.lastFpsCheck = t;
+    } else {
+      this.fpsHistory.push(t);
+    }
+  }
+
+  _checkPerformance() {
+    // Auto-disable particles if FPS drops below 45 for sustained period
+    if (this.fps < 45 && !this.particlesDisabled) {
+      // Check if consistently low (sample last few checks)
+      // For simplicity, disable immediately if below threshold
+      this.particlesDisabled = true;
+      console.log("Particles disabled due to low FPS");
+    } else if (this.fps >= 50 && this.particlesDisabled) {
+      // Re-enable if FPS recovers
+      this.particlesDisabled = false;
+      console.log("Particles re-enabled");
+    }
   }
 }

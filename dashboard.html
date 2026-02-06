@@ -587,10 +587,78 @@
       height: 120px; /* saves room when empty */
     }
 
+    .duck-pond-stage[data-fullscreen="true"] {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      border-radius: 0;
+      border: none;
+      z-index: 9999;
+    }
+
+    .duck-pond-fullscreen-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .duck-pond-fullscreen-btn:hover {
+      background: rgba(0, 0, 0, 0.6);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: rgba(255, 255, 255, 1);
+      transform: scale(1.05);
+    }
+
+    .duck-pond-fullscreen-btn:active {
+      transform: scale(0.95);
+    }
+
+    .duck-pond-fullscreen-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .duck-pond-vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        transparent 60%,
+        rgba(0, 0, 0, 0.15) 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .duck-pond-stage[data-fullscreen="true"] .duck-pond-vignette {
+      opacity: 1;
+    }
+
     #duck-pond-canvas {
       width: 100%;
       height: 100%;
       display: block;
+      position: relative;
+      z-index: 0;
     }
 
     .duck-pond-empty {
@@ -602,12 +670,37 @@
       padding: 14px;
       color: rgba(245,247,255,0.78);
       pointer-events: none;
+      z-index: 2;
     }
 
     .duck-pond-status {
       margin-top: 10px;
       font-size: 14px;
       color: rgba(245,247,255,0.75);
+    }
+
+    /* Hide header and other elements when fullscreen */
+    .duck-pond-stage[data-fullscreen="true"] ~ .duck-pond-status,
+    .duck-pond-stage[data-fullscreen="true"] ~ * .duck-pond-header,
+    .duck-pond-stage[data-fullscreen="true"] ~ * .duck-pond-subtitle {
+      display: none;
+    }
+
+    .duck-pond-stage[data-fullscreen="true"] {
+      position: fixed !important;
+    }
+
+    /* Update fullscreen button icon when active */
+    .duck-pond-stage[data-fullscreen="true"] .duck-pond-fullscreen-btn .fullscreen-enter-icon {
+      display: none;
+    }
+
+    .duck-pond-stage[data-fullscreen="true"] .duck-pond-fullscreen-btn .fullscreen-exit-icon {
+      display: block;
+    }
+
+    .duck-pond-stage:not([data-fullscreen="true"]) .duck-pond-fullscreen-btn .fullscreen-exit-icon {
+      display: none;
     }
 
     .profiles-details {
@@ -778,6 +871,15 @@
           </div>
 
           <div id="duck-pond-stage" class="duck-pond-stage" data-empty="true" aria-label="Interactive duck space">
+            <button id="duck-pond-fullscreen-btn" class="duck-pond-fullscreen-btn" aria-label="Toggle fullscreen" title="Toggle fullscreen">
+              <svg class="fullscreen-enter-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              <svg class="fullscreen-exit-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+              </svg>
+            </button>
+            <div class="duck-pond-vignette"></div>
             <canvas id="duck-pond-canvas"></canvas>
             <div id="duck-pond-empty" class="duck-pond-empty">
               Add a profile to spawn your first duck 🦆
