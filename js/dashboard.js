@@ -88,6 +88,9 @@ async function init() {
  * Handle auth callback (magic link with PKCE support)
  */
 async function handleAuthCallback() {
+  // Defensive log (future-you thanks you)
+  console.log('[Auth Callback] URL:', window.location.href);
+  
   const url = new URL(window.location.href);
   const hashParams = new URLSearchParams(url.hash.substring(1));
   const searchParams = new URLSearchParams(url.search);
