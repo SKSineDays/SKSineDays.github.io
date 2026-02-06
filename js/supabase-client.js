@@ -104,13 +104,17 @@ export async function getAccessToken() {
  */
 export async function signInWithEmail(email) {
   const client = await getSupabaseClient();
+  const config = await fetchConfig();
 
   // Always redirect back to dashboard.html where handleAuthCallback() runs
-  const redirectTo = `${window.location.origin}/dashboard.html`;
+  // Use appUrl from config if available (for production), otherwise use current origin
+  const baseUrl = config.appUrl || window.location.origin;
+  const redirectTo = `${baseUrl}/dashboard.html`;
 
   // Debug logging
-  console.log('[Magic Link Debug] window.location.origin:', window.location.origin);
+  console.log('[Magic Link Debug] Using base URL:', baseUrl);
   console.log('[Magic Link Debug] Full redirect URL:', redirectTo);
+  console.log('[Magic Link Debug] window.location.origin:', window.location.origin);
 
   const { data, error } = await client.auth.signInWithOtp({
     email,

@@ -197,6 +197,28 @@
     <!-- Load Supabase from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Auth callback redirect handler (fallback if Supabase redirects to home instead of dashboard) -->
+    <script type="module">
+      // Check if this is an auth callback and redirect to dashboard
+      (async function() {
+        const url = new URL(window.location.href);
+        const hashParams = new URLSearchParams(url.hash.substring(1));
+        const searchParams = new URLSearchParams(url.search);
+        
+        // Check for auth tokens/codes in URL
+        const hasAuthCallback = 
+          (hashParams.has('access_token') && hashParams.has('refresh_token')) ||
+          searchParams.has('code');
+        
+        if (hasAuthCallback) {
+          console.log('[Index] Auth callback detected, redirecting to dashboard.html');
+          // Preserve the full URL including query params and hash
+          const redirectUrl = `/dashboard.html${url.search}${url.hash}`;
+          window.location.replace(redirectUrl);
+        }
+      })();
+    </script>
+
     <!-- Load JavaScript as modules -->
     <script type="module" src="js/ui.js"></script>
 
