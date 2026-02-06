@@ -19,6 +19,7 @@ export class DuckPond {
    * @param {HTMLElement} [opts.stageEl] - container that controls size
    * @param {HTMLElement} [opts.emptyEl] - overlay text when empty
    * @param {HTMLElement} [opts.statusEl] - aria-live status line
+   * @param {HTMLElement} [opts.scoreEl] - score display element
    * @param {string} [opts.anchorDate] - YYYY-MM-DD
    */
   constructor(canvas, opts = {}) {
@@ -28,6 +29,7 @@ export class DuckPond {
     this.stageEl = opts.stageEl || canvas.parentElement;
     this.emptyEl = opts.emptyEl || null;
     this.statusEl = opts.statusEl || null;
+    this.scoreEl = opts.scoreEl || null;
     this.anchorDate = opts.anchorDate || ORIGIN_ANCHOR_DATE;
 
     this.ducks = new Map(); // id -> duck
@@ -75,6 +77,17 @@ export class DuckPond {
 
     // Gradient animation
     this.gradientTime = 0;
+
+    // Score and orb state
+    this.score = 0;
+    this.scoreSmooth = 0; // optional smoothing if you want
+    this.orb = {
+      active: false,
+      x: 0, y: 0,
+      vx: 0, vy: 0,
+      r: 16,
+      hitCooldown: 0
+    };
 
     // Bind
     this._tick = this._tick.bind(this);
@@ -241,6 +254,9 @@ export class DuckPond {
 
     // Reseed stars on resize (with updated count for fullscreen)
     this._seedStars();
+    
+    // Keep orb in bounds on resize
+    this._ensureOrb();
   }
 
   _getImage(url) {
@@ -360,10 +376,15 @@ export class DuckPond {
     if (this.emptyEl) this.emptyEl.style.display = empty ? "grid" : "none";
 
     if (empty) {
+      this.score = 0;
+      this.orb.active = false;
+      if (this.scoreEl) this.scoreEl.textContent = "0";
       this.setStatus("Add a profile to spawn your first duck.");
       this.stop();
       this._render(); // clears canvas
       return;
+    } else {
+      this._ensureOrb();
     }
 
     const token = ++this._loadToken;
@@ -465,6 +486,213 @@ export class DuckPond {
       ctx.fillStyle = "white";
       ctx.fill();
     }
+    ctx.restore();
+  }
+
+  _ensureOrb() {
+    if (!this.orb) return;
+    if (!this.orb.active) {
+      // spawn when first duck exists
+      if (this.ducks.size > 0) {
+        this.orb.active = true;
+        this.orb.x = this.w * 0.72;
+        this.orb.y = this.h * 0.45;
+        this.orb.vx = 0;
+        this.orb.vy = 0;
+        this.orb.hitCooldown = 0;
+      }
+    } else {
+      // clamp into bounds
+      const r = this.orb.r;
+      this.orb.x = clamp(this.orb.x, r, this.w - r);
+      this.orb.y = clamp(this.orb.y, r, this.h - r);
+    }
+  }
+
+  _orbStep(dt) {
+    if (!this.orb?.active) return;
+
+    const o = this.orb;
+
+    // Cooldown after a "touch" so score dips but no fail
+    o.hitCooldown = Math.max(0, o.hitCooldown - dt);
+
+    let fx = 0, fy = 0;
+
+    const ducksArr = Array.from(this.ducks.values());
+
+    // Avoid each duck, stronger if it's moving fast or is held
+    for (const d of ducksArr) {
+      const dx = o.x - d.x;
+      const dy = o.y - d.y;
+      const dist = Math.hypot(dx, dy) || 0.0001;
+
+      const speed = Math.hypot(d.vx, d.vy);
+      const movingBoost = clamp(speed / 700, 0, 1); // thrown ducks push harder
+
+      const isHeld = this.pointer.active && this.pointer.duckId === d.id;
+
+      // Base avoid radius
+      let avoidR = 140 + d.r + o.r;
+      // Vast avoidance from held duck
+      if (isHeld) avoidR = 340 + d.r + o.r;
+
+      // If duck is moving fast, expand avoidance
+      avoidR += movingBoost * 120;
+
+      if (dist < avoidR) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        // smooth repulsion strength
+        let s = (avoidR - dist) / avoidR;
+
+        // Held duck = stronger (reduced from 4.5)
+        if (isHeld) s *= 3.2;
+
+        // Fast moving ducks add punch (reduced from 1.5)
+        s *= (1.0 + 1.0 * movingBoost);
+
+        // Accumulate force (reduced from 900)
+        fx += nx * (650 * s);
+        fy += ny * (650 * s);
+      }
+
+      // "Touch" detection (no fail): orb got tagged
+      const touchDist = d.r + o.r;
+      if (dist < touchDist) {
+        o.hitCooldown = 0.6;
+        // small pop away
+        const nx = dx / dist;
+        const ny = dy / dist;
+        o.vx += nx * 220;
+        o.vy += ny * 220;
+      }
+    }
+
+    // Gentle "home spring" to center
+    const centerX = this.w * 0.5;
+    const centerY = this.h * 0.5;
+    const dxToCenter = centerX - o.x;
+    const dyToCenter = centerY - o.y;
+    const distToCenter = Math.hypot(dxToCenter, dyToCenter);
+    
+    if (distToCenter > 0.1) {
+      // Spring force increases with distance from center
+      const springStrength = clamp(distToCenter / Math.max(this.w, this.h), 0, 1) * 180;
+      fx += (dxToCenter / distToCenter) * springStrength;
+      fy += (dyToCenter / distToCenter) * springStrength;
+    }
+
+    // Add a tiny wander so it never dead-stops
+    fx += (Math.sin(performance.now() * 0.0012) * 22);
+    fy += (Math.cos(performance.now() * 0.0010) * 18);
+
+    // Integrate
+    o.vx += fx * dt;
+    o.vy += fy * dt;
+
+    // Drag
+    o.vx *= 0.985;
+    o.vy *= 0.985;
+
+    // Cap speed so it feels ASMR not frantic
+    const vmax = this.isFullscreen ? 520 : 620;
+    const v = Math.hypot(o.vx, o.vy);
+    if (v > vmax) {
+      o.vx = (o.vx / v) * vmax;
+      o.vy = (o.vy / v) * vmax;
+    }
+
+    o.x += o.vx * dt;
+    o.y += o.vy * dt;
+
+    // Walls (reduced bounce energy)
+    const r = o.r;
+    const E = 0.75; // Reduced from 0.92 to cap edge-bounce energy
+    if (o.x < r) { o.x = r; o.vx = Math.abs(o.vx) * E; }
+    if (o.x > this.w - r) { o.x = this.w - r; o.vx = -Math.abs(o.vx) * E; }
+    if (o.y < r) { o.y = r; o.vy = Math.abs(o.vy) * E; }
+    if (o.y > this.h - r) { o.y = this.h - r; o.vy = -Math.abs(o.vy) * E; }
+  }
+
+  _scoreStep(dt) {
+    if (!this.orb?.active) return;
+
+    const o = this.orb;
+    const ducksArr = Array.from(this.ducks.values());
+    if (ducksArr.length === 0) return;
+
+    // pressure = closest duck proximity + bonus if held duck is close
+    let nearest = Infinity;
+    let heldBonus = 0;
+
+    for (const d of ducksArr) {
+      const dist = Math.hypot(o.x - d.x, o.y - d.y);
+      nearest = Math.min(nearest, dist);
+
+      const isHeld = this.pointer.active && this.pointer.duckId === d.id;
+      if (isHeld) {
+        // strong bonus when you're actively herding it
+        const nearHeld = clamp(1 - (dist / 360), 0, 1);
+        heldBonus = Math.max(heldBonus, nearHeld);
+      }
+    }
+
+    // base rate
+    let rate = 1.2;
+
+    // orb is near ducks => higher rate (you're "controlling")
+    const pressure = clamp(1 - (nearest / 220), 0, 1);
+    rate += pressure * 6.0;
+
+    // held duck near => big points
+    rate += heldBonus * 10.0;
+
+    // if orb got tagged recently, reduce rate (no fail)
+    if (o.hitCooldown > 0) rate *= 0.25;
+
+    this.score += rate * dt;
+
+    if (this.scoreEl) {
+      this.scoreEl.textContent = String(Math.floor(this.score));
+    }
+  }
+
+  _drawOrb() {
+    if (!this.orb?.active) return;
+    const ctx = this.ctx;
+    const o = this.orb;
+
+    ctx.save();
+
+    // soft glow
+    ctx.shadowColor = "rgba(255, 60, 60, 0.35)";
+    ctx.shadowBlur = 18;
+
+    // outer ring
+    ctx.beginPath();
+    ctx.arc(o.x, o.y, o.r + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 80, 80, 0.55)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // core
+    ctx.beginPath();
+    ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 60, 60, 0.88)";
+    ctx.fill();
+
+    // if recently tagged, show a subtle dim pulse
+    if (o.hitCooldown > 0) {
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.r + 10 * (o.hitCooldown / 0.6), 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
     ctx.restore();
   }
 
@@ -680,6 +908,10 @@ export class DuckPond {
         }
       }
     }
+
+    // Orb avoidance physics and scoring
+    this._orbStep(dt);
+    this._scoreStep(dt);
   }
 
   _render() {
@@ -726,6 +958,9 @@ export class DuckPond {
 
     // Stars behind ducks
     this._drawStars(t);
+
+    // Draw orb before ducks (so ducks appear on top)
+    this._drawOrb();
 
     // Burst ripples (cheap visual feedback)
     const now = performance.now();

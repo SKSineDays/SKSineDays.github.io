@@ -808,6 +808,24 @@
       position: fixed !important;
     }
 
+    .duck-pond-score {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 5;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      user-select: none;
+      pointer-events: none;
+    }
+
     /* Update fullscreen button icon when active */
     .duck-pond-stage[data-fullscreen="true"] .duck-pond-fullscreen-btn .fullscreen-enter-icon {
       display: none;
@@ -1007,6 +1025,7 @@
                 <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
               </svg>
             </button>
+            <div id="duck-pond-score" class="duck-pond-score" aria-label="Score">0</div>
             <div class="duck-pond-vignette"></div>
             <canvas id="duck-pond-canvas"></canvas>
             <div id="duck-pond-empty" class="duck-pond-empty">

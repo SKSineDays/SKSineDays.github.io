@@ -234,6 +234,7 @@ function ensureDuckPond() {
   const stageEl = document.getElementById("duck-pond-stage");
   const emptyEl = document.getElementById("duck-pond-empty");
   const statusEl = document.getElementById("duck-pond-status");
+  const scoreEl = document.getElementById("duck-pond-score");
 
   if (!canvas || !stageEl) return null;
 
@@ -241,6 +242,7 @@ function ensureDuckPond() {
     stageEl,
     emptyEl,
     statusEl,
+    scoreEl,
     anchorDate: ORIGIN_ANCHOR_DATE
   });
 
