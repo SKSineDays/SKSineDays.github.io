@@ -32,6 +32,7 @@ export class DuckPond {
 
     this.ducks = new Map(); // id -> duck
     this.imageCache = new Map(); // url -> Image
+    this._loadToken = 0; // token to cancel stale preloads
 
     this.running = false;
     this.rafId = null;
@@ -119,8 +120,11 @@ export class DuckPond {
 
     const img = new Image();
     img.decoding = "async";
-    img.loading = "lazy";
+    // IMPORTANT: "lazy" can delay canvas sprites; use eager.
+    img.loading = "eager";
+    img.fetchPriority = "high";
     img.src = url;
+
     this.imageCache.set(url, img);
     return img;
   }
@@ -160,6 +164,51 @@ export class DuckPond {
   }
 
   /**
+   * Preload duck images with cancellation token support
+   * @param {number} token - cancellation token
+   */
+  async _preloadDuckImages(token) {
+    const ducks = Array.from(this.ducks.values());
+    const waitOne = (img) =>
+      new Promise((resolve) => {
+        if (img.complete && img.naturalWidth > 0) return resolve();
+        const done = () => resolve();
+        img.addEventListener("load", done, { once: true });
+        img.addEventListener("error", done, { once: true });
+      });
+
+    // Wait for all duck images (and decode when supported)
+    await Promise.all(
+      ducks.map(async (d) => {
+        const img = d.img;
+        await waitOne(img);
+        if (token !== this._loadToken) return;
+        if (img.decode) {
+          try { await img.decode(); } catch {}
+        }
+      })
+    );
+  }
+
+  /**
+   * Hard reload: clear cache, rebuild images, re-sync profiles
+   * @param {Array<{id:string, display_name:string, birthdate:string}>} profiles
+   */
+  reload(profiles) {
+    // Hard reload: clear cache, rebuild images, re-sync profiles
+    this.imageCache.clear();
+
+    // Rebuild each duck's image ref so it fetches again (forces reload)
+    for (const d of this.ducks.values()) {
+      const url = duckUrlFromSinedayNumber(d.originDay);
+      d.img = this._getImage(url);
+    }
+
+    // Sync profiles (adds/removes ducks, triggers preload, etc.)
+    this.setProfiles(profiles);
+  }
+
+  /**
    * Update ducks to match profiles (add/remove only; preserves positions when possible).
    * @param {Array<{id:string, display_name:string, birthdate:string}>} profiles
    */
@@ -189,9 +238,23 @@ export class DuckPond {
       return;
     }
 
-    this.setStatus("Drag and throw the ducks. They collide and float.");
-    if (!this.reduceMotion) this.start();
-    else this._renderStaticGrid();
+    const token = ++this._loadToken;
+
+    this.setStatus("Loading ducks…");
+
+    this._preloadDuckImages(token).then(() => {
+      if (token !== this._loadToken) return;
+
+      this.setStatus("Drag and throw the ducks. They collide and float.");
+      if (!this.reduceMotion) this.start();
+      else this._renderStaticGrid();
+
+      // force a render right after load
+      this._render();
+    });
+
+    // Render immediately with placeholders
+    this._render();
   }
 
   start() {
@@ -499,27 +562,13 @@ export class DuckPond {
 
     // Ducks with badges, halos, glows, and beat pulse
     for (const d of this.ducks.values()) {
-      // Only draw if image is loaded
-      if (!d.img.complete || d.img.naturalWidth === 0) continue;
+      const loaded = d.img.complete && d.img.naturalWidth > 0;
 
       const t = performance.now();
       const beat = d.pinned ? 1 : (1 + 0.045 * Math.sin(t * 0.004 + d.pulseSeed));
       const size = (d.r * 2) * beat;
 
-      // Pinned halo ring
-      if (d.pinned) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.r * 1.22, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255,255,255,0.55)";
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = "rgba(255,255,255,0.55)";
-        ctx.shadowBlur = 20;
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // White badge behind duck
+      // White badge behind duck (always)
       ctx.save();
       ctx.beginPath();
       ctx.arc(d.x, d.y, d.r * 1.08, 0, Math.PI * 2);
@@ -536,6 +585,32 @@ export class DuckPond {
 
       ctx.fill();
       ctx.restore();
+
+      if (!loaded) {
+        // placeholder label while loading
+        ctx.save();
+        ctx.globalAlpha = 0.75;
+        ctx.fillStyle = "rgba(5,6,10,0.85)";
+        ctx.font = "700 13px system-ui, -apple-system, Segoe UI, Roboto";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`Day ${d.originDay}`, d.x, d.y);
+        ctx.restore();
+        continue;
+      }
+
+      // Pinned halo ring
+      if (d.pinned) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r * 1.22, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "rgba(255,255,255,0.55)";
+        ctx.shadowBlur = 20;
+        ctx.stroke();
+        ctx.restore();
+      }
 
       // Duck image (beat sizing)
       ctx.save();

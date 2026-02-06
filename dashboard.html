@@ -532,6 +532,34 @@
         gap: 16px;
       }
 
+      .dash-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      .dash-left {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .dash-right {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
+      .dash-title {
+        font-size: 1.8em;
+      }
+
+      .duck-pond-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
       .notifications {
         right: 16px;
         left: 16px;
@@ -567,10 +595,100 @@
       animation-delay: 0.3s;
     }
 
+    /* Dashboard Topbar Styles */
+    .dash-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 18px;
+      border-radius: 18px;
+      margin: 10px 0 22px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .dash-title {
+      margin: 0;
+      font-size: 2.1em;
+      line-height: 1.1;
+    }
+
+    .dash-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
+    }
+
+    .sub-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      width: fit-content;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(245, 247, 255, 0.85);
+    }
+
+    .sub-pill.is-paid {
+      border-color: rgba(72, 187, 120, 0.35);
+      background: rgba(72, 187, 120, 0.12);
+      color: #9AE6B4;
+    }
+
+    .sub-pill.is-free {
+      border-color: rgba(237, 137, 54, 0.35);
+      background: rgba(237, 137, 54, 0.10);
+      color: #FBD38D;
+    }
+
+    .dash-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dash-user {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .container-compact {
+      padding: 18px;
+    }
+
+    .sub-details > summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: rgba(245, 247, 255, 0.9);
+    }
+
     /* Duck Pond Styles */
     .duck-pond-wrap { margin: 18px 0 10px; }
     .duck-pond-title { margin: 0; }
     .duck-pond-subtitle { margin: 6px 0 0; }
+
+    .duck-pond-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
 
     .duck-pond-stage {
       position: relative;
@@ -739,26 +857,32 @@
 
     <!-- Dashboard Section -->
     <section id="dashboard-section" style="display: none;">
-      <div class="container">
-        <div class="header">
-          <h1>Dashboard</h1>
-          <a href="/" class="back-link">← Back to Home</a>
+      <header class="dash-topbar" role="banner">
+        <div class="dash-left">
+          <h1 class="dash-title">SineDay Sines</h1>
+          <div id="mini-sub-pill" class="sub-pill" aria-live="polite"></div>
         </div>
 
-        <div class="user-info">
-          <div>
-            <strong>Signed in as:</strong>
+        <div class="dash-right">
+          <span class="dash-user">
+            <span class="text-muted">Signed in:</span>
             <span id="user-email">user@example.com</span>
-          </div>
+          </span>
+
+          <button id="upgrade-btn" class="btn btn-primary btn-sm" style="display:none;">Upgrade</button>
+          <button id="billing-btn" class="btn btn-secondary btn-sm" style="display:none;">Manage Billing</button>
           <button id="signout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
+
+          <a href="/" class="back-link">← Home</a>
         </div>
+      </header>
 
-        <!-- Subscription Status -->
-        <h2>Subscription Status</h2>
-        <div id="subscription-status"></div>
-
-        <button id="upgrade-btn" class="btn btn-primary" style="display: none;">Upgrade to Premium</button>
-        <button id="billing-btn" class="btn btn-secondary" style="display: none;">Manage Billing</button>
+      <!-- Optional: keep full status details but collapse it -->
+      <div class="container container-compact">
+        <details class="sub-details">
+          <summary>Subscription</summary>
+          <div id="subscription-status" style="margin-top:12px;"></div>
+        </details>
       </div>
 
       <!-- Profiles Section -->
@@ -775,6 +899,10 @@
                 Each profile spawns a duck based on their DOB "origin wave" type. Drag & throw them.
               </p>
             </div>
+
+            <button id="reload-ducks-btn" class="btn btn-secondary btn-sm" type="button">
+              Reload Ducks
+            </button>
           </div>
 
           <div id="duck-pond-stage" class="duck-pond-stage" data-empty="true" aria-label="Interactive duck space">

@@ -312,6 +312,18 @@ function renderSubscriptionStatus() {
   const billingBtn = document.getElementById('billing-btn');
   const calendarsSection = document.getElementById('calendars-section');
 
+  // Update mini subscription pill
+  const pill = document.getElementById('mini-sub-pill');
+  if (pill) {
+    if (isPaid()) {
+      pill.className = 'sub-pill is-paid';
+      pill.textContent = '✓ Premium Active';
+    } else {
+      pill.className = 'sub-pill is-free';
+      pill.textContent = 'Free Plan';
+    }
+  }
+
   if (!container) return;
 
   if (isPaid()) {
@@ -393,6 +405,15 @@ function setupEventListeners() {
   const billingBtn = document.getElementById('billing-btn');
   if (billingBtn) {
     billingBtn.addEventListener('click', handleBilling);
+  }
+
+  // Reload ducks button
+  const reloadBtn = document.getElementById('reload-ducks-btn');
+  if (reloadBtn) {
+    reloadBtn.addEventListener('click', () => {
+      if (!duckPond) ensureDuckPond();
+      if (duckPond) duckPond.reload(profiles);
+    });
   }
 
   // Delete profile buttons (delegated)
