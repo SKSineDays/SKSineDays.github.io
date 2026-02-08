@@ -259,6 +259,29 @@
       width: 20px;
       height: 20px;
     }
+
+    /* Provider buttons (Apple/Microsoft placeholders) */
+    .btn-provider { justify-content: space-between; }
+    .provider-text { flex: 1; text-align: left; }
+
+    .soon-pill{
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(245,247,255,0.7);
+    }
+
+    .btn-soon{
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-soon:hover{
+      transform: none;
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -270,7 +293,7 @@
 
     <div class="alert alert-info">
       <strong>Sign in to continue</strong><br>
-      Choose your preferred sign-in method below.
+      Sign in with Google. Apple and Microsoft are coming soon.
     </div>
 
     <button id="google-signin-btn" class="btn btn-google">
@@ -283,17 +306,19 @@
       Continue with Google
     </button>
 
-    <div class="divider">or</div>
+    <div class="divider">More providers</div>
 
-    <form id="login-form">
-      <div class="form-group">
-        <label for="login-email">Email Address</label>
-        <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email">
-      </div>
+    <button class="btn btn-google btn-provider btn-soon" type="button" disabled aria-disabled="true">
+      <span class="provider-text">Continue with Apple</span>
+      <span class="soon-pill">Coming soon</span>
+    </button>
 
-      <button type="submit" class="btn btn-primary">Send Magic Link</button>
-      <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
-    </form>
+    <button class="btn btn-google btn-provider btn-soon" type="button" disabled aria-disabled="true">
+      <span class="provider-text">Continue with Microsoft</span>
+      <span class="soon-pill">Coming soon</span>
+    </button>
+
+    <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
   </div>
 
   <!-- Load Supabase from CDN -->

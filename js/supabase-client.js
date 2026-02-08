@@ -100,37 +100,6 @@ export async function getAccessToken() {
 }
 
 /**
- * Sign in with email (magic link)
- */
-export async function signInWithEmail(email) {
-  const client = await getSupabaseClient();
-  const config = await fetchConfig();
-
-  // Redirect to callback page
-  // Use appUrl from config if available (for production), otherwise use current origin
-  const baseUrl = config.appUrl || window.location.origin;
-  const redirectTo = `${baseUrl}/auth/callback.html`;
-
-  // Debug logging
-  console.log('[Magic Link Debug] Using base URL:', baseUrl);
-  console.log('[Magic Link Debug] Full redirect URL:', redirectTo);
-  console.log('[Magic Link Debug] window.location.origin:', window.location.origin);
-
-  const { data, error } = await client.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: redirectTo
-    }
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
-/**
  * Sign in with Google OAuth
  */
 export async function signInWithGoogle() {
