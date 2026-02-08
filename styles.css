@@ -206,6 +206,7 @@ body {
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
 }
 
 .icon-btn:hover {
