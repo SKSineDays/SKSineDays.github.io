@@ -211,9 +211,9 @@
           searchParams.has('code');
         
         if (hasAuthCallback) {
-          console.log('[Index] Auth callback detected, redirecting to dashboard.html');
+          console.log('[Index] Auth callback detected, redirecting to auth/callback.html');
           // Preserve the full URL including query params and hash
-          const redirectUrl = `/dashboard.html${url.search}${url.hash}`;
+          const redirectUrl = `/auth/callback.html${url.search}${url.hash}`;
           window.location.replace(redirectUrl);
         }
       })();

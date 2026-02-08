@@ -9,7 +9,6 @@ import {
   getCurrentSession,
   getCurrentUser,
   getAccessToken,
-  signInWithEmail,
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
@@ -36,9 +35,6 @@ async function init() {
   showLoading();
 
   try {
-    // Check for auth callback
-    await handleAuthCallback();
-
     // Get current session
     const session = await getCurrentSession();
 
@@ -47,7 +43,9 @@ async function init() {
       await loadUserData();
       showAuthenticatedView();
     } else {
-      showLoginView();
+      // Redirect to login page if not authenticated
+      window.location.href = '/login.html';
+      return;
     }
 
     // Listen to auth changes
@@ -65,7 +63,7 @@ async function init() {
           duckPond.destroy();
           duckPond = null;
         }
-        showLoginView();
+        window.location.href = '/login.html';
       }
     });
 
@@ -73,84 +71,13 @@ async function init() {
     await checkCheckoutSuccess();
   } catch (err) {
     console.error('[Dashboard Init] Failed:', err);
-    showLoginView();
-    showError(
-      err?.message?.includes('config')
-        ? 'Server config failed (/api/config). Check Vercel env vars SUPABASE_URL + SUPABASE_ANON_KEY.'
-        : 'Dashboard init failed. Please refresh.'
-    );
+    // Redirect to login on error
+    window.location.href = '/login.html';
   } finally {
     hideLoading?.();
   }
 }
 
-/**
- * Handle auth callback (magic link with PKCE support)
- */
-async function handleAuthCallback() {
-  // Defensive log (future-you thanks you)
-  console.log('[Auth Callback] URL:', window.location.href);
-  
-  const url = new URL(window.location.href);
-  const hashParams = new URLSearchParams(url.hash.substring(1));
-  const searchParams = new URLSearchParams(url.search);
-
-  // Create client early so we can explicitly set the session.
-  const client = await getSupabaseClient();
-
-  // 1) HASH FLOW (implicit): #access_token=...&refresh_token=...
-  const access_token = hashParams.get('access_token');
-  const refresh_token = hashParams.get('refresh_token');
-
-  if (access_token && refresh_token) {
-    console.log('[Auth Callback] Hash tokens detected. Setting session explicitly...');
-
-    const { data, error } = await client.auth.setSession({
-      access_token,
-      refresh_token
-    });
-
-    if (error) {
-      console.error('[Auth Callback] setSession error:', error);
-    } else {
-      console.log('[Auth Callback] Session set OK for user:', data?.session?.user?.email);
-    }
-
-    // Clean URL (remove hash tokens)
-    window.history.replaceState({}, '', '/dashboard.html');
-    return;
-  }
-
-  // 2) PKCE FLOW: ?code=...
-  if (searchParams.has('code')) {
-    console.log('[Auth Callback] PKCE code detected. Exchanging code for session...');
-
-    try {
-      // Prefer passing the full URL; fallback to code only if needed.
-      let result = await client.auth.exchangeCodeForSession(window.location.href);
-
-      if (result?.error) {
-        console.warn('[Auth Callback] exchangeCodeForSession(full url) failed, retrying with code only...');
-        result = await client.auth.exchangeCodeForSession(searchParams.get('code'));
-      }
-
-      if (result?.error) {
-        console.error('[Auth Callback] exchangeCodeForSession error:', result.error);
-      } else {
-        console.log('[Auth Callback] PKCE exchange OK');
-      }
-    } catch (e) {
-      console.error('[Auth Callback] PKCE exchange exception:', e);
-    }
-
-    // Clean URL (remove code)
-    window.history.replaceState({}, '', '/dashboard.html');
-    return;
-  }
-
-  // 3) No callback params present
-  return;
-}
 
 /**
  * Load user data (profiles and subscription)
@@ -379,12 +306,6 @@ function renderSubscriptionStatus() {
  * Set up event listeners
  */
 function setupEventListeners() {
-  // Login form
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLogin);
-  }
-
   // Sign out button
   const signOutBtn = document.getElementById('signout-btn');
   if (signOutBtn) {
@@ -427,82 +348,6 @@ function setupEventListeners() {
   });
 }
 
-/**
- * Handle login form submission
- */
-async function handleLogin(e) {
-  e.preventDefault();
-
-  const emailInput = document.getElementById('login-email');
-  const email = (emailInput?.value || '').trim();
-  const statusEl = document.getElementById('login-status');
-  const overlay = document.getElementById('auth-overlay');
-  const form = document.getElementById('login-form');
-  const submitBtn = form?.querySelector('button[type="submit"]');
-
-  // show status area
-  if (statusEl) {
-    statusEl.style.display = 'block';
-    statusEl.className = 'status-message info';
-  }
-
-  if (!email) {
-    if (statusEl) statusEl.textContent = 'Please enter an email.';
-    return;
-  }
-
-  // guard against spam clicks
-  if (form?.dataset?.sending === '1') return;
-  if (form) form.dataset.sending = '1';
-
-  // UI: disable + overlay
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.dataset.originalText = submitBtn.textContent || '';
-    submitBtn.textContent = 'Sending…';
-    submitBtn.setAttribute('aria-busy', 'true');
-  }
-  if (overlay) {
-    overlay.style.display = 'grid';
-    overlay.setAttribute('aria-hidden', 'false');
-  }
-
-  try {
-    if (statusEl) statusEl.textContent = 'Sending magic link…';
-
-    await signInWithEmail(email);
-
-    if (statusEl) {
-      statusEl.textContent = 'Magic link sent! Check your email.';
-      statusEl.className = 'status-message success';
-    }
-
-    if (emailInput) emailInput.value = '';
-  } catch (error) {
-    console.error('Login error:', error);
-
-    const msg =
-      error?.message?.includes('Failed to fetch config') || error?.message?.includes('Config')
-        ? 'Server config error (/api/config). Check Vercel env vars SUPABASE_URL and SUPABASE_ANON_KEY.'
-        : (error?.message || 'Unknown error');
-
-    if (statusEl) {
-      statusEl.textContent = `Failed to send magic link: ${msg}`;
-      statusEl.className = 'status-message error';
-    }
-  } finally {
-    if (overlay) {
-      overlay.style.display = 'none';
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = submitBtn.dataset.originalText || 'Send Magic Link';
-      submitBtn.removeAttribute('aria-busy');
-    }
-    if (form) form.dataset.sending = '0';
-  }
-}
 
 /**
  * Handle sign out
@@ -727,11 +572,9 @@ async function checkCheckoutSuccess() {
  */
 function showLoading() {
   const loading = document.getElementById('loading');
-  const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
 
   if (loading) loading.style.display = 'block';
-  if (loginSection) loginSection.style.display = 'none';
   if (dashboardSection) dashboardSection.style.display = 'none';
 }
 
@@ -744,28 +587,13 @@ function hideLoading() {
 }
 
 /**
- * Show login view
- */
-function showLoginView() {
-  const loading = document.getElementById('loading');
-  const loginSection = document.getElementById('login-section');
-  const dashboardSection = document.getElementById('dashboard-section');
-
-  if (loading) loading.style.display = 'none';
-  if (loginSection) loginSection.style.display = 'block';
-  if (dashboardSection) dashboardSection.style.display = 'none';
-}
-
-/**
  * Show authenticated view
  */
 function showAuthenticatedView() {
   const loading = document.getElementById('loading');
-  const loginSection = document.getElementById('login-section');
   const dashboardSection = document.getElementById('dashboard-section');
 
   if (loading) loading.style.display = 'none';
-  if (loginSection) loginSection.style.display = 'none';
   if (dashboardSection) dashboardSection.style.display = 'block';
 
   // Update user email display

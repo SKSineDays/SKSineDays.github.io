@@ -106,10 +106,10 @@ export async function signInWithEmail(email) {
   const client = await getSupabaseClient();
   const config = await fetchConfig();
 
-  // Always redirect back to dashboard.html where handleAuthCallback() runs
+  // Redirect to callback page
   // Use appUrl from config if available (for production), otherwise use current origin
   const baseUrl = config.appUrl || window.location.origin;
-  const redirectTo = `${baseUrl}/dashboard.html`;
+  const redirectTo = `${baseUrl}/auth/callback.html`;
 
   // Debug logging
   console.log('[Magic Link Debug] Using base URL:', baseUrl);
@@ -120,6 +120,31 @@ export async function signInWithEmail(email) {
     email,
     options: {
       emailRedirectTo: redirectTo
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Sign in with Google OAuth
+ */
+export async function signInWithGoogle() {
+  const client = await getSupabaseClient();
+  const config = await fetchConfig();
+
+  // Redirect to callback page
+  const baseUrl = config.appUrl || window.location.origin;
+  const redirectTo = `${baseUrl}/auth/callback.html`;
+
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectTo
     }
   });
 
