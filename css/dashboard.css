@@ -770,7 +770,7 @@ option {
 
 .duck-ring__scene {
   position: relative;
-  height: 440px;
+  height: 540px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.10);
   background: rgba(255, 255, 255, 0.03);
@@ -848,7 +848,7 @@ option {
 .duck-stack {
   position: absolute;
   left: 50%;
-  top: 49%;
+  top: 46%;
   transform-style: preserve-3d;
   transform-origin: center center;
 
