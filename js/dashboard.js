@@ -12,7 +12,7 @@ import {
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
-import { DuckPond } from "./duck-pond.js";
+import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 
@@ -20,7 +20,7 @@ import { duckUrlFromSinedayNumber } from "./sineducks.js";
 let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
-let duckPond = null;
+let duckCarousel = null;
 
 /**
  * Initialize dashboard on page load
@@ -59,9 +59,9 @@ async function init() {
         currentUser = null;
         currentSubscription = null;
         profiles = [];
-        if (duckPond) {
-          duckPond.destroy();
-          duckPond = null;
+        if (duckCarousel) {
+          duckCarousel.destroy();
+          duckCarousel = null;
         }
         window.location.href = '/login.html';
       }
@@ -152,28 +152,19 @@ function isPaid() {
 }
 
 /**
- * Ensure duck pond is initialized
+ * Ensure duck carousel is initialized
  */
-function ensureDuckPond() {
-  if (duckPond) return duckPond;
+function ensureDuckCarousel() {
+  if (duckCarousel) return duckCarousel;
 
-  const canvas = document.getElementById("duck-pond-canvas");
-  const stageEl = document.getElementById("duck-pond-stage");
-  const emptyEl = document.getElementById("duck-pond-empty");
-  const statusEl = document.getElementById("duck-pond-status");
-  const scoreEl = document.getElementById("duck-pond-score");
+  const wrapEl = document.getElementById("duck-carousel-wrap");
+  if (!wrapEl) return null;
 
-  if (!canvas || !stageEl) return null;
-
-  duckPond = new DuckPond(canvas, {
-    stageEl,
-    emptyEl,
-    statusEl,
-    scoreEl,
+  duckCarousel = new DuckCarousel(wrapEl, {
     anchorDate: ORIGIN_ANCHOR_DATE
   });
 
-  return duckPond;
+  return duckCarousel;
 }
 
 /**
@@ -224,12 +215,9 @@ function renderProfiles() {
     if (addBtn) addBtn.disabled = false;
   }
 
-  // Update duck pond
-  const stageEl = document.getElementById("duck-pond-stage");
-  if (stageEl) stageEl.dataset.empty = profiles.length === 0 ? "true" : "false";
-
-  if (!duckPond) ensureDuckPond();
-  if (duckPond) duckPond.setProfiles(profiles);
+  // Update duck carousel
+  if (!duckCarousel) ensureDuckCarousel();
+  if (duckCarousel) duckCarousel.setProfiles(profiles);
 }
 
 /**
@@ -328,15 +316,6 @@ function setupEventListeners() {
   const billingBtn = document.getElementById('billing-btn');
   if (billingBtn) {
     billingBtn.addEventListener('click', handleBilling);
-  }
-
-  // Reload ducks button
-  const reloadBtn = document.getElementById('reload-ducks-btn');
-  if (reloadBtn) {
-    reloadBtn.addEventListener('click', () => {
-      if (!duckPond) ensureDuckPond();
-      if (duckPond) duckPond.reload(profiles);
-    });
   }
 
   // Delete profile buttons (delegated)
@@ -602,9 +581,9 @@ function showAuthenticatedView() {
     userEmailEl.textContent = currentUser.email;
   }
 
-  // Init duck pond once dashboard is visible (so sizing works)
-  ensureDuckPond();
-  if (duckPond) duckPond.setProfiles(profiles);
+  // Init duck carousel once dashboard is visible (so sizing works)
+  ensureDuckCarousel();
+  if (duckCarousel) duckCarousel.setProfiles(profiles);
 }
 
 /**
