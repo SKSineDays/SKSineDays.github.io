@@ -1,131 +1,20 @@
 // js/duck-carousel.js
 //
-// Origin Duck Carousel — replaces the interactive duck-pond canvas game
-// with a card carousel showing each profile's origin duck image and a
-// mini sine-wave visualization of their current SineDay.
+// 3D Duck Ring — Origin Duck (circle) + Energy Duck (square) stacked cards
+// in a full 3D ring with drag/inertia spin and perspective.
 //
-// Public API (same shape as DuckPond for easy swap in dashboard.js):
+// Public API:
 //   const carousel = new DuckCarousel(containerEl, opts)
-//   carousel.setProfiles(profiles)   — sync cards to profile array
-//   carousel.reload(profiles)        — hard refresh
-//   carousel.destroy()               — cleanup
+//   carousel.setProfiles(profiles)
+//   carousel.reload(profiles)
+//   carousel.destroy()
 
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
-import { calculateSineDay, getDayData } from "./sineday-engine.js";
+import { calculateSineDayForTimezone, getDayData } from "./sineday-engine.js";
 
 /* ────────────────────────────
-   Mini-wave renderer
-   ──────────────────────────── */
-
-class MiniWave {
-  /** @param {HTMLCanvasElement} canvas */
-  constructor(canvas, markerPos = 0.5) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
-    this.dpr = window.devicePixelRatio || 1;
-    this.markerPos = markerPos;
-    this.t = 0;
-    this.raf = null;
-    this.prefersReducedMotion =
-      window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
-
-    this._resize();
-    this._ro = new ResizeObserver(() => this._resize());
-    this._ro.observe(canvas);
-
-    if (!this.prefersReducedMotion) this.start();
-    else this._draw(0);
-  }
-
-  _resize() {
-    const r = this.canvas.getBoundingClientRect();
-    this.w = r.width;
-    this.h = r.height;
-    this.canvas.width = this.w * this.dpr;
-    this.canvas.height = this.h * this.dpr;
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    if (this.prefersReducedMotion) this._draw(this.t);
-  }
-
-  start() {
-    if (this.raf) return;
-    const loop = (ts) => {
-      this.t = ts;
-      this._draw(ts);
-      this.raf = requestAnimationFrame(loop);
-    };
-    this.raf = requestAnimationFrame(loop);
-  }
-
-  stop() {
-    if (this.raf) cancelAnimationFrame(this.raf);
-    this.raf = null;
-  }
-
-  _yAt(x, phase) {
-    const freq = 1.5;
-    const amp = this.h * 0.3;
-    return this.h / 2 + Math.sin((x / this.w) * Math.PI * 2 * freq + phase) * amp;
-  }
-
-  _draw(ts) {
-    const { ctx, w, h } = this;
-    ctx.clearRect(0, 0, w, h);
-
-    const phase = this.prefersReducedMotion ? 0 : ts * 0.0003;
-    const accent = "#7AA7FF";
-
-    // Echo wave
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(122,167,255,0.15)";
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= w; x += 2) {
-      const y = this._yAt(x, phase + 0.4);
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Main wave
-    ctx.beginPath();
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 1.8;
-    ctx.lineCap = "round";
-    for (let x = 0; x <= w; x += 2) {
-      const y = this._yAt(x, phase);
-      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Marker dot
-    const mx = this.markerPos * w;
-    const my = this._yAt(mx, phase);
-    const r = 4;
-
-    // Glow
-    const grad = ctx.createRadialGradient(mx, my, 0, mx, my, r + 4);
-    grad.addColorStop(0, "rgba(122,167,255,0.35)");
-    grad.addColorStop(1, "rgba(122,167,255,0)");
-    ctx.beginPath();
-    ctx.arc(mx, my, r + 4, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Dot
-    ctx.beginPath();
-    ctx.arc(mx, my, r, 0, Math.PI * 2);
-    ctx.fillStyle = accent;
-    ctx.fill();
-  }
-
-  destroy() {
-    this.stop();
-    this._ro?.disconnect();
-  }
-}
-
-/* ────────────────────────────
-   DuckCarousel
+   DuckCarousel (3D Ring)
    ──────────────────────────── */
 
 export class DuckCarousel {
@@ -138,248 +27,330 @@ export class DuckCarousel {
     this.wrapEl = wrapEl;
     this.anchorDate = opts.anchorDate || ORIGIN_ANCHOR_DATE;
     this.profiles = [];
-    this.cards = [];       // { el, miniWave }
-    this.page = 0;
-    this.perPage = 1;
+    this.cards = []; // { el, index }
+    this.rotation = 0;
+    this.velocity = 0;
+    this.radius = 280;
+    this.raf = null;
 
-    // Build skeleton DOM
     this._buildDOM();
-    this._calcPerPage();
+    this._initPointer();
+    this._initHoverTilt();
+    this._initNav();
 
-    // Resize observer for per-page recalc
-    this._ro = new ResizeObserver(() => {
-      this._calcPerPage();
-      this._goTo(Math.min(this.page, this._maxPage()), false);
-    });
-    this._ro.observe(this.wrapEl);
+    this._ro = new ResizeObserver(() => this._layoutRing());
+    this._ro.observe(this.sceneEl);
   }
 
   /* ── DOM skeleton ── */
 
   _buildDOM() {
+    // Preserve header if present
+    const header = this.wrapEl.querySelector(".duck-carousel-header");
     this.wrapEl.innerHTML = "";
 
-    // Carousel root
-    this.rootEl = _el("div", "duck-carousel");
+    if (header) this.wrapEl.appendChild(header);
 
-    // Viewport
-    this.viewportEl = _el("div", "duck-carousel__viewport");
-    this.trackEl = _el("div", "duck-carousel__track");
-    this.viewportEl.appendChild(this.trackEl);
-    this.rootEl.appendChild(this.viewportEl);
+    this.rootEl = _el("div", "duck-ring");
+    this.rootEl.setAttribute("role", "region");
+    this.rootEl.setAttribute("aria-label", "Origin ducks 3D carousel");
 
-    // Empty state
-    this.emptyEl = _el("div", "duck-carousel__empty");
+    this.sceneEl = _el("div", "duck-ring__scene");
+    this.tiltEl = _el("div", "duck-ring__tilt");
+    this.ringEl = _el("div", "duck-ring__ring");
+    this.ringEl.setAttribute("aria-live", "polite");
+    this.tiltEl.appendChild(this.ringEl);
+
+    const sheenEl = _el("div", "duck-ring__sheen");
+    const vignetteEl = _el("div", "duck-ring__vignette");
+    this.tiltEl.appendChild(sheenEl);
+    this.tiltEl.appendChild(vignetteEl);
+
+    this.sceneEl.appendChild(this.tiltEl);
+
+    this.emptyEl = _el("div", "duck-ring__empty");
     this.emptyEl.textContent = "Add a profile to see your first Origin Duck 🦆";
-    this.viewportEl.appendChild(this.emptyEl);
+    this.tiltEl.appendChild(this.emptyEl);
 
-    // Nav buttons
-    this.prevBtn = _el("button", "duck-carousel__nav duck-carousel__nav--prev");
+    this.rootEl.appendChild(this.sceneEl);
+
+    this.prevBtn = _el("button", "duck-ring__nav duck-ring__nav--prev");
     this.prevBtn.setAttribute("aria-label", "Previous");
     this.prevBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>`;
 
-    this.nextBtn = _el("button", "duck-carousel__nav duck-carousel__nav--next");
+    this.nextBtn = _el("button", "duck-ring__nav duck-ring__nav--next");
     this.nextBtn.setAttribute("aria-label", "Next");
     this.nextBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>`;
 
     this.rootEl.appendChild(this.prevBtn);
     this.rootEl.appendChild(this.nextBtn);
 
-    // Dots
-    this.dotsEl = _el("div", "duck-carousel__dots");
-    this.rootEl.appendChild(this.dotsEl);
-
-    // Attach
     this.wrapEl.appendChild(this.rootEl);
-
-    // Events
-    this.prevBtn.addEventListener("click", () => this._goTo(this.page - 1));
-    this.nextBtn.addEventListener("click", () => this._goTo(this.page + 1));
-
-    // Swipe support
-    this._initTouch();
   }
 
-  /* ── Touch / swipe ── */
+  /* ── Card build (energy square + origin circle stacked) ── */
 
-  _initTouch() {
-    let startX = 0;
-    let startY = 0;
-    let dx = 0;
-    let swiping = false;
+  _buildCard(profile) {
+    const name = profile.display_name || "Unnamed";
+    const originDay = getOriginTypeForDob(profile.birthdate, this.anchorDate);
+    const originUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
 
-    this.viewportEl.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      swiping = false;
-      dx = 0;
-    }, { passive: true });
+    const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const energyResult = calculateSineDayForTimezone(profile.birthdate, tz);
+    const energyDay = energyResult?.day ?? null;
+    const energyUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
 
-    this.viewportEl.addEventListener("touchmove", (e) => {
-      dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-      if (Math.abs(dx) > Math.abs(dy) + 8) swiping = true;
-    }, { passive: true });
+    const card = _el("button", "duck-stack");
+    card.type = "button";
+    card.setAttribute(
+      "aria-label",
+      `${name}: Origin Day ${originDay ?? "?"}, Today Day ${energyDay ?? "?"}`
+    );
 
-    this.viewportEl.addEventListener("touchend", () => {
-      if (!swiping) return;
-      const threshold = 50;
-      if (dx < -threshold) this._goTo(this.page + 1);
-      else if (dx > threshold) this._goTo(this.page - 1);
-    }, { passive: true });
-  }
-
-  /* ── Per-page calc ── */
-
-  _calcPerPage() {
-    const w = this.wrapEl.offsetWidth || 400;
-    if (w >= 960) this.perPage = 3;
-    else if (w >= 640) this.perPage = 2;
-    else this.perPage = 1;
-  }
-
-  _maxPage() {
-    return Math.max(0, Math.ceil(this.cards.length / this.perPage) - 1);
-  }
-
-  /* ── Navigation ── */
-
-  _goTo(idx, animate = true) {
-    const max = this._maxPage();
-    this.page = Math.max(0, Math.min(idx, max));
-
-    const shift = -(this.page * this.perPage * (100 / this.cards.length || 100));
-    this.trackEl.style.transition = animate
-      ? "transform 0.45s cubic-bezier(0.25,0.8,0.25,1)"
-      : "none";
-    this.trackEl.style.transform = `translateX(${shift}%)`;
-
-    this.prevBtn.disabled = this.page <= 0;
-    this.nextBtn.disabled = this.page >= max;
-
-    this._renderDots();
-  }
-
-  _renderDots() {
-    const total = this._maxPage() + 1;
-    this.dotsEl.innerHTML = "";
-    if (total <= 1) return;
-    for (let i = 0; i < total; i++) {
-      const dot = _el("button", "duck-carousel__dot");
-      if (i === this.page) dot.classList.add("is-active");
-      dot.setAttribute("aria-label", `Page ${i + 1}`);
-      dot.addEventListener("click", () => this._goTo(i));
-      this.dotsEl.appendChild(dot);
+    const energy = _el("div", "duck-stack__energy");
+    if (energyUrl) {
+      energy.innerHTML = `<img src="/${energyUrl}" alt="" />`;
+    } else {
+      energy.innerHTML = `<span aria-hidden="true">&nbsp;</span>`;
     }
+
+    const origin = _el("div", "duck-stack__origin");
+    if (originUrl) {
+      origin.innerHTML = `<img src="/${originUrl}" alt="" />`;
+    } else {
+      origin.innerHTML = `<span aria-hidden="true">&nbsp;</span>`;
+    }
+
+    const label = _el("div", "duck-stack__label");
+    label.textContent = name;
+
+    card.append(energy, origin, label);
+    return { el: card };
   }
 
-  /* ── Profile → Card sync ── */
+  /* ── 3D Ring layout ── */
+
+  _layoutRing() {
+    const n = this.cards.length;
+    if (n === 0) return;
+
+    const step = 360 / n;
+    const sceneW = this.sceneEl.clientWidth || 400;
+    this.radius = Math.max(220, Math.min(520, sceneW * 0.38));
+
+    this.ringEl.style.setProperty("--radius", `${this.radius}px`);
+    this.cards.forEach((c, i) => {
+      const angle = i * step;
+      c.el.style.transform = `rotateY(${angle}deg) translateZ(${this.radius}px)`;
+      c.el.dataset.index = String(i);
+    });
+
+    this._applyRotation();
+  }
+
+  _applyRotation() {
+    this.ringEl.style.transform = `translateZ(${-this.radius}px) rotateY(${this.rotation}deg)`;
+    this._updateFrontCard();
+  }
+
+  _setTiltFromPointer(x, y, strength = 1) {
+    const rect = this.sceneEl.getBoundingClientRect();
+    const nx = (x - rect.left) / rect.width;
+    const ny = (y - rect.top) / rect.height;
+
+    const dx = (nx - 0.5) * 2;
+    const dy = (ny - 0.5) * 2;
+
+    const maxTilt = 7 * strength;
+    const tiltY = dx * maxTilt;
+    const tiltX = -dy * (maxTilt * 0.8);
+
+    this.sceneEl.style.setProperty("--tiltX", `${tiltX.toFixed(2)}deg`);
+    this.sceneEl.style.setProperty("--tiltY", `${tiltY.toFixed(2)}deg`);
+    this.sceneEl.style.setProperty("--mx", `${(nx * 100).toFixed(1)}%`);
+    this.sceneEl.style.setProperty("--my", `${(ny * 100).toFixed(1)}%`);
+  }
+
+  _resetTilt() {
+    this.sceneEl.style.setProperty("--tiltX", "0deg");
+    this.sceneEl.style.setProperty("--tiltY", "0deg");
+    this.sceneEl.style.setProperty("--mx", "50%");
+    this.sceneEl.style.setProperty("--my", "50%");
+  }
+
+  _updateFrontCard() {
+    const n = this.cards.length;
+    if (n === 0) return;
+
+    const step = 360 / n;
+    // Normalize rotation to 0..360
+    const r = ((this.rotation % 360) + 360) % 360;
+    // Each card i is at angle i*step; "front" is the one whose angle is closest to 0 (or 360)
+    let bestIdx = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const cardAngle = (i * step + r) % 360;
+      const dist = Math.min(cardAngle, 360 - cardAngle);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    this.cards.forEach((c, i) => {
+      c.el.classList.toggle("is-front", i === bestIdx);
+    });
+  }
+
+  /* ── Pointer drag + inertia ── */
+
+  _initPointer() {
+    let lastX = 0;
+    let lastT = 0;
+    let dragging = false;
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const x = e.clientX;
+      const t = performance.now();
+      const dx = x - lastX;
+      const dt = Math.max(1, t - lastT);
+
+      this.rotation += dx * 0.25;
+      this.velocity = (dx / dt) * 18;
+      this._applyRotation();
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduce) this._setTiltFromPointer(e.clientX, e.clientY, 1.15);
+
+      lastX = x;
+      lastT = t;
+    };
+
+    this.sceneEl.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      this.sceneEl.classList.add("is-dragging");
+      this.sceneEl.setPointerCapture(e.pointerId);
+      lastX = e.clientX;
+      lastT = performance.now();
+      this._stopInertia();
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduce) this._setTiltFromPointer(e.clientX, e.clientY, 1.1);
+    });
+
+    this.sceneEl.addEventListener("pointermove", onMove);
+
+    this.sceneEl.addEventListener("pointerup", () => {
+      dragging = false;
+      this.sceneEl.classList.remove("is-dragging");
+      this._startInertia();
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduce) setTimeout(() => this._resetTilt(), 120);
+    });
+
+    this.sceneEl.addEventListener("pointerleave", () => {
+      if (dragging) {
+        dragging = false;
+        this.sceneEl.classList.remove("is-dragging");
+        this._startInertia();
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!reduce) setTimeout(() => this._resetTilt(), 120);
+      }
+    });
+  }
+
+  /* ── Hover tilt (mouse) ── */
+
+  _initHoverTilt() {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    let raf = null;
+    const onMove = (e) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        this._setTiltFromPointer(e.clientX, e.clientY, 1);
+      });
+    };
+
+    this.sceneEl.addEventListener("mousemove", onMove);
+    this.sceneEl.addEventListener("mouseleave", () => this._resetTilt());
+  }
+
+  _startInertia() {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    const tick = () => {
+      this.velocity *= 0.94;
+      if (Math.abs(this.velocity) < 0.01) {
+        this.raf = null;
+        return;
+      }
+      this.rotation += this.velocity;
+      this._applyRotation();
+      this.raf = requestAnimationFrame(tick);
+    };
+    if (!this.raf) this.raf = requestAnimationFrame(tick);
+  }
+
+  _stopInertia() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = null;
+  }
+
+  /* ── Nav arrows ── */
+
+  _initNav() {
+    const step = () => (this.cards.length ? 360 / this.cards.length : 90);
+    this.prevBtn.addEventListener("click", () => {
+      this._stopInertia();
+      this.velocity = 0;
+      this.rotation += step();
+      this._applyRotation();
+    });
+    this.nextBtn.addEventListener("click", () => {
+      this._stopInertia();
+      this.velocity = 0;
+      this.rotation -= step();
+      this._applyRotation();
+    });
+  }
+
+  /* ── Profile sync ── */
 
   setProfiles(profiles) {
     this.profiles = profiles || [];
-
-    // Destroy old mini-waves
-    for (const c of this.cards) c.miniWave?.destroy();
     this.cards = [];
-    this.trackEl.innerHTML = "";
+
+    // Clear ring
+    const children = Array.from(this.ringEl.children).filter(
+      (c) => !c.classList.contains("duck-ring__empty")
+    );
+    children.forEach((c) => c.remove());
+    this.emptyEl.style.display = this.profiles.length === 0 ? "block" : "none";
 
     if (this.profiles.length === 0) {
-      this.emptyEl.style.display = "block";
       this.prevBtn.style.display = "none";
       this.nextBtn.style.display = "none";
-      this.dotsEl.innerHTML = "";
       return;
     }
 
-    this.emptyEl.style.display = "none";
     this.prevBtn.style.display = "";
     this.nextBtn.style.display = "";
 
     for (const p of this.profiles) {
       const card = this._buildCard(p);
       this.cards.push(card);
-      this.trackEl.appendChild(card.el);
+      this.ringEl.appendChild(card.el);
     }
 
-    // Track width: each card is (100 / perPage)% of viewport, total = cards * that
-    this._applyTrackWidth();
-    this._goTo(0, false);
+    this._layoutRing();
   }
 
-  _applyTrackWidth() {
-    // Make each card fill 1/perPage of the viewport
-    const cardPct = 100 / this.perPage;
-    for (const c of this.cards) {
-      c.el.style.flex = `0 0 ${cardPct}%`;
-      c.el.style.maxWidth = `${cardPct}%`;
-    }
-  }
-
-  _buildCard(profile) {
-    const el = _el("div", "duck-card");
-
-    // Origin day from DOB
-    const originDay = getOriginTypeForDob(profile.birthdate, this.anchorDate);
-    const duckUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
-    const originData = originDay ? getDayData(originDay) : null;
-
-    // Current SineDay (today) from their birthdate
-    const sineResult = calculateSineDay(profile.birthdate);
-    const currentDay = sineResult?.day || null;
-    const currentData = currentDay ? getDayData(currentDay) : null;
-    const wavePos = sineResult?.position ?? 0.5;
-
-    // Image
-    const imgWrap = _el("div", "duck-card__img-wrap");
-    if (duckUrl) {
-      const img = document.createElement("img");
-      img.src = "/" + duckUrl;
-      img.alt = `SineDuck Day ${originDay}`;
-      img.className = "duck-card__img";
-      img.width = 96;
-      img.height = 96;
-      img.loading = "lazy";
-      imgWrap.appendChild(img);
-    }
-    el.appendChild(imgWrap);
-
-    // Name
-    const nameEl = _el("div", "duck-card__name");
-    nameEl.textContent = profile.display_name || "Unnamed";
-    el.appendChild(nameEl);
-
-    // Origin label
-    if (originDay && originData) {
-      const originEl = _el("div", "duck-card__origin");
-      originEl.textContent = `Origin Day ${originDay}`;
-      el.appendChild(originEl);
-
-      const phaseEl = _el("div", "duck-card__phase");
-      phaseEl.textContent = originData.phase;
-      el.appendChild(phaseEl);
-    }
-
-    // Mini wave canvas
-    const waveCanvas = document.createElement("canvas");
-    waveCanvas.className = "duck-card__wave";
-    el.appendChild(waveCanvas);
-    const miniWave = new MiniWave(waveCanvas, wavePos);
-
-    // Current day badge
-    if (currentDay && currentData) {
-      const badge = _el("div", "duck-card__day-badge");
-      badge.textContent = `Today: Day ${currentDay}`;
-      el.appendChild(badge);
-
-      const desc = _el("div", "duck-card__description");
-      desc.textContent = currentData.description;
-      el.appendChild(desc);
-    }
-
-    return { el, miniWave };
-  }
-
-  /* ── Reload (mirrors DuckPond API) ── */
+  /* ── Reload ── */
 
   reload(profiles) {
     this.setProfiles(profiles);
@@ -388,7 +359,7 @@ export class DuckCarousel {
   /* ── Cleanup ── */
 
   destroy() {
-    for (const c of this.cards) c.miniWave?.destroy();
+    this._stopInertia();
     this._ro?.disconnect();
     this.wrapEl.innerHTML = "";
   }

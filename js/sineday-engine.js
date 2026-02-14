@@ -420,6 +420,55 @@ export function getDayData(dayNumber) {
 }
 
 /**
+ * Returns YYYY-MM-DD for "today" in a given timezone
+ *
+ * @param {string} timeZone - IANA timezone (e.g. "America/Chicago")
+ * @returns {string} YYYY-MM-DD
+ */
+function ymdInTimeZone(timeZone) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const y = parts.find(p => p.type === "year").value;
+  const m = parts.find(p => p.type === "month").value;
+  const d = parts.find(p => p.type === "day").value;
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Calculates SineDay for a specific timezone (today in that TZ)
+ * Uses noon UTC anchors to avoid DST edge weirdness
+ *
+ * @param {string} birthdateInput - YYYY-MM-DD from DB
+ * @param {string} timeZone - IANA timezone
+ * @returns {SineDayResult|{error: string}} SineDay result or error object
+ */
+export function calculateSineDayForTimezone(birthdateInput, timeZone) {
+  const validation = validateBirthdate(birthdateInput);
+  if (!validation.valid) return { error: validation.error };
+
+  const birthYMD = birthdateInput;
+  const todayYMD = ymdInTimeZone(timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+
+  const birth = new Date(`${birthYMD}T12:00:00Z`);
+  const today = new Date(`${todayYMD}T12:00:00Z`);
+
+  const daysLived = calculateDaysBetween(birth, today);
+  const day = mapToSineDay(daysLived);
+  const dayData = getDayData(day);
+
+  return {
+    day,
+    position: calculateWavePosition(daysLived),
+    phase: dayData?.phase,
+    description: dayData?.description
+  };
+}
+
+/**
  * Main calculation function - computes SineDay from birthdate
  *
  * @param {string|Date} birthdateInput - User's birthdate
@@ -466,6 +515,7 @@ export function calculateSineDay(birthdateInput) {
  */
 export const SineDayEngine = {
   calculateSineDay,
+  calculateSineDayForTimezone,
   validateBirthdate,
   getDayData,
   getDayDetails,
