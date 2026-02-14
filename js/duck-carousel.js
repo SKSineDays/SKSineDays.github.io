@@ -35,11 +35,13 @@ export class DuckCarousel {
 
     this._buildDOM();
     this._initPointer();
-    this._initHoverTilt();
     this._initNav();
     this._initClickToCenter();
 
-    this._ro = new ResizeObserver(() => this._layoutRing());
+    this._ro = new ResizeObserver(() => {
+      this._layoutRing();
+      this._snapToNearest(false);
+    });
     this._ro.observe(this.sceneEl);
   }
 
@@ -57,21 +59,13 @@ export class DuckCarousel {
     this.rootEl.setAttribute("aria-label", "Origin ducks 3D carousel");
 
     this.sceneEl = _el("div", "duck-ring__scene");
-    this.tiltEl = _el("div", "duck-ring__tilt");
     this.ringEl = _el("div", "duck-ring__ring");
     this.ringEl.setAttribute("aria-live", "polite");
-    this.tiltEl.appendChild(this.ringEl);
-
-    const sheenEl = _el("div", "duck-ring__sheen");
-    const vignetteEl = _el("div", "duck-ring__vignette");
-    this.tiltEl.appendChild(sheenEl);
-    this.tiltEl.appendChild(vignetteEl);
-
-    this.sceneEl.appendChild(this.tiltEl);
+    this.sceneEl.appendChild(this.ringEl);
 
     this.emptyEl = _el("div", "duck-ring__empty");
     this.emptyEl.textContent = "Add a profile to see your first Origin Duck 🦆";
-    this.tiltEl.appendChild(this.emptyEl);
+    this.sceneEl.appendChild(this.emptyEl);
 
     this.rootEl.appendChild(this.sceneEl);
 
@@ -175,29 +169,23 @@ export class DuckCarousel {
     this._updateFrontCard();
   }
 
-  _setTiltFromPointer(x, y, strength = 1) {
-    const rect = this.sceneEl.getBoundingClientRect();
-    const nx = (x - rect.left) / rect.width;
-    const ny = (y - rect.top) / rect.height;
-
-    const dx = (nx - 0.5) * 2;
-    const dy = (ny - 0.5) * 2;
-
-    const maxTilt = 7 * strength;
-    const tiltY = dx * maxTilt;
-    const tiltX = -dy * (maxTilt * 0.8);
-
-    this.sceneEl.style.setProperty("--tiltX", `${tiltX.toFixed(2)}deg`);
-    this.sceneEl.style.setProperty("--tiltY", `${tiltY.toFixed(2)}deg`);
-    this.sceneEl.style.setProperty("--mx", `${(nx * 100).toFixed(1)}%`);
-    this.sceneEl.style.setProperty("--my", `${(ny * 100).toFixed(1)}%`);
+  _stepDeg() {
+    return this.cards.length ? 360 / this.cards.length : 90;
   }
 
-  _resetTilt() {
-    this.sceneEl.style.setProperty("--tiltX", "0deg");
-    this.sceneEl.style.setProperty("--tiltY", "0deg");
-    this.sceneEl.style.setProperty("--mx", "50%");
-    this.sceneEl.style.setProperty("--my", "50%");
+  _nearestIndex() {
+    const n = this.cards.length;
+    if (!n) return 0;
+    const step = this._stepDeg();
+    let idx = Math.round((-this.rotation) / step);
+    idx = ((idx % n) + n) % n;
+    return idx;
+  }
+
+  _normalizeAngle(deg) {
+    let a = ((deg + 180) % 360) - 180;
+    if (a < -180) a += 360;
+    return a;
   }
 
   _updateFrontCard() {
@@ -223,74 +211,55 @@ export class DuckCarousel {
     });
   }
 
-  /* ── Pointer drag + inertia ── */
+  /* ── Pointer drag + snap-on-release ── */
 
   _initPointer() {
-    let lastX = 0;
-    let lastT = 0;
     let dragging = false;
+    let lastX = 0;
     let dragTotal = 0;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const onDown = (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      dragTotal = 0;
+
+      this.sceneEl.setPointerCapture?.(e.pointerId);
+    };
 
     const onMove = (e) => {
       if (!dragging) return;
+
       const x = e.clientX;
-      const t = performance.now();
       const dx = x - lastX;
-      const dt = Math.max(1, t - lastT);
+      lastX = x;
 
       dragTotal += Math.abs(dx);
 
+      // Smooth continuous rotation while dragging
       this.rotation += dx * 0.25;
-      this.velocity = (dx / dt) * 18;
       this._applyRotation();
-
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!reduce) this._setTiltFromPointer(e.clientX, e.clientY, 1.15);
-
-      lastX = x;
-      lastT = t;
     };
 
-    const onRelease = () => {
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+
       this._didDragRecently = dragTotal > 6;
       setTimeout(() => { this._didDragRecently = false; }, 120);
+
+      // Always snap to nearest duck index so we never "rest" on blank space
+      this._snapToNearest(!reduce);
     };
 
-    this.sceneEl.addEventListener("pointerdown", (e) => {
-      dragging = true;
-      dragTotal = 0;
-      this.sceneEl.classList.add("is-dragging");
-      this.sceneEl.setPointerCapture(e.pointerId);
-      lastX = e.clientX;
-      lastT = performance.now();
-      this._stopInertia();
-
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!reduce) this._setTiltFromPointer(e.clientX, e.clientY, 1.1);
-    });
-
+    this.sceneEl.addEventListener("pointerdown", onDown);
     this.sceneEl.addEventListener("pointermove", onMove);
+    this.sceneEl.addEventListener("pointerup", onUp);
+    this.sceneEl.addEventListener("pointercancel", onUp);
 
-    this.sceneEl.addEventListener("pointerup", () => {
-      dragging = false;
-      this.sceneEl.classList.remove("is-dragging");
-      onRelease();
-      this._startInertia();
-
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!reduce) setTimeout(() => this._resetTilt(), 120);
-    });
-
-    this.sceneEl.addEventListener("pointerleave", () => {
-      if (dragging) {
-        dragging = false;
-        this.sceneEl.classList.remove("is-dragging");
-        onRelease();
-        this._startInertia();
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        if (!reduce) setTimeout(() => this._resetTilt(), 120);
-      }
-    });
+    // Prevent touch scrolling from fighting the carousel drag
+    this.sceneEl.style.touchAction = "pan-y";
   }
 
   _initClickToCenter() {
@@ -308,71 +277,55 @@ export class DuckCarousel {
     });
   }
 
-  _goToIndex(idx, snap) {
-    if (!this.cards.length || idx < 0 || idx >= this.cards.length) return;
-    this._stopInertia();
-    this.velocity = 0;
-    const step = 360 / this.cards.length;
-    this.rotation = -idx * step;
-    this._applyRotation();
-  }
+  _goToIndex(index, animate = true) {
+    const n = this.cards.length;
+    if (!n || index < 0 || index >= n) return;
 
-  /* ── Hover tilt (mouse) ── */
+    const step = this._stepDeg();
+    const targetBase = -index * step;
+    const delta = this._normalizeAngle(targetBase - this.rotation);
+    const target = this.rotation + delta;
 
-  _initHoverTilt() {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
-
-    let raf = null;
-    const onMove = (e) => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = null;
-        this._setTiltFromPointer(e.clientX, e.clientY, 1);
-      });
-    };
-
-    this.sceneEl.addEventListener("mousemove", onMove);
-    this.sceneEl.addEventListener("mouseleave", () => this._resetTilt());
-  }
-
-  _startInertia() {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
-
-    const tick = () => {
-      this.velocity *= 0.94;
-      if (Math.abs(this.velocity) < 0.01) {
-        this.raf = null;
-        return;
-      }
-      this.rotation += this.velocity;
+    if (!animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.rotation = target;
       this._applyRotation();
-      this.raf = requestAnimationFrame(tick);
+      return;
+    }
+
+    const start = this.rotation;
+    const change = target - start;
+    const dur = 260;
+    const t0 = performance.now();
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const tick = (now) => {
+      const t = Math.min(1, (now - t0) / dur);
+      this.rotation = start + change * easeOutCubic(t);
+      this._applyRotation();
+      if (t < 1) requestAnimationFrame(tick);
     };
-    if (!this.raf) this.raf = requestAnimationFrame(tick);
+
+    requestAnimationFrame(tick);
   }
 
-  _stopInertia() {
-    if (this.raf) cancelAnimationFrame(this.raf);
-    this.raf = null;
+  _snapToNearest(animate = true) {
+    if (!this.cards.length) return;
+    this._goToIndex(this._nearestIndex(), animate);
   }
 
   /* ── Nav arrows ── */
 
   _initNav() {
-    const step = () => (this.cards.length ? 360 / this.cards.length : 90);
     this.prevBtn.addEventListener("click", () => {
-      this._stopInertia();
-      this.velocity = 0;
-      this.rotation += step();
-      this._applyRotation();
+      const n = this.cards.length || 1;
+      const i = this._nearestIndex();
+      this._goToIndex((i - 1 + n) % n, true);
     });
+
     this.nextBtn.addEventListener("click", () => {
-      this._stopInertia();
-      this.velocity = 0;
-      this.rotation -= step();
-      this._applyRotation();
+      const n = this.cards.length || 1;
+      const i = this._nearestIndex();
+      this._goToIndex((i + 1) % n, true);
     });
   }
 
@@ -405,6 +358,7 @@ export class DuckCarousel {
     }
 
     this._layoutRing();
+    this._snapToNearest(false);
   }
 
   /* ── Reload ── */
@@ -416,7 +370,6 @@ export class DuckCarousel {
   /* ── Cleanup ── */
 
   destroy() {
-    this._stopInertia();
     this._ro?.disconnect();
     this.wrapEl.innerHTML = "";
   }
