@@ -677,6 +677,7 @@ option {
   margin: 0;
   font-size: 34px;
   letter-spacing: -0.03em;
+  line-height: 1.05;
   background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -703,30 +704,83 @@ option {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.dash-head__meta {
-  margin-top: 10px;
+/* Title row: title + pill baseline-aligned */
+.dash-head__title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  position: relative;
 }
 
+/* Subtle green glow under left of title (integrates Premium with typography) */
+.dash-head__title-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 180px;
+  height: 60px;
+  background: radial-gradient(
+    circle at left,
+    rgba(34, 197, 94, 0.15),
+    transparent 70%
+  );
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Pill: status chip, not badge */
 .pill {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 5px 12px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
 }
 
+/* Premium active — refined emerald, integrated with title gradient */
 .pill--ok {
-  border: 1px solid rgba(72, 187, 120, 0.35);
-  background: rgba(72, 187, 120, 0.12);
-  color: #9AE6B4;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.12),
+    rgba(34, 197, 94, 0.06)
+  );
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.12) inset,
+    0 0 16px -6px rgba(34, 197, 94, 0.6);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #4ade80 0%, #22c55e 70%);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
 }
 
 .pill--neutral {
+  padding: 4px 10px;
+  font-size: 11px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: var(--color-text-secondary);
 }
+
+/* Neutral pill has no dot — pill-dot only appears in pill--ok */
 
 /* iOS-style bottom sheet */
 .sheet-backdrop {

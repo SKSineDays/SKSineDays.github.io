@@ -22,14 +22,16 @@
     <section id="dashboard-section" style="display: none;">
       <header class="dash-head" role="banner">
         <div class="dash-head__top">
-          <h1 class="dash-head__title">SineDay Sines</h1>
+          <div class="dash-head__title-row">
+            <h1 class="dash-head__title">SineDay Sines</h1>
+            <span id="plan-pill" class="pill pill--ok" aria-live="polite">
+              <span class="pill-dot"></span>
+              Premium
+            </span>
+          </div>
           <button id="account-toggle" class="dash-head__icon-btn" type="button"
             aria-expanded="false" aria-controls="account-sheet"
             aria-label="Account options">⋯</button>
-        </div>
-
-        <div class="dash-head__meta">
-          <span id="plan-pill" class="pill pill--ok" aria-live="polite">Premium Active</span>
         </div>
       </header>
 

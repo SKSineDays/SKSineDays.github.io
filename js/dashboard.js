@@ -238,10 +238,10 @@ function renderSubscriptionStatus() {
   if (pill) {
     if (isPaid()) {
       pill.className = 'pill pill--ok';
-      pill.textContent = 'Premium Active';
+      pill.innerHTML = '<span class="pill-dot"></span>Premium';
     } else {
       pill.className = 'pill pill--neutral';
-      pill.textContent = 'Free';
+      pill.innerHTML = 'Free';
     }
   }
 
