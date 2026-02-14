@@ -225,45 +225,36 @@ function renderProfiles() {
 }
 
 /**
- * Render subscription status
+ * Render subscription status (single source: plan pill + renewal in drawer)
  */
 function renderSubscriptionStatus() {
-  const container = document.getElementById('subscription-status');
+  const pill = document.getElementById('plan-pill');
+  const renewalEl = document.getElementById('renewal-date');
   const upgradeBtn = document.getElementById('upgrade-btn');
   const billingBtn = document.getElementById('billing-btn');
+  const subscriptionMini = document.getElementById('subscription-mini');
   const calendarsSection = document.getElementById('calendars-section');
 
-  // Update mini subscription pill
-  const pill = document.getElementById('mini-sub-pill');
   if (pill) {
     if (isPaid()) {
-      pill.className = 'sub-pill is-paid';
-      pill.textContent = '✓ Premium Active';
+      pill.className = 'pill pill--ok';
+      pill.textContent = 'Premium Active';
     } else {
-      pill.className = 'sub-pill is-free';
-      pill.textContent = 'Free Plan';
+      pill.className = 'pill pill--neutral';
+      pill.textContent = 'Free';
     }
   }
 
-  if (!container) return;
-
   if (isPaid()) {
-    // Paid user
-    const renewalDate = currentSubscription.current_period_end
+    const renewalDate = currentSubscription?.current_period_end
       ? new Date(currentSubscription.current_period_end).toLocaleDateString()
-      : 'N/A';
-
-    container.innerHTML = `
-      <div class="alert alert-success">
-        <strong>✓ Premium Active</strong><br>
-        Next renewal: ${renewalDate}
-      </div>
-    `;
+      : '—';
+    if (renewalEl) renewalEl.textContent = renewalDate;
+    if (subscriptionMini) subscriptionMini.style.display = '';
 
     if (upgradeBtn) upgradeBtn.style.display = 'none';
     if (billingBtn) billingBtn.style.display = 'inline-block';
 
-    // Show calendars (placeholder for now)
     if (calendarsSection) {
       calendarsSection.innerHTML = `
         <p>Monthly and Weekly calendars coming next!</p>
@@ -271,18 +262,12 @@ function renderSubscriptionStatus() {
       `;
     }
   } else {
-    // Not paid
-    container.innerHTML = `
-      <div class="alert alert-warning">
-        <strong>Free Plan</strong><br>
-        Upgrade to Premium to unlock calendar features.
-      </div>
-    `;
+    if (renewalEl) renewalEl.textContent = '—';
+    if (subscriptionMini) subscriptionMini.style.display = 'none';
 
     if (upgradeBtn) upgradeBtn.style.display = 'inline-block';
     if (billingBtn) billingBtn.style.display = 'none';
 
-    // Show locked calendars
     if (calendarsSection) {
       calendarsSection.innerHTML = `
         <div class="locked-section">
@@ -295,19 +280,69 @@ function renderSubscriptionStatus() {
 }
 
 /**
- * Set up collapsible Add Profile drawer
+ * Set up Account bottom sheet (iOS-style)
+ */
+function setupAccountSheet() {
+  const toggle = document.getElementById('account-toggle');
+  const sheet = document.getElementById('account-sheet');
+  const backdrop = document.getElementById('account-backdrop');
+  if (!toggle || !sheet || !backdrop) return;
+
+  const open = () => {
+    toggle.setAttribute('aria-expanded', 'true');
+    sheet.hidden = false;
+    backdrop.hidden = false;
+
+    requestAnimationFrame(() => {
+      sheet.classList.add('is-open');
+      backdrop.classList.add('is-open');
+    });
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+  };
+
+  const close = () => {
+    toggle.setAttribute('aria-expanded', 'false');
+    sheet.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+
+    setTimeout(() => {
+      sheet.hidden = true;
+      backdrop.hidden = true;
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }, 220);
+  };
+
+  toggle.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    expanded ? close() : open();
+  });
+
+  backdrop.addEventListener('click', close);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') close();
+  });
+}
+
+/**
+ * Set up Add Profile bottom sheet (iOS-style)
  */
 function setupAddProfileCollapse() {
   const toggle = document.getElementById("add-profile-toggle");
+  const sheet = document.getElementById("add-profile-sheet");
   const panel = document.getElementById("add-profile-panel");
   const cancel = document.getElementById("add-profile-cancel");
+  const backdrop = sheet?.querySelector("[data-close='add-profile-sheet']");
 
-  if (!toggle || !panel) return null;
+  if (!toggle || !sheet || !panel) return null;
 
   const open = () => {
     toggle.setAttribute("aria-expanded", "true");
-    panel.hidden = false;
-    requestAnimationFrame(() => panel.classList.add("is-open"));
+    sheet.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => sheet.classList.add("is-open"));
 
     const nameInput =
       panel.querySelector('input[name="name"]') ||
@@ -318,12 +353,10 @@ function setupAddProfileCollapse() {
 
   const close = () => {
     toggle.setAttribute("aria-expanded", "false");
-    panel.classList.remove("is-open");
+    sheet.classList.remove("is-open");
+    sheet.setAttribute("aria-hidden", "true");
     const form = document.getElementById("add-profile-form");
     form?.reset?.();
-    setTimeout(() => {
-      panel.hidden = true;
-    }, 260);
   };
 
   toggle.addEventListener("click", () => {
@@ -332,6 +365,7 @@ function setupAddProfileCollapse() {
   });
 
   cancel?.addEventListener("click", close);
+  backdrop?.addEventListener("click", close);
 
   panel.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
@@ -344,6 +378,7 @@ function setupAddProfileCollapse() {
  * Set up event listeners
  */
 function setupEventListeners() {
+  setupAccountSheet();
   addProfileUI = setupAddProfileCollapse();
 
   // Sign out button
@@ -629,10 +664,10 @@ function showAuthenticatedView() {
   if (loading) loading.style.display = 'none';
   if (dashboardSection) dashboardSection.style.display = 'block';
 
-  // Update user email display
-  const userEmailEl = document.getElementById('user-email');
-  if (userEmailEl) {
-    userEmailEl.textContent = currentUser.email;
+  // Update signed-in email (in account drawer)
+  const emailEl = document.getElementById('signed-in-email');
+  if (emailEl) {
+    emailEl.textContent = currentUser.email;
   }
 
   // Init duck carousel once dashboard is visible (so sizing works)

@@ -20,38 +20,51 @@
     </div>
     <!-- Dashboard Section -->
     <section id="dashboard-section" style="display: none;">
-      <header class="dash-topbar" role="banner">
-        <div class="dash-left">
-          <h1 class="dash-title">SineDay Sines</h1>
-          <div id="mini-sub-pill" class="sub-pill" aria-live="polite"></div>
+      <header class="dash-head" role="banner">
+        <div class="dash-head__top">
+          <h1 class="dash-head__title">SineDay Sines</h1>
+          <button id="account-toggle" class="dash-head__icon-btn" type="button"
+            aria-expanded="false" aria-controls="account-sheet"
+            aria-label="Account options">⋯</button>
         </div>
 
-        <div class="dash-right">
-          <span class="dash-user">
-            <span class="text-muted">Signed in:</span>
-            <span id="user-email">user@example.com</span>
-          </span>
-
-          <button id="upgrade-btn" class="btn btn-primary btn-sm" style="display:none;">Upgrade</button>
-          <button id="billing-btn" class="btn btn-secondary btn-sm" style="display:none;">Manage Billing</button>
-          <button id="signout-btn" class="btn btn-secondary btn-sm">Sign Out</button>
-
-          <a href="/" class="back-link">← Home</a>
+        <div class="dash-head__meta">
+          <span id="plan-pill" class="pill pill--ok" aria-live="polite">Premium Active</span>
         </div>
       </header>
 
-      <!-- Optional: keep full status details but collapse it -->
-      <div class="container container-compact">
-        <details class="sub-details">
-          <summary>Subscription</summary>
-          <div id="subscription-status" style="margin-top:12px;"></div>
-        </details>
-      </div>
+      <!-- Account bottom sheet (iOS-style) -->
+      <div id="account-backdrop" class="sheet-backdrop" hidden></div>
+
+      <section id="account-sheet" class="sheet" hidden role="dialog" aria-modal="true" aria-label="Account">
+        <div class="sheet__handle" aria-hidden="true"></div>
+
+        <div class="sheet__content">
+          <div class="account-email">
+            <span class="muted">Signed in</span>
+            <span id="signed-in-email"></span>
+          </div>
+
+          <div class="account-actions">
+            <button id="upgrade-btn" class="btn btn-ghost btn-sm" type="button" style="display:none;">Upgrade</button>
+            <button id="billing-btn" class="btn btn-ghost btn-sm" type="button" style="display:none;">Manage Billing</button>
+            <button id="signout-btn" class="btn btn-ghost btn-sm" type="button">Sign Out</button>
+          </div>
+
+          <div id="subscription-mini" class="subscription-mini">
+            <div class="subscription-mini__row">
+              <span class="muted">Renewal</span>
+              <span id="renewal-date">—</span>
+            </div>
+          </div>
+
+          <a class="dash-home" href="/">← Home</a>
+        </div>
+      </section>
 
       <!-- Profiles Section -->
       <div class="container">
         <h2>Your Profiles</h2>
-        <p class="text-muted">Manage up to 10 profiles for yourself or others.</p>
 
         <!-- Origin Duck Carousel -->
         <div id="duck-carousel-wrap" class="duck-carousel-wrap">
@@ -84,15 +97,17 @@
 
           <details class="profiles-details profiles-details--inline">
             <summary>Manage profiles</summary>
+            <p class="profiles-details__hint text-muted">Manage up to 10 profiles for yourself or others.</p>
             <div id="profiles-list"></div>
           </details>
         </div>
 
-        <!-- Add Profile collapsible drawer -->
-        <div class="add-profile">
-          <div id="add-profile-panel" class="add-profile__panel" hidden>
-            <div class="add-profile__panel-inner">
-              <h3>Add New Profile</h3>
+        <!-- Add Profile bottom sheet (iOS-style) -->
+        <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
+          <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
+          <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
+            <div class="add-profile-sheet__inner">
+              <h3 id="add-profile-title">Add New Profile</h3>
               <form id="add-profile-form">
                 <div class="form-group">
                   <label for="profile-name">Name</label>
