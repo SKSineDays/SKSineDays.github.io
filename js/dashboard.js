@@ -21,6 +21,7 @@ let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
 let duckCarousel = null;
+let addProfileUI = null;
 
 /**
  * Initialize dashboard on page load
@@ -203,16 +204,19 @@ function renderProfiles() {
     }).join("");
   }
 
-  // Update limit message
+  // Update limit message and add-profile controls
   const limitMsg = document.getElementById('profile-limit-message');
   const addBtn = document.getElementById('add-profile-btn');
+  const addToggle = document.getElementById('add-profile-toggle');
 
   if (profiles.length >= 10) {
     if (limitMsg) limitMsg.style.display = 'block';
     if (addBtn) addBtn.disabled = true;
+    if (addToggle) addToggle.disabled = true;
   } else {
     if (limitMsg) limitMsg.style.display = 'none';
     if (addBtn) addBtn.disabled = false;
+    if (addToggle) addToggle.disabled = false;
   }
 
   // Update duck carousel
@@ -291,9 +295,57 @@ function renderSubscriptionStatus() {
 }
 
 /**
+ * Set up collapsible Add Profile drawer
+ */
+function setupAddProfileCollapse() {
+  const toggle = document.getElementById("add-profile-toggle");
+  const panel = document.getElementById("add-profile-panel");
+  const cancel = document.getElementById("add-profile-cancel");
+
+  if (!toggle || !panel) return null;
+
+  const open = () => {
+    toggle.setAttribute("aria-expanded", "true");
+    panel.hidden = false;
+    requestAnimationFrame(() => panel.classList.add("is-open"));
+
+    const nameInput =
+      panel.querySelector('input[name="name"]') ||
+      panel.querySelector("#profile-name") ||
+      panel.querySelector("input");
+    nameInput?.focus();
+  };
+
+  const close = () => {
+    toggle.setAttribute("aria-expanded", "false");
+    panel.classList.remove("is-open");
+    const form = document.getElementById("add-profile-form");
+    form?.reset?.();
+    setTimeout(() => {
+      panel.hidden = true;
+    }, 260);
+  };
+
+  toggle.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    expanded ? close() : open();
+  });
+
+  cancel?.addEventListener("click", close);
+
+  panel.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+
+  return { close, open };
+}
+
+/**
  * Set up event listeners
  */
 function setupEventListeners() {
+  addProfileUI = setupAddProfileCollapse();
+
   // Sign out button
   const signOutBtn = document.getElementById('signout-btn');
   if (signOutBtn) {
@@ -387,8 +439,10 @@ async function handleAddProfile(e) {
     profiles.unshift(data);
     renderProfiles();
 
-    // Clear form
-    document.getElementById('add-profile-form').reset();
+    // Clear form and close drawer
+    const form = document.getElementById('add-profile-form');
+    form?.reset?.();
+    addProfileUI?.close?.();
     showSuccess('Profile added successfully!');
   } catch (error) {
     console.error('Add profile error:', error);

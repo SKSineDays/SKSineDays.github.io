@@ -76,35 +76,54 @@
           <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
         </div>
 
-        <h3>Add New Profile</h3>
-        <form id="add-profile-form">
-          <div class="form-group">
-            <label for="profile-name">Name</label>
-            <input type="text" id="profile-name" placeholder="John Doe" required>
-          </div>
+        <div class="add-profile">
+          <button
+            id="add-profile-toggle"
+            class="btn btn-primary"
+            type="button"
+            aria-expanded="false"
+            aria-controls="add-profile-panel"
+          >
+            + Add Profile
+          </button>
 
-          <div class="form-group">
-            <label for="profile-birthdate">Birthdate</label>
-            <input type="date" id="profile-birthdate" required>
-          </div>
+          <div id="add-profile-panel" class="add-profile__panel" hidden>
+            <div class="add-profile__panel-inner">
+              <h3>Add New Profile</h3>
+              <form id="add-profile-form">
+                <div class="form-group">
+                  <label for="profile-name">Name</label>
+                  <input type="text" id="profile-name" placeholder="John Doe" required>
+                </div>
 
-          <div class="form-group">
-            <label for="profile-timezone">Timezone</label>
-            <select id="profile-timezone">
-              <option value="America/Chicago">America/Chicago (Central)</option>
-              <option value="America/New_York">America/New_York (Eastern)</option>
-              <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
-              <option value="America/Denver">America/Denver (Mountain)</option>
-              <option value="Europe/London">Europe/London</option>
-              <option value="Europe/Paris">Europe/Paris</option>
-              <option value="Asia/Tokyo">Asia/Tokyo</option>
-              <option value="Asia/Shanghai">Asia/Shanghai</option>
-              <option value="Australia/Sydney">Australia/Sydney</option>
-            </select>
-          </div>
+                <div class="form-group">
+                  <label for="profile-birthdate">Birthdate</label>
+                  <input type="date" id="profile-birthdate" required>
+                </div>
 
-          <button type="submit" id="add-profile-btn" class="btn btn-primary">Add Profile</button>
-        </form>
+                <div class="form-group">
+                  <label for="profile-timezone">Timezone</label>
+                  <select id="profile-timezone">
+                    <option value="America/Chicago">America/Chicago (Central)</option>
+                    <option value="America/New_York">America/New_York (Eastern)</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
+                    <option value="America/Denver">America/Denver (Mountain)</option>
+                    <option value="Europe/London">Europe/London</option>
+                    <option value="Europe/Paris">Europe/Paris</option>
+                    <option value="Asia/Tokyo">Asia/Tokyo</option>
+                    <option value="Asia/Shanghai">Asia/Shanghai</option>
+                    <option value="Australia/Sydney">Australia/Sydney</option>
+                  </select>
+                </div>
+
+                <button type="submit" id="add-profile-btn" class="btn btn-primary">Add Profile</button>
+                <button id="add-profile-cancel" class="btn btn-ghost" type="button">
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Calendars Section (Gated) -->

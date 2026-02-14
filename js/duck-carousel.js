@@ -98,6 +98,7 @@ export class DuckCarousel {
     const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
     const energyResult = calculateSineDayForTimezone(profile.birthdate, tz);
     const energyDay = energyResult?.day ?? null;
+    const energyDescription = energyResult?.description || "";
     const energyUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
 
     const card = _el("button", "duck-stack");
@@ -121,10 +122,30 @@ export class DuckCarousel {
       origin.innerHTML = `<span aria-hidden="true">&nbsp;</span>`;
     }
 
+    // Today's Duck header
+    const energyMeta = _el("div", "duck-stack__meta duck-stack__meta--energy");
+    energyMeta.textContent = `Today's Duck${energyDay ? ` • ${energyDay}` : ""}`;
+
+    // Daily poetic line (like index page)
+    const energyLine = _el("div", "duck-stack__subline");
+    energyLine.textContent = energyDescription;
+
+    // Origin header
+    const originMeta = _el("div", "duck-stack__meta duck-stack__meta--origin");
+    originMeta.textContent = `Origin Duck ${originDay ?? "?"}`;
+
     const label = _el("div", "duck-stack__label");
     label.textContent = name;
 
-    card.append(energy, origin, label);
+    // Order
+    card.append(
+      energy,
+      energyMeta,
+      energyLine,
+      origin,
+      originMeta,
+      label
+    );
     return { el: card };
   }
 
