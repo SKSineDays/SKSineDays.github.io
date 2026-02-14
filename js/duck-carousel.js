@@ -37,6 +37,7 @@ export class DuckCarousel {
     this._initPointer();
     this._initHoverTilt();
     this._initNav();
+    this._initClickToCenter();
 
     this._ro = new ResizeObserver(() => this._layoutRing());
     this._ro.observe(this.sceneEl);
@@ -228,6 +229,7 @@ export class DuckCarousel {
     let lastX = 0;
     let lastT = 0;
     let dragging = false;
+    let dragTotal = 0;
 
     const onMove = (e) => {
       if (!dragging) return;
@@ -235,6 +237,8 @@ export class DuckCarousel {
       const t = performance.now();
       const dx = x - lastX;
       const dt = Math.max(1, t - lastT);
+
+      dragTotal += Math.abs(dx);
 
       this.rotation += dx * 0.25;
       this.velocity = (dx / dt) * 18;
@@ -247,8 +251,14 @@ export class DuckCarousel {
       lastT = t;
     };
 
+    const onRelease = () => {
+      this._didDragRecently = dragTotal > 6;
+      setTimeout(() => { this._didDragRecently = false; }, 120);
+    };
+
     this.sceneEl.addEventListener("pointerdown", (e) => {
       dragging = true;
+      dragTotal = 0;
       this.sceneEl.classList.add("is-dragging");
       this.sceneEl.setPointerCapture(e.pointerId);
       lastX = e.clientX;
@@ -264,6 +274,7 @@ export class DuckCarousel {
     this.sceneEl.addEventListener("pointerup", () => {
       dragging = false;
       this.sceneEl.classList.remove("is-dragging");
+      onRelease();
       this._startInertia();
 
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -274,11 +285,36 @@ export class DuckCarousel {
       if (dragging) {
         dragging = false;
         this.sceneEl.classList.remove("is-dragging");
+        onRelease();
         this._startInertia();
         const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (!reduce) setTimeout(() => this._resetTilt(), 120);
       }
     });
+  }
+
+  _initClickToCenter() {
+    this._didDragRecently = false;
+    this.ringEl.addEventListener("click", (e) => {
+      const btn = e.target.closest(".duck-stack");
+      if (!btn) return;
+
+      if (this._didDragRecently) return;
+
+      const idx = Number(btn.dataset.index);
+      if (!Number.isFinite(idx)) return;
+
+      this._goToIndex(idx, true);
+    });
+  }
+
+  _goToIndex(idx, snap) {
+    if (!this.cards.length || idx < 0 || idx >= this.cards.length) return;
+    this._stopInertia();
+    this.velocity = 0;
+    const step = 360 / this.cards.length;
+    this.rotation = -idx * step;
+    this._applyRotation();
   }
 
   /* ── Hover tilt (mouse) ── */

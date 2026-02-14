@@ -976,6 +976,10 @@ option {
   filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.35));
 }
 
+.duck-stack:hover {
+  filter: drop-shadow(0 26px 44px rgba(0, 0, 0, 0.42));
+}
+
 /* Front duck pops more */
 .duck-stack.is-front .duck-stack__origin,
 .duck-stack.is-front .duck-stack__energy {
