@@ -385,6 +385,54 @@ option {
   }
 }
 
+/* Compact controls row under carousel */
+.profiles-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Inline disclosure styling (feels like a control, not a block) */
+.profiles-details--inline {
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.profiles-details--inline > summary {
+  list-style: none;
+  cursor: pointer;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(245, 247, 255, 0.92);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+/* Remove default triangle marker */
+.profiles-details--inline > summary::-webkit-details-marker { display: none; }
+.profiles-details--inline > summary::marker { content: ""; }
+
+/* Optional: add a tiny caret using CSS */
+.profiles-details--inline > summary::after {
+  content: "▾";
+  opacity: 0.75;
+  font-weight: 900;
+  transform: translateY(-1px);
+}
+
+.profiles-details--inline[open] > summary::after {
+  content: "▴";
+}
+
 /* Add Profile collapsible drawer */
 .add-profile {
   margin-top: 12px;
@@ -722,7 +770,7 @@ option {
 
 .duck-ring__scene {
   position: relative;
-  height: 360px;
+  height: 440px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.10);
   background: rgba(255, 255, 255, 0.03);
@@ -800,7 +848,7 @@ option {
 .duck-stack {
   position: absolute;
   left: 50%;
-  top: 52%;
+  top: 49%;
   transform-style: preserve-3d;
   transform-origin: center center;
 

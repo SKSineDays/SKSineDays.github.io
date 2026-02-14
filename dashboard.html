@@ -66,20 +66,15 @@
           <!-- Carousel renders here via JS -->
         </div>
 
-        <!-- Keep the list for management + accessibility -->
-        <details class="profiles-details">
-          <summary>Manage profiles (list)</summary>
-          <div id="profiles-list"></div>
-        </details>
-
         <div id="profile-limit-message">
           <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
         </div>
 
-        <div class="add-profile">
+        <!-- Compact control row under the carousel -->
+        <div class="profiles-controls" role="group" aria-label="Profile controls">
           <button
             id="add-profile-toggle"
-            class="btn btn-primary"
+            class="btn btn-primary btn-sm"
             type="button"
             aria-expanded="false"
             aria-controls="add-profile-panel"
@@ -87,6 +82,14 @@
             + Add Profile
           </button>
 
+          <details class="profiles-details profiles-details--inline">
+            <summary>Manage profiles</summary>
+            <div id="profiles-list"></div>
+          </details>
+        </div>
+
+        <!-- Add Profile collapsible drawer -->
+        <div class="add-profile">
           <div id="add-profile-panel" class="add-profile__panel" hidden>
             <div class="add-profile__panel-inner">
               <h3>Add New Profile</h3>
