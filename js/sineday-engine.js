@@ -420,51 +420,55 @@ export function getDayData(dayNumber) {
 }
 
 /**
- * Returns YYYY-MM-DD for "today" in a given timezone
- *
- * @param {string} timeZone - IANA timezone (e.g. "America/Chicago")
- * @returns {string} YYYY-MM-DD
- */
-function ymdInTimeZone(timeZone) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(new Date());
-  const y = parts.find(p => p.type === "year").value;
-  const m = parts.find(p => p.type === "month").value;
-  const d = parts.find(p => p.type === "day").value;
-  return `${y}-${m}-${d}`;
-}
-
-/**
  * Calculates SineDay for a specific timezone (today in that TZ)
- * Uses noon UTC anchors to avoid DST edge weirdness
+ * Normalizes both dates to local-day anchors (noon) to avoid UTC/local mismatch.
+ * Wave flips at local midnight, not UTC.
  *
  * @param {string} birthdateInput - YYYY-MM-DD from DB
- * @param {string} timeZone - IANA timezone
+ * @param {string} timeZone - IANA timezone (e.g. America/Chicago)
  * @returns {SineDayResult|{error: string}} SineDay result or error object
  */
 export function calculateSineDayForTimezone(birthdateInput, timeZone) {
   const validation = validateBirthdate(birthdateInput);
   if (!validation.valid) return { error: validation.error };
 
-  const birthYMD = birthdateInput;
-  const todayYMD = ymdInTimeZone(timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone);
+  // Parse birthdate safely as local date components
+  const [year, month, day] = birthdateInput.split("-").map(Number);
 
-  const birth = new Date(`${birthYMD}T12:00:00Z`);
-  const today = new Date(`${todayYMD}T12:00:00Z`);
+  // Anchor birthdate at LOCAL noon to avoid DST edge cases
+  const birthLocal = new Date(year, month - 1, day, 12, 0, 0);
 
-  const daysLived = calculateDaysBetween(birth, today);
-  const day = mapToSineDay(daysLived);
-  const dayData = getDayData(day);
+  // Get today's date in the user's timezone
+  const now = new Date();
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const parts = formatter.formatToParts(now);
+  const todayYear = Number(parts.find(p => p.type === "year").value);
+  const todayMonth = Number(parts.find(p => p.type === "month").value);
+  const todayDay = Number(parts.find(p => p.type === "day").value);
+
+  // Anchor today at LOCAL noon
+  const todayLocal = new Date(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
+
+  const diffMs = todayLocal - birthLocal;
+  const daysLived = Math.floor(diffMs / 86400000);
+
+  const cycleDay = ((daysLived % 18) + 18) % 18 + 1;
+  const dayData = getDayData(cycleDay);
 
   return {
-    day,
+    day: cycleDay,
+    daysLived,
     position: calculateWavePosition(daysLived),
     phase: dayData?.phase,
-    description: dayData?.description
+    description: dayData?.description,
+    imageUrl: dayData?.imageUrl,
   };
 }
 
