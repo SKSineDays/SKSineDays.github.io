@@ -9,7 +9,7 @@
  * - Background image transitions
  */
 
-import { calculateSineDay, getDayDetails } from './sineday-engine.js';
+import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
 import { getSupabaseClient, getAccessToken, getCurrentUser } from './supabase-client.js';
@@ -371,10 +371,14 @@ export class SineDayUI {
       return;
     }
 
-    // Calculate SineDay
-    const result = calculateSineDay(birthdateValue);
+    // Calculate SineDay (timezone-safe: rollover = local midnight)
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const result = calculateSineDayForTimezone(birthdateValue, tz);
 
-    if (result.error) {
+    console.log("Timezone:", tz);
+    if (result && !result.error) console.log("Cycle Day:", result.day);
+
+    if (result?.error) {
       this.showError(result.error);
       return;
     }
