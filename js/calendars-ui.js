@@ -68,7 +68,7 @@ export class CalendarsUI {
     this.monthIndex = now.getMonth();
 
     this.view = "month"; // 'month' | 'week'
-    this.profileFilter = "all";
+    this.profileFilter = null;
 
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12));
     this.weekStartDateUTC = startOfWeekUTC(todayUTC, this.weekStart);
@@ -211,13 +211,8 @@ export class CalendarsUI {
     const sel = this.profileSelect;
     if (!sel) return;
 
-    const prev = sel.value || "all";
+    const prev = sel.value;
     sel.innerHTML = "";
-
-    const optAll = document.createElement("option");
-    optAll.value = "all";
-    optAll.textContent = "All profiles";
-    sel.append(optAll);
 
     for (const p of this.profiles) {
       const opt = document.createElement("option");
@@ -226,26 +221,20 @@ export class CalendarsUI {
       sel.append(opt);
     }
 
-    // restore selection if still valid
-    const stillExists =
-      prev === "all" || this.profiles.some((p) => p.id === prev);
-    sel.value = stillExists ? prev : "all";
+    const firstId = this.profiles[0]?.id;
+    const stillExists = prev && this.profiles.some((p) => p.id === prev);
+    sel.value = stillExists ? prev : firstId || "";
     this.profileFilter = sel.value;
   }
 
   _activeProfiles() {
-    if (this.profileFilter === "all") return this.profiles;
+    if (!this.profileFilter) return [];
     return this.profiles.filter((p) => p.id === this.profileFilter);
   }
 
   _printProfileLabel() {
     const active = this._activeProfiles();
-    if (active.length === 0) return "";
-    if (active.length === 1) return active[0].display_name || "";
-    if (this.profileFilter === "all" && active.length <= 4) {
-      return active.map((p) => p.display_name || "").join(", ");
-    }
-    return `${active.length} profiles`;
+    return active.length ? (active[0].display_name || "") : "";
   }
 
   _fmtMonthTitle() {
@@ -392,17 +381,10 @@ export class CalendarsUI {
     const list = el("div", bigger ? "sdcal__ducks sdcal__ducks--big" : "sdcal__ducks");
 
     const active = this._activeProfiles();
-    const maxIcons = this.profileFilter === "all" ? 4 : 1;
-
-    let count = 0;
     for (const p of active) {
       const r = calculateSineDayForYmd(p.birthdate, targetYmd);
       if (!r) continue;
 
-      count++;
-      if (this.profileFilter === "all" && count > maxIcons) continue;
-
-      // Wrapper for duck + badge + print label
       const wrap = el("div", "sdcal__duck-wrap");
 
       const img = document.createElement("img");
@@ -412,24 +394,12 @@ export class CalendarsUI {
       img.alt = `${p.display_name || "Profile"} — Day ${r.day}`;
       img.title = `${p.display_name || "Profile"} — Day ${r.day}`;
 
-      // Badge showing the SineDay number
       const badge = el("span", "sdcal__duck-badge");
       badge.textContent = String(r.day);
       badge.setAttribute("aria-hidden", "true");
 
-      // Print-only label (profile name + day)
-      const label = el("span", "sdcal__duck-label");
-      label.textContent = `Day ${r.day}`;
-
-      wrap.append(img, badge, label);
+      wrap.append(img, badge);
       list.append(wrap);
-    }
-
-    if (this.profileFilter === "all" && count > maxIcons) {
-      const more = el("div", "sdcal__more");
-      more.textContent = `+${count - maxIcons}`;
-      more.title = "More profiles on this date (filter to a single profile to view cleanly)";
-      list.append(more);
     }
 
     return list;

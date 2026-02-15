@@ -1271,11 +1271,17 @@ option {
 }
 
 /* ─────────────────────────────
-   Premium Calendars UI
+   Premium Calendars UI (white paper card, UI + print)
    ───────────────────────────── */
 .sdcal {
   display: grid;
   gap: 14px;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .sdcal__bar {
@@ -1293,16 +1299,17 @@ option {
 .sdcal__tab {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color: var(--color-text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
   cursor: pointer;
   font-weight: 700;
 }
 
 .sdcal__tab.is-active {
-  border-color: rgba(var(--color-accent-rgb), 0.45);
-  background: rgba(var(--color-accent-rgb), 0.16);
+  border-color: rgba(var(--color-accent-rgb), 0.5);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  color: #1a1a1a;
 }
 
 .sdcal__filter {
@@ -1312,12 +1319,15 @@ option {
 
 .sdcal__label {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: #555;
 }
 
 .sdcal__select {
   padding: 10px 12px;
   border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  color: #1a1a1a;
 }
 
 .sdcal__nav {
@@ -1331,9 +1341,9 @@ option {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color: var(--color-text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
   cursor: pointer;
   font-size: 18px;
   font-weight: 900;
@@ -1344,6 +1354,7 @@ option {
   letter-spacing: -0.01em;
   text-align: center;
   min-width: 180px;
+  color: #1a1a1a;
 }
 
 .sdcal__actions {
@@ -1354,9 +1365,9 @@ option {
 .sdcal__action {
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color: var(--color-text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
   cursor: pointer;
   font-weight: 700;
 }
@@ -1366,9 +1377,9 @@ option {
 .sdcal__empty {
   padding: 14px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.05);
-  color: var(--color-text-muted);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.02);
+  color: #555;
 }
 
 /* Month */
@@ -1380,7 +1391,7 @@ option {
 
 .sdcal__weekday {
   font-size: 12px;
-  color: var(--color-text-muted);
+  color: #555;
   text-align: center;
 }
 
@@ -1392,9 +1403,9 @@ option {
 
 .sdcal__cell {
   min-height: 90px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
   padding: 10px;
   display: grid;
   gap: 6px;
@@ -1402,6 +1413,7 @@ option {
 
 .sdcal__cell.is-out {
   opacity: 0.35;
+  background: #fafafa;
 }
 
 .sdcal__celltop {
@@ -1413,7 +1425,7 @@ option {
 .sdcal__num {
   font-weight: 900;
   font-size: 12px;
-  color: rgba(255,255,255,0.9);
+  color: #1a1a1a;
 }
 
 .sdcal__ducks {
@@ -1431,36 +1443,11 @@ option {
 .sdcal__duck {
   width: 36px;
   height: 36px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.10);
-  padding: 3px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 
-.sdcal__more {
-  font-size: 12px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color: var(--color-text-primary);
-}
-
-/* Duck label: shows SineDay # + profile name below the icon */
-.sdcal__duck-label {
-  display: none;
-  font-size: 7pt;
-  font-weight: 700;
-  color: #555;
-  text-align: center;
-  line-height: 1.2;
-  max-width: 50pt;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* On screen: show the day number as a small badge on the duck */
 .sdcal__duck-wrap {
   display: flex;
   flex-direction: column;
@@ -1473,12 +1460,12 @@ option {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
-  background: rgba(var(--color-accent-rgb), 0.85);
+  background: rgba(var(--color-accent-rgb), 0.9);
   color: #fff;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   display: flex;
   align-items: center;
@@ -1494,9 +1481,9 @@ option {
 }
 
 .sdcal__dayrow {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
   padding: 14px;
   display: grid;
   gap: 10px;
@@ -1504,12 +1491,13 @@ option {
 
 .sdcal__dayhead {
   font-weight: 900;
+  color: #1a1a1a;
 }
 
 .sdcal__notes {
-  border-radius: 14px;
-  border: 1px dashed rgba(255,255,255,0.18);
-  background: rgba(0,0,0,0.12);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
   min-height: 120px;
   position: relative;
   overflow: hidden;
@@ -1520,9 +1508,9 @@ option {
   inset: 0;
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,0.00),
-    rgba(255,255,255,0.00) 18px,
-    rgba(255,255,255,0.10) 19px
+    transparent,
+    transparent 18px,
+    rgba(0, 0, 0, 0.06) 19px
   );
 }
 
@@ -1641,9 +1629,12 @@ option {
     display: none !important;
   }
 
-  /* ── Calendar root ── */
+  /* ── Calendar root (white paper card) ── */
   body.print-calendar .sdcal {
     gap: 8pt;
+    background: #fff !important;
+    color: #1a1a1a !important;
+    border: 1pt solid #ddd !important;
   }
 
   /* ── MONTH VIEW ── */
@@ -1683,13 +1674,13 @@ option {
     font-weight: 900;
   }
 
-  /* Duck icons for print — month view */
+  /* Duck icons for print — month view (no outer circle) */
   body.print-calendar .sdcal__duck {
     width: 32pt;
     height: 32pt;
-    padding: 2pt;
-    background: rgba(0,0,0,0.06) !important;
-    border-radius: 999px;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0;
   }
 
   /* Duck icons for print — week view */
@@ -1698,11 +1689,10 @@ option {
     height: 40pt;
   }
 
-  body.print-calendar .sdcal__more {
-    color: #555 !important;
-    border-color: #ccc !important;
-    background: #f0f0f0 !important;
-    font-size: 9pt;
+  body.print-calendar .sdcal__duck-badge {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
   }
 
   /* ── WEEK VIEW ── */
@@ -1738,11 +1728,6 @@ option {
       transparent 16pt,
       #e0e0e0 16.5pt
     ) !important;
-  }
-
-  /* ── DUCK LABELS — show SineDay number under duck in print ── */
-  body.print-calendar .sdcal__duck-label {
-    display: block !important;
   }
 
   body.print-calendar .sdcal__duck-badge {
