@@ -1391,13 +1391,13 @@ option {
 }
 
 .sdcal__cell {
-  min-height: 78px;
+  min-height: 90px;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.05);
   padding: 10px;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sdcal__cell.is-out {
@@ -1424,13 +1424,13 @@ option {
 }
 
 .sdcal__ducks--big .sdcal__duck {
-  width: 34px;
-  height: 34px;
+  width: 52px;
+  height: 52px;
 }
 
 .sdcal__duck {
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   background: rgba(255,255,255,0.10);
   padding: 3px;
@@ -1444,6 +1444,47 @@ option {
   border: 1px solid rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.06);
   color: var(--color-text-primary);
+}
+
+/* Duck label: shows SineDay # + profile name below the icon */
+.sdcal__duck-label {
+  display: none;
+  font-size: 7pt;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 50pt;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* On screen: show the day number as a small badge on the duck */
+.sdcal__duck-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+}
+
+.sdcal__duck-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 9px;
+  font-weight: 900;
+  background: rgba(var(--color-accent-rgb), 0.85);
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid rgba(5, 6, 10, 0.8);
 }
 
 /* Week */
@@ -1497,42 +1538,228 @@ option {
 
 /* ─────────────────────────────
    Print mode (Print / Save PDF)
+
+   Goals:
+   1. Suppress browser-injected headers/footers (URL, title, page #)
+   2. Hide ALL dashboard chrome — only show the calendar grid/week
+   3. White background, dark text, clean borders
+   4. Larger duck icons sized for paper
+   5. Print-only title visible at top of page
    ───────────────────────────── */
+
+/* Print-only title (hidden on screen, shown only in print) */
+.sdcal__print-title {
+  display: none;
+}
+
+@page {
+  size: landscape;
+  margin: 0.5in;
+}
+
 @media print {
+  /* ── Reset the entire page ── */
   body.print-calendar {
     background: #fff !important;
-    color: #111 !important;
+    color: #1a1a1a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
+  /* ── Remove pseudo-element backgrounds ── */
   body.print-calendar::before,
-  body.print-calendar::after,
+  body.print-calendar::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* ── Hide ALL non-calendar elements ── */
   body.print-calendar .site-footer,
   body.print-calendar .dash-head,
   body.print-calendar #account-sheet,
   body.print-calendar #account-backdrop,
   body.print-calendar .duck-carousel-wrap,
   body.print-calendar .profiles-controls,
-  body.print-calendar #profile-limit-message {
+  body.print-calendar #profile-limit-message,
+  body.print-calendar .add-profile-sheet,
+  body.print-calendar .notifications,
+  body.print-calendar .skip-link,
+  body.print-calendar #loading {
     display: none !important;
   }
 
+  /* Hide "Your Calendars" heading and tip text above the calendar */
+  body.print-calendar #calendars-section > h2,
+  body.print-calendar #calendars-section > p.text-muted,
+  body.print-calendar .container > h2 {
+    display: none !important;
+  }
+
+  /* ── Hide the calendar toolbar (tabs, nav, profile select, print btn) ── */
+  body.print-calendar .sdcal__bar {
+    display: none !important;
+  }
+
+  /* ── Show the print-only title ── */
+  body.print-calendar .sdcal__print-title {
+    display: block !important;
+    font-size: 18pt;
+    font-weight: 800;
+    color: #1a1a1a !important;
+    text-align: center;
+    padding: 0 0 12pt;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 12pt;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* ── Strip glass card decorations from containers ── */
   body.print-calendar .container {
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    animation: none !important;
+    transform: none !important;
   }
 
-  body.print-calendar .sdcal__bar,
-  body.print-calendar p.text-muted {
+  body.print-calendar .container:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+
+  /* Hide the first container (profiles/carousel section) entirely */
+  body.print-calendar #dashboard-section > .container:first-of-type {
     display: none !important;
   }
 
-  body.print-calendar .sdcal__cell,
-  body.print-calendar .sdcal__dayrow {
-    background: #fff !important;
-    border: 1px solid #ddd !important;
+  /* ── Calendar root ── */
+  body.print-calendar .sdcal {
+    gap: 8pt;
   }
 
-  body.print-calendar .sdcal__weekday { color: #444 !important; }
+  /* ── MONTH VIEW ── */
+  body.print-calendar .sdcal__weekdays {
+    gap: 4pt;
+  }
+
+  body.print-calendar .sdcal__weekday {
+    color: #555 !important;
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  body.print-calendar .sdcal__grid {
+    gap: 4pt;
+  }
+
+  body.print-calendar .sdcal__cell {
+    background: #fff !important;
+    border: 1.5pt solid #ccc !important;
+    border-radius: 8pt;
+    min-height: 70pt;
+    padding: 6pt;
+    break-inside: avoid;
+  }
+
+  body.print-calendar .sdcal__cell.is-out {
+    opacity: 0.25;
+    background: #f8f8f8 !important;
+  }
+
+  body.print-calendar .sdcal__num {
+    color: #1a1a1a !important;
+    font-size: 11pt;
+    font-weight: 900;
+  }
+
+  /* Duck icons for print — month view */
+  body.print-calendar .sdcal__duck {
+    width: 32pt;
+    height: 32pt;
+    padding: 2pt;
+    background: rgba(0,0,0,0.06) !important;
+    border-radius: 999px;
+  }
+
+  /* Duck icons for print — week view */
+  body.print-calendar .sdcal__ducks--big .sdcal__duck {
+    width: 40pt;
+    height: 40pt;
+  }
+
+  body.print-calendar .sdcal__more {
+    color: #555 !important;
+    border-color: #ccc !important;
+    background: #f0f0f0 !important;
+    font-size: 9pt;
+  }
+
+  /* ── WEEK VIEW ── */
+  body.print-calendar .sdcal__week {
+    gap: 6pt;
+  }
+
+  body.print-calendar .sdcal__dayrow {
+    background: #fff !important;
+    border: 1.5pt solid #ccc !important;
+    border-radius: 8pt;
+    padding: 10pt;
+    break-inside: avoid;
+  }
+
+  body.print-calendar .sdcal__dayhead {
+    color: #1a1a1a !important;
+    font-size: 12pt;
+    font-weight: 900;
+  }
+
+  body.print-calendar .sdcal__notes {
+    border: 1pt solid #ddd !important;
+    background: #fafafa !important;
+    border-radius: 6pt;
+    min-height: 80pt;
+  }
+
+  body.print-calendar .sdcal__lines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 16pt,
+      #e0e0e0 16.5pt
+    ) !important;
+  }
+
+  /* ── DUCK LABELS — show SineDay number under duck in print ── */
+  body.print-calendar .sdcal__duck-label {
+    display: block !important;
+  }
+
+  body.print-calendar .sdcal__duck-badge {
+    background: #444 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body.print-calendar .sdcal__duck-wrap {
+    gap: 3pt;
+  }
+
+  /* ── Ensure images print ── */
+  body.print-calendar img {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

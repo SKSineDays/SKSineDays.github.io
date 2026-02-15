@@ -170,9 +170,10 @@ export class CalendarsUI {
     bar.append(tabs, filterWrap, nav, actions);
 
     // Content area
+    this.printTitle = el("div", "sdcal__print-title");
     this.content = el("div", "sdcal__content");
 
-    this.root.append(bar, this.content);
+    this.root.append(bar, this.printTitle, this.content);
     this.mountEl.innerHTML = "";
     this.mountEl.append(this.root);
 
@@ -237,6 +238,16 @@ export class CalendarsUI {
     return this.profiles.filter((p) => p.id === this.profileFilter);
   }
 
+  _printProfileLabel() {
+    const active = this._activeProfiles();
+    if (active.length === 0) return "";
+    if (active.length === 1) return active[0].display_name || "";
+    if (this.profileFilter === "all" && active.length <= 4) {
+      return active.map((p) => p.display_name || "").join(", ");
+    }
+    return `${active.length} profiles`;
+  }
+
   _fmtMonthTitle() {
     const dtf = new Intl.DateTimeFormat(this.locale, {
       month: "long",
@@ -278,6 +289,12 @@ export class CalendarsUI {
       });
       this.title.textContent = `${dtf.format(this.weekStartDateUTC)} – ${dtf.format(end)}`;
     }
+
+    // Update print-only title (visible only when printing)
+    const profileLabel = this._printProfileLabel();
+    this.printTitle.textContent = profileLabel
+      ? `${this.title.textContent}  ·  ${profileLabel}`
+      : this.title.textContent;
 
     // Render view
     this.content.innerHTML = "";
@@ -385,13 +402,27 @@ export class CalendarsUI {
       count++;
       if (this.profileFilter === "all" && count > maxIcons) continue;
 
+      // Wrapper for duck + badge + print label
+      const wrap = el("div", "sdcal__duck-wrap");
+
       const img = document.createElement("img");
       img.className = "sdcal__duck";
       img.loading = "lazy";
       img.src = duckUrlFromSinedayNumber(r.day);
       img.alt = `${p.display_name || "Profile"} — Day ${r.day}`;
       img.title = `${p.display_name || "Profile"} — Day ${r.day}`;
-      list.append(img);
+
+      // Badge showing the SineDay number
+      const badge = el("span", "sdcal__duck-badge");
+      badge.textContent = String(r.day);
+      badge.setAttribute("aria-hidden", "true");
+
+      // Print-only label (profile name + day)
+      const label = el("span", "sdcal__duck-label");
+      label.textContent = `Day ${r.day}`;
+
+      wrap.append(img, badge, label);
+      list.append(wrap);
     }
 
     if (this.profileFilter === "all" && count > maxIcons) {
