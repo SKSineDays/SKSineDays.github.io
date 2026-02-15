@@ -15,6 +15,14 @@ import {
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
+import { CalendarsUI } from "./calendars-ui.js";
+import {
+  loadUserSettings,
+  saveUserSettings,
+  resolveWeekStart,
+  SUPPORTED_LANGUAGES,
+  SUPPORTED_REGIONS
+} from "./user-settings.js";
 
 // State
 let currentUser = null;
@@ -22,6 +30,8 @@ let currentSubscription = null;
 let profiles = [];
 let duckCarousel = null;
 let addProfileUI = null;
+let calendarsUI = null;
+let userSettings = null;
 
 /**
  * Initialize dashboard on page load
@@ -41,6 +51,11 @@ async function init() {
 
     if (session) {
       currentUser = session.user;
+
+      // Load per-account settings (locale/weekstart)
+      userSettings = await loadUserSettings(currentUser.id);
+      setupLanguageRegionUI();
+
       await loadUserData();
       showAuthenticatedView();
     } else {
@@ -222,6 +237,7 @@ function renderProfiles() {
   // Update duck carousel
   if (!duckCarousel) ensureDuckCarousel();
   if (duckCarousel) duckCarousel.setProfiles(profiles);
+  calendarsUI?.setProfiles?.(profiles);
 }
 
 /**
@@ -257,9 +273,23 @@ function renderSubscriptionStatus() {
 
     if (calendarsSection) {
       calendarsSection.innerHTML = `
-        <p>Monthly and Weekly calendars coming next!</p>
-        <p class="text-muted">Premium features will be available here.</p>
+        <div id="calendar-app"></div>
+        <p class="text-muted" style="margin-top:12px;">
+          Tip: Use "Print / Save PDF" to export clean monthly & weekly pages.
+        </p>
       `;
+
+      const mount = document.getElementById("calendar-app");
+      const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+      const weekStart = resolveWeekStart(userSettings);
+
+      // (Re)mount calendars
+      calendarsUI?.destroy?.();
+      calendarsUI = new CalendarsUI(mount, {
+        locale,
+        weekStart,
+        profiles
+      });
     }
   } else {
     if (renewalEl) renewalEl.textContent = '—';
@@ -325,6 +355,63 @@ function setupAccountSheet() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') close();
   });
+}
+
+/**
+ * Set up Language & Region controls in account sheet
+ */
+function setupLanguageRegionUI() {
+  const langSel = document.getElementById("language-select");
+  const regionSel = document.getElementById("region-select");
+  const weekSel = document.getElementById("weekstart-select");
+  if (!langSel || !regionSel || !weekSel) return;
+
+  // Populate selects once
+  if (!langSel.options.length) {
+    for (const l of SUPPORTED_LANGUAGES) {
+      const opt = document.createElement("option");
+      opt.value = l.value;
+      opt.textContent = l.label;
+      langSel.append(opt);
+    }
+  }
+
+  if (!regionSel.options.length) {
+    for (const r of SUPPORTED_REGIONS) {
+      const opt = document.createElement("option");
+      opt.value = r.value;
+      opt.textContent = r.label;
+      regionSel.append(opt);
+    }
+  }
+
+  // Set current values
+  langSel.value = userSettings?.language || "en";
+  regionSel.value = userSettings?.region || "US";
+  weekSel.value = String(userSettings?.week_start ?? -1);
+
+  // Apply lang to document
+  document.documentElement.lang = langSel.value;
+
+  const applyAndSave = async () => {
+    const patch = {
+      language: langSel.value,
+      region: regionSel.value,
+      week_start: Number(weekSel.value)
+    };
+
+    userSettings = await saveUserSettings(currentUser.id, patch);
+    document.documentElement.lang = userSettings.language;
+
+    const locale = `${userSettings.language}-${userSettings.region}`;
+    const weekStart = resolveWeekStart(userSettings);
+
+    calendarsUI?.setSettings({ locale, weekStart });
+  };
+
+  langSel.addEventListener("change", applyAndSave);
+  regionSel.addEventListener("change", applyAndSave);
+  weekSel.addEventListener("change", applyAndSave);
 }
 
 /**

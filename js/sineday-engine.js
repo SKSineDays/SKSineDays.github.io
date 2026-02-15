@@ -472,6 +472,60 @@ export function calculateSineDayForTimezone(birthdateInput, timeZone) {
   };
 }
 
+// ─────────────────────────────────────────────
+// Date-target helpers (for calendars / planners)
+// ─────────────────────────────────────────────
+
+const MS_PER_DAY = 86400000;
+
+function _parseYmd(ymd) {
+  const m = String(ymd || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (!y || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  return { y, mo, d };
+}
+
+function _ymdToUtcNoonMs(ymd) {
+  const p = _parseYmd(ymd);
+  if (!p) return NaN;
+  // Anchor at noon UTC to avoid DST edge cases
+  return Date.UTC(p.y, p.mo - 1, p.d, 12, 0, 0, 0);
+}
+
+function _mod(n, m) {
+  return ((n % m) + m) % m;
+}
+
+/**
+ * Calculate a SineDay result for a specific calendar date (YYYY-MM-DD).
+ * This is timezone-robust because it operates on civil dates (Y-M-D), not instants.
+ */
+export function calculateSineDayForYmd(birthYmd, targetYmd) {
+  const birthMs = _ymdToUtcNoonMs(birthYmd);
+  const targetMs = _ymdToUtcNoonMs(targetYmd);
+
+  if (!Number.isFinite(birthMs) || !Number.isFinite(targetMs)) {
+    return null;
+  }
+
+  // whole-day diff in civil time
+  const daysLived = Math.floor((targetMs - birthMs) / MS_PER_DAY);
+  const cycleDay = _mod(daysLived, 18) + 1;
+
+  const dayData = getDayData(cycleDay);
+  return {
+    day: cycleDay,
+    phase: dayData.phase,
+    description: dayData.description,
+    imageUrl: dayData.imageUrl,
+    position: calculateWavePosition(daysLived),
+    daysLived
+  };
+}
+
 /**
  * Main calculation function - computes SineDay from birthdate
  *
