@@ -1441,8 +1441,9 @@ option {
 }
 
 .sdcal__duck {
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
   background: transparent;
   padding: 0;
   border-radius: 0;
@@ -1454,24 +1455,6 @@ option {
   align-items: center;
   gap: 2px;
   position: relative;
-}
-
-.sdcal__duck-badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  font-size: 10px;
-  font-weight: 900;
-  background: rgba(var(--color-accent-rgb), 0.9);
-  color: #fff;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  border: 2px solid rgba(5, 6, 10, 0.8);
 }
 
 /* Week */
@@ -1689,12 +1672,6 @@ option {
     height: 40pt;
   }
 
-  body.print-calendar .sdcal__duck-badge {
-    width: 22px;
-    height: 22px;
-    font-size: 10px;
-  }
-
   /* ── WEEK VIEW ── */
   body.print-calendar .sdcal__week {
     gap: 6pt;
@@ -1728,14 +1705,6 @@ option {
       transparent 16pt,
       #e0e0e0 16.5pt
     ) !important;
-  }
-
-  body.print-calendar .sdcal__duck-badge {
-    background: #444 !important;
-    color: #fff !important;
-    border-color: #fff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
   body.print-calendar .sdcal__duck-wrap {

@@ -394,11 +394,7 @@ export class CalendarsUI {
       img.alt = `${p.display_name || "Profile"} — Day ${r.day}`;
       img.title = `${p.display_name || "Profile"} — Day ${r.day}`;
 
-      const badge = el("span", "sdcal__duck-badge");
-      badge.textContent = String(r.day);
-      badge.setAttribute("aria-hidden", "true");
-
-      wrap.append(img, badge);
+      wrap.append(img);
       list.append(wrap);
     }
 
