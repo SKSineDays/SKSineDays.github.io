@@ -1,6 +1,12 @@
 import { authenticateUser, getAdminClient, requirePremium } from "./_lib/auth.js";
 import { renderMonthPdf } from "./_lib/calendar-pdf.js";
 
+function getRequestOrigin(req) {
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}`;
+}
+
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -51,7 +57,8 @@ export default async function handler(req, res) {
       weekStart,
       profiles: [profile],
       titleSuffix: profile.display_name || "",
-      userMark: user.email || user.id
+      userMark: user.email || user.id,
+      origin: getRequestOrigin(req)
     });
 
     const bucket = "prints";

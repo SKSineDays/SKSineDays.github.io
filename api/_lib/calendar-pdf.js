@@ -1,11 +1,7 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
 import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MS_PER_DAY = 86400000;
 
 function pad2(n) {
@@ -61,17 +57,25 @@ function weekdayLabels(locale, weekStart) {
   return labels.slice(weekStart).concat(labels.slice(0, weekStart));
 }
 
-async function loadDuckPngBytes(relativePath) {
-  const projectRoot = path.resolve(__dirname, "../..");
-  const fullPath = path.join(projectRoot, relativePath);
-  return fs.readFile(fullPath);
+async function loadDuckPngBytes(relativePath, origin) {
+  // relativePath like "assets/sineducks/SineDuck1@3x.png"
+  const clean = String(relativePath || "").replace(/^\/+/, "");
+  const url = new URL("/" + clean, origin).toString();
+
+  const r = await fetch(url);
+  if (!r.ok) {
+    throw new Error(`Failed to fetch duck asset: ${r.status} ${url}`);
+  }
+
+  const ab = await r.arrayBuffer();
+  return new Uint8Array(ab);
 }
 
-async function buildDuckCache(pdf) {
+async function buildDuckCache(pdf, origin) {
   const cache = new Map();
   for (let day = 1; day <= 18; day++) {
     const rel = duckUrlFromSinedayNumber(day);
-    const bytes = await loadDuckPngBytes(rel);
+    const bytes = await loadDuckPngBytes(rel, origin);
     const img = await pdf.embedPng(bytes);
     cache.set(day, img);
   }
@@ -90,7 +94,8 @@ export async function renderMonthPdf({
   weekStart = 0,
   profiles = [],
   titleSuffix = "",
-  userMark = ""
+  userMark = "",
+  origin
 }) {
   const W = 612;
   const H = 792;
@@ -102,7 +107,7 @@ export async function renderMonthPdf({
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const duckCache = await buildDuckCache(pdf);
+  const duckCache = await buildDuckCache(pdf, origin);
 
   const dtfTitle = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" });
   const title = dtfTitle.format(new Date(Date.UTC(year, monthIndex, 1, 12))) + (titleSuffix ? `  ·  ${titleSuffix}` : "");
@@ -201,7 +206,8 @@ export async function renderWeekPdf({
   locale = "en-US",
   profiles = [],
   titleSuffix = "",
-  userMark = ""
+  userMark = "",
+  origin
 }) {
   const W = 612;
   const H = 792;
@@ -213,7 +219,7 @@ export async function renderWeekPdf({
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const duckCache = await buildDuckCache(pdf);
+  const duckCache = await buildDuckCache(pdf, origin);
 
   const [yy, mm, dd] = String(startYmd).split("-").map(Number);
   const start = new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1, 12));
