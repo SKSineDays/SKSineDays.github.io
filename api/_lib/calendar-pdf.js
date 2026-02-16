@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
 import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
 
@@ -97,12 +97,15 @@ export async function renderMonthPdf({
   userMark = "",
   origin
 }) {
-  const W = 612;
-  const H = 792;
+  // Letter landscape (8.5" x 11")
+  const W = 792;
+  const H = 612;
   const margin = 36;
 
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([W, H]);
+  // Explicit white page background (prevents Safari/Preview "black fill" artifacts)
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -128,33 +131,37 @@ export async function renderMonthPdf({
   const rows = weeks.length;
   const cols = 7;
 
-  const cellW = gridW / cols;
-  const cellH = gridH / rows;
+  const gap = 6;
+  const cellW = (gridW - gap * (cols - 1)) / cols;
+  const cellH = (gridH - gap * (rows - 1)) / rows;
+
+  const borderColor = rgb(0.8, 0.8, 0.8);
+  const outFill = rgb(0.97, 0.97, 0.97);
 
   for (let c = 0; c < 7; c++) {
     page.drawText(labels[c], {
-      x: margin + c * cellW + 4,
+      x: margin + c * (cellW + gap) + 4,
       y: headerTop - 2,
       size: 10,
       font: bold
     });
   }
 
-  page.drawRectangle({ x: margin, y: gridBottom, width: gridW, height: gridH, borderWidth: 1 });
-
-  for (let c = 1; c < cols; c++) {
-    page.drawLine({
-      start: { x: margin + c * cellW, y: gridBottom },
-      end: { x: margin + c * cellW, y: gridTop },
-      thickness: 0.75
-    });
-  }
-  for (let r = 1; r < rows; r++) {
-    page.drawLine({
-      start: { x: margin, y: gridBottom + r * cellH },
-      end: { x: margin + gridW, y: gridBottom + r * cellH },
-      thickness: 0.75
-    });
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = weeks[r][c];
+      const x0 = margin + c * (cellW + gap);
+      const y0 = gridTop - (r + 1) * cellH - r * gap;
+      page.drawRectangle({
+        x: x0,
+        y: y0,
+        width: cellW,
+        height: cellH,
+        borderWidth: 1.25,
+        borderColor,
+        color: cell.inMonth ? rgb(1, 1, 1) : outFill
+      });
+    }
   }
 
   const duckSize = 22;
@@ -163,8 +170,8 @@ export async function renderMonthPdf({
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = weeks[r][c];
-      const x0 = margin + c * cellW;
-      const y0 = gridTop - (r + 1) * cellH;
+      const x0 = margin + c * (cellW + gap);
+      const y0 = gridTop - (r + 1) * cellH - r * gap;
 
       if (!cell.inMonth) continue;
 
@@ -215,6 +222,8 @@ export async function renderWeekPdf({
 
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([W, H]);
+  // Explicit white page background (prevents Safari/Preview "black fill" artifacts)
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -254,7 +263,9 @@ export async function renderWeekPdf({
       y: yRow,
       width: W - margin * 2,
       height: rowH,
-      borderWidth: 0.75
+      borderWidth: 1.25,
+      borderColor: rgb(0.8, 0.8, 0.8),
+      color: rgb(1, 1, 1)
     });
 
     page.drawText(dtfDay.format(d), {
