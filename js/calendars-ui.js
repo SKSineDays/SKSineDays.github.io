@@ -162,7 +162,7 @@ export class CalendarsUI {
     this.btnPrint = el("button", "sdcal__action");
     this.btnPrint.type = "button";
     this.btnPrint.textContent = "Print / Save PDF";
-    this.btnPrint.addEventListener("click", () => this.print());
+    this.btnPrint.addEventListener("click", () => this.printPremium());
 
     actions.append(this.btnPrint);
 
@@ -410,5 +410,45 @@ export class CalendarsUI {
       // cleanup after print (Safari safe)
       setTimeout(() => document.body.classList.remove("print-calendar"), 300);
     });
+  }
+
+  async printPremium() {
+    try {
+      const { getSupabaseClient } = await import("./supabase-client.js");
+      const client = await getSupabaseClient();
+
+      const { data: { session } } = await client.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not logged in");
+
+      const active = this._activeProfiles();
+      const profileId = active[0]?.id;
+      if (!profileId) throw new Error("No profile selected");
+
+      const endpoint = this.view === "month" ? "/api/print-monthly" : "/api/print-weekly";
+
+      const payload =
+        this.view === "month"
+          ? { year: this.year, month: this.monthIndex + 1, profileId, locale: this.locale, weekStart: this.weekStart }
+          : {
+              profileId,
+              locale: this.locale,
+              weekStart: this.weekStart,
+              anchorYmd: `${this.weekStartDateUTC.getUTCFullYear()}-${String(this.weekStartDateUTC.getUTCMonth() + 1).padStart(2, "0")}-${String(this.weekStartDateUTC.getUTCDate()).padStart(2, "0")}`
+            };
+
+      const r = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Failed to generate PDF");
+
+      window.location.href = j.url;
+    } catch (e) {
+      alert(e?.message || "Unable to print");
+    }
   }
 }

@@ -1,12 +1,1 @@
-{
-  "name": "sineday",
-  "version": "1.0.0",
-  "description": "SineDay Wave - Your Personal Energy Cycle",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "resend": "^3.0.0",
-    "stripe": "^17.6.0"
-  }
-}
+{"name":"sineday","version":"1.0.0","description":"SineDay Wave - Your Personal Energy Cycle","private":true,"type":"module","dependencies":{"@supabase/supabase-js":"^2.39.0","pdf-lib":"^1.17.1","resend":"^3.0.0","stripe":"^17.6.0"}}
