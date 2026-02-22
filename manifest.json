@@ -1,7 +1,7 @@
 {
-  "name": "SineDay Wave",
+  "name": "SineDay",
   "short_name": "SineDay",
-  "description": "Your personal 18-day energy cycle visualized",
+  "description": "Intrinsic Power Rhythm — a natural 18-day personal power rhythm cycle.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#05060A",

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /login.html
+Disallow: /auth/
+Sitemap: https://sineday.app/sitemap.xml

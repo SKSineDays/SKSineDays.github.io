@@ -26,6 +26,7 @@ export class SineDayUI {
       dayPhase: document.getElementById('day-phase'),
       dayDescription: document.getElementById('day-description'),
       inputContainer: document.getElementById('input-container'),
+      waveIntro: document.getElementById('wave-intro'),
       waveCanvas: document.getElementById('wave-canvas'),
       backgroundImage: document.getElementById('background-image'),
       shareBtn: document.getElementById('share-btn'),
@@ -645,6 +646,10 @@ export class SineDayUI {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.add('visible');
 
+    if (this.elements.waveIntro) {
+      this.elements.waveIntro.classList.remove('hidden');
+    }
+
     // Show hero background when in input mode
     if (this.elements.backgroundImage) {
       this.elements.backgroundImage.classList.add('hero-mode');
@@ -658,6 +663,10 @@ export class SineDayUI {
   hideInput() {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.remove('visible');
+
+    if (this.elements.waveIntro) {
+      this.elements.waveIntro.classList.add('hidden');
+    }
 
     // Fade out hero background when hiding input
     if (this.elements.backgroundImage) {

@@ -95,7 +95,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('SineDay Main BG.png');
+  background-image: url('assets/og-hero.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -111,7 +111,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('SineDay Main BG.png');
+  background-image: url('assets/og-hero.png');
   background-size: 50%;
   background-position: center top;
   background-repeat: no-repeat;
@@ -253,6 +253,70 @@ body {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* ================================
+   Wave Intro (Pre-journey copy)
+   ================================ */
+
+.wave-intro {
+  padding: 0 20px;
+  max-width: 820px;
+  margin: -6px auto 0;
+  text-align: center;
+  position: relative;
+  z-index: 20;
+}
+
+/* Subtitle sits "on the background" */
+.site-subtitle {
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(245, 247, 255, 0.86);
+  margin: 8px 0 14px;
+  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+.seo-h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: rgba(245, 247, 255, 0.95);
+}
+
+/* Subtle glass card for the explanatory copy */
+.wave-intro-card {
+  background: rgba(5, 6, 10, 0.55);
+  border: 1px solid rgba(122, 167, 255, 0.18);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38);
+}
+
+.intro-statement {
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(245, 247, 255, 0.92);
+  margin-bottom: 10px;
+}
+
+.intro-statement strong {
+  color: var(--color-text-primary);
+}
+
+.sovereignty-disclaimer {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(245, 247, 255, 0.70);
+  font-style: italic;
+}
+
+/* Hide in results mode (JS toggles this class) */
+.wave-intro.hidden {
+  display: none;
 }
 
 /* ================================
