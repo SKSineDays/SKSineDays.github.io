@@ -319,6 +319,11 @@ body {
   display: none;
 }
 
+/* Spacing when intro is repositioned at bottom (after Premium) */
+.wave-intro.bottom-placement {
+  margin-top: 40px;
+}
+
 /* ================================
    Input Container
    ================================ */

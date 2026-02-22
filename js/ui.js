@@ -478,6 +478,21 @@ export class SineDayUI {
     // Hide input
     this.hideInput();
 
+    // Move intro card to bottom after premium card (post-DOB state)
+    if (this.elements.waveIntro) {
+      const premiumCard = document.getElementById('premium-card');
+
+      if (premiumCard && premiumCard.parentNode) {
+        premiumCard.parentNode.insertBefore(
+          this.elements.waveIntro,
+          premiumCard.nextSibling
+        );
+      }
+
+      this.elements.waveIntro.classList.remove('hidden');
+      this.elements.waveIntro.classList.add('bottom-placement');
+    }
+
     // Move email card and premium card to bottom (results shown state)
     if (this.elements.emailCard) {
       this.elements.emailCard.classList.add('results-shown');
@@ -646,8 +661,19 @@ export class SineDayUI {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.add('visible');
 
+    // Move intro back under wave for pre-DOB state
     if (this.elements.waveIntro) {
+      const waveContainer = document.querySelector('.wave-container');
+
+      if (waveContainer && waveContainer.parentNode) {
+        waveContainer.parentNode.insertBefore(
+          this.elements.waveIntro,
+          waveContainer.nextSibling
+        );
+      }
+
       this.elements.waveIntro.classList.remove('hidden');
+      this.elements.waveIntro.classList.remove('bottom-placement');
     }
 
     // Show hero background when in input mode
@@ -663,10 +689,6 @@ export class SineDayUI {
   hideInput() {
     if (!this.elements.inputContainer) return;
     this.elements.inputContainer.classList.remove('visible');
-
-    if (this.elements.waveIntro) {
-      this.elements.waveIntro.classList.add('hidden');
-    }
 
     // Fade out hero background when hiding input
     if (this.elements.backgroundImage) {
