@@ -216,14 +216,11 @@ export async function renderWeekPdf({
   userMark = "",
   origin
 }) {
-  const W = 612;
+  const W = 612; // Letter portrait
   const H = 792;
   const margin = 36;
 
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([W, H]);
-  // Explicit white page background (prevents Safari/Preview "black fill" artifacts)
-  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -234,83 +231,120 @@ export async function renderWeekPdf({
   const start = new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1, 12));
 
   const end = addDaysUTC(start, 6);
-  const dtfRange = new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-  const title = `${dtfRange.format(start)} – ${dtfRange.format(end)}` + (titleSuffix ? `  ·  ${titleSuffix}` : "");
+  const dtfRange = new Intl.DateTimeFormat(locale, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  });
+  const title =
+    `${dtfRange.format(start)} – ${dtfRange.format(end)}` +
+    (titleSuffix ? `  ·  ${titleSuffix}` : "");
 
-  page.drawText(title, { x: margin, y: H - margin - 20, size: 16, font: bold });
-  page.drawText(watermarkText(userMark), { x: margin, y: margin - 6 + 18, size: 8, font });
-
-  const dtfDay = new Intl.DateTimeFormat(locale, { weekday: "long", month: "short", day: "numeric", timeZone: "UTC" });
-
-  const top = H - margin - 50;
-  const bottom = margin + 30;
-  const usableH = top - bottom;
-
-  const rowH = usableH / 7;
+  const dtfDay = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC"
+  });
 
   const duckSize = 34;
   const duckGap = 6;
 
-  for (let i = 0; i < 7; i++) {
-    const d = addDaysUTC(start, i);
-    const ymd = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
+  // 2-page weekly: Page 1 = first 4 days, Page 2 = last 3 days
+  const splits = [
+    [0, 1, 2, 3],
+    [4, 5, 6]
+  ];
 
-    const yTop = top - i * rowH;
-    const yRow = yTop - rowH;
+  for (let pageIndex = 0; pageIndex < splits.length; pageIndex++) {
+    const indices = splits[pageIndex];
 
-    page.drawRectangle({
-      x: margin,
-      y: yRow,
-      width: W - margin * 2,
-      height: rowH,
-      borderWidth: 1.25,
-      borderColor: rgb(0.8, 0.8, 0.8),
-      color: rgb(1, 1, 1)
-    });
+    const page = pdf.addPage([W, H]);
 
-    page.drawText(dtfDay.format(d), {
-      x: margin + 6,
-      y: yTop - 16,
-      size: 10,
-      font: bold
-    });
+    // White background (prevents Safari/Preview black fill artifacts)
+    page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
 
-    let xDuck = margin + 6;
-    const yDuck = yTop - 16 - duckSize - 6;
+    // Title + watermark on BOTH pages (so printing single sheets still looks correct)
+    page.drawText(title, { x: margin, y: H - margin - 20, size: 16, font: bold });
+    page.drawText(watermarkText(userMark), { x: margin, y: margin - 6 + 18, size: 8, font });
 
-    for (const p of profiles) {
-      const r1 = calculateSineDayForYmd(p.birthdate, ymd);
-      if (!r1) continue;
+    const top = H - margin - 50;
+    const bottom = margin + 30;
+    const usableH = top - bottom;
 
-      const img = duckCache.get(r1.day);
-      const scale = duckSize / img.height;
+    // Bigger rows because fewer days per page
+    const rowH = usableH / indices.length;
 
-      page.drawImage(img, {
-        x: xDuck,
-        y: yDuck,
-        width: img.width * scale,
-        height: img.height * scale
+    for (let row = 0; row < indices.length; row++) {
+      const i = indices[row];
+      const d = addDaysUTC(start, i);
+      const ymd = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
+
+      const yTop = top - row * rowH;
+      const yRow = yTop - rowH;
+
+      // Day box (white fill + light border)
+      page.drawRectangle({
+        x: margin,
+        y: yRow,
+        width: W - margin * 2,
+        height: rowH,
+        borderWidth: 1.25,
+        borderColor: rgb(0.8, 0.8, 0.8),
+        color: rgb(1, 1, 1)
       });
 
-      xDuck += duckSize + duckGap;
-      if (xDuck > W - margin - duckSize) break;
-    }
-
-    const linesLeft = margin + 6;
-    const linesRight = W - margin - 6;
-    const firstLineY = yRow + 10;
-    const lastLineY = yTop - 18 - duckSize - 14;
-
-    const lineCount = 5;
-    const step = (lastLineY - firstLineY) / (lineCount + 1);
-
-    for (let k = 1; k <= lineCount; k++) {
-      const y = firstLineY + k * step;
-      page.drawLine({
-        start: { x: linesLeft, y },
-        end: { x: linesRight, y },
-        thickness: 0.5
+      // Day label
+      page.drawText(dtfDay.format(d), {
+        x: margin + 6,
+        y: yTop - 16,
+        size: 10,
+        font: bold
       });
+
+      // Ducks
+      let xDuck = margin + 6;
+      const yDuck = yTop - 16 - duckSize - 6;
+
+      for (const p of profiles) {
+        const r1 = calculateSineDayForYmd(p.birthdate, ymd);
+        if (!r1) continue;
+
+        const img = duckCache.get(r1.day);
+        const scale = duckSize / img.height;
+
+        page.drawImage(img, {
+          x: xDuck,
+          y: yDuck,
+          width: img.width * scale,
+          height: img.height * scale
+        });
+
+        xDuck += duckSize + duckGap;
+        if (xDuck > W - margin - duckSize) break;
+      }
+
+      // Writing lines (auto-scale based on available height)
+      const linesLeft = margin + 6;
+      const linesRight = W - margin - 6;
+      const firstLineY = yRow + 10;
+      const lastLineY = yTop - 18 - duckSize - 14;
+      const available = Math.max(0, lastLineY - firstLineY);
+
+      // ~14pt spacing => more lines now that rows are taller
+      const lineCount = Math.max(6, Math.floor(available / 14));
+      const step = available / (lineCount + 1);
+
+      for (let k = 1; k <= lineCount; k++) {
+        const y = firstLineY + k * step;
+        page.drawLine({
+          start: { x: linesLeft, y },
+          end: { x: linesRight, y },
+          thickness: 0.5,
+          color: rgb(0.85, 0.85, 0.85)
+        });
+      }
     }
   }
 
