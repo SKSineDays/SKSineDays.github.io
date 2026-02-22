@@ -1,6 +1,6 @@
 // js/duck-pond.js
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
-import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
+import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));

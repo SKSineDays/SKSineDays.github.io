@@ -13,9 +13,9 @@ import {
   onAuthStateChange
 } from './supabase-client.js';
 import { DuckCarousel } from "./duck-carousel.js";
-import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
+import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
-import { CalendarsUI } from "./calendars-ui.js";
+import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -275,7 +275,7 @@ function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div id="calendar-app"></div>
         <p class="text-muted" style="margin-top:12px;">
-          Tip: Use "Print / Save PDF" to export clean monthly & weekly pages.
+          Tip: Use "Download PDF" to save clean monthly & weekly pages.
         </p>
       `;
 
@@ -283,9 +283,9 @@ function renderSubscriptionStatus() {
       const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
       const weekStart = resolveWeekStart(userSettings);
 
-      // (Re)mount calendars
+      // (Re)mount calendars (PDF-first preview)
       calendarsUI?.destroy?.();
-      calendarsUI = new CalendarsUI(mount, {
+      calendarsUI = new CalendarsPdfUI(mount, {
         locale,
         weekStart,
         profiles

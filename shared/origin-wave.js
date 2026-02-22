@@ -1,4 +1,7 @@
-// js/origin-wave.js
+/**
+ * Origin Wave — single source for origin type (1..18) from DOB.
+ * Shared by client (dashboard, duck-carousel, duck-pond) and server (API).
+ */
 export const ORIGIN_ANCHOR_DATE = "1985-04-20"; // Wave 1 Day 1 (Stephen)
 
 /** Parse YYYY-MM-DD as a UTC timestamp (midnight UTC) */

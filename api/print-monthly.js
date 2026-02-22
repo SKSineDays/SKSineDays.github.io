@@ -1,5 +1,7 @@
 import { authenticateUser, getAdminClient, requirePremium } from "./_lib/auth.js";
 import { renderMonthPdf } from "./_lib/calendar-pdf.js";
+import { extractMonthlyFromTemplate } from "./_lib/template-pdf.js";
+import { getOriginTypeForDob } from "../shared/origin-wave.js";
 
 function getRequestOrigin(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -50,23 +52,40 @@ export default async function handler(req, res) {
 
     if (pErr || !profile) return res.status(404).json({ ok: false, error: "Profile not found" });
 
-    const pdfBytes = await renderMonthPdf({
-      year,
-      monthIndex: month - 1,
-      locale,
-      weekStart,
-      profiles: [profile],
-      titleSuffix: profile.display_name || "",
-      userMark: user.email || user.id,
-      origin: getRequestOrigin(req)
-    });
+    let pdfBytes;
+    const originDay = getOriginTypeForDob(profile.birthdate);
+
+    if (originDay) {
+      pdfBytes = await extractMonthlyFromTemplate({
+        admin,
+        year,
+        month,
+        originDay,
+        profileDisplayName: profile.display_name || "",
+        userMark: user.email || user.id,
+        locale
+      });
+    }
+    if (!pdfBytes) {
+      pdfBytes = await renderMonthPdf({
+        year,
+        monthIndex: month - 1,
+        locale,
+        weekStart,
+        profiles: [profile],
+        titleSuffix: profile.display_name || "",
+        userMark: user.email || user.id,
+        origin: getRequestOrigin(req)
+      });
+    }
 
     const bucket = "prints";
-    const filePath = `monthly/${user.id}/${profile.id}/${year}-${pad2(month)}-${Date.now()}.pdf`;
+    const safeLocale = String(locale).replace(/[^a-zA-Z0-9-]/g, "_").slice(0, 20);
+    const filePath = `monthly/${user.id}/${profile.id}/${year}-${pad2(month)}-ws${weekStart}-loc${safeLocale}.pdf`;
 
     const { error: upErr } = await admin.storage
       .from(bucket)
-      .upload(filePath, pdfBytes, { contentType: "application/pdf", upsert: false });
+      .upload(filePath, pdfBytes, { contentType: "application/pdf", upsert: true });
 
     if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
 

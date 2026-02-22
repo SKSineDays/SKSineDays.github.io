@@ -10,7 +10,7 @@
 //   carousel.destroy()
 
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
-import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "./origin-wave.js";
+import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { calculateSineDayForTimezone, getDayData } from "./sineday-engine.js";
 
 /* ────────────────────────────
