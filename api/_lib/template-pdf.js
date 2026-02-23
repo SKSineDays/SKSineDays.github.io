@@ -10,7 +10,7 @@ import {
   pad2,
   hasTemplatesForYear
 } from "./premium-templates.js";
-import { FOOTER_LINE1, FOOTER_LINE2 } from "../../shared/footer-text.js";
+import { getSineDayCopyrightText } from "../../shared/footer-text.js";
 
 function addDaysUTC(date, days) {
   return new Date(date.getTime() + days * 86400000);
@@ -51,22 +51,15 @@ function getWeekIndexForStartYmd(startYmd, weekStart) {
 }
 
 const FOOTER_SIZE = 9;
-const FOOTER_LINE_HEIGHT = 11;
+const FOOTER_LEFT_MARGIN = 12;
+const FOOTER_BOTTOM = 18;
 
-function drawFooter(page, font, pageW, baseY) {
+function drawFooter(page, font, _pageW, year) {
   const gray = rgb(0.45, 0.45, 0.45);
-  const w1 = font.widthOfTextAtSize(FOOTER_LINE1, FOOTER_SIZE);
-  const w2 = font.widthOfTextAtSize(FOOTER_LINE2, FOOTER_SIZE);
-  page.drawText(FOOTER_LINE1, {
-    x: (pageW - w1) / 2,
-    y: baseY + FOOTER_LINE_HEIGHT,
-    size: FOOTER_SIZE,
-    font,
-    color: gray
-  });
-  page.drawText(FOOTER_LINE2, {
-    x: (pageW - w2) / 2,
-    y: baseY,
+  const text = getSineDayCopyrightText(year);
+  page.drawText(text, {
+    x: FOOTER_LEFT_MARGIN,
+    y: FOOTER_BOTTOM,
     size: FOOTER_SIZE,
     font,
     color: gray
@@ -136,7 +129,7 @@ export async function extractMonthlyFromTemplate({
   const bold = await newDoc.embedFont(StandardFonts.HelveticaBold);
 
   drawNameOnTitleLine(page, { name: profileDisplayName, font: bold });
-  drawFooter(page, font, page.getWidth(), 18);
+  drawFooter(page, font, page.getWidth(), year);
 
   return await newDoc.save();
 }
@@ -182,8 +175,8 @@ export async function extractWeeklyFromTemplate({
   drawNameOnTitleLine(page2, { name: profileDisplayName, font: bold });
 
   for (let i = 0; i < 2; i++) {
-    const page = newDoc.getPage(i);
-    drawFooter(page, font, page.getWidth(), 18);
+    const p = newDoc.getPage(i);
+    drawFooter(p, font, p.getWidth(), year);
   }
 
   return await newDoc.save();

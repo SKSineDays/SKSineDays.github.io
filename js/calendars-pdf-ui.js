@@ -3,6 +3,8 @@
  * Replaces HTML calendar grid with iframe showing the actual PDF.
  */
 
+import { getSineDayCopyrightText } from "../shared/footer-text.js";
+
 const MS_PER_DAY = 86400000;
 
 function pad2(n) {
@@ -144,6 +146,10 @@ export class CalendarsPdfUI {
     this.iframe.setAttribute("title", "Calendar PDF preview");
     this.viewerWrap.append(this.iframe);
 
+    this.copyrightFooter = el("div", "sineday-copyright-footer");
+    this.copyrightFooter.id = "sineday-copyright-footer";
+    this.viewerWrap.append(this.copyrightFooter);
+
     this.root.append(bar, this.content);
     this.content.append(this.viewerWrap, this.loadingOverlay);
 
@@ -205,6 +211,14 @@ export class CalendarsPdfUI {
   }
 
   render() {
+    const year =
+      this.view === "month"
+        ? this.year
+        : this.weekStartDateUTC.getUTCFullYear();
+    if (this.copyrightFooter) {
+      this.copyrightFooter.textContent = getSineDayCopyrightText(year);
+    }
+
     if (this.view === "month") {
       const dtf = new Intl.DateTimeFormat(this.locale, {
         month: "long",

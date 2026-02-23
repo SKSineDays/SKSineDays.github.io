@@ -76,7 +76,7 @@ async function mergeAllPagesInto(masterPdf, pdfBytes) {
 
 async function main() {
   const { year, weekStart, locale, version } = parseArgs();
-  const templateMark = `© SineDay™ ${year}`;
+  // Footer comes from shared footer-text.js (used by calendar-pdf.js)
 
   const origin = process.env.TEMPLATE_ASSET_ORIGIN;
   if (!origin) {
@@ -122,7 +122,6 @@ async function main() {
         weekStart,
         profiles,
         titleSuffix: "",
-        userMark: templateMark,
         origin
       });
       await mergeSinglePageInto(monthlyMaster, one);
@@ -140,7 +139,6 @@ async function main() {
         locale,
         profiles,
         titleSuffix: "",
-        userMark: templateMark,
         origin
       });
       await mergeAllPagesInto(weeklyMaster, twoPages);
