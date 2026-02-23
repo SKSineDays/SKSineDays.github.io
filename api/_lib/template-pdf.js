@@ -10,6 +10,7 @@ import {
   pad2,
   hasTemplatesForYear
 } from "./premium-templates.js";
+import { FOOTER_LINE1, FOOTER_LINE2 } from "../../shared/footer-text.js";
 
 function addDaysUTC(date, days) {
   return new Date(date.getTime() + days * 86400000);
@@ -49,7 +50,28 @@ function getWeekIndexForStartYmd(startYmd, weekStart) {
   return null;
 }
 
-const FOOTER_TEXT = "© SineDay™ 2026";
+const FOOTER_SIZE = 9;
+const FOOTER_LINE_HEIGHT = 11;
+
+function drawFooter(page, font, pageW, baseY) {
+  const gray = rgb(0.45, 0.45, 0.45);
+  const w1 = font.widthOfTextAtSize(FOOTER_LINE1, FOOTER_SIZE);
+  const w2 = font.widthOfTextAtSize(FOOTER_LINE2, FOOTER_SIZE);
+  page.drawText(FOOTER_LINE1, {
+    x: (pageW - w1) / 2,
+    y: baseY + FOOTER_LINE_HEIGHT,
+    size: FOOTER_SIZE,
+    font,
+    color: gray
+  });
+  page.drawText(FOOTER_LINE2, {
+    x: (pageW - w2) / 2,
+    y: baseY,
+    size: FOOTER_SIZE,
+    font,
+    color: gray
+  });
+}
 
 /** Draw name right-aligned on the title line (template already has month/date title). */
 function drawNameOnTitleLine(page, { name, margin = 36, size = 16, font }) {
@@ -114,17 +136,7 @@ export async function extractMonthlyFromTemplate({
   const bold = await newDoc.embedFont(StandardFonts.HelveticaBold);
 
   drawNameOnTitleLine(page, { name: profileDisplayName, font: bold });
-  const pageW = page.getWidth();
-  const footerSize = 9;
-  const footerY = 18;
-  const footerW = font.widthOfTextAtSize(FOOTER_TEXT, footerSize);
-  page.drawText(FOOTER_TEXT, {
-    x: (pageW - footerW) / 2,
-    y: footerY,
-    size: footerSize,
-    font,
-    color: rgb(0.45, 0.45, 0.45)
-  });
+  drawFooter(page, font, page.getWidth(), 18);
 
   return await newDoc.save();
 }
@@ -169,19 +181,9 @@ export async function extractWeeklyFromTemplate({
   drawNameOnTitleLine(page1, { name: profileDisplayName, font: bold });
   drawNameOnTitleLine(page2, { name: profileDisplayName, font: bold });
 
-  const footerSize = 9;
-  const footerY = 18;
   for (let i = 0; i < 2; i++) {
     const page = newDoc.getPage(i);
-    const pageW = page.getWidth();
-    const footerW = font.widthOfTextAtSize(FOOTER_TEXT, footerSize);
-    page.drawText(FOOTER_TEXT, {
-      x: (pageW - footerW) / 2,
-      y: footerY,
-      size: footerSize,
-      font,
-      color: rgb(0.45, 0.45, 0.45)
-    });
+    drawFooter(page, font, page.getWidth(), 18);
   }
 
   return await newDoc.save();

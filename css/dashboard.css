@@ -1539,6 +1539,10 @@ option {
   margin: 0;
 }
 
+.calendar-footer p + p {
+  margin-top: 0.2em;
+}
+
 /* Mobile toolbar stacking */
 @media (max-width: 780px) {
   .sdcal__bar {

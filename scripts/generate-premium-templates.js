@@ -2,6 +2,8 @@
  * Batch-generate 18 premium template PDFs (monthly + weekly) using the existing
  * calendar-pdf render functions. Uploads to Supabase premium_templates bucket.
  *
+ * Regenerate after footer or layout changes to clear any baked-in content.
+ *
  * Run from repo root:
  *   export SUPABASE_URL="..."
  *   export SUPABASE_SERVICE_ROLE_KEY="..."
@@ -12,6 +14,8 @@ import { PDFDocument } from "pdf-lib";
 import { getAdminClient } from "../api/_lib/auth.js";
 import { renderMonthPdf, renderWeekPdf } from "../api/_lib/calendar-pdf.js";
 import { ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function pad2(n) {
   return String(n).padStart(2, "0");
