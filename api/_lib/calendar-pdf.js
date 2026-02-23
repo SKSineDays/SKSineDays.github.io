@@ -84,10 +84,6 @@ async function buildDuckCache(pdf, origin) {
 
 import { FOOTER_LINE1, FOOTER_LINE2 } from "../../shared/footer-text.js";
 
-function watermarkText(year) {
-  return `© SineDay™ ${year}`;
-}
-
 const FOOTER_SIZE = 9;
 const FOOTER_LINE_HEIGHT = 11;
 
@@ -142,7 +138,6 @@ export async function renderMonthPdf({
   page.drawText(title, { x: margin, y: H - margin - 20, size: 18, font: bold });
 
   drawFooter(page, font, W, 18);
-  page.drawText(watermarkText(year), { x: margin, y: margin - 6 + 18, size: 7, font, color: rgb(0.35, 0.35, 0.35) });
 
   const labels = weekdayLabels(locale, weekStart);
   const headerTop = H - margin - 52;
@@ -293,7 +288,6 @@ export async function renderWeekPdf({
     // Title + footer on BOTH pages (so printing single sheets still looks correct)
     page.drawText(title, { x: margin, y: H - margin - 20, size: 16, font: bold });
     drawFooter(page, font, W, 18);
-    page.drawText(watermarkText(yy), { x: margin, y: margin - 6 + 18, size: 7, font, color: rgb(0.35, 0.35, 0.35) });
 
     const top = H - margin - 50;
     const bottom = margin + 30;

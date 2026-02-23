@@ -76,6 +76,7 @@ async function mergeAllPagesInto(masterPdf, pdfBytes) {
 
 async function main() {
   const { year, weekStart, locale, version } = parseArgs();
+  const templateMark = `© SineDay™ ${year}`;
 
   const origin = process.env.TEMPLATE_ASSET_ORIGIN;
   if (!origin) {
@@ -121,7 +122,7 @@ async function main() {
         weekStart,
         profiles,
         titleSuffix: "",
-        userMark: `TEMPLATE origin-${pad2(originDay)}`,
+        userMark: templateMark,
         origin
       });
       await mergeSinglePageInto(monthlyMaster, one);
@@ -139,7 +140,7 @@ async function main() {
         locale,
         profiles,
         titleSuffix: "",
-        userMark: `TEMPLATE origin-${pad2(originDay)}`,
+        userMark: templateMark,
         origin
       });
       await mergeAllPagesInto(weeklyMaster, twoPages);
