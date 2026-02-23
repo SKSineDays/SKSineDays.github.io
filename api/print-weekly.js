@@ -70,6 +70,7 @@ export default async function handler(req, res) {
     if (pErr || !profile) return res.status(404).json({ ok: false, error: "Profile not found" });
 
     let pdfBytes;
+    let source = "render";
     const originDay = getOriginTypeForDob(profile.birthdate);
 
     if (originDay) {
@@ -82,6 +83,7 @@ export default async function handler(req, res) {
         userMark: user.email || user.id,
         locale
       });
+      if (pdfBytes) source = "template";
     }
     if (!pdfBytes) {
       pdfBytes = await renderWeekPdf({
@@ -111,6 +113,7 @@ export default async function handler(req, res) {
 
     if (sErr || !signed?.signedUrl) throw new Error("Failed to create signed URL");
 
+    res.setHeader("x-sineday-source", source);
     return res.status(200).json({ ok: true, url: signed.signedUrl, expiresIn, startYmd });
   } catch (err) {
     if (err?.code === "PREMIUM_REQUIRED") {

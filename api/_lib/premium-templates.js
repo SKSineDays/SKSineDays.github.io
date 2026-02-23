@@ -6,6 +6,13 @@ export const TEMPLATE_BUCKET = "premium_templates";
 export const PRINT_BUCKET = "prints";
 export const TEMPLATE_VERSION = "v1";
 
+// Years we have pre-generated templates for (prefer these)
+export const TEMPLATE_YEARS = [2025, 2026, 2027];
+
+export function hasTemplatesForYear(year) {
+  return TEMPLATE_YEARS.includes(Number(year));
+}
+
 export function pad2(n) {
   return String(n).padStart(2, "0");
 }

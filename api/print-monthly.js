@@ -1,5 +1,6 @@
 import { authenticateUser, getAdminClient, requirePremium } from "./_lib/auth.js";
 import { renderMonthPdf } from "./_lib/calendar-pdf.js";
+import { hasTemplatesForYear } from "./_lib/premium-templates.js";
 import { extractMonthlyFromTemplate } from "./_lib/template-pdf.js";
 import { getOriginTypeForDob } from "../shared/origin-wave.js";
 
@@ -53,9 +54,10 @@ export default async function handler(req, res) {
     if (pErr || !profile) return res.status(404).json({ ok: false, error: "Profile not found" });
 
     let pdfBytes;
+    let source = "render";
     const originDay = getOriginTypeForDob(profile.birthdate);
 
-    if (originDay) {
+    if (originDay && hasTemplatesForYear(year)) {
       pdfBytes = await extractMonthlyFromTemplate({
         admin,
         year,
@@ -65,6 +67,7 @@ export default async function handler(req, res) {
         userMark: user.email || user.id,
         locale
       });
+      if (pdfBytes) source = "template";
     }
     if (!pdfBytes) {
       pdfBytes = await renderMonthPdf({
@@ -96,6 +99,7 @@ export default async function handler(req, res) {
 
     if (sErr || !signed?.signedUrl) throw new Error("Failed to create signed URL");
 
+    res.setHeader("x-sineday-source", source);
     return res.status(200).json({ ok: true, url: signed.signedUrl, expiresIn });
   } catch (err) {
     if (err?.code === "PREMIUM_REQUIRED") {

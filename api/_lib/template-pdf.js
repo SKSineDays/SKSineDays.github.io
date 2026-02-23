@@ -7,7 +7,8 @@ import {
   monthlyTemplatePath,
   weeklyTemplatePath,
   monthToPageIndex,
-  pad2
+  pad2,
+  hasTemplatesForYear
 } from "./premium-templates.js";
 
 function addDaysUTC(date, days) {
@@ -75,6 +76,7 @@ export async function extractMonthlyFromTemplate({
   userMark = "",
   locale = "en-US"
 }) {
+  if (!hasTemplatesForYear(year)) return null;
   const path = monthlyTemplatePath(year, originDay);
   const templateBytes = await downloadTemplate(admin, TEMPLATE_BUCKET, path);
   if (!templateBytes) return null;
@@ -122,8 +124,9 @@ export async function extractWeeklyFromTemplate({
 }) {
   const info = getWeekIndexForStartYmd(startYmd, weekStart);
   if (!info) return null;
-
   const { year, weekIndex } = info;
+  if (!hasTemplatesForYear(year)) return null;
+
   const path = weeklyTemplatePath(year, originDay);
   const templateBytes = await downloadTemplate(admin, TEMPLATE_BUCKET, path);
   if (!templateBytes) return null;
