@@ -23,6 +23,7 @@ import {
   SUPPORTED_LANGUAGES,
   SUPPORTED_REGIONS
 } from "./user-settings.js";
+import { dirFromLocale } from "../shared/i18n.js";
 
 // State
 let currentUser = null;
@@ -390,8 +391,9 @@ function setupLanguageRegionUI() {
   regionSel.value = userSettings?.region || "US";
   weekSel.value = String(userSettings?.week_start ?? -1);
 
-  // Apply lang to document
+  // Apply lang and dir to document
   document.documentElement.lang = langSel.value;
+  document.documentElement.dir = dirFromLocale(`${langSel.value}-${regionSel.value}`);
 
   const applyAndSave = async () => {
     const patch = {
@@ -402,6 +404,7 @@ function setupLanguageRegionUI() {
 
     userSettings = await saveUserSettings(currentUser.id, patch);
     document.documentElement.lang = userSettings.language;
+    document.documentElement.dir = dirFromLocale(`${userSettings.language}-${userSettings.region}`);
 
     const locale = `${userSettings.language}-${userSettings.region}`;
     const weekStart = resolveWeekStart(userSettings);

@@ -2,6 +2,7 @@ import { authenticateUser, getAdminClient, requirePremium } from "./_lib/auth.js
 import { renderWeekPdf } from "./_lib/calendar-pdf.js";
 import { extractWeeklyFromTemplate } from "./_lib/template-pdf.js";
 import { getOriginTypeForDob } from "../shared/origin-wave.js";
+import { isRtlLocale } from "../shared/i18n.js";
 
 function getRequestOrigin(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -72,8 +73,9 @@ export default async function handler(req, res) {
     let pdfBytes;
     let source = "render";
     const originDay = getOriginTypeForDob(profile.birthdate);
+    const rtl = isRtlLocale(locale);
 
-    if (originDay) {
+    if (!rtl && originDay) {
       pdfBytes = await extractWeeklyFromTemplate({
         admin,
         startYmd,

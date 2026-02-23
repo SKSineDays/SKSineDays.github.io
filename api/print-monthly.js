@@ -3,6 +3,7 @@ import { renderMonthPdf } from "./_lib/calendar-pdf.js";
 import { hasTemplatesForYear } from "./_lib/premium-templates.js";
 import { extractMonthlyFromTemplate } from "./_lib/template-pdf.js";
 import { getOriginTypeForDob } from "../shared/origin-wave.js";
+import { isRtlLocale } from "../shared/i18n.js";
 
 function getRequestOrigin(req) {
   const proto = req.headers["x-forwarded-proto"] || "https";
@@ -56,8 +57,9 @@ export default async function handler(req, res) {
     let pdfBytes;
     let source = "render";
     const originDay = getOriginTypeForDob(profile.birthdate);
+    const rtl = isRtlLocale(locale);
 
-    if (originDay && hasTemplatesForYear(year)) {
+    if (!rtl && originDay && hasTemplatesForYear(year)) {
       pdfBytes = await extractMonthlyFromTemplate({
         admin,
         year,

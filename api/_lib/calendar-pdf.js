@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
 import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
+import { isRtlLocale } from "../../shared/i18n.js";
 
 const MS_PER_DAY = 86400000;
 
@@ -131,6 +132,7 @@ export async function renderMonthPdf({
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
   const duckCache = await buildDuckCache(pdf, origin);
+  const rtl = isRtlLocale(locale);
 
   const dtfTitle = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" });
   const title = dtfTitle.format(new Date(Date.UTC(year, monthIndex, 1, 12))) + (titleSuffix ? `  ·  ${titleSuffix}` : "");
@@ -211,13 +213,14 @@ export async function renderMonthPdf({
 
         const img = duckCache.get(r1.day);
         const scale = duckSize / img.height;
+        const w = img.width * scale;
+        const h = img.height * scale;
 
-        page.drawImage(img, {
-          x: xDuck,
-          y: yDuck,
-          width: img.width * scale,
-          height: img.height * scale
-        });
+        if (rtl) {
+          page.drawImage(img, { x: xDuck + w, y: yDuck, width: -w, height: h });
+        } else {
+          page.drawImage(img, { x: xDuck, y: yDuck, width: w, height: h });
+        }
 
         xDuck += duckSize + duckGap;
         if (xDuck > x0 + cellW - duckSize) break;
@@ -246,6 +249,7 @@ export async function renderWeekPdf({
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
   const duckCache = await buildDuckCache(pdf, origin);
+  const rtl = isRtlLocale(locale);
 
   const [yy, mm, dd] = String(startYmd).split("-").map(Number);
   const start = new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1, 12));
@@ -333,13 +337,14 @@ export async function renderWeekPdf({
 
         const img = duckCache.get(r1.day);
         const scale = duckSize / img.height;
+        const w = img.width * scale;
+        const h = img.height * scale;
 
-        page.drawImage(img, {
-          x: xDuck,
-          y: yDuck,
-          width: img.width * scale,
-          height: img.height * scale
-        });
+        if (rtl) {
+          page.drawImage(img, { x: xDuck + w, y: yDuck, width: -w, height: h });
+        } else {
+          page.drawImage(img, { x: xDuck, y: yDuck, width: w, height: h });
+        }
 
         xDuck += duckSize + duckGap;
         if (xDuck > W - margin - duckSize) break;

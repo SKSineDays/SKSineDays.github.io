@@ -10,7 +10,8 @@ export const SUPPORTED_LANGUAGES = [
   { value: "pt", label: "Português" },
   { value: "it", label: "Italiano" },
   { value: "ja", label: "日本語" },
-  { value: "zh", label: "中文" }
+  { value: "zh", label: "中文" },
+  { value: "ar", label: "العربية" }
 ];
 
 export const SUPPORTED_REGIONS = [
@@ -25,7 +26,8 @@ export const SUPPORTED_REGIONS = [
   { value: "ES", label: "Spain" },
   { value: "MX", label: "Mexico" },
   { value: "BR", label: "Brazil" },
-  { value: "JP", label: "Japan" }
+  { value: "JP", label: "Japan" },
+  { value: "SA", label: "Saudi Arabia" }
 ];
 
 function inferBrowserLanguageRegion() {
@@ -86,6 +88,18 @@ export async function loadUserSettings(userId) {
 
     const merged = { ...defaults, ...(data || {}) };
     localStorage.setItem(lsKey, JSON.stringify(merged));
+
+    // If no row exists yet, silently persist inferred defaults once
+    if (!data) {
+      try {
+        await client
+          .from("user_settings")
+          .upsert({ user_id: userId, ...merged }, { onConflict: "user_id" });
+      } catch (e) {
+        console.warn("[user_settings] bootstrap upsert failed:", e);
+      }
+    }
+
     return merged;
   } catch (e) {
     console.warn("[user_settings] load failed:", e);
