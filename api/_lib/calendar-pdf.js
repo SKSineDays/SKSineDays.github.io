@@ -55,7 +55,8 @@ function weekdayLabels(locale, weekStart) {
   const baseSun = new Date(Date.UTC(2023, 0, 1, 12)); // Sunday
   const labels = [];
   for (let i = 0; i < 7; i++) labels.push(dtf.format(addDaysUTC(baseSun, i)));
-  return labels.slice(weekStart).concat(labels.slice(0, weekStart));
+  const ordered = labels.slice(weekStart).concat(labels.slice(0, weekStart));
+  return isRtlLocale(locale) ? ordered.slice().reverse() : ordered;
 }
 
 async function loadDuckPngBytes(relativePath, origin) {
@@ -171,7 +172,8 @@ export async function renderMonthPdf({
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const cell = weeks[r][c];
+      const dc = rtl ? cols - 1 - c : c;
+      const cell = weeks[r][dc];
       const x0 = margin + c * (cellW + gap);
       const y0 = gridTop - (r + 1) * cellH - r * gap;
       page.drawRectangle({
@@ -191,7 +193,8 @@ export async function renderMonthPdf({
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const cell = weeks[r][c];
+      const dc = rtl ? cols - 1 - c : c;
+      const cell = weeks[r][dc];
       const x0 = margin + c * (cellW + gap);
       const y0 = gridTop - (r + 1) * cellH - r * gap;
 

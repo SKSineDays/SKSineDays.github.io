@@ -1483,6 +1483,14 @@ html[dir="rtl"] .sdcal__duck {
   transform: scaleX(-1);
 }
 
+html[dir="rtl"] .sdcal__month {
+  direction: rtl;
+}
+html[dir="rtl"] .sdcal__month .sdcal__cell,
+html[dir="rtl"] .sdcal__month .sdcal__weekdays {
+  direction: rtl;
+}
+
 .sdcal__duck-wrap {
   display: flex;
   flex-direction: column;

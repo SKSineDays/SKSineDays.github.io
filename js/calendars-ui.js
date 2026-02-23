@@ -1,6 +1,7 @@
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { calculateSineDayForYmd } from "./sineday-engine.js";
 import { FOOTER_LINE1, FOOTER_LINE2 } from "../shared/footer-text.js";
+import { isRtlLocale } from "../shared/i18n.js";
 
 const MS_PER_DAY = 86400000;
 
@@ -262,7 +263,9 @@ export class CalendarsUI {
       labels.push(dtf.format(d));
     }
     // reorder based on weekStart
-    return labels.slice(this.weekStart).concat(labels.slice(0, this.weekStart));
+    const ordered = labels.slice(this.weekStart).concat(labels.slice(0, this.weekStart));
+    // RTL: reverse visual order so first weekday reads on the right
+    return isRtlLocale(this.locale) ? ordered.slice().reverse() : ordered;
   }
 
   render() {
@@ -316,9 +319,11 @@ export class CalendarsUI {
 
     const weeks = monthMatrixUTC(this.year, this.monthIndex, this.weekStart);
     const grid = el("div", "sdcal__grid");
+    const rtl = isRtlLocale(this.locale);
 
     for (const week of weeks) {
-      for (const cell of week) {
+      const cols = rtl ? week.slice().reverse() : week;
+      for (const cell of cols) {
         const dayCell = el("div", "sdcal__cell");
         dayCell.classList.toggle("is-out", !cell.inMonth);
 
