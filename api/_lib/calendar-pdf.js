@@ -84,25 +84,18 @@ async function buildDuckCache(pdf, origin) {
   return cache;
 }
 
-import { FOOTER_LINE1, FOOTER_LINE2 } from "../../shared/footer-text.js";
+import { getSineDayCopyrightText } from "../../shared/footer-text.js";
 
 const FOOTER_SIZE = 9;
-const FOOTER_LINE_HEIGHT = 11;
+const FOOTER_LEFT_MARGIN = 12;
+const FOOTER_BOTTOM = 18;
 
-function drawFooter(page, font, pageW, baseY) {
+function drawFooter(page, font, _pageW, year) {
   const gray = rgb(0.45, 0.45, 0.45);
-  const w1 = font.widthOfTextAtSize(FOOTER_LINE1, FOOTER_SIZE);
-  const w2 = font.widthOfTextAtSize(FOOTER_LINE2, FOOTER_SIZE);
-  page.drawText(FOOTER_LINE1, {
-    x: (pageW - w1) / 2,
-    y: baseY + FOOTER_LINE_HEIGHT,
-    size: FOOTER_SIZE,
-    font,
-    color: gray
-  });
-  page.drawText(FOOTER_LINE2, {
-    x: (pageW - w2) / 2,
-    y: baseY,
+  const text = getSineDayCopyrightText(year);
+  page.drawText(text, {
+    x: FOOTER_LEFT_MARGIN,
+    y: FOOTER_BOTTOM,
     size: FOOTER_SIZE,
     font,
     color: gray
@@ -140,7 +133,7 @@ export async function renderMonthPdf({
 
   page.drawText(title, { x: margin, y: H - margin - 20, size: 18, font: bold });
 
-  drawFooter(page, font, W, 18);
+  drawFooter(page, font, W, year);
 
   const labels = weekdayLabels(locale, weekStart);
   const headerTop = H - margin - 52;
@@ -294,7 +287,7 @@ export async function renderWeekPdf({
 
     // Title + footer on BOTH pages (so printing single sheets still looks correct)
     page.drawText(title, { x: margin, y: H - margin - 20, size: 16, font: bold });
-    drawFooter(page, font, W, 18);
+    drawFooter(page, font, W, yy);
 
     const top = H - margin - 50;
     const bottom = margin + 30;

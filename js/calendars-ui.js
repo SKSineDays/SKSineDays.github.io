@@ -1,6 +1,6 @@
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { calculateSineDayForYmd } from "./sineday-engine.js";
-import { FOOTER_LINE1, FOOTER_LINE2 } from "../shared/footer-text.js";
+import { getSineDayCopyrightText } from "../shared/footer-text.js";
 import { isRtlLocale } from "../shared/i18n.js";
 
 const MS_PER_DAY = 86400000;
@@ -346,12 +346,9 @@ export class CalendarsUI {
 
     wrap.append(grid);
 
-    const footer = el("div", "calendar-footer");
-    const line1 = el("p", "");
-    line1.textContent = FOOTER_LINE1;
-    const line2 = el("p", "");
-    line2.textContent = FOOTER_LINE2;
-    footer.append(line1, line2);
+    const footer = el("div", "sineday-copyright-footer");
+    footer.id = "sineday-copyright-footer";
+    footer.textContent = getSineDayCopyrightText(this.year);
     wrap.append(footer);
 
     return wrap;
@@ -388,12 +385,9 @@ export class CalendarsUI {
       wrap.append(row);
     }
 
-    const footer = el("div", "calendar-footer");
-    const line1 = el("p", "");
-    line1.textContent = FOOTER_LINE1;
-    const line2 = el("p", "");
-    line2.textContent = FOOTER_LINE2;
-    footer.append(line1, line2);
+    const footer = el("div", "sineday-copyright-footer");
+    footer.id = "sineday-copyright-footer";
+    footer.textContent = getSineDayCopyrightText(this.weekStartDateUTC.getUTCFullYear());
     wrap.append(footer);
 
     return wrap;

@@ -1539,20 +1539,22 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   );
 }
 
-.calendar-footer {
-  text-align: center;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  margin-top: 12px;
-  opacity: 0.6;
+/* Copyright footer: bottom-left in calendar preview */
+.sineday-copyright-footer {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
 }
 
-.calendar-footer p {
-  margin: 0;
-}
-
-.calendar-footer p + p {
-  margin-top: 0.2em;
+/* Ensure calendar containers can anchor absolutely positioned footer */
+.sdcal__month,
+.sdcal__week,
+.sdcal__content {
+  position: relative;
 }
 
 /* Mobile toolbar stacking */
@@ -1765,11 +1767,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
     ) !important;
   }
 
-  body.print-calendar .calendar-footer {
+  body.print-calendar .sineday-copyright-footer {
     font-size: 9pt;
-    letter-spacing: 0.05em;
-    margin-top: 12pt;
-    opacity: 0.5;
+    opacity: 0.75;
     color: #555 !important;
   }
 
