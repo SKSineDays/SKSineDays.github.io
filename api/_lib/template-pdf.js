@@ -54,6 +54,28 @@ function watermarkText(userEmailOrId) {
   return `Generated for ${userEmailOrId} • ${ts}`;
 }
 
+/** Draw name right-aligned on the title line (template already has month/date title). */
+function drawNameOnTitleLine(page, { name, margin = 36, size = 16, font }) {
+  if (!name) return;
+
+  const label = `· ${name}`;
+  const w = page.getWidth();
+
+  const textW = font.widthOfTextAtSize(label, size);
+  const x = Math.max(margin, w - margin - textW);
+
+  // Match the template title Y position (same as calendar-pdf.js)
+  const y = page.getHeight() - margin - 20;
+
+  page.drawText(label, {
+    x,
+    y,
+    size,
+    font,
+    color: rgb(0, 0, 0)
+  });
+}
+
 /**
  * Download template from Supabase Storage.
  * @returns {Promise<Uint8Array|null>} template bytes or null if not found
@@ -91,20 +113,10 @@ export async function extractMonthlyFromTemplate({
   newDoc.addPage(copiedPage);
 
   const page = newDoc.getPage(0);
-  const { height } = page.getSize();
   const font = await newDoc.embedFont(StandardFonts.Helvetica);
   const bold = await newDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const dtfTitle = new Intl.DateTimeFormat(locale, {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC"
-  });
-  const title =
-    dtfTitle.format(new Date(Date.UTC(year, month - 1, 1, 12))) +
-    (profileDisplayName ? `  ·  ${profileDisplayName}` : "");
-
-  page.drawText(title, { x: 48, y: height - 40, size: 18, font: bold });
+  drawNameOnTitleLine(page, { name: profileDisplayName, font: bold });
   page.drawText(watermarkText(userMark), { x: 48, y: 36, size: 8, font });
 
   return await newDoc.save();
@@ -142,26 +154,16 @@ export async function extractWeeklyFromTemplate({
   newDoc.addPage(p0);
   newDoc.addPage(p1);
 
-  const [yy, mm, dd] = startYmd.split("-").map(Number);
-  const start = new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1, 12));
-  const end = addDaysUTC(start, 6);
-  const dtfRange = new Intl.DateTimeFormat(locale, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC"
-  });
-  const title =
-    `${dtfRange.format(start)} – ${dtfRange.format(end)}` +
-    (profileDisplayName ? `  ·  ${profileDisplayName}` : "");
-
   const font = await newDoc.embedFont(StandardFonts.Helvetica);
   const bold = await newDoc.embedFont(StandardFonts.HelveticaBold);
 
+  const page1 = newDoc.getPage(0);
+  const page2 = newDoc.getPage(1);
+  drawNameOnTitleLine(page1, { name: profileDisplayName, font: bold });
+  drawNameOnTitleLine(page2, { name: profileDisplayName, font: bold });
+
   for (let i = 0; i < 2; i++) {
     const page = newDoc.getPage(i);
-    const { height } = page.getSize();
-    page.drawText(title, { x: 48, y: height - 40, size: 16, font: bold });
     page.drawText(watermarkText(userMark), { x: 48, y: 36, size: 8, font });
   }
 
