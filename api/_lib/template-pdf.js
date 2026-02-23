@@ -53,6 +53,10 @@ function getWeekIndexForStartYmd(startYmd, weekStart) {
 const FOOTER_SIZE = 9;
 const FOOTER_LINE_HEIGHT = 11;
 
+function watermarkText(year) {
+  return `© SineDay™ ${year}`;
+}
+
 function drawFooter(page, font, pageW, baseY) {
   const gray = rgb(0.45, 0.45, 0.45);
   const w1 = font.widthOfTextAtSize(FOOTER_LINE1, FOOTER_SIZE);
@@ -137,6 +141,7 @@ export async function extractMonthlyFromTemplate({
 
   drawNameOnTitleLine(page, { name: profileDisplayName, font: bold });
   drawFooter(page, font, page.getWidth(), 18);
+  page.drawText(watermarkText(year), { x: 48, y: 36, size: 7, font, color: rgb(0.35, 0.35, 0.35) });
 
   return await newDoc.save();
 }
@@ -184,6 +189,7 @@ export async function extractWeeklyFromTemplate({
   for (let i = 0; i < 2; i++) {
     const page = newDoc.getPage(i);
     drawFooter(page, font, page.getWidth(), 18);
+    page.drawText(watermarkText(year), { x: 48, y: 36, size: 7, font, color: rgb(0.35, 0.35, 0.35) });
   }
 
   return await newDoc.save();
