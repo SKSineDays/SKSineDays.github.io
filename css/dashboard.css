@@ -1527,6 +1527,18 @@ option {
   );
 }
 
+.calendar-footer {
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-top: 12px;
+  opacity: 0.6;
+}
+
+.calendar-footer p {
+  margin: 0;
+}
+
 /* Mobile toolbar stacking */
 @media (max-width: 780px) {
   .sdcal__bar {
@@ -1735,6 +1747,14 @@ option {
       transparent 16pt,
       #e0e0e0 16.5pt
     ) !important;
+  }
+
+  body.print-calendar .calendar-footer {
+    font-size: 9pt;
+    letter-spacing: 0.05em;
+    margin-top: 12pt;
+    opacity: 0.5;
+    color: #555 !important;
   }
 
   body.print-calendar .sdcal__duck-wrap {

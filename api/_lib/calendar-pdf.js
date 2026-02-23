@@ -82,10 +82,7 @@ async function buildDuckCache(pdf, origin) {
   return cache;
 }
 
-function watermarkText(userEmailOrId) {
-  const ts = new Date().toISOString();
-  return `Generated for ${userEmailOrId} • ${ts}`;
-}
+const FOOTER_TEXT = "© SineDay™ 2026";
 
 export async function renderMonthPdf({
   year,
@@ -117,7 +114,16 @@ export async function renderMonthPdf({
 
   page.drawText(title, { x: margin, y: H - margin - 20, size: 18, font: bold });
 
-  page.drawText(watermarkText(userMark), { x: margin, y: margin - 6 + 18, size: 8, font });
+  const footerSize = 9;
+  const footerY = 18;
+  const footerW = font.widthOfTextAtSize(FOOTER_TEXT, footerSize);
+  page.drawText(FOOTER_TEXT, {
+    x: (W - footerW) / 2,
+    y: footerY,
+    size: footerSize,
+    font,
+    color: rgb(0.45, 0.45, 0.45)
+  });
 
   const labels = weekdayLabels(locale, weekStart);
   const headerTop = H - margin - 52;
@@ -265,9 +271,18 @@ export async function renderWeekPdf({
     // White background (prevents Safari/Preview black fill artifacts)
     page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
 
-    // Title + watermark on BOTH pages (so printing single sheets still looks correct)
+    // Title + footer on BOTH pages (so printing single sheets still looks correct)
     page.drawText(title, { x: margin, y: H - margin - 20, size: 16, font: bold });
-    page.drawText(watermarkText(userMark), { x: margin, y: margin - 6 + 18, size: 8, font });
+    const footerSize = 9;
+    const footerY = 18;
+    const footerW = font.widthOfTextAtSize(FOOTER_TEXT, footerSize);
+    page.drawText(FOOTER_TEXT, {
+      x: (W - footerW) / 2,
+      y: footerY,
+      size: footerSize,
+      font,
+      color: rgb(0.45, 0.45, 0.45)
+    });
 
     const top = H - margin - 50;
     const bottom = margin + 30;

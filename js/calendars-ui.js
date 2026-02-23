@@ -339,6 +339,13 @@ export class CalendarsUI {
     }
 
     wrap.append(grid);
+
+    const footer = el("div", "calendar-footer");
+    const footerP = el("p", "");
+    footerP.textContent = "© SineDay™ 2026";
+    footer.append(footerP);
+    wrap.append(footer);
+
     return wrap;
   }
 
@@ -372,6 +379,12 @@ export class CalendarsUI {
       row.append(header, ducks, notes);
       wrap.append(row);
     }
+
+    const footer = el("div", "calendar-footer");
+    const footerP = el("p", "");
+    footerP.textContent = "© SineDay™ 2026";
+    footer.append(footerP);
+    wrap.append(footer);
 
     return wrap;
   }
