@@ -435,10 +435,10 @@ export function calculateSineDayForTimezone(birthdateInput, timeZone) {
   // Parse birthdate safely as local date components
   const [year, month, day] = birthdateInput.split("-").map(Number);
 
-  // Anchor birthdate at LOCAL noon to avoid DST edge cases
-  const birthLocal = new Date(year, month - 1, day, 12, 0, 0);
+  // Anchor birthdate at UTC noon — avoids DST skew when compared to todayMs
+  const birthMs = Date.UTC(year, month - 1, day, 12, 0, 0);
 
-  // Get today's date in the user's timezone
+  // Get today's civil date (Y-M-D) in the user's timezone
   const now = new Date();
 
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -453,10 +453,10 @@ export function calculateSineDayForTimezone(birthdateInput, timeZone) {
   const todayMonth = Number(parts.find(p => p.type === "month").value);
   const todayDay = Number(parts.find(p => p.type === "day").value);
 
-  // Anchor today at LOCAL noon
-  const todayLocal = new Date(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
+  // Anchor today at UTC noon — consistent with birthMs, avoids DST off-by-one
+  const todayMs = Date.UTC(todayYear, todayMonth - 1, todayDay, 12, 0, 0);
 
-  const diffMs = todayLocal - birthLocal;
+  const diffMs = todayMs - birthMs;
   const daysLived = Math.floor(diffMs / 86400000);
 
   const cycleDay = ((daysLived % 18) + 18) % 18 + 1;
