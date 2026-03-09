@@ -16,6 +16,7 @@ import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
+import { PlannerUI } from "./planner-ui.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -32,6 +33,7 @@ let profiles = [];
 let duckCarousel = null;
 let addProfileUI = null;
 let calendarsUI = null;
+let plannerUI = null;
 let userSettings = null;
 
 /**
@@ -87,6 +89,10 @@ async function init() {
         if (duckCarousel) {
           duckCarousel.destroy();
           duckCarousel = null;
+        }
+        if (plannerUI) {
+          plannerUI.destroy();
+          plannerUI = null;
         }
         window.location.href = '/login.html';
       }
@@ -266,6 +272,112 @@ function renderProfiles() {
   if (duckCarousel) duckCarousel.setProfiles(profiles);
   calendarsUI?.setProfiles?.(profiles);
   calendarsUI?.setOwnerProfile?.(getOwnerProfile());
+  plannerUI?.setOwnerProfile?.(getOwnerProfile());
+}
+
+/**
+ * Mount standalone Planner section (owner-only, premium-gated)
+ */
+async function mountPlannerSection() {
+  const section = document.getElementById("planner-section");
+  if (!section) return;
+
+  // Destroy previous instance
+  if (plannerUI) {
+    plannerUI.destroy();
+    plannerUI = null;
+  }
+
+  // Gate: must be premium + have owner profile
+  if (!isPaid()) {
+    section.innerHTML = "";
+    return;
+  }
+
+  const ownerProfile = getOwnerProfile();
+  if (!ownerProfile) {
+    section.innerHTML = "";
+    return;
+  }
+
+  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const weekStart = resolveWeekStart(userSettings);
+  const client = await getSupabaseClient();
+
+  // Build the frame chrome
+  const frame = document.createElement("div");
+  frame.className = "planner-frame";
+
+  // Header row: title + nav
+  const header = document.createElement("div");
+  header.className = "planner-frame__header";
+
+  const title = document.createElement("div");
+  title.className = "planner-frame__title";
+  title.textContent = "Weekly Planner";
+
+  const nav = document.createElement("div");
+  nav.className = "planner-frame__nav";
+
+  const btnPrev = document.createElement("button");
+  btnPrev.className = "planner-frame__navbtn";
+  btnPrev.type = "button";
+  btnPrev.textContent = "←";
+  btnPrev.setAttribute("aria-label", "Previous week");
+
+  const rangeLabel = document.createElement("div");
+  rangeLabel.className = "planner-frame__range";
+
+  const btnNext = document.createElement("button");
+  btnNext.className = "planner-frame__navbtn";
+  btnNext.type = "button";
+  btnNext.textContent = "→";
+  btnNext.setAttribute("aria-label", "Next week");
+
+  nav.append(btnPrev, rangeLabel, btnNext);
+  header.append(title, nav);
+
+  const mount = document.createElement("div");
+  mount.className = "planner-mount";
+
+  frame.append(header, mount);
+
+  section.innerHTML = "";
+  section.append(frame);
+
+  // Instantiate PlannerUI
+  plannerUI = new PlannerUI(mount, {
+    locale,
+    weekStart,
+    ownerProfile,
+    supabaseClient: client,
+    userId: currentUser.id,
+  });
+
+  // Helper to update the range label
+  function updateRangeLabel() {
+    const start = plannerUI.weekStartDateUTC;
+    const end = new Date(start.getTime() + 6 * 86400000);
+    const dtf = new Intl.DateTimeFormat(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    rangeLabel.textContent = `${dtf.format(start)} – ${dtf.format(end)}`;
+  }
+
+  updateRangeLabel();
+
+  btnPrev.addEventListener("click", () => {
+    plannerUI.navigateWeek(-1);
+    updateRangeLabel();
+  });
+
+  btnNext.addEventListener("click", () => {
+    plannerUI.navigateWeek(1);
+    updateRangeLabel();
+  });
 }
 
 /**
@@ -324,6 +436,9 @@ async function renderSubscriptionStatus() {
         ownerProfile
       });
     }
+
+    // Mount standalone planner
+    await mountPlannerSection();
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -339,6 +454,11 @@ async function renderSubscriptionStatus() {
         </div>
       `;
     }
+
+    // Clear planner for free users
+    const plannerSection = document.getElementById("planner-section");
+    if (plannerSection) plannerSection.innerHTML = "";
+    if (plannerUI) { plannerUI.destroy(); plannerUI = null; }
   }
 }
 
@@ -442,6 +562,7 @@ function setupLanguageRegionUI() {
     const weekStart = resolveWeekStart(userSettings);
 
     calendarsUI?.setSettings({ locale, weekStart });
+    plannerUI?.setSettings({ locale, weekStart });
   };
 
   langSel.addEventListener("change", applyAndSave);

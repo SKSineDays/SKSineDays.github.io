@@ -4,7 +4,6 @@
  */
 
 import { getSineDayCopyrightText } from "../shared/footer-text.js";
-import { PlannerUI } from "./planner-ui.js";
 
 const MS_PER_DAY = 86400000;
 
@@ -49,7 +48,6 @@ export class CalendarsPdfUI {
     this.supabaseClient = opts.supabaseClient || null;
     this.userId = opts.userId || null;
     this.ownerProfile = opts.ownerProfile || null;
-    this.plannerUI = null;
     this._build();
     this.render();
   }
@@ -79,7 +77,6 @@ export class CalendarsPdfUI {
 
   setOwnerProfile(profile) {
     this.ownerProfile = profile || null;
-    this.plannerUI?.setOwnerProfile?.(profile);
     this.render();
   }
 
@@ -95,7 +92,6 @@ export class CalendarsPdfUI {
       this.view = "month";
       this.btnMonth.classList.add("is-active");
       this.btnWeek.classList.remove("is-active");
-      this.btnPlanner.classList.remove("is-active");
       this.render();
     });
 
@@ -106,23 +102,11 @@ export class CalendarsPdfUI {
       this.view = "week";
       this.btnWeek.classList.add("is-active");
       this.btnMonth.classList.remove("is-active");
-      this.btnPlanner.classList.remove("is-active");
-      this.render();
-    });
-
-    this.btnPlanner = el("button", "sdcal__tab");
-    this.btnPlanner.type = "button";
-    this.btnPlanner.textContent = "Planner";
-    this.btnPlanner.addEventListener("click", () => {
-      this.view = "planner";
-      this.btnPlanner.classList.add("is-active");
-      this.btnMonth.classList.remove("is-active");
-      this.btnWeek.classList.remove("is-active");
       this.render();
     });
 
     const tabs = el("div", "sdcal__tabs");
-    tabs.append(this.btnMonth, this.btnWeek, this.btnPlanner);
+    tabs.append(this.btnMonth, this.btnWeek);
 
     this.filterWrap = el("div", "sdcal__filter");
     const filterLabel = el("label", "sdcal__label");
@@ -192,7 +176,7 @@ export class CalendarsPdfUI {
           this.monthIndex = 11;
           this.year--;
         }
-      } else if (this.view === "planner" || this.view === "week") {
+      } else if (this.view === "week") {
         this.weekStartDateUTC = addDaysUTC(this.weekStartDateUTC, -7);
       }
       this.render();
@@ -205,7 +189,7 @@ export class CalendarsPdfUI {
           this.monthIndex = 0;
           this.year++;
         }
-      } else if (this.view === "planner" || this.view === "week") {
+      } else if (this.view === "week") {
         this.weekStartDateUTC = addDaysUTC(this.weekStartDateUTC, 7);
       }
       this.render();
@@ -248,16 +232,7 @@ export class CalendarsPdfUI {
       this.copyrightFooter.textContent = getSineDayCopyrightText(year);
     }
 
-    if (this.view === "planner") {
-      const end = addDaysUTC(this.weekStartDateUTC, 6);
-      const dtf = new Intl.DateTimeFormat(this.locale, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "UTC"
-      });
-      this.title.textContent = `${dtf.format(this.weekStartDateUTC)} – ${dtf.format(end)}`;
-    } else if (this.view === "month") {
+    if (this.view === "month") {
       const dtf = new Intl.DateTimeFormat(this.locale, {
         month: "long",
         year: "numeric",
@@ -277,53 +252,19 @@ export class CalendarsPdfUI {
       this.title.textContent = `${dtf.format(this.weekStartDateUTC)} – ${dtf.format(end)}`;
     }
 
-    this.btnDownload.style.display = this.view === "planner" ? "none" : "";
-    this.filterWrap.style.display = this.view === "planner" ? "none" : "";
-
-    if (this.plannerUI) {
-      this.plannerUI.destroy();
-      this.plannerUI = null;
-    }
-
     this.content.innerHTML = "";
     this.content.append(this.viewerWrap, this.loadingOverlay);
 
-    if (this.view === "planner") {
+    if (this.profiles.length === 0) {
+      const empty = el("div", "sdcal__empty");
+      empty.textContent = "Add at least one profile to generate calendars.";
+      this.content.append(empty);
       this.viewerWrap.style.display = "none";
       this.loadingOverlay.style.display = "none";
-
-      if (!this.ownerProfile) {
-        const empty = el("div", "sdcal__empty");
-        empty.textContent = "Planner notes are available for your owner profile.";
-        this.content.append(empty);
-        return;
-      }
-
-      const plannerMount = el("div", "planner-mount");
-      this.content.append(plannerMount);
-      this.plannerUI = new PlannerUI(plannerMount, {
-        locale: this.locale,
-        weekStart: this.weekStart,
-        ownerProfile: this.ownerProfile,
-        supabaseClient: this.supabaseClient,
-        userId: this.userId
-      });
-      this.plannerUI.weekStartDateUTC = this.weekStartDateUTC;
-      this.plannerUI.setOwnerProfile(this.ownerProfile);
-      this.plannerUI.setSettings({ locale: this.locale, weekStart: this.weekStart });
-      this.plannerUI.render();
-    } else {
-      if (this.profiles.length === 0) {
-        const empty = el("div", "sdcal__empty");
-        empty.textContent = "Add at least one profile to generate calendars.";
-        this.content.append(empty);
-        this.viewerWrap.style.display = "none";
-        this.loadingOverlay.style.display = "none";
-        return;
-      }
-      this.viewerWrap.style.display = "";
-      this.refreshPdfPreview();
+      return;
     }
+    this.viewerWrap.style.display = "";
+    this.refreshPdfPreview();
   }
 
   async refreshPdfPreview() {

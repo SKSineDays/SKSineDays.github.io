@@ -1907,10 +1907,77 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border: 1px solid rgba(var(--color-accent-rgb), 0.25);
 }
 
-/* ─────────────────────────────
-   Planner Notes (owner profile only)
-   ───────────────────────────── */
+/* ===========================
+   Planner — Standalone Section
+   =========================== */
 
+.planner-frame {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 20px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: grid;
+  gap: 14px;
+}
+
+.planner-frame__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.planner-frame__title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.01em;
+}
+
+.planner-frame__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.planner-frame__navbtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planner-frame__navbtn:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.planner-frame__range {
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: center;
+  min-width: 180px;
+}
+
+.planner-frame__empty {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.02);
+  color: #555;
+  text-align: center;
+}
+
+/* Planner day cards */
 .planner-mount {
   display: grid;
   gap: 10px;
@@ -1918,14 +1985,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__week {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .planner__day {
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.015);
+  padding: 16px;
   display: grid;
   gap: 10px;
 }
@@ -1934,30 +2001,31 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .planner__day-label {
   font-weight: 900;
-  color: var(--color-text-primary);
+  font-size: 15px;
+  color: #1a1a1a;
 }
 
 .planner__duck-wrap {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .planner__duck {
-  width: 36px;
-  height: 36px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
 }
 
 .planner__duck-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-text-secondary);
+  color: #555;
   white-space: nowrap;
 }
 
@@ -1966,12 +2034,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-height: 100px;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text-primary);
+  color: #1a1a1a;
   resize: vertical;
   transition: border-color 0.15s ease;
 }
@@ -1979,16 +2047,16 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner__textarea:focus {
   outline: none;
   border-color: rgba(var(--color-accent-rgb), 0.5);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.01);
 }
 
 .planner__textarea::placeholder {
-  color: var(--color-text-muted);
+  color: #999;
 }
 
 .planner__save-indicator {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: #555;
   text-align: right;
   min-height: 16px;
   opacity: 0;
