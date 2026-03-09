@@ -160,11 +160,11 @@ async function loadSubscription() {
       currentSubscription = data;
     }
 
-    renderSubscriptionStatus();
+    await renderSubscriptionStatus();
   } catch (error) {
     console.error('Error loading subscription:', error);
     currentSubscription = null;
-    renderSubscriptionStatus();
+    await renderSubscriptionStatus();
   }
 }
 
@@ -265,12 +265,13 @@ function renderProfiles() {
   if (!duckCarousel) ensureDuckCarousel();
   if (duckCarousel) duckCarousel.setProfiles(profiles);
   calendarsUI?.setProfiles?.(profiles);
+  calendarsUI?.setOwnerProfile?.(getOwnerProfile());
 }
 
 /**
  * Render subscription status (single source: plan pill + renewal in drawer)
  */
-function renderSubscriptionStatus() {
+async function renderSubscriptionStatus() {
   const pill = document.getElementById('plan-pill');
   const renewalEl = document.getElementById('renewal-date');
   const upgradeBtn = document.getElementById('upgrade-btn');
@@ -309,13 +310,18 @@ function renderSubscriptionStatus() {
       const mount = document.getElementById("calendar-app");
       const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
       const weekStart = resolveWeekStart(userSettings);
+      const client = await getSupabaseClient();
+      const ownerProfile = getOwnerProfile();
 
       // (Re)mount calendars (PDF-first preview)
       calendarsUI?.destroy?.();
       calendarsUI = new CalendarsPdfUI(mount, {
         locale,
         weekStart,
-        profiles
+        profiles,
+        supabaseClient: client,
+        userId: currentUser.id,
+        ownerProfile
       });
     }
   } else {
