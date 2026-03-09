@@ -354,6 +354,9 @@ async function mountPlannerSection() {
     userId: currentUser.id,
   });
 
+  // Initial render (constructor does not auto-render)
+  await plannerUI.render();
+
   // Helper to update the range label
   function updateRangeLabel() {
     const start = plannerUI.weekStartDateUTC;
@@ -455,9 +458,16 @@ async function renderSubscriptionStatus() {
       `;
     }
 
-    // Clear planner for free users
+    // Show locked state for planner (free users)
     const plannerSection = document.getElementById("planner-section");
-    if (plannerSection) plannerSection.innerHTML = "";
+    if (plannerSection) {
+      plannerSection.innerHTML = `
+        <div class="locked-section">
+          <p>🔒 Premium Feature Locked</p>
+          <p class="text-muted">Upgrade to Premium to access your cloud-synced weekly planner.</p>
+        </div>
+      `;
+    }
     if (plannerUI) { plannerUI.destroy(); plannerUI = null; }
   }
 }
