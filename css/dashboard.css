@@ -1906,3 +1906,95 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   background: rgba(var(--color-accent-rgb), 0.12);
   border: 1px solid rgba(var(--color-accent-rgb), 0.25);
 }
+
+/* ─────────────────────────────
+   Planner Notes (owner profile only)
+   ───────────────────────────── */
+
+.planner-mount {
+  display: grid;
+  gap: 10px;
+}
+
+.planner__week {
+  display: grid;
+  gap: 10px;
+}
+
+.planner__day {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.planner__day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.planner__day-label {
+  font-weight: 900;
+  color: var(--color-text-primary);
+}
+
+.planner__duck-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planner__duck {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.planner__duck-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.planner__textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.planner__textarea:focus {
+  outline: none;
+  border-color: rgba(var(--color-accent-rgb), 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.planner__textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.planner__save-indicator {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: right;
+  min-height: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.planner__save-indicator.is-visible {
+  opacity: 1;
+}
