@@ -18,6 +18,65 @@
 
   <main id="main-content">
     <div id="app">
+    <!-- Owner Onboarding Modal -->
+    <div id="owner-onboarding" class="onboarding" aria-hidden="true">
+      <div class="onboarding__backdrop"></div>
+      <div class="onboarding__card" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+
+        <!-- Phase 1: Input -->
+        <div id="onboarding-input" class="onboarding__phase">
+          <h2 id="onboarding-title" class="onboarding__title">Welcome to SineDay</h2>
+          <p class="onboarding__desc">
+            Set up your personal profile to unlock your Origin Duck and daily energy cycle.
+            This will be your permanent owner profile — the anchor for your SineDay experience.
+          </p>
+
+          <div class="form-group">
+            <label for="owner-name">Your Name</label>
+            <input type="text" id="owner-name" placeholder="Your name" required autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label for="owner-birthdate">Your Birthdate</label>
+            <input type="date" id="owner-birthdate" required>
+          </div>
+
+          <button id="onboarding-next-btn" class="btn btn-primary" type="button" disabled>
+            Continue
+          </button>
+        </div>
+
+        <!-- Phase 2: Confirm -->
+        <div id="onboarding-confirm" class="onboarding__phase" style="display:none;">
+          <h2 class="onboarding__title">Confirm Your Profile</h2>
+          <p class="onboarding__desc">
+            This is your permanent owner profile and can't be changed after setup.
+            Please make sure everything looks right.
+          </p>
+
+          <div class="onboarding__summary">
+            <div class="onboarding__summary-row">
+              <span class="onboarding__summary-label">Name</span>
+              <span id="confirm-name" class="onboarding__summary-value"></span>
+            </div>
+            <div class="onboarding__summary-row">
+              <span class="onboarding__summary-label">Birthdate</span>
+              <span id="confirm-birthdate" class="onboarding__summary-value"></span>
+            </div>
+          </div>
+
+          <div class="onboarding__actions">
+            <button id="onboarding-back-btn" class="btn btn-ghost" type="button">
+              Go Back
+            </button>
+            <button id="onboarding-accept-btn" class="btn btn-primary" type="button">
+              Accept & Create Profile
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
     <div id="loading" class="loading" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
       Loading...
     </div>

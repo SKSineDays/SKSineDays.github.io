@@ -58,6 +58,14 @@ async function init() {
       setupLanguageRegionUI();
 
       await loadUserData();
+
+      // Gate: require owner profile before showing dashboard
+      if (!hasOwnerProfile()) {
+        hideLoading();
+        await showOwnerOnboarding();
+        // After onboarding completes, profiles array is updated
+      }
+
       showAuthenticatedView();
     } else {
       // Redirect to login page if not authenticated
@@ -116,6 +124,7 @@ async function loadProfiles() {
       .from('profiles')
       .select('*')
       .eq('user_id', currentUser.id)
+      .order('is_owner', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -169,6 +178,20 @@ function isPaid() {
 }
 
 /**
+ * Check if user has an owner profile
+ */
+function hasOwnerProfile() {
+  return profiles.some(p => p.is_owner === true);
+}
+
+/**
+ * Get owner profile
+ */
+function getOwnerProfile() {
+  return profiles.find(p => p.is_owner === true) || null;
+}
+
+/**
  * Ensure duck carousel is initialized
  */
 function ensureDuckCarousel() {
@@ -213,7 +236,10 @@ function renderProfiles() {
                 <img src="${duckUrl}" alt="SineDuck origin day ${originDay}" width="34" height="34">
               </div>
             ` : ""}
-            <button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>
+            ${profile.is_owner
+              ? `<span class="owner-badge">Owner</span>`
+              : `<button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>`
+            }
           </div>
         </div>
       `;
@@ -579,7 +605,15 @@ async function handleAddProfile(e) {
  * Handle delete profile
  */
 async function handleDeleteProfile(profileId) {
+  if (!profileId) return;
   if (!confirm('Are you sure you want to delete this profile?')) {
+    return;
+  }
+
+  // Never allow deleting the owner profile
+  const target = profiles.find(p => p.id === profileId);
+  if (target?.is_owner) {
+    showError('The owner profile cannot be deleted.');
     return;
   }
 
@@ -763,6 +797,146 @@ function showAuthenticatedView() {
   // Init duck carousel once dashboard is visible (so sizing works)
   ensureDuckCarousel();
   if (duckCarousel) duckCarousel.setProfiles(profiles);
+}
+
+/**
+ * Show owner onboarding modal and wait for completion
+ */
+function showOwnerOnboarding() {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('owner-onboarding');
+    const inputPhase = document.getElementById('onboarding-input');
+    const confirmPhase = document.getElementById('onboarding-confirm');
+
+    const nameInput = document.getElementById('owner-name');
+    const birthdateInput = document.getElementById('owner-birthdate');
+    const nextBtn = document.getElementById('onboarding-next-btn');
+    const backBtn = document.getElementById('onboarding-back-btn');
+    const acceptBtn = document.getElementById('onboarding-accept-btn');
+
+    const confirmName = document.getElementById('confirm-name');
+    const confirmBirthdate = document.getElementById('confirm-birthdate');
+
+    if (!modal || !inputPhase || !confirmPhase) {
+      resolve();
+      return;
+    }
+
+    // Already closed/resolved guard (safety for edge cases)
+    let resolved = false;
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      resolve();
+    };
+
+    // Show modal
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('is-open');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    nameInput?.focus();
+
+    // Enable/disable Continue based on input validity
+    const validateInputs = () => {
+      const valid = nameInput?.value?.trim().length > 0 && birthdateInput?.value?.length > 0;
+      if (nextBtn) nextBtn.disabled = !valid;
+    };
+
+    const onInput = () => validateInputs();
+    nameInput?.addEventListener('input', onInput);
+    birthdateInput?.addEventListener('input', onInput);
+    birthdateInput?.addEventListener('change', onInput);
+
+    // Phase 1 → Phase 2
+    nextBtn?.addEventListener('click', () => {
+      const name = nameInput?.value?.trim() ?? '';
+      const birthdate = birthdateInput?.value ?? '';
+      if (confirmName) confirmName.textContent = name;
+      if (confirmBirthdate) {
+        // Format birthdate for display (e.g. "1990-05-15" → "May 15, 1990")
+        try {
+          const d = new Date(birthdate + 'T12:00:00');
+          confirmBirthdate.textContent = Number.isNaN(d.getTime()) ? birthdate : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch {
+          confirmBirthdate.textContent = birthdate;
+        }
+      }
+      inputPhase.style.display = 'none';
+      confirmPhase.style.display = '';
+    });
+
+    // Phase 2 → back to Phase 1
+    backBtn?.addEventListener('click', () => {
+      confirmPhase.style.display = 'none';
+      inputPhase.style.display = '';
+      nameInput?.focus();
+    });
+
+    // Accept & create owner profile
+    acceptBtn?.addEventListener('click', async () => {
+      if (!currentUser) {
+        showError('Session expired. Please sign in again.');
+        finish();
+        return;
+      }
+
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = 'Creating…';
+
+      try {
+        const client = await getSupabaseClient();
+        const displayName = nameInput?.value?.trim() ?? '';
+        const birthdate = birthdateInput?.value ?? '';
+
+        if (!displayName || !birthdate) {
+          showError('Name and birthdate are required.');
+          acceptBtn.disabled = false;
+          acceptBtn.textContent = 'Accept & Create Profile';
+          return;
+        }
+
+        const timezone = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || 'America/Chicago';
+
+        const { data, error } = await client
+          .from('profiles')
+          .insert({
+            user_id: currentUser.id,
+            display_name: displayName,
+            birthdate,
+            timezone,
+            is_owner: true
+          })
+          .select()
+          .single();
+
+        if (error) {
+          showError('Failed to create profile: ' + error.message);
+          acceptBtn.disabled = false;
+          acceptBtn.textContent = 'Accept & Create Profile';
+          return;
+        }
+
+        // Add owner to front of profiles array
+        profiles.unshift(data);
+        renderProfiles();
+
+        // Close modal
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+
+        showSuccess('Welcome to SineDay! Your Origin Duck is ready.');
+        finish();
+      } catch (err) {
+        console.error('[Onboarding] Error:', err);
+        showError('Something went wrong. Please try again.');
+        acceptBtn.disabled = false;
+        acceptBtn.textContent = 'Accept & Create Profile';
+      }
+    });
+  });
 }
 
 /**
