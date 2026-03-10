@@ -316,6 +316,23 @@ async function mountPlannerSection() {
   title.className = "planner-frame__title";
   title.textContent = "Weekly Planner";
 
+  const viewToggle = document.createElement("div");
+  viewToggle.className = "planner-frame__view-toggle";
+
+  const btnViewWeek = document.createElement("button");
+  btnViewWeek.type = "button";
+  btnViewWeek.className = "planner-frame__viewbtn is-active";
+  btnViewWeek.textContent = "Week";
+  btnViewWeek.setAttribute("aria-pressed", "true");
+
+  const btnViewDay = document.createElement("button");
+  btnViewDay.type = "button";
+  btnViewDay.className = "planner-frame__viewbtn";
+  btnViewDay.textContent = "Day";
+  btnViewDay.setAttribute("aria-pressed", "false");
+
+  viewToggle.append(btnViewWeek, btnViewDay);
+
   const nav = document.createElement("div");
   nav.className = "planner-frame__nav";
 
@@ -335,7 +352,7 @@ async function mountPlannerSection() {
   btnNext.setAttribute("aria-label", "Next week");
 
   nav.append(btnPrev, rangeLabel, btnNext);
-  header.append(title, nav);
+  header.append(title, viewToggle, nav);
 
   const mount = document.createElement("div");
   mount.className = "planner-mount";
@@ -359,26 +376,49 @@ async function mountPlannerSection() {
 
   // Helper to update the range label
   function updateRangeLabel() {
-    const start = plannerUI.weekStartDateUTC;
-    const end = new Date(start.getTime() + 6 * 86400000);
-    const dtf = new Intl.DateTimeFormat(locale, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-    rangeLabel.textContent = `${dtf.format(start)} – ${dtf.format(end)}`;
+    rangeLabel.textContent = plannerUI.getDateLabel(locale);
+  }
+
+  function syncViewToggle(view) {
+    const isWeek = view === "week";
+    btnViewWeek.classList.toggle("is-active", isWeek);
+    btnViewDay.classList.toggle("is-active", !isWeek);
+    btnViewWeek.setAttribute("aria-pressed", String(isWeek));
+    btnViewDay.setAttribute("aria-pressed", String(!isWeek));
+    title.textContent = isWeek ? "Weekly Planner" : "Daily Planner";
+    btnPrev.setAttribute("aria-label", isWeek ? "Previous week" : "Previous day");
+    btnNext.setAttribute("aria-label", isWeek ? "Next week" : "Next day");
   }
 
   updateRangeLabel();
 
+  btnViewWeek.addEventListener("click", () => {
+    plannerUI.setView("week");
+    syncViewToggle("week");
+    updateRangeLabel();
+  });
+
+  btnViewDay.addEventListener("click", () => {
+    plannerUI.setView("day");
+    syncViewToggle("day");
+    updateRangeLabel();
+  });
+
   btnPrev.addEventListener("click", () => {
-    plannerUI.navigateWeek(-1);
+    if (plannerUI.view === "week") {
+      plannerUI.navigateWeek(-1);
+    } else {
+      plannerUI.navigateDay(-1);
+    }
     updateRangeLabel();
   });
 
   btnNext.addEventListener("click", () => {
-    plannerUI.navigateWeek(1);
+    if (plannerUI.view === "week") {
+      plannerUI.navigateWeek(1);
+    } else {
+      plannerUI.navigateDay(1);
+    }
     updateRangeLabel();
   });
 }

@@ -52,6 +52,8 @@ export class PlannerUI {
       Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12)
     );
     this.weekStartDateUTC = startOfWeekUTC(todayUTC, this.weekStart);
+    this.dayDateUTC = todayUTC; // Day view anchor
+    this.view = "week"; // 'week' | 'day'
 
     // Cache: "profileId:YYYY-MM-DD" → content string
     this.notesCache = new Map();
@@ -84,8 +86,20 @@ export class PlannerUI {
     this.render();
   }
 
+  setView(view) {
+    if (view === "week" || view === "day") {
+      this.view = view;
+      this.render();
+    }
+  }
+
   navigateWeek(delta) {
     this.weekStartDateUTC = addDaysUTC(this.weekStartDateUTC, delta * 7);
+    this.render();
+  }
+
+  navigateDay(delta) {
+    this.dayDateUTC = addDaysUTC(this.dayDateUTC, delta);
     this.render();
   }
 
@@ -99,13 +113,18 @@ export class PlannerUI {
       return;
     }
 
-    const dtf = new Intl.DateTimeFormat(this.locale, {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    });
+    if (this.view === "day") {
+      const d = this.dayDateUTC;
+      const ymd = this._ymd(d);
+      await this._loadNotes(this.ownerProfile.id, ymd, ymd);
 
+      const wrap = el("div", "planner__day-view");
+      wrap.append(this._buildDayCard(d, ymd));
+      this.mountEl.append(wrap);
+      return;
+    }
+
+    // Week view
     const days = [];
     for (let i = 0; i < 7; i++) {
       days.push(addDaysUTC(this.weekStartDateUTC, i));
@@ -119,77 +138,106 @@ export class PlannerUI {
 
     for (const d of days) {
       const ymd = this._ymd(d);
-      const cacheKey = `${this.ownerProfile.id}:${ymd}`;
-
-      const dayEl = el("div", "planner__day");
-
-      const header = el("div", "planner__day-header");
-
-      const label = el("div", "planner__day-label");
-      label.textContent = dtf.format(d);
-
-      const duckWrap = el("div", "planner__duck-wrap");
-      const result = calculateSineDayForYmd(this.ownerProfile.birthdate, ymd);
-
-      if (result) {
-        const img = document.createElement("img");
-        img.className = "planner__duck";
-        img.loading = "lazy";
-        img.src = duckUrlFromSinedayNumber(result.day);
-        img.alt = `Day ${result.day}`;
-        img.title = `Day ${result.day}`;
-
-        const duckLabel = el("span", "planner__duck-label");
-        duckLabel.textContent = `Day ${result.day}`;
-
-        duckWrap.append(img, duckLabel);
-      }
-
-      header.append(label, duckWrap);
-
-      const textarea = document.createElement("textarea");
-      textarea.className = "planner__textarea";
-      textarea.placeholder = "Notes for this day…";
-      textarea.dataset.date = ymd;
-      textarea.value = this.notesCache.get(cacheKey) || "";
-
-      const indicator = el("div", "planner__save-indicator");
-      indicator.textContent = "Saved ✓";
-
-      textarea.addEventListener("input", () => {
-        const key = `${this.ownerProfile.id}:${ymd}`;
-        this.notesCache.set(key, textarea.value);
-
-        if (this.saveTimers.has(key)) {
-          clearTimeout(this.saveTimers.get(key));
-        }
-
-        const timerId = setTimeout(() => {
-          this.saveTimers.delete(key);
-          this._saveNote(this.ownerProfile.id, ymd, textarea.value).then(() => {
-            this._flashIndicator(indicator);
-          });
-        }, 1500);
-
-        this.saveTimers.set(key, timerId);
-      });
-
-      textarea.addEventListener("blur", () => {
-        const key = `${this.ownerProfile.id}:${ymd}`;
-        if (this.saveTimers.has(key)) {
-          clearTimeout(this.saveTimers.get(key));
-          this.saveTimers.delete(key);
-        }
-        this._saveNote(this.ownerProfile.id, ymd, textarea.value).then(() => {
-          this._flashIndicator(indicator);
-        });
-      });
-
-      dayEl.append(header, textarea, indicator);
-      wrap.append(dayEl);
+      wrap.append(this._buildDayCard(d, ymd));
     }
 
     this.mountEl.append(wrap);
+  }
+
+  _buildDayCard(d, ymd) {
+    const dtf = new Intl.DateTimeFormat(this.locale, {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+
+    const cacheKey = `${this.ownerProfile.id}:${ymd}`;
+
+    const dayEl = el("div", "planner__day");
+
+    const header = el("div", "planner__day-header");
+
+    const label = el("div", "planner__day-label");
+    label.textContent = dtf.format(d);
+
+    const duckWrap = el("div", "planner__duck-wrap");
+    const result = calculateSineDayForYmd(this.ownerProfile.birthdate, ymd);
+
+    if (result) {
+      const img = document.createElement("img");
+      img.className = "planner__duck";
+      img.loading = "lazy";
+      img.src = duckUrlFromSinedayNumber(result.day);
+      img.alt = `Day ${result.day}`;
+      img.title = `Day ${result.day}`;
+
+      const duckLabel = el("span", "planner__duck-label");
+      duckLabel.textContent = `Day ${result.day}`;
+
+      duckWrap.append(img, duckLabel);
+    }
+
+    header.append(label, duckWrap);
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "planner__textarea";
+    textarea.placeholder = "Notes for this day…";
+    textarea.dataset.date = ymd;
+    textarea.value = this.notesCache.get(cacheKey) || "";
+
+    if (this.view === "day") {
+      textarea.classList.add("planner__textarea--day");
+    }
+
+    const indicator = el("div", "planner__save-indicator");
+    indicator.textContent = "Saved ✓";
+
+    textarea.addEventListener("input", () => {
+      const key = `${this.ownerProfile.id}:${ymd}`;
+      this.notesCache.set(key, textarea.value);
+
+      if (this.saveTimers.has(key)) clearTimeout(this.saveTimers.get(key));
+
+      const timerId = setTimeout(() => {
+        this.saveTimers.delete(key);
+        this._saveNote(this.ownerProfile.id, ymd, textarea.value).then(() => {
+          this._flashIndicator(indicator);
+        });
+      }, 1500);
+
+      this.saveTimers.set(key, timerId);
+    });
+
+    textarea.addEventListener("blur", () => {
+      const key = `${this.ownerProfile.id}:${ymd}`;
+      if (this.saveTimers.has(key)) {
+        clearTimeout(this.saveTimers.get(key));
+        this.saveTimers.delete(key);
+      }
+      this._saveNote(this.ownerProfile.id, ymd, textarea.value).then(() => {
+        this._flashIndicator(indicator);
+      });
+    });
+
+    dayEl.append(header, textarea, indicator);
+    return dayEl;
+  }
+
+  getDateLabel(locale) {
+    const dtf = new Intl.DateTimeFormat(locale || this.locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+
+    if (this.view === "day") {
+      return dtf.format(this.dayDateUTC);
+    }
+
+    const end = addDaysUTC(this.weekStartDateUTC, 6);
+    return `${dtf.format(this.weekStartDateUTC)} – ${dtf.format(end)}`;
   }
 
   _ymd(d) {

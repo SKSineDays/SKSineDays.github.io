@@ -1961,6 +1961,36 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   background: rgba(0, 0, 0, 0.08);
 }
 
+.planner-frame__view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.planner-frame__viewbtn {
+  padding: 7px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.planner-frame__viewbtn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+.planner-frame__viewbtn.is-active {
+  background: rgba(var(--color-accent-rgb), 0.12);
+  border-color: rgba(var(--color-accent-rgb), 0.45);
+  color: var(--color-accent);
+}
+
 .planner-frame__range {
   font-weight: 700;
   color: #1a1a1a;
@@ -1986,6 +2016,15 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner__week {
   display: grid;
   gap: 12px;
+}
+
+.planner__day-view {
+  display: grid;
+  gap: 12px;
+}
+
+.planner__textarea--day {
+  min-height: 340px;
 }
 
 .planner__day {
@@ -2065,4 +2104,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__save-indicator.is-visible {
   opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .planner-frame__header {
+    flex-wrap: wrap;
+  }
+  .planner-frame__view-toggle {
+    order: 2;
+    width: 100%;
+  }
+  .planner-frame__nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .planner-frame__range {
+    min-width: 0;
+    flex: 1;
+  }
 }
