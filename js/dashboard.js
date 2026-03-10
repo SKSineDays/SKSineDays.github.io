@@ -112,12 +112,11 @@ async function init() {
 
 /**
  * Load user data (profiles and subscription)
+ * Ordered: profiles first so mountPlannerSection() has owner profile when loadSubscription runs.
  */
 async function loadUserData() {
-  await Promise.all([
-    loadProfiles(),
-    loadSubscription()
-  ]);
+  await loadProfiles();
+  await loadSubscription();
 }
 
 /**
@@ -273,6 +272,13 @@ function renderProfiles() {
   calendarsUI?.setProfiles?.(profiles);
   calendarsUI?.setOwnerProfile?.(getOwnerProfile());
   plannerUI?.setOwnerProfile?.(getOwnerProfile());
+
+  // Safety remount if planner wasn't mounted (e.g. owner created during onboarding)
+  if (isPaid() && !plannerUI && getOwnerProfile()) {
+    mountPlannerSection().catch(err => {
+      console.error("Failed to mount planner after profiles render:", err);
+    });
+  }
 }
 
 /**
