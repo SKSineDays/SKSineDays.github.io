@@ -59,6 +59,8 @@ export class PlannerUI {
     this.notesCache = new Map();
     // Debounce timers: "profileId:YYYY-MM-DD" → timeout ID
     this.saveTimers = new Map();
+    // Render generation — incremented on each render() call to cancel stale async continuations
+    this._renderGen = 0;
   }
 
   destroy() {
@@ -104,6 +106,9 @@ export class PlannerUI {
   }
 
   async render() {
+    // Bump generation — any in-flight render with an older gen will abort after its await
+    const gen = ++this._renderGen;
+
     this.mountEl.innerHTML = "";
 
     if (!this.ownerProfile) {
@@ -116,32 +121,60 @@ export class PlannerUI {
     if (this.view === "day") {
       const d = this.dayDateUTC;
       const ymd = this._ymd(d);
-      await this._loadNotes(this.ownerProfile.id, ymd, ymd);
 
+      // Render shell immediately so the textarea is visible right away
       const wrap = el("div", "planner__day-view");
-      wrap.append(this._buildDayCard(d, ymd));
+      const card = this._buildDayCard(d, ymd);
+      wrap.append(card);
       this.mountEl.append(wrap);
+
+      // Load notes async, then hydrate textarea if this render is still current
+      await this._loadNotes(this.ownerProfile.id, ymd, ymd);
+      if (gen !== this._renderGen) return; // stale — a newer render has taken over
+
+      const textarea = card.querySelector(".planner__textarea");
+      if (textarea) {
+        const cached = this.notesCache.get(`${this.ownerProfile.id}:${ymd}`);
+        if (cached !== undefined && textarea.value === "") {
+          textarea.value = cached;
+        }
+      }
       return;
     }
 
-    // Week view
+    // Week view — build days array
     const days = [];
     for (let i = 0; i < 7; i++) {
       days.push(addDaysUTC(this.weekStartDateUTC, i));
     }
 
-    const startYmd = this._ymd(days[0]);
-    const endYmd = this._ymd(days[6]);
-    await this._loadNotes(this.ownerProfile.id, startYmd, endYmd);
-
+    // Render shell immediately
     const wrap = el("div", "planner__week");
+    const cards = new Map(); // ymd → card element
 
     for (const d of days) {
       const ymd = this._ymd(d);
-      wrap.append(this._buildDayCard(d, ymd));
+      const card = this._buildDayCard(d, ymd);
+      cards.set(ymd, card);
+      wrap.append(card);
     }
-
     this.mountEl.append(wrap);
+
+    // Load notes async, then hydrate all textareas if still current
+    const startYmd = this._ymd(days[0]);
+    const endYmd = this._ymd(days[6]);
+    await this._loadNotes(this.ownerProfile.id, startYmd, endYmd);
+    if (gen !== this._renderGen) return; // stale
+
+    for (const [ymd, card] of cards) {
+      const textarea = card.querySelector(".planner__textarea");
+      if (textarea) {
+        const cached = this.notesCache.get(`${this.ownerProfile.id}:${ymd}`);
+        if (cached !== undefined && textarea.value === "") {
+          textarea.value = cached;
+        }
+      }
+    }
   }
 
   _buildDayCard(d, ymd) {
