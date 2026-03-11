@@ -36,11 +36,6 @@ export class SineDayUI {
       dayDetailsCard: document.getElementById('day-details-card'),
       dayDetailsParagraph: document.getElementById('day-details-paragraph'),
       dayDetailsBullets: document.getElementById('day-details-bullets'),
-      emailCard: document.getElementById('email-card'),
-      emailInput: document.getElementById('email-input'),
-      emailConsent: document.getElementById('email-consent'),
-      signupStatus: document.getElementById('signup-status'),
-      subscribeBtn: document.getElementById('subscribe-btn'),
       premiumCard: document.getElementById('premium-card'),
       premiumBtn: document.getElementById('premium-btn'),
       infoModal: document.getElementById('info-modal'),
@@ -96,9 +91,8 @@ export class SineDayUI {
     // Check for saved birthdate
     this.loadSavedBirthdate();
 
-    // Show input and email card on first visit
+    // Show input and premium card on first visit
     this.showInput();
-    this.showEmailCard();
     this.showPremiumCard();
   }
 
@@ -109,11 +103,6 @@ export class SineDayUI {
     // Calculate button
     if (this.elements.calculateBtn) {
       this.elements.calculateBtn.addEventListener('click', () => this.handleCalculate());
-    }
-
-    // Subscribe button
-    if (this.elements.subscribeBtn) {
-      this.elements.subscribeBtn.addEventListener('click', () => this.handleSubscribe());
     }
 
     // Premium button
@@ -166,17 +155,6 @@ export class SineDayUI {
         }
       });
     }
-  }
-
-  /**
-   * Calculate day of year from a date (1-366)
-   */
-  calculateDayOfYear(dateString) {
-    const date = new Date(dateString);
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    return Math.floor(diff / oneDay);
   }
 
   /**
@@ -252,112 +230,6 @@ export class SineDayUI {
       alert('Failed to start checkout. Please try again.');
       premiumBtn.disabled = false;
       premiumBtn.textContent = originalText;
-    }
-  }
-
-  /**
-   * Handle subscribe button click
-   */
-  async handleSubscribe() {
-    const emailValue = this.elements.emailInput?.value?.trim();
-    const consentChecked = this.elements.emailConsent?.checked;
-    const birthdateValue = this.elements.birthdateInput?.value;
-
-    // Clear previous status
-    if (this.elements.signupStatus) {
-      this.elements.signupStatus.textContent = '';
-    }
-
-    // Validate email
-    if (!emailValue) {
-      if (this.elements.signupStatus) {
-        this.elements.signupStatus.textContent = 'Please enter your email address';
-        this.elements.signupStatus.style.color = '#FF6B6B';
-      }
-      return;
-    }
-
-    // Check consent
-    if (!consentChecked) {
-      if (this.elements.signupStatus) {
-        this.elements.signupStatus.textContent = 'Check the box to subscribe';
-        this.elements.signupStatus.style.color = '#FF6B6B';
-      }
-      return;
-    }
-
-    // Prepare signup data
-    const signupData = {
-      email: emailValue,
-      consent: true,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago',
-      source: 'homepage'
-    };
-
-    // Add birth_day_of_year and sineday_index if we have a birthdate
-    if (birthdateValue) {
-      signupData.birth_day_of_year = this.calculateDayOfYear(birthdateValue);
-    }
-
-    if (this.currentDay) {
-      signupData.sineday_index = this.currentDay.day - 1; // Convert from 1-18 to 0-17
-    }
-
-    // Show loading state
-    if (this.elements.signupStatus) {
-      this.elements.signupStatus.textContent = 'Signing up...';
-      this.elements.signupStatus.style.color = '#7AA7FF';
-    }
-
-    try {
-      // Call API
-      const response = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(signupData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.ok) {
-        // Success
-        if (this.elements.signupStatus) {
-          this.elements.signupStatus.textContent = '✓ Successfully subscribed!';
-          this.elements.signupStatus.style.color = '#4CAF50';
-        }
-
-        // Redirect to sineday.app after a short delay
-        setTimeout(() => {
-          window.location.href = 'https://sineday.app';
-        }, 2000);
-
-        // Disable button and inputs after successful signup
-        if (this.elements.subscribeBtn) {
-          this.elements.subscribeBtn.disabled = true;
-          this.elements.subscribeBtn.textContent = 'Subscribed';
-        }
-        if (this.elements.emailInput) {
-          this.elements.emailInput.disabled = true;
-        }
-        if (this.elements.emailConsent) {
-          this.elements.emailConsent.disabled = true;
-        }
-      } else {
-        // API returned error
-        if (this.elements.signupStatus) {
-          this.elements.signupStatus.textContent = `Error: ${data.error || 'Failed to subscribe'}`;
-          this.elements.signupStatus.style.color = '#FF6B6B';
-        }
-      }
-    } catch (error) {
-      // Network or other error
-      console.error('Signup error:', error);
-      if (this.elements.signupStatus) {
-        this.elements.signupStatus.textContent = 'Network error. Please try again.';
-        this.elements.signupStatus.style.color = '#FF6B6B';
-      }
     }
   }
 
@@ -493,10 +365,7 @@ export class SineDayUI {
       this.elements.waveIntro.classList.add('bottom-placement');
     }
 
-    // Move email card and premium card to bottom (results shown state)
-    if (this.elements.emailCard) {
-      this.elements.emailCard.classList.add('results-shown');
-    }
+    // Move premium card to bottom (results shown state)
     if (this.elements.premiumCard) {
       this.elements.premiumCard.classList.add('results-shown');
     }
@@ -694,22 +563,6 @@ export class SineDayUI {
     if (this.elements.backgroundImage) {
       this.elements.backgroundImage.classList.add('fade-out');
     }
-  }
-
-  /**
-   * Show email card
-   */
-  showEmailCard() {
-    if (!this.elements.emailCard) return;
-    this.elements.emailCard.classList.add('visible');
-  }
-
-  /**
-   * Hide email card
-   */
-  hideEmailCard() {
-    if (!this.elements.emailCard) return;
-    this.elements.emailCard.classList.remove('visible');
   }
 
   /**
@@ -1001,23 +854,6 @@ export class SineDayUI {
       this.elements.birthdateInput.value = '';
     }
 
-    // Clear and re-enable email signup fields
-    if (this.elements.emailInput) {
-      this.elements.emailInput.value = '';
-      this.elements.emailInput.disabled = false;
-    }
-    if (this.elements.emailConsent) {
-      this.elements.emailConsent.checked = false;
-      this.elements.emailConsent.disabled = false;
-    }
-    if (this.elements.subscribeBtn) {
-      this.elements.subscribeBtn.disabled = false;
-      this.elements.subscribeBtn.textContent = 'Subscribe';
-    }
-    if (this.elements.signupStatus) {
-      this.elements.signupStatus.textContent = '';
-    }
-
     // Clear background image and restore hero mode
     this.clearBackgroundImage();
 
@@ -1027,15 +863,11 @@ export class SineDayUI {
       this.elements.backgroundImage.classList.remove('fade-out');
     }
 
-    // Show input container and email card
+    // Show input container and premium card
     this.showInput();
-    this.showEmailCard();
     this.showPremiumCard();
 
-    // Move email card and premium card back to initial position (near input)
-    if (this.elements.emailCard) {
-      this.elements.emailCard.classList.remove('results-shown');
-    }
+    // Move premium card back to initial position (near input)
     if (this.elements.premiumCard) {
       this.elements.premiumCard.classList.remove('results-shown');
     }

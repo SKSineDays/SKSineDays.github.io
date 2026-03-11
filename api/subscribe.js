@@ -2,7 +2,7 @@
  * Vercel serverless function for email subscription signup
  *
  * POST /api/subscribe
- * Body: { email, consent, timezone, birth_day_of_year, sineday_index, source }
+ * Body: { email, consent, timezone, birth_day_of_year, sineday_index, origin_day, source }
  *
  * IMPORTANT: Uses SUPABASE_SERVICE_ROLE_KEY - NEVER expose this in the browser.
  * All writes to Supabase happen server-side via this API route.
@@ -53,6 +53,7 @@ export default async function handler(req, res) {
       timezone,
       birth_day_of_year,
       sineday_index,
+      origin_day,
       source
     } = req.body;
 
@@ -99,6 +100,15 @@ export default async function handler(req, res) {
         return res.status(400).json({
           ok: false,
           error: 'Invalid sineday_index (must be 0-17)'
+        });
+      }
+    }
+
+    if (origin_day !== null && origin_day !== undefined) {
+      if (!Number.isInteger(origin_day) || origin_day < 1 || origin_day > 18) {
+        return res.status(400).json({
+          ok: false,
+          error: 'Invalid origin_day (must be integer 1-18)'
         });
       }
     }
@@ -194,35 +204,38 @@ export default async function handler(req, res) {
       // Don't fail the whole request, just log it
     }
 
-    // 3. Upsert profile (if we have birth_day_of_year or sineday_index)
-    if (birth_day_of_year !== null && birth_day_of_year !== undefined ||
-        sineday_index !== null && sineday_index !== undefined) {
+    // 3. Upsert profile (if we have birth_day_of_year, sineday_index, or origin_day)
+    const hasBirthDayOfYear = birth_day_of_year !== null && birth_day_of_year !== undefined;
+    const hasSinedayIndex = sineday_index !== null && sineday_index !== undefined;
+    const hasOriginDay = origin_day !== null && origin_day !== undefined;
+
+    if (hasBirthDayOfYear || hasSinedayIndex || hasOriginDay) {
       const profileData = {
         subscriber_id: subscriber.id,
         updated_at: new Date().toISOString()
       };
 
-      if (birth_day_of_year !== null && birth_day_of_year !== undefined) {
+      if (hasBirthDayOfYear) {
         profileData.birth_day_of_year = birth_day_of_year;
       }
 
-      if (sineday_index !== null && sineday_index !== undefined) {
+      if (hasSinedayIndex) {
         profileData.sineday_index = sineday_index;
+      }
+
+      if (hasOriginDay) {
+        profileData.origin_day = origin_day;
       }
 
       const { error: profileError } = await supabase
         .from('subscriber_profile')
-        .upsert(
-          profileData,
-          {
-            onConflict: 'subscriber_id',
-            ignoreDuplicates: false
-          }
-        );
+        .upsert(profileData, {
+          onConflict: 'subscriber_id',
+          ignoreDuplicates: false
+        });
 
       if (profileError) {
         console.error('Profile upsert error:', profileError);
-        // Don't fail the whole request, just log it
       }
     }
 

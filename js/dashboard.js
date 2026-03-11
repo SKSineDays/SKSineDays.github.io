@@ -30,6 +30,10 @@ import { dirFromLocale } from "../shared/i18n.js";
 let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
+let dailyEmailState = {
+  subscribed: false,
+  loading: false
+};
 let duckCarousel = null;
 let addProfileUI = null;
 let calendarsUI = null;
@@ -44,6 +48,7 @@ async function init() {
 
   // ✅ Always attach UI handlers first
   setupEventListeners();
+  bindDailyEmailEvents();
 
   // Show loading (optional)
   showLoading();
@@ -60,6 +65,7 @@ async function init() {
       setupLanguageRegionUI();
 
       await loadUserData();
+      await loadDailyEmailState();
 
       // Gate: require owner profile before showing dashboard
       if (!hasOwnerProfile()) {
@@ -68,6 +74,7 @@ async function init() {
         // After onboarding completes, profiles array is updated
       }
 
+      renderDailyEmailBox();
       showAuthenticatedView();
     } else {
       // Redirect to login page if not authenticated
@@ -140,6 +147,7 @@ async function loadProfiles() {
 
     profiles = data || [];
     renderProfiles();
+    renderDailyEmailBox();
   } catch (error) {
     console.error('Error loading profiles:', error);
     showError('Failed to load profiles');
@@ -194,6 +202,155 @@ function hasOwnerProfile() {
  */
 function getOwnerProfile() {
   return profiles.find(p => p.is_owner === true) || null;
+}
+
+// ── Daily Email Helpers ──────────────────────────────────────────
+
+function calculateDayOfYear(dateString) {
+  const date = new Date(`${dateString}T12:00:00`);
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date - start) / 86400000);
+}
+
+function setDailyEmailStatus(message = '', tone = '') {
+  const el = document.getElementById('daily-email-status');
+  if (!el) return;
+  el.textContent = message;
+  el.dataset.tone = tone;
+}
+
+function renderDailyEmailBox() {
+  const box = document.getElementById('daily-email-box');
+  const toggle = document.getElementById('daily-email-optin');
+  const meta = document.getElementById('daily-email-meta');
+  const owner = getOwnerProfile();
+
+  if (!box || !toggle) return;
+
+  if (!owner?.birthdate || !currentUser?.email) {
+    box.hidden = true;
+    return;
+  }
+
+  const originDay = getOriginTypeForDob(owner.birthdate, ORIGIN_ANCHOR_DATE);
+  box.hidden = false;
+  toggle.checked = !!dailyEmailState.subscribed;
+  toggle.disabled = !!dailyEmailState.loading;
+
+  if (meta) {
+    meta.textContent = originDay
+      ? `Sends to ${currentUser.email} · Origin Day ${originDay}`
+      : `Sends to ${currentUser.email}`;
+  }
+}
+
+async function loadDailyEmailState() {
+  if (!currentUser?.email) return;
+
+  try {
+    const client = await getSupabaseClient();
+    const { data: subscriber, error } = await client
+      .from('subscribers')
+      .select('id, status')
+      .eq('email', currentUser.email.toLowerCase().trim())
+      .maybeSingle();
+
+    if (error) {
+      console.error('Failed to load daily email state:', error);
+      dailyEmailState.subscribed = false;
+    } else {
+      dailyEmailState.subscribed = !!subscriber && subscriber.status === 'active';
+    }
+  } catch (err) {
+    console.error('Failed to load daily email state:', err);
+    dailyEmailState.subscribed = false;
+  }
+
+  renderDailyEmailBox();
+}
+
+async function enableDailyEmailFromOwnerProfile() {
+  const owner = getOwnerProfile();
+
+  if (!owner?.birthdate || !currentUser?.email) {
+    showError('Owner profile is required before enabling daily email.');
+    renderDailyEmailBox();
+    return;
+  }
+
+  const timezone =
+    owner.timezone ||
+    Intl.DateTimeFormat?.().resolvedOptions?.().timeZone ||
+    'America/Chicago';
+
+  const originDay = getOriginTypeForDob(owner.birthdate, ORIGIN_ANCHOR_DATE);
+  const birthDayOfYear = calculateDayOfYear(owner.birthdate);
+
+  if (!originDay) {
+    showError('Could not determine Origin Day from owner profile.');
+    renderDailyEmailBox();
+    return;
+  }
+
+  dailyEmailState.loading = true;
+  renderDailyEmailBox();
+  setDailyEmailStatus('Saving…', 'info');
+
+  try {
+    const response = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: currentUser.email.toLowerCase().trim(),
+        consent: true,
+        timezone,
+        birth_day_of_year: birthDayOfYear,
+        origin_day: originDay,
+        source: 'dashboard-owner'
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data?.error || 'Failed to enable daily email');
+    }
+
+    dailyEmailState.subscribed = true;
+    setDailyEmailStatus('Enabled', 'success');
+    showSuccess(`Daily Duck email enabled for Origin Day ${originDay}.`);
+  } catch (err) {
+    console.error('Enable daily email failed:', err);
+    dailyEmailState.subscribed = false;
+    setDailyEmailStatus('Error', 'error');
+    showError(err.message || 'Failed to enable daily email.');
+  } finally {
+    dailyEmailState.loading = false;
+    renderDailyEmailBox();
+  }
+}
+
+function bindDailyEmailEvents() {
+  const toggle = document.getElementById('daily-email-optin');
+  if (!toggle) return;
+
+  toggle.addEventListener('change', async (event) => {
+    const checked = !!event.target.checked;
+
+    if (!checked) {
+      // Snap back — no unsubscribe endpoint in this patch
+      event.target.checked = true;
+      showInfo('To unsubscribe, contact support or use the email unsubscribe link.');
+      return;
+    }
+
+    if (dailyEmailState.subscribed || dailyEmailState.loading) {
+      renderDailyEmailBox();
+      return;
+    }
+
+    await enableDailyEmailFromOwnerProfile();
+  });
 }
 
 /**
@@ -1103,6 +1260,8 @@ function showOwnerOnboarding() {
         // Add owner to front of profiles array
         profiles.unshift(data);
         renderProfiles();
+        await loadDailyEmailState();
+        renderDailyEmailBox();
 
         // Close modal
         modal.classList.remove('is-open');

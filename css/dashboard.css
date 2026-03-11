@@ -2124,3 +2124,63 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
     flex: 1;
   }
 }
+
+/* ── Daily Email Box (dashboard header) ────────────────────────── */
+.daily-email-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  margin-right: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 42px;
+}
+
+.daily-email-box__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.daily-email-box__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.daily-email-box__meta {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.daily-email-box__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.daily-email-box__status {
+  min-width: 68px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 860px) {
+  .daily-email-box {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    justify-content: space-between;
+    border-radius: 16px;
+  }
+
+  .dash-head__top {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
