@@ -2217,7 +2217,6 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .daily-email-box__status {
-  min-width: 68px;
   font-size: 0.75rem;
   opacity: 0.8;
 }
