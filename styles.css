@@ -665,6 +665,15 @@ body {
   margin-top: auto;
 }
 
+.result-card:not(.visible),
+.day-image-card:not(.visible),
+.day-details-card:not(.visible) {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
 .result-card.visible {
   opacity: 1;
   transform: translateY(0);
