@@ -237,6 +237,8 @@ function renderDailyEmailBox() {
   box.hidden = false;
   toggle.setAttribute('aria-pressed', dailyEmailState.subscribed ? 'true' : 'false');
   toggle.disabled = !!dailyEmailState.loading;
+  const label = toggle.querySelector('.daily-email-pill__label');
+  if (label) label.textContent = dailyEmailState.subscribed ? 'On' : 'Off';
 
   if (meta) {
     meta.textContent = originDay
@@ -318,13 +320,38 @@ async function enableDailyEmailFromOwnerProfile() {
     }
 
     dailyEmailState.subscribed = true;
-    setDailyEmailStatus('Enabled', 'success');
     showSuccess(`Daily Duck email enabled for Origin Day ${originDay}.`);
   } catch (err) {
     console.error('Enable daily email failed:', err);
     dailyEmailState.subscribed = false;
     setDailyEmailStatus('Error', 'error');
     showError(err.message || 'Failed to enable daily email.');
+  } finally {
+    dailyEmailState.loading = false;
+    renderDailyEmailBox();
+  }
+}
+
+async function disableDailyEmail() {
+  if (!currentUser?.email) return;
+
+  dailyEmailState.loading = true;
+  renderDailyEmailBox();
+
+  try {
+    const client = await getSupabaseClient();
+    const { error } = await client
+      .from('subscribers')
+      .update({ status: 'unsubscribed' })
+      .eq('email', currentUser.email.toLowerCase().trim());
+
+    if (error) throw error;
+
+    dailyEmailState.subscribed = false;
+    showSuccess('Daily Duck email disabled.');
+  } catch (err) {
+    console.error('Disable daily email failed:', err);
+    showError(err.message || 'Failed to disable daily email.');
   } finally {
     dailyEmailState.loading = false;
     renderDailyEmailBox();
@@ -339,7 +366,7 @@ function bindDailyEmailEvents() {
     const currentlyOn = toggle.getAttribute('aria-pressed') === 'true';
 
     if (currentlyOn) {
-      showInfo('To unsubscribe, contact support or use the email unsubscribe link.');
+      await disableDailyEmail();
       return;
     }
 
