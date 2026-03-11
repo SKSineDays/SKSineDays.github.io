@@ -251,19 +251,12 @@ async function loadDailyEmailState() {
   if (!currentUser?.email) return;
 
   try {
-    const client = await getSupabaseClient();
-    const { data: subscriber, error } = await client
-      .from('subscribers')
-      .select('id, status')
-      .eq('email', currentUser.email.toLowerCase().trim())
-      .maybeSingle();
-
-    if (error) {
-      console.error('Failed to load daily email state:', error);
-      dailyEmailState.subscribed = false;
-    } else {
-      dailyEmailState.subscribed = !!subscriber && subscriber.status === 'active';
-    }
+    const accessToken = await getAccessToken();
+    const response = await fetch('/api/email-status', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const data = await response.json();
+    dailyEmailState.subscribed = !!data.ok && !!data.subscribed;
   } catch (err) {
     console.error('Failed to load daily email state:', err);
     dailyEmailState.subscribed = false;
@@ -337,13 +330,13 @@ async function disableDailyEmail() {
   renderDailyEmailBox();
 
   try {
-    const client = await getSupabaseClient();
-    const { error } = await client
-      .from('subscribers')
-      .update({ status: 'unsubscribed' })
-      .eq('email', currentUser.email.toLowerCase().trim());
-
-    if (error) throw error;
+    const accessToken = await getAccessToken();
+    const response = await fetch('/api/email-status', {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'Failed to disable');
 
     dailyEmailState.subscribed = false;
     showSuccess('Daily Duck email disabled.');
