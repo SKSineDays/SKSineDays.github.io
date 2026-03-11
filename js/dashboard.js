@@ -88,6 +88,7 @@ async function init() {
       if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
         loadUserData();
+        loadDailyEmailState();
         showAuthenticatedView();
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
@@ -234,7 +235,7 @@ function renderDailyEmailBox() {
 
   const originDay = getOriginTypeForDob(owner.birthdate, ORIGIN_ANCHOR_DATE);
   box.hidden = false;
-  toggle.checked = !!dailyEmailState.subscribed;
+  toggle.setAttribute('aria-pressed', dailyEmailState.subscribed ? 'true' : 'false');
   toggle.disabled = !!dailyEmailState.loading;
 
   if (meta) {
@@ -334,12 +335,10 @@ function bindDailyEmailEvents() {
   const toggle = document.getElementById('daily-email-optin');
   if (!toggle) return;
 
-  toggle.addEventListener('change', async (event) => {
-    const checked = !!event.target.checked;
+  toggle.addEventListener('click', async () => {
+    const currentlyOn = toggle.getAttribute('aria-pressed') === 'true';
 
-    if (!checked) {
-      // Snap back — no unsubscribe endpoint in this patch
-      event.target.checked = true;
+    if (currentlyOn) {
       showInfo('To unsubscribe, contact support or use the email unsubscribe link.');
       return;
     }
