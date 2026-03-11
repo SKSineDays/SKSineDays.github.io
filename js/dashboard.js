@@ -297,7 +297,6 @@ async function enableDailyEmailFromOwnerProfile() {
 
   dailyEmailState.loading = true;
   renderDailyEmailBox();
-  setDailyEmailStatus('Saving…', 'info');
 
   try {
     const response = await fetch('/api/subscribe', {
@@ -324,7 +323,6 @@ async function enableDailyEmailFromOwnerProfile() {
   } catch (err) {
     console.error('Enable daily email failed:', err);
     dailyEmailState.subscribed = false;
-    setDailyEmailStatus('Error', 'error');
     showError(err.message || 'Failed to enable daily email.');
   } finally {
     dailyEmailState.loading = false;
