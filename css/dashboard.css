@@ -953,11 +953,11 @@ option {
   position: absolute;
   left: 50%;
   top: 46%;
-  width: clamp(220px, 30vw, 300px);
+  width: clamp(260px, 36vw, 360px);
   aspect-ratio: 1 / 1;
-  translate: -50% -50%;
+  /* translate removed — JS transform handles -50% centering */
   pointer-events: none;
-  z-index: 1;
+  /* z-index removed — 3D depth sorting via translateZ handles paint order */
   transform-style: preserve-3d;
   will-change: transform, opacity;
   opacity: 0.94;
@@ -1268,7 +1268,7 @@ option {
   }
 
   .duck-ring__sphere {
-    width: clamp(190px, 44vw, 240px);
+    width: clamp(220px, 50vw, 300px);
     top: 45%;
   }
 
