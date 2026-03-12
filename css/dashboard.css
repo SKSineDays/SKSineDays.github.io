@@ -949,6 +949,32 @@ option {
   will-change: transform;
 }
 
+.duck-ring__sphere {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: clamp(220px, 30vw, 300px);
+  aspect-ratio: 1 / 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  z-index: 1;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  opacity: 0.94;
+  filter:
+    drop-shadow(0 24px 48px rgba(0, 0, 0, 0.42))
+    drop-shadow(0 0 48px rgba(122, 167, 255, 0.14));
+}
+
+.duck-ring__sphere img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 /* Each stack is absolutely centered, then rotated around ring by JS */
 .duck-stack {
   position: absolute;
@@ -959,6 +985,7 @@ option {
 
   width: 220px;
   height: 250px;
+  z-index: 2;
 
   background: transparent;
   border: 0;
@@ -1083,6 +1110,12 @@ option {
 
 .duck-stack:hover {
   filter: drop-shadow(0 26px 44px rgba(0, 0, 0, 0.42));
+}
+
+.duck-stack.is-front {
+  filter:
+    drop-shadow(0 30px 54px rgba(0, 0, 0, 0.44))
+    drop-shadow(0 0 34px rgba(122, 167, 255, 0.10));
 }
 
 /* Front duck pops more */
@@ -1228,6 +1261,15 @@ option {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .duck-ring__scene {
+    height: 500px;
+  }
+
+  .duck-ring__sphere {
+    width: clamp(190px, 44vw, 240px);
+    top: 45%;
   }
 
   .duck-ring__nav--prev { left: 6px; }

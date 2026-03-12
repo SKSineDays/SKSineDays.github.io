@@ -59,8 +59,21 @@ export class DuckCarousel {
     this.rootEl.setAttribute("aria-label", "Origin ducks 3D carousel");
 
     this.sceneEl = _el("div", "duck-ring__scene");
+
+    this.sphereEl = _el("div", "duck-ring__sphere");
+    this.sphereEl.setAttribute("aria-hidden", "true");
+
+    const sphereImg = document.createElement("img");
+    sphereImg.src = "/assets/sineday-sphere.png";
+    sphereImg.alt = "";
+    sphereImg.decoding = "async";
+    sphereImg.loading = "eager";
+    this.sphereEl.appendChild(sphereImg);
+
     this.ringEl = _el("div", "duck-ring__ring");
     this.ringEl.setAttribute("aria-live", "polite");
+
+    this.sceneEl.appendChild(this.sphereEl);
     this.sceneEl.appendChild(this.ringEl);
 
     this.emptyEl = _el("div", "duck-ring__empty");
@@ -166,6 +179,12 @@ export class DuckCarousel {
 
   _applyRotation() {
     this.ringEl.style.transform = `translateZ(${-this.radius}px) rotateY(${this.rotation}deg)`;
+
+    if (this.sphereEl) {
+      const sphereSpin = this.rotation * 0.35;
+      this.sphereEl.style.transform = `translate3d(-50%, -50%, 0) rotate(${sphereSpin}deg)`;
+    }
+
     this._updateFrontCard();
   }
 
@@ -343,11 +362,13 @@ export class DuckCarousel {
     this.emptyEl.style.display = this.profiles.length === 0 ? "block" : "none";
 
     if (this.profiles.length === 0) {
+      if (this.sphereEl) this.sphereEl.style.display = "none";
       this.prevBtn.style.display = "none";
       this.nextBtn.style.display = "none";
       return;
     }
 
+    if (this.sphereEl) this.sphereEl.style.display = "";
     this.prevBtn.style.display = "";
     this.nextBtn.style.display = "";
 
