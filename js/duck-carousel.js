@@ -182,7 +182,7 @@ export class DuckCarousel {
 
     if (this.sphereEl) {
       const sphereSpin = this.rotation * 0.35;
-      this.sphereEl.style.transform = `translate3d(-50%, -50%, 0) rotate(${sphereSpin}deg)`;
+      this.sphereEl.style.transform = `translate3d(-50%, -50%, -40px) rotate(${sphereSpin}deg)`;
     }
 
     this._updateFrontCard();
