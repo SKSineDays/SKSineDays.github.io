@@ -2457,6 +2457,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   transform: translateX(-50%);
   margin-top: 6px;
   background: #fff;
+  color: #1a1a1a;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 10px;
@@ -2465,6 +2466,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: grid;
   gap: 4px;
   animation: wcalPickerIn 0.15s ease;
+}
+
+/* Force dark text on all picker children — overrides inherited white from body */
+.wcal__picker, .wcal__picker * {
+  color: #1a1a1a;
 }
 
 @keyframes wcalPickerIn {
@@ -2528,7 +2534,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding-top: 8px;
 }
 
-.wcal__picker-row--clear .wcal__picker-row-label {
+.wcal__picker .wcal__picker-row--clear .wcal__picker-row-label {
   color: #888;
   font-weight: 500;
 }
@@ -2554,6 +2560,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .wcal__config-panel {
   background: #fff;
+  color: #1a1a1a;
   border-radius: 14px;
   padding: 24px 20px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
@@ -2562,6 +2569,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: grid;
   gap: 16px;
   animation: wcalSlideUp 0.2s ease;
+}
+
+/* Force dark text on all config children — overrides inherited white from body */
+.wcal__config-panel, .wcal__config-panel * {
+  color: #1a1a1a;
 }
 
 @keyframes wcalSlideUp {
@@ -2621,7 +2633,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   color: #bbb;
 }
 
-.wcal__config-done {
+.wcal__config-panel .wcal__config-done {
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
@@ -2634,8 +2646,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   -webkit-tap-highlight-color: transparent;
 }
 
-.wcal__config-done:hover {
+.wcal__config-panel .wcal__config-done:hover {
   background: #333;
+  color: #fff;
 }
 
 .wcal__empty {

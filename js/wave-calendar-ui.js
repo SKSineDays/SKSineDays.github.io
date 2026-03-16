@@ -99,15 +99,17 @@ export class WaveCalendarUI {
     // Cell map for re-applying tags without full re-render
     this._cellMap = new Map();
 
-    // Bound close handler
+    // Bound close handler — use bubbling phase (not capture) so the
+    // cell's stopPropagation() prevents the doc handler from firing
+    // on the same click that opened the picker.
     this._onDocClick = (e) => this._handleDocClick(e);
-    document.addEventListener("click", this._onDocClick, true);
+    document.addEventListener("click", this._onDocClick);
   }
 
   destroy() {
     this._closePicker();
     this._closePaletteConfig();
-    document.removeEventListener("click", this._onDocClick, true);
+    document.removeEventListener("click", this._onDocClick);
     this.mountEl.innerHTML = "";
   }
 
