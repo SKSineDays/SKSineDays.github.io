@@ -17,6 +17,7 @@ import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.j
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { PlannerUI } from "./planner-ui.js";
+import { WaveCalendarUI } from "./wave-calendar-ui.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -38,6 +39,7 @@ let duckCarousel = null;
 let addProfileUI = null;
 let calendarsUI = null;
 let plannerUI = null;
+let waveCalendarUI = null;
 let userSettings = null;
 
 /**
@@ -101,6 +103,10 @@ async function init() {
         if (plannerUI) {
           plannerUI.destroy();
           plannerUI = null;
+        }
+        if (waveCalendarUI) {
+          waveCalendarUI.destroy();
+          waveCalendarUI = null;
         }
         window.location.href = '/login.html';
       }
@@ -446,11 +452,17 @@ function renderProfiles() {
   calendarsUI?.setProfiles?.(profiles);
   calendarsUI?.setOwnerProfile?.(getOwnerProfile());
   plannerUI?.setOwnerProfile?.(getOwnerProfile());
+  waveCalendarUI?.setOwnerProfile?.(getOwnerProfile());
 
   // Safety remount if planner wasn't mounted (e.g. owner created during onboarding)
   if (isPaid() && !plannerUI && getOwnerProfile()) {
     mountPlannerSection().catch(err => {
       console.error("Failed to mount planner after profiles render:", err);
+    });
+  }
+  if (isPaid() && !waveCalendarUI && getOwnerProfile()) {
+    mountWaveCalendarSection().catch(err => {
+      console.error("Failed to mount wave calendar after profiles render:", err);
     });
   }
 }
@@ -604,6 +616,95 @@ async function mountPlannerSection() {
 }
 
 /**
+ * Mount standalone Wave Calendar section (owner-only, premium-gated)
+ */
+async function mountWaveCalendarSection() {
+  const section = document.getElementById("wave-calendar-section");
+  if (!section) return;
+
+  if (waveCalendarUI) {
+    waveCalendarUI.destroy();
+    waveCalendarUI = null;
+  }
+
+  if (!isPaid()) {
+    section.innerHTML = "";
+    return;
+  }
+
+  const ownerProfile = getOwnerProfile();
+  if (!ownerProfile) {
+    section.innerHTML = "";
+    return;
+  }
+
+  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const weekStart = resolveWeekStart(userSettings);
+  const client = await getSupabaseClient();
+
+  const frame = document.createElement("div");
+  frame.className = "wcal-frame";
+
+  const header = document.createElement("div");
+  header.className = "wcal-frame__header";
+
+  const title = document.createElement("div");
+  title.className = "wcal-frame__title";
+  title.textContent = "Wave Calendar";
+
+  const nav = document.createElement("div");
+  nav.className = "planner-frame__nav";
+
+  const btnPrev = document.createElement("button");
+  btnPrev.className = "planner-frame__navbtn";
+  btnPrev.type = "button";
+  btnPrev.textContent = "←";
+  btnPrev.setAttribute("aria-label", "Previous month");
+
+  const rangeLabel = document.createElement("div");
+  rangeLabel.className = "planner-frame__range";
+
+  const btnNext = document.createElement("button");
+  btnNext.className = "planner-frame__navbtn";
+  btnNext.type = "button";
+  btnNext.textContent = "→";
+  btnNext.setAttribute("aria-label", "Next month");
+
+  nav.append(btnPrev, rangeLabel, btnNext);
+  header.append(title, nav);
+
+  const mount = document.createElement("div");
+  mount.className = "wcal-mount";
+
+  frame.append(header, mount);
+
+  section.innerHTML = "";
+  section.append(frame);
+
+  waveCalendarUI = new WaveCalendarUI(mount, {
+    locale,
+    weekStart,
+    ownerProfile,
+    supabaseClient: client,
+    userId: currentUser.id,
+  });
+
+  await waveCalendarUI.render();
+
+  rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+
+  btnPrev.addEventListener("click", () => {
+    waveCalendarUI.navigateMonth(-1);
+    rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+  });
+
+  btnNext.addEventListener("click", () => {
+    waveCalendarUI.navigateMonth(1);
+    rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+  });
+}
+
+/**
  * Render subscription status (single source: plan pill + renewal in drawer)
  */
 async function renderSubscriptionStatus() {
@@ -662,6 +763,8 @@ async function renderSubscriptionStatus() {
 
     // Mount standalone planner
     await mountPlannerSection();
+    // Mount wave calendar
+    await mountWaveCalendarSection();
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -689,6 +792,18 @@ async function renderSubscriptionStatus() {
       `;
     }
     if (plannerUI) { plannerUI.destroy(); plannerUI = null; }
+
+    // Show locked state for wave calendar (free users)
+    const waveCalSection = document.getElementById("wave-calendar-section");
+    if (waveCalSection) {
+      waveCalSection.innerHTML = `
+        <div class="locked-section">
+          <p>🔒 Premium Feature Locked</p>
+          <p class="text-muted">Upgrade to Premium to access your Interactive Wave Calendar.</p>
+        </div>
+      `;
+    }
+    if (waveCalendarUI) { waveCalendarUI.destroy(); waveCalendarUI = null; }
   }
 }
 
@@ -793,6 +908,7 @@ function setupLanguageRegionUI() {
 
     calendarsUI?.setSettings({ locale, weekStart });
     plannerUI?.setSettings({ locale, weekStart });
+    waveCalendarUI?.setSettings({ locale, weekStart });
   };
 
   langSel.addEventListener("change", applyAndSave);
