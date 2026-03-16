@@ -648,9 +648,24 @@ async function mountWaveCalendarSection() {
   const header = document.createElement("div");
   header.className = "wcal-frame__header";
 
+  const titleRow = document.createElement("div");
+  titleRow.className = "wcal-frame__title-row";
+
   const title = document.createElement("div");
   title.className = "wcal-frame__title";
   title.textContent = "Wave Calendar";
+
+  const gearBtn = document.createElement("button");
+  gearBtn.className = "wcal-frame__gear";
+  gearBtn.type = "button";
+  gearBtn.textContent = "⚙";
+  gearBtn.setAttribute("aria-label", "Customize tag colors");
+  gearBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    waveCalendarUI.openPaletteConfig(gearBtn);
+  });
+
+  titleRow.append(title, gearBtn);
 
   const nav = document.createElement("div");
   nav.className = "planner-frame__nav";
@@ -671,7 +686,7 @@ async function mountWaveCalendarSection() {
   btnNext.setAttribute("aria-label", "Next month");
 
   nav.append(btnPrev, rangeLabel, btnNext);
-  header.append(title, nav);
+  header.append(titleRow, nav);
 
   const mount = document.createElement("div");
   mount.className = "wcal-mount";
