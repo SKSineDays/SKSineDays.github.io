@@ -1,25 +1,29 @@
 /**
  * Wave Calendar UI — Interactive color-tagged monthly calendar
- * with per-day sine wave visualization.
+ * with SineDuck per day. Owner-only, premium-gated.
  *
- * Owner-only, premium-gated. Mounted by dashboard.js.
+ * Tag interaction:
+ *  - Click a day → popover with labeled color buttons → tap to assign
+ *  - Gear button → palette config popout to rename color labels
+ *  - Labels stored in localStorage (wcal_palette_labels)
+ *  - Tag assignments stored in Supabase (wave_calendar_tags)
  */
 
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
-import { calculateSineDayForYmd, DAY_DATA } from "./sineday-engine.js";
+import { calculateSineDayForYmd } from "./sineday-engine.js";
 
-/** Preset tag palette */
-const TAG_PALETTE = [
-  { color: "#22c55e", label: "Build", emoji: "🟢" },
-  { color: "#3b82f6", label: "Social", emoji: "🔵" },
-  { color: "#a855f7", label: "Creative", emoji: "🟣" },
-  { color: "#ef4444", label: "Deep Work", emoji: "🔴" },
-  { color: "#eab308", label: "Rest", emoji: "🟡" },
+/** Default color palette */
+const DEFAULT_PALETTE = [
+  { color: "#22c55e", label: "Build" },
+  { color: "#3b82f6", label: "Social" },
+  { color: "#a855f7", label: "Creative" },
+  { color: "#ef4444", label: "Deep Work" },
+  { color: "#eab308", label: "Rest" },
 ];
 
-function pad2(n) {
-  return String(n).padStart(2, "0");
-}
+const STORAGE_KEY = "wcal_palette_labels";
+
+function pad2(n) { return String(n).padStart(2, "0"); }
 
 function ymd(d) {
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
@@ -30,6 +34,32 @@ function el(tag, className) {
   if (className) node.className = className;
   return node;
 }
+
+/** Load user's palette labels from localStorage, merged with defaults */
+function loadPaletteLabels() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      // Merge: keep saved labels for known colors, fill gaps with defaults
+      return DEFAULT_PALETTE.map(p => ({
+        color: p.color,
+        label: (saved[p.color] !== undefined && saved[p.color] !== "") ? saved[p.color] : p.label,
+      }));
+    }
+  } catch { /* ignore */ }
+  return DEFAULT_PALETTE.map(p => ({ ...p }));
+}
+
+/** Save palette labels to localStorage */
+function savePaletteLabels(palette) {
+  const map = {};
+  for (const p of palette) {
+    map[p.color] = p.label;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+}
+
 
 export class WaveCalendarUI {
   /**
@@ -49,28 +79,34 @@ export class WaveCalendarUI {
     this.supabaseClient = opts.supabaseClient || null;
     this.userId = opts.userId || null;
 
-    // Current month anchor (UTC noon on the 1st)
     const now = new Date();
     this.year = now.getFullYear();
-    this.month = now.getMonth(); // 0-indexed
+    this.month = now.getMonth();
 
     // Tag cache: "YYYY-MM-DD" → { color, label }
     this.tagsCache = new Map();
 
-    // Active picker state
-    this._activePicker = null; // { ymd, element }
-    this._pickerEl = null;
+    // Palette labels (user-customizable)
+    this.palette = loadPaletteLabels();
+
+    // Active popover state
+    this._activePicker = null;
+    this._paletteConfigEl = null;
 
     // Render generation for async safety
     this._renderGen = 0;
 
-    // Bound close handler for document clicks
+    // Cell map for re-applying tags without full re-render
+    this._cellMap = new Map();
+
+    // Bound close handler
     this._onDocClick = (e) => this._handleDocClick(e);
     document.addEventListener("click", this._onDocClick, true);
   }
 
   destroy() {
     this._closePicker();
+    this._closePaletteConfig();
     document.removeEventListener("click", this._onDocClick, true);
     this.mountEl.innerHTML = "";
   }
@@ -88,31 +124,25 @@ export class WaveCalendarUI {
 
   navigateMonth(delta) {
     this.month += delta;
-    if (this.month > 11) {
-      this.month = 0;
-      this.year++;
-    }
-    if (this.month < 0) {
-      this.month = 11;
-      this.year--;
-    }
+    if (this.month > 11) { this.month = 0; this.year++; }
+    if (this.month < 0) { this.month = 11; this.year--; }
     this.render();
   }
 
-  /** Currently displayed month label */
   getMonthLabel() {
     const d = new Date(Date.UTC(this.year, this.month, 1));
     return new Intl.DateTimeFormat(this.locale, {
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
+      month: "long", year: "numeric", timeZone: "UTC"
     }).format(d);
   }
+
+  // ── Render ────────────────────────────────────────────
 
   async render() {
     const gen = ++this._renderGen;
     this._closePicker();
     this.mountEl.innerHTML = "";
+    this._cellMap.clear();
 
     if (!this.ownerProfile) {
       const empty = el("div", "wcal__empty");
@@ -123,25 +153,19 @@ export class WaveCalendarUI {
 
     const birthYmd = this.ownerProfile.birthdate;
     const firstDay = new Date(Date.UTC(this.year, this.month, 1));
-    const daysInMonth = new Date(
-      Date.UTC(this.year, this.month + 1, 0)
-    ).getUTCDate();
+    const daysInMonth = new Date(Date.UTC(this.year, this.month + 1, 0)).getUTCDate();
 
-    // Day-of-week offset for first day
     const firstDow = firstDay.getUTCDay();
     const offset = (firstDow - this.weekStart + 7) % 7;
 
-    // Build grid shell
     const grid = el("div", "wcal__grid");
 
     // Weekday headers
     for (let i = 0; i < 7; i++) {
-      const dow = (this.weekStart + i) % 7;
-      const refDate = new Date(Date.UTC(2024, 0, 7 + dow));
+      const refDate = new Date(Date.UTC(2024, 0, 7 + (this.weekStart + i) % 7));
       const hdr = el("div", "wcal__weekday");
       hdr.textContent = new Intl.DateTimeFormat(this.locale, {
-        weekday: "narrow",
-        timeZone: "UTC",
+        weekday: "narrow", timeZone: "UTC"
       }).format(refDate);
       grid.append(hdr);
     }
@@ -152,17 +176,10 @@ export class WaveCalendarUI {
     }
 
     // Day cells
-    const cellMap = new Map(); // ymd → cell element
     const nowDate = new Date();
-    const todayYmd = ymd(
-      new Date(
-        Date.UTC(
-          nowDate.getFullYear(),
-          nowDate.getMonth(),
-          nowDate.getDate()
-        )
-      )
-    );
+    const todayYmd = ymd(new Date(Date.UTC(
+      nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate()
+    )));
 
     for (let day = 1; day <= daysInMonth; day++) {
       const dateUTC = new Date(Date.UTC(this.year, this.month, day));
@@ -172,7 +189,6 @@ export class WaveCalendarUI {
       cell.dataset.date = dateYmd;
       if (dateYmd === todayYmd) cell.classList.add("wcal__cell--today");
 
-      // SineDay calc
       const result = calculateSineDayForYmd(birthYmd, dateYmd);
       const dayNum = result ? result.day : null;
 
@@ -181,47 +197,30 @@ export class WaveCalendarUI {
       numEl.textContent = String(day);
       cell.append(numEl);
 
-      // SineDuck image + badge (the duck IS the wave indicator)
+      // SineDuck image only — no badge, no phase label
       if (dayNum) {
-        const duckWrap = el("div", "wcal__duck-wrap");
-
         const duckImg = document.createElement("img");
         duckImg.className = "wcal__duck";
         duckImg.src = duckUrlFromSinedayNumber(dayNum);
         duckImg.alt = `Day ${dayNum}`;
         duckImg.loading = "lazy";
-        duckImg.width = 32;
-        duckImg.height = 32;
-        duckWrap.append(duckImg);
-
-        const badge = el("span", "wcal__day-badge");
-        badge.textContent = dayNum;
-        duckWrap.append(badge);
-
-        cell.append(duckWrap);
-
-        // Phase abbreviation
-        const phaseEl = el("div", "wcal__phase");
-        const phaseData = DAY_DATA[dayNum - 1];
-        if (phaseData) {
-          const parts = phaseData.phase.split("•");
-          phaseEl.textContent = (parts[1] || parts[0]).trim();
-        }
-        cell.append(phaseEl);
+        duckImg.width = 44;
+        duckImg.height = 44;
+        cell.append(duckImg);
       }
 
-      // Tag display area (populated after load)
+      // Tag label display (populated after load)
       const tagDisplay = el("div", "wcal__tag-display");
       tagDisplay.dataset.date = dateYmd;
       cell.append(tagDisplay);
 
-      // Click handler → open tag picker
+      // Click → open color picker
       cell.addEventListener("click", (e) => {
         e.stopPropagation();
         this._openPicker(dateYmd, cell);
       });
 
-      cellMap.set(dateYmd, cell);
+      this._cellMap.set(dateYmd, cell);
       grid.append(cell);
     }
 
@@ -229,19 +228,18 @@ export class WaveCalendarUI {
 
     // Load tags from DB
     const startYmd = ymd(firstDay);
-    const endYmd = ymd(
-      new Date(Date.UTC(this.year, this.month, daysInMonth))
-    );
+    const endYmd = ymd(new Date(Date.UTC(this.year, this.month, daysInMonth)));
     await this._loadTags(this.ownerProfile.id, startYmd, endYmd);
     if (gen !== this._renderGen) return;
 
     // Hydrate tag displays
-    for (const [dateYmd, cell] of cellMap) {
+    for (const [dateYmd, cell] of this._cellMap) {
       this._applyTagToCell(dateYmd, cell);
     }
   }
 
-  /** Apply cached tag data to a cell */
+  // ── Tag display ───────────────────────────────────────
+
   _applyTagToCell(dateYmd, cell) {
     const tag = this.tagsCache.get(dateYmd);
     const display = cell.querySelector(".wcal__tag-display");
@@ -253,133 +251,105 @@ export class WaveCalendarUI {
     if (tag && tag.color) {
       cell.style.setProperty("--wcal-tag-color", tag.color);
       cell.classList.add("wcal__cell--tagged");
-      if (display && tag.label) {
-        display.textContent = tag.label;
+
+      // Show the palette label for this color
+      if (display) {
+        const match = this.palette.find(p => p.color === tag.color);
+        display.textContent = tag.label || (match ? match.label : "");
       }
     }
   }
 
-  /** Open the tag picker popover for a specific day */
+  /** Re-apply all visible tags (after palette rename) */
+  _refreshAllTags() {
+    for (const [dateYmd, cell] of this._cellMap) {
+      const tag = this.tagsCache.get(dateYmd);
+      if (tag && tag.color) {
+        // Update the stored label to match current palette
+        const match = this.palette.find(p => p.color === tag.color);
+        if (match) {
+          tag.label = match.label;
+          this._saveTag(this.ownerProfile.id, dateYmd, tag.color, tag.label);
+        }
+      }
+      this._applyTagToCell(dateYmd, cell);
+    }
+  }
+
+  // ── Day picker (color selection) ──────────────────────
+
   _openPicker(dateYmd, anchorCell) {
     this._closePicker();
+    this._closePaletteConfig();
 
     const picker = el("div", "wcal__picker");
     picker.addEventListener("click", (e) => e.stopPropagation());
 
-    // Date label at top
+    // Date label
     const dateLabel = el("div", "wcal__picker-date");
     const d = new Date(dateYmd + "T12:00:00Z");
     dateLabel.textContent = new Intl.DateTimeFormat(this.locale, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
+      weekday: "short", month: "short", day: "numeric", timeZone: "UTC"
     }).format(d);
     picker.append(dateLabel);
 
-    // Color buttons
-    const colors = el("div", "wcal__picker-colors");
-
-    for (const preset of TAG_PALETTE) {
-      const btn = el("button", "wcal__color-btn");
-      btn.type = "button";
-      btn.style.setProperty("--btn-color", preset.color);
-      btn.title = preset.label;
-      btn.setAttribute("aria-label", preset.label);
-
-      const currentTag = this.tagsCache.get(dateYmd);
-      if (currentTag && currentTag.color === preset.color) {
-        btn.classList.add("is-selected");
-      }
-
-      btn.addEventListener("click", () => {
-        this._selectTag(
-          dateYmd,
-          anchorCell,
-          preset.color,
-          labelInput.value.trim() || preset.label
-        );
-        labelInput.value = labelInput.value.trim() || preset.label;
-
-        colors
-          .querySelectorAll(".wcal__color-btn")
-          .forEach((b) => b.classList.remove("is-selected"));
-        btn.classList.add("is-selected");
-      });
-
-      colors.append(btn);
-    }
-
-    // Clear button
-    const clearBtn = el("button", "wcal__color-btn wcal__color-btn--clear");
-    clearBtn.type = "button";
-    clearBtn.textContent = "✕";
-    clearBtn.title = "Clear tag";
-    clearBtn.setAttribute("aria-label", "Clear tag");
-    clearBtn.addEventListener("click", () => {
-      this._clearTag(dateYmd, anchorCell);
-      this._closePicker();
-    });
-    colors.append(clearBtn);
-
-    picker.append(colors);
-
-    // Label input
-    const labelInput = document.createElement("input");
-    labelInput.type = "text";
-    labelInput.className = "wcal__picker-label";
-    labelInput.placeholder = "Label…";
-    labelInput.maxLength = 30;
+    // Color rows — each is a labeled button
+    const list = el("div", "wcal__picker-list");
 
     const currentTag = this.tagsCache.get(dateYmd);
-    if (currentTag) labelInput.value = currentTag.label || "";
 
-    // Save label on change (debounced)
-    let labelTimer = null;
-    labelInput.addEventListener("input", () => {
-      clearTimeout(labelTimer);
-      labelTimer = setTimeout(() => {
-        const tag = this.tagsCache.get(dateYmd);
-        if (tag && tag.color) {
-          this._selectTag(
-            dateYmd,
-            anchorCell,
-            tag.color,
-            labelInput.value.trim()
-          );
-        }
-      }, 600);
-    });
+    for (const preset of this.palette) {
+      const row = el("button", "wcal__picker-row");
+      row.type = "button";
 
-    // Enter key saves and closes
-    labelInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const tag = this.tagsCache.get(dateYmd);
-        if (tag && tag.color) {
-          this._selectTag(
-            dateYmd,
-            anchorCell,
-            tag.color,
-            labelInput.value.trim()
-          );
-        }
-        this._closePicker();
+      const dot = el("span", "wcal__picker-dot");
+      dot.style.background = preset.color;
+      row.append(dot);
+
+      const label = el("span", "wcal__picker-row-label");
+      label.textContent = preset.label;
+      row.append(label);
+
+      if (currentTag && currentTag.color === preset.color) {
+        row.classList.add("is-selected");
       }
-      if (e.key === "Escape") {
+
+      row.addEventListener("click", () => {
+        // Toggle: if already this color, clear it
+        if (currentTag && currentTag.color === preset.color) {
+          this._clearTag(dateYmd, anchorCell);
+          this._closePicker();
+          return;
+        }
+
+        this._selectTag(dateYmd, anchorCell, preset.color, preset.label);
         this._closePicker();
-      }
-    });
+      });
 
-    picker.append(labelInput);
+      list.append(row);
+    }
 
-    // Position the picker relative to the cell
-    anchorCell.style.position = "relative";
+    picker.append(list);
+
+    // Clear button (only show if tagged)
+    if (currentTag && currentTag.color) {
+      const clearRow = el("button", "wcal__picker-row wcal__picker-row--clear");
+      clearRow.type = "button";
+
+      const clearLabel = el("span", "wcal__picker-row-label");
+      clearLabel.textContent = "Clear";
+      clearRow.append(clearLabel);
+
+      clearRow.addEventListener("click", () => {
+        this._clearTag(dateYmd, anchorCell);
+        this._closePicker();
+      });
+
+      picker.append(clearRow);
+    }
+
     anchorCell.append(picker);
-
     this._activePicker = { ymd: dateYmd, element: picker, cell: anchorCell };
-
-    requestAnimationFrame(() => labelInput.focus());
   }
 
   _closePicker() {
@@ -388,6 +358,106 @@ export class WaveCalendarUI {
       this._activePicker = null;
     }
   }
+
+  // ── Palette config popout ─────────────────────────────
+
+  /**
+   * Open the palette config popout.
+   * Called from the gear button in dashboard.js frame header.
+   * @param {HTMLElement} anchorEl — element to position relative to
+   */
+  openPaletteConfig(anchorEl) {
+    this._closePicker();
+    this._closePaletteConfig();
+
+    const overlay = el("div", "wcal__config-overlay");
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) this._closePaletteConfig();
+    });
+
+    const panel = el("div", "wcal__config-panel");
+    panel.addEventListener("click", (e) => e.stopPropagation());
+
+    const heading = el("div", "wcal__config-heading");
+    heading.textContent = "Customize Tags";
+    panel.append(heading);
+
+    const desc = el("div", "wcal__config-desc");
+    desc.textContent = "Rename each color to match how you plan your days.";
+    panel.append(desc);
+
+    const rows = el("div", "wcal__config-rows");
+
+    for (let i = 0; i < this.palette.length; i++) {
+      const preset = this.palette[i];
+
+      const row = el("div", "wcal__config-row");
+
+      const dot = el("span", "wcal__config-dot");
+      dot.style.background = preset.color;
+      row.append(dot);
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "wcal__config-input";
+      input.value = preset.label;
+      input.maxLength = 20;
+      input.placeholder = DEFAULT_PALETTE[i].label;
+
+      // Save on input (immediate to palette array, debounced to localStorage)
+      input.addEventListener("input", () => {
+        this.palette[i].label = input.value.trim() || DEFAULT_PALETTE[i].label;
+      });
+
+      row.append(input);
+      rows.append(row);
+    }
+
+    panel.append(rows);
+
+    // Done button
+    const doneBtn = el("button", "wcal__config-done");
+    doneBtn.type = "button";
+    doneBtn.textContent = "Done";
+    doneBtn.addEventListener("click", () => {
+      // Finalize: ensure empty inputs get defaults
+      for (let i = 0; i < this.palette.length; i++) {
+        if (!this.palette[i].label.trim()) {
+          this.palette[i].label = DEFAULT_PALETTE[i].label;
+        }
+      }
+      savePaletteLabels(this.palette);
+      this._refreshAllTags();
+      this._closePaletteConfig();
+    });
+    panel.append(doneBtn);
+
+    // Escape to close
+    panel.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        doneBtn.click(); // save & close
+      }
+    });
+
+    overlay.append(panel);
+    this.mountEl.closest(".wcal-frame").append(overlay);
+    this._paletteConfigEl = overlay;
+
+    // Focus first input
+    requestAnimationFrame(() => {
+      const firstInput = panel.querySelector(".wcal__config-input");
+      if (firstInput) firstInput.focus();
+    });
+  }
+
+  _closePaletteConfig() {
+    if (this._paletteConfigEl) {
+      this._paletteConfigEl.remove();
+      this._paletteConfigEl = null;
+    }
+  }
+
+  // ── Document click handler ────────────────────────────
 
   _handleDocClick(e) {
     if (this._activePicker) {
@@ -398,21 +468,21 @@ export class WaveCalendarUI {
     }
   }
 
-  /** Select a tag (color + label) for a day, save to cache + DB */
+  // ── Tag operations ────────────────────────────────────
+
   _selectTag(dateYmd, cell, color, label) {
     this.tagsCache.set(dateYmd, { color, label });
     this._applyTagToCell(dateYmd, cell);
     this._saveTag(this.ownerProfile.id, dateYmd, color, label);
   }
 
-  /** Clear tag for a day */
   _clearTag(dateYmd, cell) {
     this.tagsCache.delete(dateYmd);
     this._applyTagToCell(dateYmd, cell);
     this._deleteTag(this.ownerProfile.id, dateYmd);
   }
 
-  // ── Supabase I/O ─────────────────────────────────────────
+  // ── Supabase I/O ──────────────────────────────────────
 
   async _loadTags(profileId, startYmd, endYmd) {
     if (!this.supabaseClient) return;
@@ -431,10 +501,7 @@ export class WaveCalendarUI {
       }
 
       for (const row of data || []) {
-        this.tagsCache.set(row.tag_date, {
-          color: row.color,
-          label: row.label,
-        });
+        this.tagsCache.set(row.tag_date, { color: row.color, label: row.label });
       }
     } catch (err) {
       console.error("[WaveCal] Load tags error:", err);
@@ -445,20 +512,17 @@ export class WaveCalendarUI {
     if (!this.supabaseClient || !this.userId) return;
 
     try {
-      const { error } = await this.supabaseClient.from("wave_calendar_tags").upsert(
-        {
+      const { error } = await this.supabaseClient
+        .from("wave_calendar_tags")
+        .upsert({
           user_id: this.userId,
           profile_id: profileId,
           tag_date: dateYmd,
           color,
           label,
-        },
-        { onConflict: "profile_id,tag_date" }
-      );
+        }, { onConflict: "profile_id,tag_date" });
 
-      if (error) {
-        console.error("[WaveCal] Failed to save tag:", error);
-      }
+      if (error) console.error("[WaveCal] Failed to save tag:", error);
     } catch (err) {
       console.error("[WaveCal] Save tag error:", err);
     }
@@ -474,9 +538,7 @@ export class WaveCalendarUI {
         .eq("profile_id", profileId)
         .eq("tag_date", dateYmd);
 
-      if (error) {
-        console.error("[WaveCal] Failed to delete tag:", error);
-      }
+      if (error) console.error("[WaveCal] Failed to delete tag:", error);
     } catch (err) {
       console.error("[WaveCal] Delete tag error:", err);
     }

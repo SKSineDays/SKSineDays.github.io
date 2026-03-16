@@ -2290,6 +2290,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: grid;
   gap: 14px;
+  position: relative;
 }
 
 .wcal-frame__header {
@@ -2300,11 +2301,38 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   flex-wrap: wrap;
 }
 
+.wcal-frame__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .wcal-frame__title {
   font-size: 18px;
   font-weight: 800;
   color: #1a1a1a;
   letter-spacing: -0.01em;
+}
+
+.wcal-frame__gear {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.03);
+  color: #888;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wcal-frame__gear:hover {
+  background: rgba(0, 0, 0, 0.07);
+  color: #555;
 }
 
 .wcal-mount {
@@ -2329,9 +2357,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 4px 0 8px;
 }
 
+/* Day cell */
 .wcal__cell {
   position: relative;
-  min-height: 100px;
+  min-height: 90px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(0, 0, 0, 0.015);
@@ -2340,6 +2369,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
   overflow: hidden;
 }
@@ -2368,80 +2398,57 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   box-shadow: none;
 }
 
-/* Tagged cell — uses CSS variable --wcal-tag-color set via JS */
+/* Tagged cell */
 .wcal__cell--tagged {
-  background: color-mix(in srgb, var(--wcal-tag-color) 10%, transparent);
+  background: color-mix(in srgb, var(--wcal-tag-color) 12%, transparent);
   border-color: color-mix(in srgb, var(--wcal-tag-color) 30%, transparent);
 }
 
 .wcal__cell--tagged:hover {
-  background: color-mix(in srgb, var(--wcal-tag-color) 16%, transparent);
+  background: color-mix(in srgb, var(--wcal-tag-color) 18%, transparent);
   border-color: color-mix(in srgb, var(--wcal-tag-color) 45%, transparent);
 }
 
 /* Day number */
 .wcal__day-num {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #1a1a1a;
   line-height: 1;
+  align-self: flex-start;
 }
 
 .wcal__cell--today .wcal__day-num {
   color: #7AA7FF;
 }
 
-/* Duck + badge wrap */
-.wcal__duck-wrap {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
+/* SineDuck image */
 .wcal__duck {
   border-radius: 6px;
   flex-shrink: 0;
+  display: block;
 }
 
-.wcal__day-badge {
-  font-size: 10px;
-  font-weight: 800;
-  color: #555;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 4px;
-  padding: 1px 4px;
-  line-height: 1.2;
-}
-
-/* Phase label */
-.wcal__phase {
-  font-size: 9px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Tag display (label text on cell) */
+/* Tag label display on cell */
 .wcal__tag-display {
   font-size: 10px;
   font-weight: 700;
+  color: #1a1a1a;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
   min-height: 14px;
 }
 
 .wcal__cell--tagged .wcal__tag-display {
-  color: color-mix(in srgb, var(--wcal-tag-color) 85%, #000);
+  color: color-mix(in srgb, var(--wcal-tag-color) 80%, #000);
 }
 
-/* Tag picker popover */
+/* ── Day picker popover (color rows) ──────────────────── */
+
 .wcal__picker {
   position: absolute;
   z-index: 100;
@@ -2452,11 +2459,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
-  min-width: 200px;
+  min-width: 170px;
   display: grid;
-  gap: 10px;
+  gap: 4px;
   animation: wcalPickerIn 0.15s ease;
 }
 
@@ -2469,69 +2476,166 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-size: 12px;
   font-weight: 700;
   color: #555;
+  padding: 0 4px 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 2px;
 }
 
-.wcal__picker-colors {
+.wcal__picker-list {
+  display: grid;
+  gap: 2px;
+}
+
+.wcal__picker-row {
   display: flex;
-  gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
-}
-
-.wcal__color-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  background: var(--btn-color);
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  transition: background 0.12s;
+  width: 100%;
+  text-align: left;
   -webkit-tap-highlight-color: transparent;
-  padding: 0;
 }
 
-.wcal__color-btn:hover {
-  transform: scale(1.15);
+.wcal__picker-row:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
-.wcal__color-btn.is-selected {
-  border-color: #1a1a1a;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-}
-
-.wcal__color-btn--clear {
+.wcal__picker-row.is-selected {
   background: rgba(0, 0, 0, 0.06);
+}
+
+.wcal__picker-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wcal__picker-row-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.wcal__picker-row--clear {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 2px;
+  padding-top: 8px;
+}
+
+.wcal__picker-row--clear .wcal__picker-row-label {
   color: #888;
-  font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
+}
+
+/* ── Palette config overlay ───────────────────────────── */
+
+.wcal__config-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: wcalFadeIn 0.15s ease;
 }
 
-.wcal__color-btn--clear:hover {
-  background: rgba(0, 0, 0, 0.12);
+@keyframes wcalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-.wcal__picker-label {
-  width: 100%;
+.wcal__config-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  min-width: 260px;
+  max-width: 320px;
+  display: grid;
+  gap: 16px;
+  animation: wcalSlideUp 0.2s ease;
+}
+
+@keyframes wcalSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.wcal__config-heading {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.wcal__config-desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.4;
+  margin-top: -8px;
+}
+
+.wcal__config-rows {
+  display: grid;
+  gap: 8px;
+}
+
+.wcal__config-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wcal__config-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wcal__config-input {
+  flex: 1;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #1a1a1a;
-  background: rgba(0, 0, 0, 0.02);
+  background: #fff;
   outline: none;
   transition: border-color 0.15s;
 }
 
-.wcal__picker-label:focus {
+.wcal__config-input:focus {
   border-color: rgba(122, 167, 255, 0.5);
 }
 
-.wcal__picker-label::placeholder {
-  color: #aaa;
+.wcal__config-input::placeholder {
+  color: #bbb;
+}
+
+.wcal__config-done {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wcal__config-done:hover {
+  background: #333;
 }
 
 .wcal__empty {
@@ -2543,25 +2647,25 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   text-align: center;
 }
 
-/* ── Wave Calendar responsive ────────────────────────── */
+/* ── Wave Calendar responsive ─────────────────────────── */
 
 @media (max-width: 600px) {
   .wcal__cell {
-    min-height: 72px;
+    min-height: 64px;
     padding: 4px;
   }
 
   .wcal__duck {
-    width: 24px;
-    height: 24px;
+    width: 28px !important;
+    height: 28px !important;
   }
 
-  .wcal__phase {
-    display: none;
+  .wcal__tag-display {
+    font-size: 9px;
   }
 
   .wcal__picker {
-    min-width: 180px;
+    min-width: 160px;
     left: 0;
     transform: none;
     animation-name: wcalPickerInMobile;
@@ -2575,29 +2679,30 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   .wcal-frame__header {
     flex-wrap: wrap;
   }
+
+  .wcal__config-panel {
+    min-width: 220px;
+    padding: 20px 16px;
+  }
 }
 
 @media (max-width: 400px) {
   .wcal__day-num {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .wcal__cell {
-    min-height: 60px;
+    min-height: 56px;
     padding: 3px;
     gap: 1px;
   }
 
-  .wcal__duck-wrap {
-    gap: 2px;
-  }
-
   .wcal__duck {
-    width: 20px;
-    height: 20px;
+    width: 24px !important;
+    height: 24px !important;
   }
 
   .wcal__tag-display {
-    font-size: 9px;
+    font-size: 8px;
   }
 }
