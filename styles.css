@@ -466,6 +466,19 @@ body {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+.sineday-intro {
+  max-width: 720px;
+  margin: 10px auto 18px auto;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #F5F7FF;
+}
+
+.sineday-intro strong {
+  color: #7AA7FF;
+}
+
 .premium-tagline {
   font-size: 1.1em;
   font-weight: 500;
