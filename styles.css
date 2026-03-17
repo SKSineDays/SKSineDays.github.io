@@ -486,6 +486,19 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+.premium-subsection {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 20px 0 12px 0;
+  text-align: left;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.premium-subsection:first-of-type {
+  margin-top: 0;
+}
+
 .premium-bullets {
   list-style: none;
   padding: 0;
