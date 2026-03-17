@@ -2282,6 +2282,40 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
    Wave Calendar (Interactive color-tagged monthly grid)
    ═══════════════════════════════════════════════════════ */
 
+.wcal-frame,
+.wcal-frame button,
+.wcal-frame input {
+  color: #1a1a1a;
+}
+
+.wcal-frame input,
+.wcal__picker,
+.wcal__picker *,
+.wcal__config-panel,
+.wcal__config-panel *,
+.wcal__config-input {
+  -webkit-text-fill-color: currentColor;
+}
+
+.wcal-frame .planner-frame__range,
+.wcal__day-num,
+.wcal__tag-display,
+.wcal__picker-row-label,
+.wcal__config-heading,
+.wcal__config-input {
+  color: #1a1a1a;
+}
+
+.wcal__config-input {
+  caret-color: #1a1a1a;
+}
+
+.wcal__config-desc,
+.wcal__picker-date,
+.wcal__weekday {
+  color: #555;
+}
+
 .wcal-frame {
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -2360,29 +2394,33 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 /* Day cell */
 .wcal__cell {
   position: relative;
-  min-height: 90px;
+  min-height: 96px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(0, 0, 0, 0.015);
-  padding: 6px;
+  padding: 8px 6px 6px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   overflow: hidden;
 }
 
 .wcal__cell:hover {
-  border-color: rgba(122, 167, 255, 0.3);
-  background: rgba(122, 167, 255, 0.04);
-  box-shadow: 0 2px 8px rgba(122, 167, 255, 0.1);
+  border-color: rgba(122, 167, 255, 0.34);
+  background: rgba(122, 167, 255, 0.045);
+  box-shadow: 0 8px 20px rgba(122, 167, 255, 0.08);
 }
 
 .wcal__cell--today {
-  border-color: rgba(122, 167, 255, 0.5);
-  box-shadow: 0 0 0 2px rgba(122, 167, 255, 0.15);
+  box-shadow: inset 0 0 0 1px rgba(122, 167, 255, 0.5);
+}
+
+.wcal__cell.is-picker-open {
+  border-color: rgba(122, 167, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.14);
 }
 
 .wcal__cell--empty {
@@ -2422,11 +2460,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   color: #7AA7FF;
 }
 
-/* SineDuck image */
+/* SineDuck image — preserve original wide shape */
+.wcal__duck-box {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .wcal__duck {
-  border-radius: 6px;
-  flex-shrink: 0;
+  width: 56px;
+  max-width: 100%;
+  height: auto;
+  max-height: 28px;
+  object-fit: contain;
   display: block;
+  flex-shrink: 0;
 }
 
 /* Tag label display on cell */
@@ -2447,15 +2497,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   color: color-mix(in srgb, var(--wcal-tag-color) 80%, #000);
 }
 
-/* ── Day picker popover (color rows) ──────────────────── */
+/* ── Day picker popover (color rows) — positioned by JS at frame level ──────────────────── */
 
 .wcal__picker {
   position: absolute;
   z-index: 100;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 6px;
   background: #fff;
   color: #1a1a1a;
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -2468,14 +2514,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   animation: wcalPickerIn 0.15s ease;
 }
 
-/* Force dark text on all picker children — overrides inherited white from body */
-.wcal__picker, .wcal__picker * {
-  color: #1a1a1a;
-}
-
 @keyframes wcalPickerIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .wcal__picker-date {
@@ -2664,29 +2705,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 @media (max-width: 600px) {
   .wcal__cell {
-    min-height: 64px;
+    min-height: 70px;
     padding: 4px;
+    gap: 2px;
+  }
+
+  .wcal__duck-box {
+    min-height: 22px;
   }
 
   .wcal__duck {
-    width: 28px !important;
-    height: 28px !important;
+    width: 42px !important;
+    max-height: 21px;
+    height: auto !important;
   }
 
   .wcal__tag-display {
     font-size: 9px;
-  }
-
-  .wcal__picker {
-    min-width: 160px;
-    left: 0;
-    transform: none;
-    animation-name: wcalPickerInMobile;
-  }
-
-  @keyframes wcalPickerInMobile {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
   }
 
   .wcal-frame__header {
@@ -2705,14 +2740,19 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   }
 
   .wcal__cell {
-    min-height: 56px;
+    min-height: 58px;
     padding: 3px;
     gap: 1px;
   }
 
+  .wcal__duck-box {
+    min-height: 18px;
+  }
+
   .wcal__duck {
-    width: 24px !important;
-    height: 24px !important;
+    width: 36px !important;
+    max-height: 18px;
+    height: auto !important;
   }
 
   .wcal__tag-display {

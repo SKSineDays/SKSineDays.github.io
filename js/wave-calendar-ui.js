@@ -201,14 +201,17 @@ export class WaveCalendarUI {
 
       // SineDuck image only — no badge, no phase label
       if (dayNum) {
+        const duckBox = el("div", "wcal__duck-box");
+
         const duckImg = document.createElement("img");
         duckImg.className = "wcal__duck";
         duckImg.src = duckUrlFromSinedayNumber(dayNum);
         duckImg.alt = `Day ${dayNum}`;
         duckImg.loading = "lazy";
-        duckImg.width = 44;
-        duckImg.height = 44;
-        cell.append(duckImg);
+        duckImg.decoding = "async";
+
+        duckBox.append(duckImg);
+        cell.append(duckBox);
       }
 
       // Tag label display (populated after load)
@@ -350,12 +353,42 @@ export class WaveCalendarUI {
       picker.append(clearRow);
     }
 
-    anchorCell.append(picker);
+    const frame = this.mountEl.closest(".wcal-frame") || this.mountEl;
+    frame.append(picker);
+
+    anchorCell.classList.add("is-picker-open");
+
+    requestAnimationFrame(() => {
+      this._positionPicker(picker, anchorCell);
+    });
+
     this._activePicker = { ymd: dateYmd, element: picker, cell: anchorCell };
+  }
+
+  _positionPicker(picker, anchorCell) {
+    const frame = this.mountEl.closest(".wcal-frame") || this.mountEl;
+    const frameRect = frame.getBoundingClientRect();
+    const cellRect = anchorCell.getBoundingClientRect();
+    const pickerRect = picker.getBoundingClientRect();
+    const gutter = 8;
+
+    let left = (cellRect.left - frameRect.left) + ((cellRect.width - pickerRect.width) / 2);
+    const maxLeft = Math.max(gutter, frameRect.width - pickerRect.width - gutter);
+    left = Math.max(gutter, Math.min(left, maxLeft));
+
+    let top = (cellRect.bottom - frameRect.top) + 6;
+    if (top + pickerRect.height > frameRect.height - gutter) {
+      top = (cellRect.top - frameRect.top) - pickerRect.height - 6;
+    }
+    top = Math.max(gutter, top);
+
+    picker.style.left = `${left}px`;
+    picker.style.top = `${top}px`;
   }
 
   _closePicker() {
     if (this._activePicker) {
+      this._activePicker.cell?.classList.remove("is-picker-open");
       this._activePicker.element.remove();
       this._activePicker = null;
     }
