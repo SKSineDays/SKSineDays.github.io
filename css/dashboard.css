@@ -856,6 +856,40 @@ option {
   margin-bottom: 12px;
 }
 
+.account-actions--secondary {
+  margin-top: 10px;
+}
+
+.account-actions--secondary .btn-ghost {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(122, 167, 255, 0.24);
+  background: rgba(122, 167, 255, 0.06);
+  color: #F5F7FF;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.account-actions--secondary .btn-ghost:hover {
+  background: rgba(122, 167, 255, 0.1);
+  border-color: rgba(122, 167, 255, 0.36);
+}
+
+.account-actions--secondary .btn-ghost:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.account-sync-note {
+  margin-top: 10px;
+  color: rgba(245, 247, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .sheet .checkout-disclosure {
   text-align: left;
   margin-bottom: 14px;

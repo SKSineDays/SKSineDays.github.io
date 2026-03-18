@@ -31,6 +31,7 @@ import { dirFromLocale } from "../shared/i18n.js";
 let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
+let pendingCheckoutSessionId = null;
 let dailyEmailState = {
   subscribed: false,
   loading: false
@@ -728,6 +729,8 @@ async function renderSubscriptionStatus() {
   const upgradeBtn = document.getElementById('upgrade-btn');
   const billingBtn = document.getElementById('billing-btn');
   const subscriptionMini = document.getElementById('subscription-mini');
+  const syncPremiumBtn = document.getElementById('sync-premium-btn');
+  const syncPremiumNote = document.getElementById('sync-premium-note');
   const calendarsSection = document.getElementById('calendars-section');
 
   if (pill) {
@@ -749,6 +752,8 @@ async function renderSubscriptionStatus() {
 
     if (upgradeBtn) upgradeBtn.style.display = 'none';
     if (billingBtn) billingBtn.style.display = 'inline-block';
+    if (syncPremiumBtn) syncPremiumBtn.style.display = 'none';
+    if (syncPremiumNote) syncPremiumNote.style.display = 'none';
 
     if (calendarsSection) {
       calendarsSection.innerHTML = `
@@ -786,6 +791,8 @@ async function renderSubscriptionStatus() {
 
     if (upgradeBtn) upgradeBtn.style.display = 'inline-block';
     if (billingBtn) billingBtn.style.display = 'none';
+    if (syncPremiumBtn) syncPremiumBtn.style.display = '';
+    if (syncPremiumNote) syncPremiumNote.style.display = '';
 
     if (calendarsSection) {
       calendarsSection.innerHTML = `
@@ -1009,6 +1016,12 @@ function setupEventListeners() {
     billingBtn.addEventListener('click', handleBilling);
   }
 
+  // Sync Premium button
+  const syncPremiumBtn = document.getElementById('sync-premium-btn');
+  if (syncPremiumBtn) {
+    syncPremiumBtn.addEventListener('click', handleSyncPremium);
+  }
+
   // Delete profile buttons (delegated)
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('delete-profile')) {
@@ -1169,6 +1182,56 @@ async function handleUpgrade() {
 }
 
 /**
+ * Handle Sync Premium button (fallback when webhook is delayed)
+ */
+async function handleSyncPremium() {
+  const syncBtn = document.getElementById('sync-premium-btn');
+  const originalText = syncBtn?.textContent || 'Sync Premium';
+
+  try {
+    if (syncBtn) {
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Syncing...';
+    }
+
+    const accessToken = await getAccessToken();
+
+    const response = await fetch('/api/sync-subscription-status', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        checkout_session_id: pendingCheckoutSessionId || null
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || 'Failed to sync Premium status');
+    }
+
+    await loadSubscription();
+
+    if (isPaid()) {
+      showSuccess('Premium synced successfully. Your access is now active.');
+    } else {
+      showInfo('We refreshed your subscription state, but Premium is not active on this account yet.');
+    }
+  } catch (error) {
+    console.error('Sync Premium error:', error);
+    showError('Failed to sync Premium: ' + error.message);
+  } finally {
+    if (syncBtn) {
+      syncBtn.disabled = false;
+      syncBtn.textContent = originalText;
+    }
+  }
+}
+
+/**
  * Handle billing button
  */
 async function handleBilling() {
@@ -1214,6 +1277,11 @@ async function handleBilling() {
 async function checkCheckoutSuccess() {
   const params = new URLSearchParams(window.location.search);
   const checkoutStatus = params.get('checkout');
+  const sessionId = params.get('session_id');
+
+  if (sessionId) {
+    pendingCheckoutSessionId = sessionId;
+  }
 
   if (checkoutStatus === 'success') {
     showSuccess('Payment successful! Your subscription is being activated...');
@@ -1230,14 +1298,17 @@ async function checkCheckoutSuccess() {
       if (isPaid() || attempts >= maxAttempts) {
         clearInterval(pollInterval);
 
-        if (isPaid()) {
-          showSuccess('Premium activated! You now have access to all features.');
-        } else {
-          showInfo('Subscription is being processed. This may take a moment.');
-        }
+      if (isPaid()) {
+        showSuccess('Premium activated! You now have access to all features.');
+        pendingCheckoutSessionId = null;
+      } else {
+        showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');
+      }
 
-        // Clean up URL
-        window.history.replaceState({}, '', '/dashboard.html');
+        // Clean up URL only when paid so fallback can use session_id
+        if (isPaid()) {
+          window.history.replaceState({}, '', '/dashboard.html');
+        }
       }
     }, 2000);
   } else if (checkoutStatus === 'cancel') {
