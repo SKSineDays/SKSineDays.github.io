@@ -856,6 +856,11 @@ option {
   margin-bottom: 12px;
 }
 
+.sheet .checkout-disclosure {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
 .subscription-mini {
   border: 1px solid rgba(255, 255, 255, 0.10);
   background: rgba(255, 255, 255, 0.03);

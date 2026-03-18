@@ -164,6 +164,11 @@ export default async function handler(req, res) {
     // Get or create Stripe customer
     const customerId = await getOrCreateStripeCustomer(stripe, supabaseAdmin, user);
 
+    const termsUrl = `${appUrl}/terms.html`;
+    const refundsUrl = `${appUrl}/refunds.html`;
+    const privacyUrl = `${appUrl}/privacy.html`;
+    const policyVersion = '2026-03-17';
+
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -177,8 +182,20 @@ export default async function handler(req, res) {
       ],
       success_url: `${appUrl}/dashboard.html?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/dashboard.html?checkout=cancel`,
+      consent_collection: {
+        terms_of_service: 'required'
+      },
+      custom_text: {
+        terms_of_service_acceptance: {
+          message: `I agree to the [Terms of Service](${termsUrl}).`
+        }
+      },
       metadata: {
-        supabase_user_id: user.id
+        supabase_user_id: user.id,
+        policy_version: policyVersion,
+        terms_url: termsUrl,
+        refunds_url: refundsUrl,
+        privacy_url: privacyUrl
       }
     });
 
