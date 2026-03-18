@@ -1337,6 +1337,11 @@ body.loading {
   text-align: center;
 }
 
+.site-footer__brand {
+  display: grid;
+  gap: 4px;
+}
+
 .site-footer__name {
   font-size: 14px;
   font-weight: 700;
@@ -1420,6 +1425,13 @@ body.loading {
   color: var(--color-text-primary);
 }
 
+.legal-subline {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
 .legal-updated {
   color: var(--color-text-muted);
   margin-bottom: 22px;
@@ -1463,6 +1475,16 @@ body.loading {
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-secondary);
+}
+
+.legal-callout {
+  margin: 0 0 22px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(122, 167, 255, 0.08);
+  border: 1px solid rgba(122, 167, 255, 0.16);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
 .checkout-disclosure {
