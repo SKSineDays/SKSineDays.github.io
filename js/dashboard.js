@@ -32,6 +32,7 @@ let currentUser = null;
 let currentSubscription = null;
 let profiles = [];
 let pendingCheckoutSessionId = null;
+let hasAttemptedAutoPremiumSync = false;
 let dailyEmailState = {
   subscribed: false,
   loading: false
@@ -1181,6 +1182,40 @@ async function handleUpgrade() {
   }
 }
 
+async function syncPremiumStatus({ silent = false } = {}) {
+  const accessToken = await getAccessToken();
+
+  const response = await fetch('/api/sync-subscription-status', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      checkout_session_id: pendingCheckoutSessionId || null
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    throw new Error(data.error || 'Failed to sync Premium status');
+  }
+
+  await loadSubscription();
+
+  if (isPaid()) {
+    pendingCheckoutSessionId = null;
+    if (!silent) {
+      showSuccess('Premium synced successfully. Your access is now active.');
+    }
+  } else if (!silent) {
+    showInfo('We refreshed your subscription state, but Premium is not active on this account yet.');
+  }
+
+  return data;
+}
+
 /**
  * Handle Sync Premium button (fallback when webhook is delayed)
  */
@@ -1194,32 +1229,7 @@ async function handleSyncPremium() {
       syncBtn.textContent = 'Syncing...';
     }
 
-    const accessToken = await getAccessToken();
-
-    const response = await fetch('/api/sync-subscription-status', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        checkout_session_id: pendingCheckoutSessionId || null
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || 'Failed to sync Premium status');
-    }
-
-    await loadSubscription();
-
-    if (isPaid()) {
-      showSuccess('Premium synced successfully. Your access is now active.');
-    } else {
-      showInfo('We refreshed your subscription state, but Premium is not active on this account yet.');
-    }
+    await syncPremiumStatus({ silent: false });
   } catch (error) {
     console.error('Sync Premium error:', error);
     showError('Failed to sync Premium: ' + error.message);
@@ -1228,6 +1238,20 @@ async function handleSyncPremium() {
       syncBtn.disabled = false;
       syncBtn.textContent = originalText;
     }
+  }
+}
+
+async function attemptAutoPremiumSyncAfterCheckout() {
+  if (hasAttemptedAutoPremiumSync) return;
+  if (!pendingCheckoutSessionId) return;
+  if (isPaid()) return;
+
+  hasAttemptedAutoPremiumSync = true;
+
+  try {
+    await syncPremiumStatus({ silent: true });
+  } catch (error) {
+    console.warn('Auto premium sync skipped or failed:', error);
   }
 }
 
@@ -1298,22 +1322,24 @@ async function checkCheckoutSuccess() {
       if (isPaid() || attempts >= maxAttempts) {
         clearInterval(pollInterval);
 
-      if (isPaid()) {
-        showSuccess('Premium activated! You now have access to all features.');
-        pendingCheckoutSessionId = null;
-      } else {
-        showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');
-      }
+        if (!isPaid() && checkoutStatus === 'success' && pendingCheckoutSessionId) {
+          await attemptAutoPremiumSyncAfterCheckout();
+        }
 
-        // Clean up URL only when paid so fallback can use session_id
         if (isPaid()) {
+          showSuccess('Premium activated! You now have access to all features.');
+          pendingCheckoutSessionId = null;
+          hasAttemptedAutoPremiumSync = false;
           window.history.replaceState({}, '', '/dashboard.html');
+        } else {
+          showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');
         }
       }
     }, 2000);
   } else if (checkoutStatus === 'cancel') {
     showInfo('Checkout cancelled. You can upgrade anytime.');
-    // Clean up URL
+    pendingCheckoutSessionId = null;
+    hasAttemptedAutoPremiumSync = false;
     window.history.replaceState({}, '', '/dashboard.html');
   }
 }
