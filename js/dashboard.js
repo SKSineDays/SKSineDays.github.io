@@ -300,9 +300,16 @@ async function enableDailyEmailFromOwnerProfile() {
   renderDailyEmailBox();
 
   try {
+    const accessToken = await getAccessToken();
+    const headers = { 'Content-Type': 'application/json' };
+    // Bearer: server uses JWT email so the row matches GET /api/email-status.
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch('/api/subscribe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         email: currentUser.email.toLowerCase().trim(),
         consent: true,
@@ -362,15 +369,10 @@ function bindDailyEmailEvents() {
   if (!toggle) return;
 
   toggle.addEventListener('click', async () => {
-    const currentlyOn = toggle.getAttribute('aria-pressed') === 'true';
+    if (dailyEmailState.loading) return;
 
-    if (currentlyOn) {
+    if (dailyEmailState.subscribed) {
       await disableDailyEmail();
-      return;
-    }
-
-    if (dailyEmailState.subscribed || dailyEmailState.loading) {
-      renderDailyEmailBox();
       return;
     }
 

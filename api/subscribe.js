@@ -23,11 +23,39 @@ function isValidEmail(email) {
   return EMAIL_REGEX.test(email);
 }
 
+function parseJsonBody(req) {
+  if (req.body == null) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body || '{}');
+    } catch {
+      return {};
+    }
+  }
+  return typeof req.body === 'object' ? req.body : {};
+}
+
+async function getAuthedEmail(req, serviceClient) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  const token = authHeader.substring(7);
+  const { data: { user }, error } = await serviceClient.auth.getUser(token);
+  if (error || !user) return null;
+  return user.email?.toLowerCase().trim() ?? null;
+}
+
 /**
  * Main handler
  */
 export default async function handler(req, res) {
-  // Only allow POST
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({
       ok: false,
@@ -35,38 +63,59 @@ export default async function handler(req, res) {
     });
   }
 
-  // CORS headers for browser requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   try {
-    // Parse request body
+    const body = parseJsonBody(req);
     const {
-      email,
+      email: bodyEmail,
       consent,
       timezone,
       birth_day_of_year,
       sineday_index,
       origin_day,
       source
-    } = req.body;
+    } = body;
 
-    // Validate required fields
-    if (!email || !consent) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase environment variables');
+      return res.status(500).json({
+        ok: false,
+        error: 'Server configuration error'
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    const authEmail = await getAuthedEmail(req, supabase);
+    const normalizedEmail =
+      authEmail ||
+      (typeof bodyEmail === 'string' ? bodyEmail.toLowerCase().trim() : '');
+
+    if (!normalizedEmail || !consent) {
       return res.status(400).json({
         ok: false,
         error: 'Email and consent are required'
       });
     }
 
-    // Validate email format
-    if (!isValidEmail(email)) {
+    if (authEmail && typeof bodyEmail === 'string') {
+      const want = bodyEmail.toLowerCase().trim();
+      if (want && want !== authEmail) {
+        return res.status(403).json({
+          ok: false,
+          error: 'Email must match the signed-in account'
+        });
+      }
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
       return res.status(400).json({
         ok: false,
         error: 'Invalid email format'
@@ -113,27 +162,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Initialize Supabase client with SERVICE ROLE KEY
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase environment variables');
-      return res.status(500).json({
-        ok: false,
-        error: 'Server configuration error'
-      });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-
     // Check if subscriber already exists BEFORE upserting
-    const normalizedEmail = email.toLowerCase().trim();
     const { data: existingSubscriber } = await supabase
       .from('subscribers')
       .select('id, created_at')
@@ -141,7 +170,7 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     const isNewSubscriber = !existingSubscriber;
-    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${email})`);
+    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${normalizedEmail})`);
 
     // 1. Upsert subscriber
     const { data: subscriber, error: subscriberError } = await supabase
@@ -254,7 +283,7 @@ export default async function handler(req, res) {
         try {
           const resend = new Resend(resendApiKey);
 
-          console.log(`[EMAIL] Attempting to send welcome email to: ${email}`);
+          console.log(`[EMAIL] Attempting to send welcome email to: ${normalizedEmail}`);
           console.log(`[EMAIL] Using template_id: welcome-temp`);
           console.log(`[EMAIL] From address: ${resendFrom}`);
 
@@ -265,7 +294,7 @@ export default async function handler(req, res) {
           // Note: When using template_id, don't include react or html/text fields
           const emailPayload = {
             from: resendFrom,
-            to: [email],
+            to: [normalizedEmail],
             template_id: 'welcome-temp'
           };
           
@@ -309,7 +338,7 @@ export default async function handler(req, res) {
         console.warn('[EMAIL] RESEND_FROM present:', !!resendFrom);
       }
     } else {
-      console.log(`[EMAIL] Skipping welcome email: Existing subscriber (${email})`);
+      console.log(`[EMAIL] Skipping welcome email: Existing subscriber (${normalizedEmail})`);
       console.log(`[EMAIL] Subscriber was created at: ${existingSubscriber?.created_at || 'unknown'}`);
     }
 
