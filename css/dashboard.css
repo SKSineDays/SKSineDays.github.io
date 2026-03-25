@@ -2315,14 +2315,30 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #000;
+  caret-color: #000;
+  -webkit-text-fill-color: #000;
+  color-scheme: light;
   transition: border-color 0.15s ease;
 }
 
 .planner__task-title:focus {
   outline: none;
+  color: #000;
+  -webkit-text-fill-color: #000;
   border-color: rgba(var(--color-accent-rgb), 0.45);
   box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.12);
+}
+
+.planner__task-title::placeholder {
+  color: #888;
+  -webkit-text-fill-color: #888;
+}
+
+.planner__task-title:-webkit-autofill,
+.planner__task-title:-webkit-autofill:hover,
+.planner__task-title:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000;
 }
 
 .planner__task-repeatmeta {
