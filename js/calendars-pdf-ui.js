@@ -45,6 +45,8 @@ export class CalendarsPdfUI {
     this.weekStartDateUTC = startOfWeekUTC(todayUTC, this.weekStart);
 
     this.currentPdfUrl = null;
+    this._previewRequestGen = 0;
+    this._activePreviewKey = "";
     this.supabaseClient = opts.supabaseClient || null;
     this.userId = opts.userId || null;
     this.ownerProfile = opts.ownerProfile || null;
@@ -223,6 +225,21 @@ export class CalendarsPdfUI {
     return this.profiles.filter((p) => p.id === this.profileFilter);
   }
 
+  _ymdUTC(date) {
+    return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())}`;
+  }
+
+  _getPreviewKey() {
+    const active = this._activeProfiles();
+    const profileId = active[0]?.id || "";
+
+    if (this.view === "month") {
+      return `month:${profileId}:${this.year}:${this.monthIndex}:${this.locale}:${this.weekStart}`;
+    }
+
+    return `week:${profileId}:${this._ymdUTC(this.weekStartDateUTC)}:${this.locale}:${this.weekStart}`;
+  }
+
   render() {
     const year =
       this.view === "month"
@@ -268,17 +285,24 @@ export class CalendarsPdfUI {
   }
 
   async refreshPdfPreview() {
+    const requestGen = ++this._previewRequestGen;
+    const previewKey = this._getPreviewKey();
+
     this.loadingOverlay.style.display = "";
     this.loadingOverlay.textContent = "Generating PDF…";
     this.iframe.src = "";
     this.currentPdfUrl = null;
     this.btnDownload.disabled = true;
+    this._activePreviewKey = previewKey;
 
     try {
       const { getSupabaseClient } = await import("./supabase-client.js");
       const client = await getSupabaseClient();
 
-      const { data: { session } } = await client.auth.getSession();
+      const {
+        data: { session }
+      } = await client.auth.getSession();
+
       const token = session?.access_token;
       if (!token) throw new Error("Not logged in");
 
@@ -301,7 +325,7 @@ export class CalendarsPdfUI {
               profileId,
               locale: this.locale,
               weekStart: this.weekStart,
-              anchorYmd: `${this.weekStartDateUTC.getUTCFullYear()}-${pad2(this.weekStartDateUTC.getUTCMonth() + 1)}-${pad2(this.weekStartDateUTC.getUTCDate())}`
+              anchorYmd: this._ymdUTC(this.weekStartDateUTC)
             };
 
       const r = await fetch(endpoint, {
@@ -316,23 +340,34 @@ export class CalendarsPdfUI {
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || "Failed to generate PDF");
 
+      if (requestGen !== this._previewRequestGen) return;
+      if (previewKey !== this._activePreviewKey) return;
+
       this.currentPdfUrl = j.url;
       this.iframe.src = j.url;
       this.btnDownload.disabled = false;
     } catch (e) {
+      if (requestGen !== this._previewRequestGen) return;
       this.loadingOverlay.textContent = e?.message || "Unable to load PDF";
     } finally {
-      this.loadingOverlay.style.display = "none";
+      if (requestGen === this._previewRequestGen) {
+        this.loadingOverlay.style.display = "none";
+      }
     }
   }
 
   downloadPdf() {
-    if (this.currentPdfUrl) {
+    const previewKey = this._getPreviewKey();
+
+    if (this.currentPdfUrl && this._activePreviewKey === previewKey) {
       window.location.href = this.currentPdfUrl;
-    } else {
-      this.refreshPdfPreview().then(() => {
-        if (this.currentPdfUrl) window.location.href = this.currentPdfUrl;
-      });
+      return;
     }
+
+    this.refreshPdfPreview().then(() => {
+      if (this.currentPdfUrl && this._activePreviewKey === this._getPreviewKey()) {
+        window.location.href = this.currentPdfUrl;
+      }
+    });
   }
 }
