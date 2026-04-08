@@ -179,102 +179,201 @@
         </div>
       </section>
 
-      <!-- Profiles Section -->
-      <div class="container">
-        <!-- Origin Duck Carousel -->
-        <div id="duck-carousel-wrap" class="duck-carousel-wrap">
-          <div class="duck-carousel-header">
-            <div>
-              <h2 class="duck-carousel-title">Your Origin Ducks</h2>
-              <p class="text-muted duck-carousel-subtitle">
-                Each profile's origin duck and current SineDay wave position.
-              </p>
-            </div>
+      <!-- Dashboard Pager -->
+      <div class="dashboard-pager" aria-label="Dashboard pages">
+        <button
+          id="dashboard-page-prev"
+          class="dashboard-pager__arrow dashboard-pager__arrow--prev"
+          type="button"
+          aria-label="Previous dashboard page"
+        >
+          ‹
+        </button>
+
+        <div class="dashboard-pager__viewport">
+          <div id="dashboard-page-track" class="dashboard-pager__track">
+            <!-- Page 1 -->
+            <section
+              class="dashboard-page is-active"
+              data-page="0"
+              data-page-name="Your Origin Ducks"
+              aria-label="Your Origin Ducks"
+              aria-hidden="false"
+            >
+              <div class="container dashboard-page__card">
+                <div class="dashboard-page__header">
+                  <div>
+                    <p class="dashboard-page__eyebrow">Page 1</p>
+                    <h2 class="dashboard-page__title">Your Origin Ducks</h2>
+                    <p class="dashboard-page__subtitle">
+                      View your profile carousel and manage the ducks that anchor your SineDay rhythm.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="duck-carousel-wrap" class="duck-carousel-wrap">
+                  <div class="duck-carousel-header">
+                    <div>
+                      <h3 class="duck-carousel-title">Origin Duck Carousel</h3>
+                      <p class="text-muted duck-carousel-subtitle">
+                        Each profile's origin duck and current SineDay wave position.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="profile-limit-message">
+                  <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
+                </div>
+
+                <div class="profiles-controls" role="group" aria-label="Profile controls">
+                  <button
+                    id="add-profile-toggle"
+                    class="btn btn-primary btn-sm"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="add-profile-panel"
+                  >
+                    + Add Profile
+                  </button>
+
+                  <details class="profiles-details profiles-details--inline">
+                    <summary>Manage profiles (list)</summary>
+                    <p class="text-muted" style="margin: 10px 0 0;">
+                      Manage up to 10 profiles for yourself or others.
+                    </p>
+                    <div id="profiles-list"></div>
+                  </details>
+                </div>
+
+                <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
+                  <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
+                  <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
+                    <div class="add-profile-sheet__inner">
+                      <h3 id="add-profile-title">Add New Profile</h3>
+                      <form id="add-profile-form">
+                        <div class="form-group">
+                          <label for="profile-name">Name</label>
+                          <input type="text" id="profile-name" placeholder="John Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="profile-birthdate">Birthdate</label>
+                          <input type="date" id="profile-birthdate" required>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="profile-timezone">Timezone</label>
+                          <select id="profile-timezone">
+                            <option value="America/Chicago">America/Chicago (Central)</option>
+                            <option value="America/New_York">America/New_York (Eastern)</option>
+                            <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
+                            <option value="America/Denver">America/Denver (Mountain)</option>
+                            <option value="Europe/London">Europe/London</option>
+                            <option value="Europe/Paris">Europe/Paris</option>
+                            <option value="Asia/Tokyo">Asia/Tokyo</option>
+                            <option value="Asia/Shanghai">Asia/Shanghai</option>
+                            <option value="Australia/Sydney">Australia/Sydney</option>
+                          </select>
+                        </div>
+
+                        <div class="add-profile-sheet__actions">
+                          <button id="add-profile-cancel" class="btn btn-ghost" type="button">Cancel</button>
+                          <button id="add-profile-btn" class="btn btn-primary" type="submit">Save Profile</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Page 2 -->
+            <section
+              class="dashboard-page"
+              data-page="1"
+              data-page-name="Cloud Journal"
+              aria-label="Cloud Journal"
+              aria-hidden="true"
+            >
+              <div class="container dashboard-page__card">
+                <div class="dashboard-page__header">
+                  <div>
+                    <p class="dashboard-page__eyebrow">Page 2</p>
+                    <h2 class="dashboard-page__title">Cloud Journal</h2>
+                    <p class="dashboard-page__subtitle">
+                      Your cloud-synced writing and task planning space, always visible as a dashboard page.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="planner-section"></div>
+              </div>
+            </section>
+
+            <!-- Page 3 -->
+            <section
+              class="dashboard-page"
+              data-page="2"
+              data-page-name="Wave Calendar"
+              aria-label="Wave Calendar"
+              aria-hidden="true"
+            >
+              <div class="container dashboard-page__card">
+                <div class="dashboard-page__header">
+                  <div>
+                    <p class="dashboard-page__eyebrow">Page 3</p>
+                    <h2 class="dashboard-page__title">Wave Calendar</h2>
+                    <p class="dashboard-page__subtitle">
+                      See your month as a living rhythm map and interact with the flow of your SineDay cycle.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="wave-calendar-section"></div>
+              </div>
+            </section>
+
+            <!-- Page 4 -->
+            <section
+              class="dashboard-page"
+              data-page="3"
+              data-page-name="Printables"
+              aria-label="Printables"
+              aria-hidden="true"
+            >
+              <div class="container dashboard-page__card">
+                <div class="dashboard-page__header">
+                  <div>
+                    <p class="dashboard-page__eyebrow">Page 4</p>
+                    <h2 class="dashboard-page__title">Printables</h2>
+                    <p class="dashboard-page__subtitle">
+                      Generate premium printable planner and calendar pages designed to match your rhythm.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="calendars-section"></div>
+              </div>
+            </section>
           </div>
-          <!-- Carousel renders here via JS -->
         </div>
 
-        <div id="profile-limit-message">
-          <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
-        </div>
-
-        <!-- Compact control row under the carousel -->
-        <div class="profiles-controls" role="group" aria-label="Profile controls">
-          <button
-            id="add-profile-toggle"
-            class="btn btn-primary btn-sm"
-            type="button"
-            aria-expanded="false"
-            aria-controls="add-profile-panel"
-          >
-            + Add Profile
-          </button>
-
-          <details class="profiles-details profiles-details--inline">
-            <summary>Manage profiles (list)</summary>
-            <p class="text-muted" style="margin: 10px 0 0;">
-              Manage up to 10 profiles for yourself or others.
-            </p>
-            <div id="profiles-list"></div>
-          </details>
-        </div>
-
-        <!-- Add Profile bottom sheet (iOS-style) -->
-        <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
-          <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
-          <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
-            <div class="add-profile-sheet__inner">
-              <h3 id="add-profile-title">Add New Profile</h3>
-              <form id="add-profile-form">
-                <div class="form-group">
-                  <label for="profile-name">Name</label>
-                  <input type="text" id="profile-name" placeholder="John Doe" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="profile-birthdate">Birthdate</label>
-                  <input type="date" id="profile-birthdate" required>
-                </div>
-
-                <div class="form-group">
-                  <label for="profile-timezone">Timezone</label>
-                  <select id="profile-timezone">
-                    <option value="America/Chicago">America/Chicago (Central)</option>
-                    <option value="America/New_York">America/New_York (Eastern)</option>
-                    <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
-                    <option value="America/Denver">America/Denver (Mountain)</option>
-                    <option value="Europe/London">Europe/London</option>
-                    <option value="Europe/Paris">Europe/Paris</option>
-                    <option value="Asia/Tokyo">Asia/Tokyo</option>
-                    <option value="Asia/Shanghai">Asia/Shanghai</option>
-                    <option value="Australia/Sydney">Australia/Sydney</option>
-                  </select>
-                </div>
-
-                <button type="submit" id="add-profile-btn" class="btn btn-primary">Add Profile</button>
-                <button id="add-profile-cancel" class="btn btn-ghost" type="button">
-                  Cancel
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
+        <button
+          id="dashboard-page-next"
+          class="dashboard-pager__arrow dashboard-pager__arrow--next"
+          type="button"
+          aria-label="Next dashboard page"
+        >
+          ›
+        </button>
       </div>
 
-      <!-- Planner Section (Standalone — Owner Only) -->
-      <div class="container">
-        <div id="planner-section"></div>
-      </div>
-
-      <!-- Wave Calendar Section (Owner Only, Premium) -->
-      <div class="container">
-        <div id="wave-calendar-section"></div>
-      </div>
-
-      <!-- Calendars Section (Gated) -->
-      <div class="container">
-        <h2>Your Calendars</h2>
-        <div id="calendars-section"></div>
+      <div class="dashboard-page-nav" aria-label="Dashboard page navigation">
+        <button class="dashboard-page-nav__dot is-active" type="button" data-page-target="0" aria-label="Go to Your Origin Ducks" aria-pressed="true"></button>
+        <button class="dashboard-page-nav__dot" type="button" data-page-target="1" aria-label="Go to Cloud Journal" aria-pressed="false"></button>
+        <button class="dashboard-page-nav__dot" type="button" data-page-target="2" aria-label="Go to Wave Calendar" aria-pressed="false"></button>
+        <button class="dashboard-page-nav__dot" type="button" data-page-target="3" aria-label="Go to Printables" aria-pressed="false"></button>
       </div>
     </section>
     </div>

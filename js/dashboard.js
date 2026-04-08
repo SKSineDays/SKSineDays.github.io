@@ -44,6 +44,10 @@ let plannerUI = null;
 let waveCalendarUI = null;
 let userSettings = null;
 
+let dashboardPageIndex = 0;
+let dashboardPageCount = 4;
+let dashboardPagerBound = false;
+
 /**
  * Initialize dashboard on page load
  */
@@ -380,6 +384,171 @@ function bindDailyEmailEvents() {
   });
 }
 
+function getDashboardPages() {
+  return Array.from(document.querySelectorAll(".dashboard-page"));
+}
+
+function getDashboardPageDots() {
+  return Array.from(document.querySelectorAll(".dashboard-page-nav__dot"));
+}
+
+function clampDashboardPage(index) {
+  return Math.max(0, Math.min(index, dashboardPageCount - 1));
+}
+
+function updateDashboardPagerUI() {
+  const track = document.getElementById("dashboard-page-track");
+  const prev = document.getElementById("dashboard-page-prev");
+  const next = document.getElementById("dashboard-page-next");
+  const pages = getDashboardPages();
+  const dots = getDashboardPageDots();
+
+  if (!track || !pages.length) return;
+
+  dashboardPageCount = pages.length;
+  dashboardPageIndex = clampDashboardPage(dashboardPageIndex);
+
+  track.style.transform = `translateX(-${dashboardPageIndex * 100}%)`;
+
+  pages.forEach((page, index) => {
+    const isActive = index === dashboardPageIndex;
+    page.classList.toggle("is-active", isActive);
+    page.setAttribute("aria-hidden", isActive ? "false" : "true");
+  });
+
+  dots.forEach((dot, index) => {
+    const isActive = index === dashboardPageIndex;
+    dot.classList.toggle("is-active", isActive);
+    dot.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  if (prev) prev.disabled = dashboardPageIndex === 0;
+  if (next) next.disabled = dashboardPageIndex === dashboardPageCount - 1;
+}
+
+function setDashboardPage(index) {
+  dashboardPageIndex = clampDashboardPage(index);
+  updateDashboardPagerUI();
+}
+
+function shouldIgnoreDashboardSwipeStart(target) {
+  if (!(target instanceof Element)) return false;
+
+  return !!target.closest(
+    [
+      "button",
+      "a",
+      "input",
+      "select",
+      "textarea",
+      "summary",
+      "details",
+      "label",
+      ".sheet",
+      ".sheet-backdrop",
+      ".add-profile-sheet",
+      ".planner-frame__header",
+      ".planner-frame__nav",
+      ".planner-frame__view-toggle",
+      ".wcal-frame__header",
+      ".duck-ring",
+      ".duck-ring__scene",
+      ".duck-stack",
+    ].join(", ")
+  );
+}
+
+function bindDashboardPager() {
+  if (dashboardPagerBound) return;
+
+  const viewport = document.querySelector(".dashboard-pager__viewport");
+  const prev = document.getElementById("dashboard-page-prev");
+  const next = document.getElementById("dashboard-page-next");
+  const dots = getDashboardPageDots();
+
+  if (!viewport) return;
+
+  prev?.addEventListener("click", () => setDashboardPage(dashboardPageIndex - 1));
+  next?.addEventListener("click", () => setDashboardPage(dashboardPageIndex + 1));
+
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      const index = Number(dot.dataset.pageTarget || "0");
+      setDashboardPage(index);
+    });
+  });
+
+  let startX = 0;
+  let startY = 0;
+  let tracking = false;
+
+  viewport.addEventListener(
+    "touchstart",
+    (e) => {
+      const touch = e.changedTouches?.[0];
+      if (!touch) return;
+
+      const pointerTarget = e.target;
+      if (shouldIgnoreDashboardSwipeStart(pointerTarget)) {
+        tracking = false;
+        return;
+      }
+
+      startX = touch.clientX;
+      startY = touch.clientY;
+      tracking = true;
+    },
+    { passive: true }
+  );
+
+  viewport.addEventListener(
+    "touchend",
+    (e) => {
+      if (!tracking) return;
+      tracking = false;
+
+      const touch = e.changedTouches?.[0];
+      if (!touch) return;
+
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+
+      if (Math.abs(dx) < 50) return;
+      if (Math.abs(dx) <= Math.abs(dy)) return;
+
+      if (dx < 0) {
+        setDashboardPage(dashboardPageIndex + 1);
+      } else {
+        setDashboardPage(dashboardPageIndex - 1);
+      }
+    },
+    { passive: true }
+  );
+
+  window.addEventListener("keydown", (e) => {
+    const accountSheet = document.getElementById("account-sheet");
+    const addProfileSheet = document.getElementById("add-profile-sheet");
+    const onboarding = document.getElementById("owner-onboarding");
+
+    const accountOpen = accountSheet && !accountSheet.hidden;
+    const addProfileOpen =
+      addProfileSheet && addProfileSheet.getAttribute("aria-hidden") === "false";
+    const onboardingOpen =
+      onboarding && onboarding.getAttribute("aria-hidden") === "false";
+
+    if (accountOpen || addProfileOpen || onboardingOpen) return;
+
+    if (e.key === "ArrowLeft") {
+      setDashboardPage(dashboardPageIndex - 1);
+    } else if (e.key === "ArrowRight") {
+      setDashboardPage(dashboardPageIndex + 1);
+    }
+  });
+
+  dashboardPagerBound = true;
+  updateDashboardPagerUI();
+}
+
 /**
  * Ensure duck carousel is initialized
  */
@@ -469,6 +638,8 @@ function renderProfiles() {
       console.error("Failed to mount wave calendar after profiles render:", err);
     });
   }
+
+  updateDashboardPagerUI();
 }
 
 /**
@@ -801,7 +972,7 @@ async function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div class="locked-section">
           <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access monthly and weekly calendars.</p>
+          <p class="text-muted">Upgrade to Premium to access printable monthly calendars and weekly planner pages.</p>
         </div>
       `;
     }
@@ -812,7 +983,7 @@ async function renderSubscriptionStatus() {
       plannerSection.innerHTML = `
         <div class="locked-section">
           <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access your cloud-synced weekly planner.</p>
+          <p class="text-muted">Upgrade to Premium to unlock your cloud-synced journal, weekly planner, and recurring task tools.</p>
         </div>
       `;
     }
@@ -824,12 +995,14 @@ async function renderSubscriptionStatus() {
       waveCalSection.innerHTML = `
         <div class="locked-section">
           <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access your Interactive Wave Calendar.</p>
+          <p class="text-muted">Upgrade to Premium to unlock your interactive monthly Wave Calendar and rhythm-based planning view.</p>
         </div>
       `;
     }
     if (waveCalendarUI) { waveCalendarUI.destroy(); waveCalendarUI = null; }
   }
+
+  updateDashboardPagerUI();
 }
 
 /**
@@ -1384,6 +1557,9 @@ function showAuthenticatedView() {
   // Init duck carousel once dashboard is visible (so sizing works)
   ensureDuckCarousel();
   if (duckCarousel) duckCarousel.setProfiles(profiles);
+
+  bindDashboardPager();
+  updateDashboardPagerUI();
 }
 
 /**

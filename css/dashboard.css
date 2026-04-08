@@ -86,6 +86,220 @@ body {
 }
 
 /* ===========================
+   Dashboard Pager
+   =========================== */
+
+.dashboard-pager {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 14px;
+  margin: 18px 0 10px;
+}
+
+.dashboard-pager__viewport {
+  overflow: hidden;
+  min-width: 0;
+  border-radius: 22px;
+}
+
+.dashboard-pager__track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+  touch-action: pan-y;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-pager__track {
+    transition: none;
+  }
+}
+
+.dashboard-page {
+  flex: 0 0 100%;
+  min-width: 100%;
+  display: flex;
+}
+
+.dashboard-page__card {
+  width: 100%;
+  min-height: min(78vh, 980px);
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dashboard-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-page__eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 247, 255, 0.56);
+}
+
+.dashboard-page__title {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.05;
+  color: #f5f7ff;
+}
+
+.dashboard-page__subtitle {
+  margin: 8px 0 0;
+  max-width: 740px;
+  color: rgba(245, 247, 255, 0.72);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dashboard-pager__arrow {
+  align-self: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f7ff;
+  font-size: 34px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+  z-index: 5;
+}
+
+.dashboard-pager__arrow:hover {
+  transform: translateY(-1px) scale(1.02);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dashboard-pager__arrow:disabled {
+  opacity: 0.34;
+  cursor: default;
+  transform: none;
+}
+
+.dashboard-page-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 6px 0 24px;
+}
+
+.dashboard-page-nav__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, width 0.2s ease;
+}
+
+.dashboard-page-nav__dot.is-active {
+  width: 28px;
+  background: rgba(122, 167, 255, 0.95);
+}
+
+.dashboard-page .locked-section {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-pager {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dashboard-pager__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 46px;
+    height: 46px;
+    background: rgba(5, 6, 10, 0.55);
+  }
+
+  .dashboard-pager__arrow:hover:not(:disabled) {
+    transform: translateY(-50%) scale(1.02);
+    background: rgba(5, 6, 10, 0.62);
+  }
+
+  .dashboard-pager__arrow:disabled {
+    transform: translateY(-50%);
+  }
+
+  .dashboard-pager__arrow--prev {
+    left: 10px;
+  }
+
+  .dashboard-pager__arrow--next {
+    right: 10px;
+  }
+
+  .dashboard-page__card {
+    min-height: min(76vh, 920px);
+    padding: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-page__card {
+    min-height: auto;
+    padding: 18px;
+    border-radius: 18px;
+    gap: 16px;
+  }
+
+  .dashboard-page__title {
+    font-size: 26px;
+  }
+
+  .dashboard-page__subtitle {
+    font-size: 14px;
+  }
+
+  .dashboard-pager__arrow {
+    top: auto;
+    bottom: 18px;
+    transform: none;
+  }
+
+  .dashboard-pager__arrow:hover:not(:disabled) {
+    transform: scale(1.02);
+  }
+
+  .dashboard-pager__arrow:disabled {
+    transform: none;
+  }
+
+  .dashboard-pager__arrow--prev {
+    left: 12px;
+  }
+
+  .dashboard-pager__arrow--next {
+    right: 12px;
+  }
+}
+
+/* ===========================
    Typography
    =========================== */
 
@@ -484,9 +698,12 @@ option {
   padding: 20px 20px 24px;
 }
 
-.add-profile-sheet__inner .btn-ghost {
-  margin-top: 10px;
-  margin-left: 8px;
+.add-profile-sheet__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 /* White circle behind duck icon in profile list */
