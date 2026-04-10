@@ -2224,8 +2224,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 16px;
   flex-wrap: wrap;
+  padding-bottom: 10px;
 }
 
 .planner-frame__title {
@@ -2358,7 +2359,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner__textarea--day {
-  min-height: 440px;
+  min-height: 560px;
 }
 
 .planner__day {
@@ -2475,9 +2476,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__body {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
-  gap: 14px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.95fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* Day view: target sheet height so the notes column can grow with the viewport */
+.planner-frame:not(.is-week-view) .planner__body {
+  min-height: clamp(620px, 68vh, 860px);
 }
 
 .planner__notes-pane {
@@ -2487,7 +2493,19 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-width: 0;
 }
 
+.planner-frame:not(.is-week-view) .planner__notes-pane {
+  min-height: 100%;
+}
+
+.planner-frame:not(.is-week-view) .planner__notes-pane .planner__textarea--day {
+  flex: 1 1 auto;
+  min-height: 560px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .planner__tasks-pane {
+  align-self: start;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
@@ -2497,6 +2515,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   gap: 10px;
   min-width: 0;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.planner-frame:not(.is-week-view) .planner__tasks-pane {
+  position: sticky;
+  top: 8px;
+  z-index: 2;
 }
 
 .planner__tasks-header {
@@ -2799,6 +2823,15 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
     grid-template-columns: 1fr;
   }
 
+  .planner-frame:not(.is-week-view) .planner__body {
+    min-height: auto;
+  }
+
+  .planner-frame:not(.is-week-view) .planner__notes-pane .planner__textarea--day {
+    min-height: 420px;
+    height: auto;
+  }
+
   .planner-frame.is-week-view .planner-mount {
     max-height: min(62vh, 680px);
     padding-right: 2px;
@@ -2842,6 +2875,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   .planner-frame.is-week-view .planner__day-header {
     gap: 8px;
     align-items: flex-start;
+  }
+
+  .planner-frame:not(.is-week-view) .planner__notes-pane .planner__textarea--day {
+    min-height: 340px;
   }
 }
 
