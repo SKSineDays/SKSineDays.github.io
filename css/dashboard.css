@@ -2316,7 +2316,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 /* Compact dashboard card in week mode.
    Only the planner content scrolls so the pager height stays small. */
 .planner-frame.is-week-view .planner-mount {
-  max-height: clamp(340px, 52vh, 560px);
+  max-height: clamp(440px, 64vh, 760px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -2358,7 +2358,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner__textarea--day {
-  min-height: 340px;
+  min-height: 440px;
 }
 
 .planner__day {
@@ -2459,6 +2459,18 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 /* Wider planner column for notes + task rail */
 #dashboard-section .container:has(#planner-section) {
   max-width: 1280px;
+  display: flex;
+  flex-direction: column;
+}
+
+#planner-section {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+#planner-section > .planner-frame {
+  flex: 1 1 auto;
 }
 
 .planner__body {
@@ -2788,7 +2800,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   }
 
   .planner-frame.is-week-view .planner-mount {
-    max-height: min(50vh, 520px);
+    max-height: min(62vh, 680px);
     padding-right: 2px;
     margin-right: -2px;
   }
@@ -2820,7 +2832,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   }
 
   .planner-frame.is-week-view .planner-mount {
-    max-height: min(46vh, 460px);
+    max-height: min(58vh, 620px);
   }
 
   .planner-frame.is-week-view .planner__day {
