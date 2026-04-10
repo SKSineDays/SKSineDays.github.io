@@ -2217,6 +2217,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: grid;
   gap: 14px;
+  min-height: 0;
 }
 
 .planner-frame__header {
@@ -2309,11 +2310,46 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner-mount {
   display: grid;
   gap: 10px;
+  min-height: 0;
+}
+
+/* Compact dashboard card in week mode.
+   Only the planner content scrolls so the pager height stays small. */
+.planner-frame.is-week-view .planner-mount {
+  max-height: clamp(340px, 52vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+  padding-right: 6px;
+  margin-right: -6px;
+}
+
+.planner-frame.is-week-view .planner-mount::-webkit-scrollbar {
+  width: 10px;
+}
+
+.planner-frame.is-week-view .planner-mount::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.planner-frame.is-week-view .planner-mount::-webkit-scrollbar-thumb {
+  background: rgba(122, 167, 255, 0.24);
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.96);
 }
 
 .planner__week {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
+}
+
+@media (min-width: 980px) {
+  .planner-frame.is-week-view .planner__week {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
 }
 
 .planner__day-view {
@@ -2326,6 +2362,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner__day {
+  position: relative;
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.015);
@@ -2339,6 +2376,21 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* Sticky day strip only in week view so users always know
+   which day card they are editing while scrolling */
+.planner-frame.is-week-view .planner__day-header {
+  position: sticky;
+  top: -1px;
+  z-index: 3;
+  padding: 10px 12px;
+  margin: -4px -4px 2px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
 }
 
 .planner__day-label {
@@ -2734,24 +2786,50 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   .planner__body {
     grid-template-columns: 1fr;
   }
+
+  .planner-frame.is-week-view .planner-mount {
+    max-height: min(50vh, 520px);
+    padding-right: 2px;
+    margin-right: -2px;
+  }
+
+  .planner-frame.is-week-view .planner__day-header {
+    padding: 8px 10px;
+  }
 }
 
 @media (max-width: 600px) {
   .planner-frame__header {
     flex-wrap: wrap;
   }
+
   .planner-frame__view-toggle {
     order: 2;
     width: 100%;
   }
+
   .planner-frame__nav {
     order: 3;
     width: 100%;
     justify-content: space-between;
   }
+
   .planner-frame__range {
     min-width: 0;
     flex: 1;
+  }
+
+  .planner-frame.is-week-view .planner-mount {
+    max-height: min(46vh, 460px);
+  }
+
+  .planner-frame.is-week-view .planner__day {
+    padding: 14px;
+  }
+
+  .planner-frame.is-week-view .planner__day-header {
+    gap: 8px;
+    align-items: flex-start;
   }
 }
 

@@ -755,8 +755,13 @@ async function mountPlannerSection() {
     title.textContent = isWeek ? "Weekly Planner" : "Daily Planner";
     btnPrev.setAttribute("aria-label", isWeek ? "Previous week" : "Previous day");
     btnNext.setAttribute("aria-label", isWeek ? "Next week" : "Next day");
+
+    frame.classList.toggle("is-week-view", isWeek);
+    frame.classList.toggle("is-day-view", !isWeek);
+    frame.dataset.view = view;
   }
 
+  syncViewToggle(plannerUI.view);
   updateRangeLabel();
 
   btnViewWeek.addEventListener("click", () => {
