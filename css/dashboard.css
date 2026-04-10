@@ -1208,18 +1208,18 @@ option {
 .duck-ring__sphere {
   position: absolute;
   left: 50%;
-  top: 46%;
-  width: clamp(260px, 36vw, 360px);
+  top: 52%;
+  width: clamp(420px, 62vw, 700px);
   aspect-ratio: 1 / 1;
   /* translate removed — JS transform handles -50% centering */
   pointer-events: none;
   /* z-index removed — 3D depth sorting via translateZ handles paint order */
   transform-style: preserve-3d;
   will-change: transform, opacity;
-  opacity: 0.94;
+  opacity: 0.97;
   filter:
-    drop-shadow(0 24px 48px rgba(0, 0, 0, 0.42))
-    drop-shadow(0 0 48px rgba(122, 167, 255, 0.14));
+    drop-shadow(0 32px 72px rgba(0, 0, 0, 0.46))
+    drop-shadow(0 0 72px rgba(122, 167, 255, 0.18));
 }
 
 .duck-ring__sphere img {
@@ -1524,8 +1524,8 @@ option {
   }
 
   .duck-ring__sphere {
-    width: clamp(220px, 50vw, 300px);
-    top: 45%;
+    width: clamp(320px, 78vw, 520px);
+    top: 50%;
   }
 
   .duck-ring__nav--prev { left: 6px; }
