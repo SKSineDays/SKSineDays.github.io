@@ -103,9 +103,33 @@
             </button>
           </div>
 
-          <button id="account-toggle" class="dash-head__icon-btn" type="button"
-            aria-expanded="false" aria-controls="account-sheet"
-            aria-label="Account options">⋯</button>
+          <div class="dash-head__actions">
+            <button
+              id="notifications-toggle"
+              class="dash-head__icon-btn dash-head__icon-btn--bell"
+              type="button"
+              aria-expanded="false"
+              aria-controls="notifications-sheet"
+              aria-label="Notifications"
+            >
+              <svg class="dash-head__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-4H5a1 1 0 0 1-.8-1.6c.92-1.23 1.8-2.62 1.8-6.15 0-3.52 2.03-6.09 5-6.77V3a1 1 0 1 1 2 0v.48c2.97.68 5 3.25 5 6.77 0 3.53.88 4.92 1.8 6.15A1 1 0 0 1 19 18Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span id="notifications-badge" class="dash-head__icon-badge" hidden></span>
+            </button>
+
+            <button
+              id="account-toggle"
+              class="dash-head__icon-btn"
+              type="button"
+              aria-expanded="false"
+              aria-controls="account-sheet"
+              aria-label="Account options"
+            >⋯</button>
+          </div>
         </div>
       </header>
 
@@ -176,6 +200,34 @@
           </div>
 
           <a class="dash-home" href="/">← Home</a>
+        </div>
+      </section>
+
+      <div id="notifications-backdrop" class="sheet-backdrop" hidden></div>
+
+      <section
+        id="notifications-sheet"
+        class="sheet notifications-sheet"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications"
+      >
+        <div class="sheet__handle" aria-hidden="true"></div>
+        <div class="sheet__content">
+          <div class="notifications-sheet__header">
+            <div>
+              <div class="muted">Dashboard Inbox</div>
+              <h3 class="notifications-sheet__title">Notifications</h3>
+            </div>
+            <button id="notifications-mark-all" class="btn btn-ghost btn-sm" type="button">
+              Mark all read
+            </button>
+          </div>
+
+          <div id="notifications-list" class="notifications-list">
+            <p class="text-muted">No notifications yet.</p>
+          </div>
         </div>
       </section>
 
@@ -356,6 +408,29 @@
                 <div id="calendars-section"></div>
               </div>
             </section>
+
+            <!-- Page 5 -->
+            <section
+              class="dashboard-page"
+              data-page="4"
+              data-page-name="Social Planner"
+              aria-label="Social Planner"
+              aria-hidden="true"
+            >
+              <div class="container dashboard-page__card">
+                <div class="dashboard-page__header">
+                  <div>
+                    <p class="dashboard-page__eyebrow">Page 5</p>
+                    <h2 class="dashboard-page__title">Social Planner</h2>
+                    <p class="dashboard-page__subtitle">
+                      Shared monthly planning with friend requests, approvals, member ducks, and collaborative day cards.
+                    </p>
+                  </div>
+                </div>
+
+                <div id="social-planner-section"></div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -374,6 +449,13 @@
         <button class="dashboard-page-nav__dot" type="button" data-page-target="1" aria-label="Go to Cloud Journal" aria-pressed="false"></button>
         <button class="dashboard-page-nav__dot" type="button" data-page-target="2" aria-label="Go to Wave Calendar" aria-pressed="false"></button>
         <button class="dashboard-page-nav__dot" type="button" data-page-target="3" aria-label="Go to Printables" aria-pressed="false"></button>
+        <button
+          class="dashboard-page-nav__dot"
+          type="button"
+          data-page-target="4"
+          aria-label="Go to Social Planner"
+          aria-pressed="false"
+        ></button>
       </div>
     </section>
     </div>

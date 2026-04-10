@@ -1910,6 +1910,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   body.print-calendar .dash-head,
   body.print-calendar #account-sheet,
   body.print-calendar #account-backdrop,
+  body.print-calendar #notifications-sheet,
+  body.print-calendar #notifications-backdrop,
   body.print-calendar .duck-carousel-wrap,
   body.print-calendar .profiles-controls,
   body.print-calendar #profile-limit-message,
@@ -3472,5 +3474,309 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
   .wcal__tag-display {
     font-size: 8px;
+  }
+}
+
+/* ===========================
+   Social Planner + notifications
+   =========================== */
+
+.dash-head__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-head__icon-btn {
+  position: relative;
+}
+
+.dash-head__icon-btn--bell {
+  font-size: 0;
+}
+
+.dash-head__icon-btn.is-unread {
+  border-color: rgba(122, 167, 255, 0.35);
+}
+
+.dash-head__icon-svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.dash-head__icon-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #7aa7ff;
+  color: #05060a;
+  font-size: 10px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifications-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.notifications-sheet__title,
+.social-sheet__title {
+  margin: 2px 0 0;
+  font-size: 20px;
+}
+
+.notifications-list,
+.social-friends-list,
+.social-day-sheet__cards {
+  display: grid;
+  gap: 10px;
+}
+
+.notification-item,
+.social-friend-row,
+.social-day-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 14px;
+}
+
+.notification-item.is-unread {
+  border-color: rgba(122, 167, 255, 0.32);
+  background: rgba(122, 167, 255, 0.08);
+}
+
+.notification-item__title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.notification-item__copy {
+  margin: 0 0 6px;
+  color: rgba(245, 247, 255, 0.82);
+}
+
+.notification-item__meta {
+  font-size: 12px;
+  color: rgba(245, 247, 255, 0.58);
+}
+
+.notification-item__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.social-frame {
+  display: grid;
+  gap: 14px;
+}
+
+.social-frame__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.social-frame__eyebrow {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(245, 247, 255, 0.58);
+}
+
+.social-frame__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #f5f7ff;
+}
+
+.social-frame__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.social-frame__chip,
+.social-day-card__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(122, 167, 255, 0.12);
+  border: 1px solid rgba(122, 167, 255, 0.22);
+  color: #f5f7ff;
+}
+
+.social-frame__month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.social-frame__weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(245, 247, 255, 0.58);
+  padding-bottom: 4px;
+}
+
+.social-frame__cell {
+  min-height: 92px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+  color: #f5f7ff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.social-frame__cell.is-outside {
+  opacity: 0.45;
+}
+
+.social-frame__cell.is-today {
+  border-color: rgba(122, 167, 255, 0.34);
+  box-shadow: 0 0 0 1px rgba(122, 167, 255, 0.16) inset;
+}
+
+.social-frame__cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.social-frame__day-num {
+  font-weight: 800;
+}
+
+.social-frame__activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #7aa7ff;
+}
+
+.social-frame__member-stack {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.social-frame__member-duck,
+.social-day-card__duck {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.social-day-card {
+  display: grid;
+  gap: 12px;
+}
+
+.social-day-card__header,
+.social-day-card__identity,
+.social-task-row,
+.social-day-card__taskadd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.social-day-card__identity {
+  justify-content: flex-start;
+}
+
+.social-day-card__name {
+  font-weight: 800;
+}
+
+.social-day-card__meta,
+.social-friend-row__meta,
+.social-day-card__savehint {
+  font-size: 12px;
+  color: rgba(245, 247, 255, 0.6);
+}
+
+.social-day-card__label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(245, 247, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.social-day-card__note,
+.social-day-card__taskinput {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: #f5f7ff;
+  font: inherit;
+  padding: 12px;
+}
+
+.social-day-card__note {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.social-day-card__readbox {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.social-task-row__archive {
+  border: 0;
+  background: transparent;
+  color: rgba(245, 247, 255, 0.6);
+  cursor: pointer;
+}
+
+.social-task-row .is-complete {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+@media (max-width: 820px) {
+  .social-frame__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .social-frame__month {
+    gap: 6px;
+  }
+
+  .social-frame__cell {
+    min-height: 84px;
+    padding: 8px;
   }
 }

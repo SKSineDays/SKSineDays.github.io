@@ -18,6 +18,7 @@ import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { PlannerUI } from "./planner-ui.js";
 import { WaveCalendarUI } from "./wave-calendar-ui.js";
+import { SocialPlannerUI } from "./social-planner-ui.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -42,10 +43,11 @@ let addProfileUI = null;
 let calendarsUI = null;
 let plannerUI = null;
 let waveCalendarUI = null;
+let socialPlannerUI = null;
 let userSettings = null;
 
 let dashboardPageIndex = 0;
-let dashboardPageCount = 4;
+let dashboardPageCount = 5;
 let dashboardPagerBound = false;
 
 /**
@@ -113,6 +115,10 @@ async function init() {
         if (waveCalendarUI) {
           waveCalendarUI.destroy();
           waveCalendarUI = null;
+        }
+        if (socialPlannerUI) {
+          socialPlannerUI.destroy();
+          socialPlannerUI = null;
         }
         window.location.href = '/login.html';
       }
@@ -384,6 +390,266 @@ function bindDailyEmailEvents() {
   });
 }
 
+async function loadNotificationsBadge() {
+  const badge = document.getElementById("notifications-badge");
+  const toggle = document.getElementById("notifications-toggle");
+  if (!badge || !toggle || !currentUser?.id) return;
+
+  try {
+    const client = await getSupabaseClient();
+    const { count, error } = await client
+      .from("social_notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", currentUser.id)
+      .eq("is_read", false);
+
+    if (error) throw error;
+
+    const unread = count || 0;
+    badge.hidden = unread === 0;
+    badge.textContent = unread > 99 ? "99+" : String(unread);
+    toggle.classList.toggle("is-unread", unread > 0);
+  } catch (err) {
+    console.error("Failed to load notifications badge:", err);
+    badge.hidden = true;
+    toggle.classList.remove("is-unread");
+  }
+}
+
+async function fetchNotifications(limit = 20) {
+  if (!currentUser?.id) return [];
+  const client = await getSupabaseClient();
+  const { data, error } = await client
+    .from("social_notifications")
+    .select("id, type, title, body, payload, is_read, created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data || [];
+}
+
+async function markNotificationsRead(ids) {
+  if (!ids?.length || !currentUser?.id) return;
+  const client = await getSupabaseClient();
+  const { error } = await client
+    .from("social_notifications")
+    .update({
+      is_read: true,
+      read_at: new Date().toISOString()
+    })
+    .in("id", ids)
+    .eq("user_id", currentUser.id);
+
+  if (error) throw error;
+}
+
+function closeNotificationsSheet() {
+  const toggle = document.getElementById("notifications-toggle");
+  const sheet = document.getElementById("notifications-sheet");
+  const backdrop = document.getElementById("notifications-backdrop");
+  if (!toggle || !sheet || !backdrop) return;
+
+  toggle.setAttribute("aria-expanded", "false");
+  sheet.classList.remove("is-open");
+  backdrop.classList.remove("is-open");
+
+  setTimeout(() => {
+    sheet.hidden = true;
+    backdrop.hidden = true;
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+  }, 220);
+}
+
+function renderNotificationsList(items) {
+  const list = document.getElementById("notifications-list");
+  if (!list) return;
+
+  if (!items.length) {
+    list.innerHTML = `<p class="text-muted">No notifications yet.</p>`;
+    return;
+  }
+
+  list.innerHTML = items.map((item) => {
+    const payload = item.payload || {};
+    const created = item.created_at
+      ? new Date(item.created_at).toLocaleString()
+      : "";
+    const isFriendRequest = item.type === "friend_request" && payload.request_id;
+
+    return `
+      <article class="notification-item ${item.is_read ? "" : "is-unread"}" data-id="${item.id}">
+        <div class="notification-item__body">
+          <div class="notification-item__title">${escapeHtml(item.title || "Notification")}</div>
+          ${item.body ? `<p class="notification-item__copy">${escapeHtml(item.body)}</p>` : ""}
+          <div class="notification-item__meta">${escapeHtml(created)}</div>
+        </div>
+
+        <div class="notification-item__actions">
+          ${isFriendRequest ? `
+            <button
+              class="btn btn-primary btn-sm"
+              type="button"
+              data-notification-action="accept-request"
+              data-request-id="${escapeHtml(String(payload.request_id))}"
+            >
+              Accept
+            </button>
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              data-notification-action="decline-request"
+              data-request-id="${escapeHtml(String(payload.request_id))}"
+            >
+              Decline
+            </button>
+          ` : ""}
+
+          ${payload.target_date ? `
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              data-notification-action="open-social"
+              data-target-date="${escapeHtml(String(payload.target_date))}"
+              data-planner-id="${escapeHtml(String(payload.planner_id || ""))}"
+            >
+              Open
+            </button>
+          ` : ""}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+async function respondToFriendRequest(requestId, decision) {
+  const accessToken = await getAccessToken();
+  const response = await fetch("/api/social/respond-friend-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ requestId, decision })
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.ok) {
+    throw new Error(data?.error || "Failed to respond to request");
+  }
+  return data;
+}
+
+async function openNotificationsSheet() {
+  const toggle = document.getElementById("notifications-toggle");
+  const sheet = document.getElementById("notifications-sheet");
+  const backdrop = document.getElementById("notifications-backdrop");
+  if (!toggle || !sheet || !backdrop || !currentUser?.id) return;
+
+  try {
+    const items = await fetchNotifications(20);
+    renderNotificationsList(items);
+
+    toggle.setAttribute("aria-expanded", "true");
+    sheet.hidden = false;
+    backdrop.hidden = false;
+
+    requestAnimationFrame(() => {
+      sheet.classList.add("is-open");
+      backdrop.classList.add("is-open");
+    });
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    const unreadIds = items.filter((item) => !item.is_read).map((item) => item.id);
+    if (unreadIds.length) {
+      await markNotificationsRead(unreadIds);
+      await loadNotificationsBadge();
+    }
+  } catch (err) {
+    console.error("Failed to open notifications sheet:", err);
+    showError(err.message || "Failed to load notifications.");
+  }
+}
+
+function setupNotificationsSheet() {
+  const toggle = document.getElementById("notifications-toggle");
+  const backdrop = document.getElementById("notifications-backdrop");
+  const sheet = document.getElementById("notifications-sheet");
+  const markAll = document.getElementById("notifications-mark-all");
+
+  if (!toggle || !backdrop || !sheet) return;
+
+  toggle.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    if (expanded) {
+      closeNotificationsSheet();
+    } else {
+      openNotificationsSheet();
+    }
+  });
+
+  backdrop.addEventListener("click", closeNotificationsSheet);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+      closeNotificationsSheet();
+    }
+  });
+
+  markAll?.addEventListener("click", async () => {
+    try {
+      const items = await fetchNotifications(50);
+      const unreadIds = items.filter((item) => !item.is_read).map((item) => item.id);
+      if (unreadIds.length) {
+        await markNotificationsRead(unreadIds);
+      }
+      renderNotificationsList(items.map((item) => ({ ...item, is_read: true })));
+      await loadNotificationsBadge();
+    } catch (err) {
+      console.error("Failed to mark notifications read:", err);
+      showError("Failed to mark notifications read.");
+    }
+  });
+
+  sheet.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-notification-action]");
+    if (!btn) return;
+
+    const action = btn.dataset.notificationAction;
+
+    try {
+      if (action === "accept-request" || action === "decline-request") {
+        const requestId = btn.dataset.requestId;
+        await respondToFriendRequest(
+          requestId,
+          action === "accept-request" ? "accepted" : "declined"
+        );
+        showSuccess(action === "accept-request" ? "Friend request accepted." : "Friend request declined.");
+        await loadNotificationsBadge();
+        await openNotificationsSheet();
+        await mountSocialPlannerSection();
+        return;
+      }
+
+      if (action === "open-social") {
+        const targetDate = btn.dataset.targetDate;
+        const plannerId = btn.dataset.plannerId || null;
+        closeNotificationsSheet();
+        setDashboardPage(4);
+        await mountSocialPlannerSection();
+        await socialPlannerUI?.openDaySheet?.(targetDate, plannerId || undefined);
+      }
+    } catch (err) {
+      console.error("Notification action failed:", err);
+      showError(err.message || "Notification action failed.");
+    }
+  });
+}
+
 function getDashboardPages() {
   return Array.from(document.querySelectorAll(".dashboard-page"));
 }
@@ -451,6 +717,13 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".planner-frame__nav",
       ".planner-frame__view-toggle",
       ".wcal-frame__header",
+      ".social-frame__header",
+      ".social-frame__actions",
+      ".social-frame__nav",
+      ".social-day-sheet",
+      ".social-friends-sheet",
+      ".social-add-sheet",
+      ".notifications-sheet",
       ".duck-ring",
       ".duck-ring__scene",
       ".duck-stack",
@@ -531,12 +804,15 @@ function bindDashboardPager() {
     const onboarding = document.getElementById("owner-onboarding");
 
     const accountOpen = accountSheet && !accountSheet.hidden;
+    const notifToggle = document.getElementById("notifications-toggle");
+    const notificationsOpen =
+      notifToggle?.getAttribute("aria-expanded") === "true";
     const addProfileOpen =
       addProfileSheet && addProfileSheet.getAttribute("aria-hidden") === "false";
     const onboardingOpen =
       onboarding && onboarding.getAttribute("aria-hidden") === "false";
 
-    if (accountOpen || addProfileOpen || onboardingOpen) return;
+    if (accountOpen || notificationsOpen || addProfileOpen || onboardingOpen) return;
 
     if (e.key === "ArrowLeft") {
       setDashboardPage(dashboardPageIndex - 1);
@@ -626,6 +902,7 @@ function renderProfiles() {
   calendarsUI?.setOwnerProfile?.(getOwnerProfile());
   plannerUI?.setOwnerProfile?.(getOwnerProfile());
   waveCalendarUI?.setOwnerProfile?.(getOwnerProfile());
+  socialPlannerUI?.setOwnerProfile?.(getOwnerProfile());
 
   // Safety remount if planner wasn't mounted (e.g. owner created during onboarding)
   if (isPaid() && !plannerUI && getOwnerProfile()) {
@@ -636,6 +913,12 @@ function renderProfiles() {
   if (isPaid() && !waveCalendarUI && getOwnerProfile()) {
     mountWaveCalendarSection().catch(err => {
       console.error("Failed to mount wave calendar after profiles render:", err);
+    });
+  }
+
+  if (getOwnerProfile() && !socialPlannerUI) {
+    mountSocialPlannerSection().catch(err => {
+      console.error("Failed to mount social planner after profiles render:", err);
     });
   }
 
@@ -899,6 +1182,37 @@ async function mountWaveCalendarSection() {
   });
 }
 
+async function mountSocialPlannerSection() {
+  const section = document.getElementById("social-planner-section");
+  if (!section || !currentUser?.id) return;
+
+  if (socialPlannerUI) {
+    socialPlannerUI.destroy();
+    socialPlannerUI = null;
+  }
+
+  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const weekStart = resolveWeekStart(userSettings);
+  const client = await getSupabaseClient();
+
+  socialPlannerUI = new SocialPlannerUI(section, {
+    locale,
+    weekStart,
+    ownerProfile: getOwnerProfile(),
+    supabaseClient: client,
+    userId: currentUser.id,
+    canHost: isPaid(),
+    getAccessToken,
+    onSuccess: showSuccess,
+    onError: showError,
+    onChange: async () => {
+      await loadNotificationsBadge();
+    }
+  });
+
+  await socialPlannerUI.render();
+}
+
 /**
  * Render subscription status (single source: plan pill + renewal in drawer)
  */
@@ -964,6 +1278,7 @@ async function renderSubscriptionStatus() {
     await mountPlannerSection();
     // Mount wave calendar
     await mountWaveCalendarSection();
+    await mountSocialPlannerSection();
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -1005,7 +1320,13 @@ async function renderSubscriptionStatus() {
       `;
     }
     if (waveCalendarUI) { waveCalendarUI.destroy(); waveCalendarUI = null; }
+
+    await mountSocialPlannerSection();
   }
+
+  loadNotificationsBadge().catch((err) => {
+    console.error("Failed to refresh notification badge:", err);
+  });
 
   updateDashboardPagerUI();
 }
@@ -1112,6 +1433,7 @@ function setupLanguageRegionUI() {
     calendarsUI?.setSettings({ locale, weekStart });
     plannerUI?.setSettings({ locale, weekStart });
     waveCalendarUI?.setSettings({ locale, weekStart });
+    socialPlannerUI?.setSettings({ locale, weekStart });
   };
 
   langSel.addEventListener("change", applyAndSave);
@@ -1171,6 +1493,7 @@ function setupAddProfileCollapse() {
  */
 function setupEventListeners() {
   setupAccountSheet();
+  setupNotificationsSheet();
   addProfileUI = setupAddProfileCollapse();
 
   // Sign out button
@@ -1558,6 +1881,10 @@ function showAuthenticatedView() {
   if (emailEl) {
     emailEl.textContent = currentUser.email;
   }
+
+  loadNotificationsBadge().catch((err) => {
+    console.error("Failed to load notification badge:", err);
+  });
 
   // Init duck carousel once dashboard is visible (so sizing works)
   ensureDuckCarousel();
