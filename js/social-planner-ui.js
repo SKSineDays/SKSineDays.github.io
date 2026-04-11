@@ -61,11 +61,14 @@ export class SocialPlannerUI {
     this.activePlannerId = null;
     this.preferredPlannerId = null;
     this.noteTimers = new Map();
+    this._noteIndicatorTimer = null;
     this._renderGen = 0;
     this.els = null;
   }
 
   destroy() {
+    void this._flushPendingNoteSave();
+
     for (const timerId of this.noteTimers.values()) {
       clearTimeout(timerId);
     }
@@ -215,7 +218,8 @@ export class SocialPlannerUI {
       this._closeSheet(this.els.friendsSheet, this.els.friendsBackdrop);
     });
 
-    this.els.dayBackdrop?.addEventListener("click", () => {
+    this.els.dayBackdrop?.addEventListener("click", async () => {
+      await this._flushPendingNoteSave();
       this._closeSheet(this.els.daySheet, this.els.dayBackdrop);
     });
 
@@ -582,7 +586,9 @@ export class SocialPlannerUI {
                   >
                   <div>
                     <div class="social-day-card__name">${escapeHtml(member.displayName)}</div>
-                    <div class="social-day-card__meta">Day ${member.dayNumber}</div>
+                    <div class="social-day-card__meta">
+                      <span class="social-day-card__energy-pill">Day ${member.dayNumber}</span>
+                    </div>
                   </div>
                 </div>
                 <div class="social-day-card__badge">${ownCard ? "You" : "Read only"}</div>
@@ -598,7 +604,10 @@ export class SocialPlannerUI {
                     data-user-id="${escapeHtml(member.userId)}"
                     placeholder="Write your note for this shared day…"
                   >${escapeHtml(note)}</textarea>
-                  <div class="social-day-card__savehint">Auto-saves to your own card only.</div>
+                  <div class="social-day-card__savebar">
+                    <div class="social-day-card__savehint">Auto-saves to your own card only.</div>
+                    <div class="social-day-card__save-indicator" data-social-note-indicator>Saved ✓</div>
+                  </div>
                 ` : `
                   <div class="social-day-card__label">${escapeHtml(authorName)}</div>
                   <div class="social-day-card__readbox">${note ? escapeHtml(note).replace(/\n/g, "<br>") : `<span class="text-muted">No note yet.</span>`}</div>
@@ -647,13 +656,18 @@ export class SocialPlannerUI {
 
     this.els.dayContent.querySelectorAll("[data-social-note]").forEach((textarea) => {
       textarea.addEventListener("input", () => {
+        this._setActiveNoteIndicator("Saving…", "is-pending");
         this._scheduleSaveNote(this.activeDateYmd, textarea.value);
       });
-      textarea.addEventListener("blur", () => {
-        this._saveNote(this.activeDateYmd, textarea.value).catch((err) => {
+
+      textarea.addEventListener("blur", async () => {
+        try {
+          await this._flushPendingNoteSave(this.activeDateYmd, textarea.value);
+        } catch (err) {
           console.error("Note save failed:", err);
+          this._setActiveNoteIndicator("Save failed", "is-error");
           this.onError("Failed to save note.");
-        });
+        }
       });
     });
 
@@ -716,20 +730,29 @@ export class SocialPlannerUI {
     const existing = this.noteTimers.get(key);
     if (existing) clearTimeout(existing);
 
-    const timerId = setTimeout(() => {
-      this._saveNote(dateYmd, content).catch((err) => {
+    const timerId = setTimeout(async () => {
+      this.noteTimers.delete(key);
+
+      try {
+        await this._saveNote(dateYmd, content);
+        this._flashActiveNoteSaved();
+      } catch (err) {
         console.error("Debounced note save failed:", err);
-      });
-    }, 450);
+        this._setActiveNoteIndicator("Save failed", "is-error");
+        this.onError(err.message || "Failed to save note.");
+      }
+    }, 700);
 
     this.noteTimers.set(key, timerId);
   }
 
   async _saveNote(dateYmd, content) {
     const plannerId = this._currentPlannerId();
-    if (!plannerId || !this.ownerProfile?.id) return;
+    if (!plannerId || !this.ownerProfile?.id) {
+      throw new Error("Missing planner or owner profile for note save");
+    }
 
-    await this._apiJson("/api/social/day-entry", {
+    const result = await this._apiJson("/api/social/day-entry", {
       method: "POST",
       body: JSON.stringify({
         action: "save_note",
@@ -740,6 +763,55 @@ export class SocialPlannerUI {
     });
 
     this.onChange();
+    return result;
+  }
+
+  _setActiveNoteIndicator(text, stateClass = "") {
+    const indicator = this.els?.dayContent?.querySelector("[data-social-note-indicator]");
+    if (!indicator) return;
+
+    indicator.textContent = text;
+    indicator.classList.remove("is-visible", "is-pending", "is-error", "is-saved");
+
+    if (stateClass) {
+      indicator.classList.add(stateClass);
+    }
+
+    indicator.classList.add("is-visible");
+  }
+
+  _flashActiveNoteSaved() {
+    const indicator = this.els?.dayContent?.querySelector("[data-social-note-indicator]");
+    if (!indicator) return;
+
+    indicator.textContent = "Saved ✓";
+    indicator.classList.remove("is-pending", "is-error");
+    indicator.classList.add("is-saved", "is-visible");
+
+    clearTimeout(this._noteIndicatorTimer);
+    this._noteIndicatorTimer = setTimeout(() => {
+      const current = this.els?.dayContent?.querySelector("[data-social-note-indicator]");
+      if (!current) return;
+      current.classList.remove("is-visible");
+    }, 1500);
+  }
+
+  async _flushPendingNoteSave(dateYmd = this.activeDateYmd, contentOverride = null) {
+    const plannerId = this._currentPlannerId();
+    if (!plannerId || !dateYmd) return;
+
+    const key = `${plannerId}:${dateYmd}`;
+    if (this.noteTimers.has(key)) {
+      clearTimeout(this.noteTimers.get(key));
+      this.noteTimers.delete(key);
+    }
+
+    const textarea = this.els?.dayContent?.querySelector("[data-social-note]");
+    const content = contentOverride ?? textarea?.value ?? "";
+
+    this._setActiveNoteIndicator("Saving…", "is-pending");
+    await this._saveNote(dateYmd, content);
+    this._flashActiveNoteSaved();
   }
 
   async _addTask(dateYmd, title) {

@@ -83,7 +83,7 @@ export default async function handler(req, res) {
 
       const content = String(body.content ?? "");
 
-      const { error } = await admin
+      const { data: savedEntry, error } = await admin
         .from("social_day_entries")
         .upsert(
           {
@@ -96,11 +96,16 @@ export default async function handler(req, res) {
           {
             onConflict: "planner_id,entry_date,author_user_id"
           }
-        );
+        )
+        .select("id, planner_id, entry_date, author_user_id, content, updated_at")
+        .single();
 
       if (error) throw new Error(`Failed to save note: ${error.message}`);
 
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({
+        ok: true,
+        entry: savedEntry
+      });
     }
 
     if (action === "add_task") {

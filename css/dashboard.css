@@ -3823,6 +3823,52 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   line-height: 1.5;
 }
 
+.social-day-card__energy-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.16);
+}
+
+.social-day-card__savebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 18px;
+}
+
+.social-day-card__save-indicator {
+  font-size: 11px;
+  min-height: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  text-align: right;
+  color: rgba(245, 247, 255, 0.74);
+}
+
+.social-day-card__save-indicator.is-visible {
+  opacity: 1;
+}
+
+.social-day-card__save-indicator.is-pending {
+  color: rgba(245, 247, 255, 0.86);
+}
+
+.social-day-card__save-indicator.is-saved {
+  color: #9ee6b4;
+}
+
+.social-day-card__save-indicator.is-error {
+  color: #ffb4b4;
+}
+
 #social-planner-section {
   flex: 1 1 auto;
   display: flex;
