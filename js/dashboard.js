@@ -445,6 +445,24 @@ async function markNotificationsRead(ids) {
   if (error) throw error;
 }
 
+async function clearNotificationsList() {
+  const accessToken = await getAccessToken();
+  const response = await fetch("/api/social/clear-notifications", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    }
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.ok) {
+    throw new Error(data?.error || "Failed to clear notifications");
+  }
+
+  return data;
+}
+
 function closeNotificationsSheet() {
   const toggle = document.getElementById("notifications-toggle");
   const sheet = document.getElementById("notifications-sheet");
@@ -602,16 +620,13 @@ function setupNotificationsSheet() {
 
   markAll?.addEventListener("click", async () => {
     try {
-      const items = await fetchNotifications(50);
-      const unreadIds = items.filter((item) => !item.is_read).map((item) => item.id);
-      if (unreadIds.length) {
-        await markNotificationsRead(unreadIds);
-      }
-      renderNotificationsList(items.map((item) => ({ ...item, is_read: true })));
+      await clearNotificationsList();
+      renderNotificationsList([]);
       await loadNotificationsBadge();
+      showSuccess("Notifications cleared.");
     } catch (err) {
-      console.error("Failed to mark notifications read:", err);
-      showError("Failed to mark notifications read.");
+      console.error("Failed to clear notifications:", err);
+      showError(err.message || "Failed to clear notifications.");
     }
   });
 
@@ -707,8 +722,11 @@ function setDashboardPage(index) {
   updateDashboardPagerUI();
 
   if (changed) {
-    const activeCard = document.querySelector(".dashboard-page.is-active .dashboard-page__card");
-    activeCard?.scrollIntoView({ block: "start", behavior: "auto" });
+    window.scrollTo({
+      top: 0,
+      left: window.scrollX,
+      behavior: "auto"
+    });
   }
 }
 

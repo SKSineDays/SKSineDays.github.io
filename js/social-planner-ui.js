@@ -363,13 +363,73 @@ export class SocialPlannerUI {
     this.els.friendsList.innerHTML = `
       <div class="social-friends-list">
         ${this.friends.map((friend) => `
-          <article class="social-friend-row">
-            <div class="social-friend-row__name">${escapeHtml(friend.friend_display_name || friend.friend_email)}</div>
-            <div class="social-friend-row__meta">${escapeHtml(friend.friend_email)}</div>
+          <article class="social-friend-row" data-friend-user-id="${escapeHtml(friend.friend_user_id)}">
+            <div class="social-friend-row__identity">
+              <div class="social-friend-row__name">${escapeHtml(friend.friend_display_name || friend.friend_email || "Friend")}</div>
+              <div class="social-friend-row__meta">${escapeHtml(friend.friend_email || "")}</div>
+            </div>
+
+            <div class="social-friend-row__actions">
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                data-social-friend-action="remove"
+                data-friend-user-id="${escapeHtml(friend.friend_user_id)}"
+                data-friend-name="${escapeHtml(friend.friend_display_name || friend.friend_email || "Friend")}"
+              >
+                Remove
+              </button>
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                data-social-friend-action="block"
+                data-friend-user-id="${escapeHtml(friend.friend_user_id)}"
+                data-friend-name="${escapeHtml(friend.friend_display_name || friend.friend_email || "Friend")}"
+              >
+                Block
+              </button>
+            </div>
           </article>
         `).join("")}
       </div>
     `;
+
+    this.els.friendsList.querySelectorAll("[data-social-friend-action]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const action = btn.dataset.socialFriendAction;
+        const friendUserId = btn.dataset.friendUserId;
+        const friendName = btn.dataset.friendName || "Friend";
+        if (!action || !friendUserId) return;
+
+        const confirmed = window.confirm(
+          action === "block"
+            ? `Block ${friendName}? This also removes the connection and shared planner access.`
+            : `Remove ${friendName} from your friends list and shared planner access?`
+        );
+
+        if (!confirmed) return;
+
+        try {
+          await this._manageFriend(action, friendUserId);
+          this.onSuccess(action === "block" ? "Friend blocked." : "Friend removed.");
+          await this._refresh();
+        } catch (err) {
+          console.error("Friend action failed:", err);
+          this.onError(err.message || "Failed to update friend connection.");
+        }
+      });
+    });
+  }
+
+  async _manageFriend(action, friendUserId) {
+    await this._apiJson("/api/social/manage-connection", {
+      method: "POST",
+      body: JSON.stringify({
+        action,
+        friendUserId
+      })
+    });
+    this.onChange();
   }
 
   _renderMonthGrid() {
@@ -627,66 +687,68 @@ export class SocialPlannerUI {
 
   async _saveNote(dateYmd, content) {
     const plannerId = this._currentPlannerId();
-    if (!this.supabaseClient || !plannerId || !this.ownerProfile?.id) return;
+    if (!plannerId || !this.ownerProfile?.id) return;
 
-    const { error } = await this.supabaseClient
-      .from("social_day_entries")
-      .upsert({
-        planner_id: plannerId,
-        entry_date: dateYmd,
-        author_user_id: this.userId,
-        author_profile_id: this.ownerProfile.id,
+    await this._apiJson("/api/social/day-entry", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "save_note",
+        plannerId,
+        date: dateYmd,
         content: content ?? ""
-      }, {
-        onConflict: "planner_id,entry_date,author_user_id"
-      });
+      })
+    });
 
-    if (error) throw error;
     this.onChange();
   }
 
   async _addTask(dateYmd, title) {
     const plannerId = this._currentPlannerId();
-    if (!this.supabaseClient || !plannerId || !this.ownerProfile?.id) return;
+    if (!plannerId || !this.ownerProfile?.id) return;
 
-    const { error } = await this.supabaseClient
-      .from("social_day_tasks")
-      .insert({
-        planner_id: plannerId,
-        task_date: dateYmd,
-        author_user_id: this.userId,
-        author_profile_id: this.ownerProfile.id,
-        title,
-        is_completed: false,
-        sort_order: 0
-      });
+    await this._apiJson("/api/social/day-entry", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "add_task",
+        plannerId,
+        date: dateYmd,
+        title
+      })
+    });
 
-    if (error) throw error;
     this.onChange();
   }
 
   async _toggleTask(taskId, checked) {
-    const { error } = await this.supabaseClient
-      .from("social_day_tasks")
-      .update({
-        is_completed: checked,
-        completed_at: checked ? new Date().toISOString() : null
-      })
-      .eq("id", taskId)
-      .eq("author_user_id", this.userId);
+    const plannerId = this._currentPlannerId();
+    if (!plannerId) return;
 
-    if (error) throw error;
+    await this._apiJson("/api/social/day-entry", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "toggle_task",
+        plannerId,
+        taskId,
+        checked
+      })
+    });
+
     this.onChange();
   }
 
   async _archiveTask(taskId) {
-    const { error } = await this.supabaseClient
-      .from("social_day_tasks")
-      .update({ is_archived: true })
-      .eq("id", taskId)
-      .eq("author_user_id", this.userId);
+    const plannerId = this._currentPlannerId();
+    if (!plannerId) return;
 
-    if (error) throw error;
+    await this._apiJson("/api/social/day-entry", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "archive_task",
+        plannerId,
+        taskId
+      })
+    });
+
     this.onChange();
   }
 
@@ -724,9 +786,12 @@ export class SocialPlannerUI {
 
   async _apiJson(url, options = {}) {
     const accessToken = await this.getAccessToken();
+    const hasBody = options.body != null;
+
     const response = await fetch(url, {
       ...options,
       headers: {
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
         ...(options.headers || {}),
         Authorization: `Bearer ${accessToken}`
       }

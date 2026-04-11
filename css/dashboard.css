@@ -3669,6 +3669,34 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 14px;
 }
 
+.social-friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.social-friend-row__identity {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.social-friend-row__name {
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.social-friend-row__meta {
+  overflow-wrap: anywhere;
+}
+
+.social-friend-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .social-frame__cell.is-outside {
   opacity: 0.45;
 }

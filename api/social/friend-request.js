@@ -55,6 +55,57 @@ async function getOwnerProfile(admin, userId) {
   return data;
 }
 
+async function ensureNotBlocked(admin, requesterUserId, recipientUserId, recipientEmail) {
+  if (recipientUserId) {
+    const { data: blockedBySender, error: blockedBySenderError } = await admin
+      .from("social_blocks")
+      .select("id")
+      .eq("user_id", requesterUserId)
+      .eq("blocked_user_id", recipientUserId)
+      .maybeSingle();
+
+    if (blockedBySenderError) {
+      throw new Error(`Failed to verify sender block list: ${blockedBySenderError.message}`);
+    }
+
+    if (blockedBySender?.id) {
+      throw new Error("You have blocked this user");
+    }
+
+    const { data: blockedByRecipient, error: blockedByRecipientError } = await admin
+      .from("social_blocks")
+      .select("id")
+      .eq("user_id", recipientUserId)
+      .eq("blocked_user_id", requesterUserId)
+      .maybeSingle();
+
+    if (blockedByRecipientError) {
+      throw new Error(`Failed to verify recipient block list: ${blockedByRecipientError.message}`);
+    }
+
+    if (blockedByRecipient?.id) {
+      throw new Error("This user is unavailable for friend requests");
+    }
+  }
+
+  const normalizedEmail = normalizeEmail(recipientEmail);
+
+  const { data: blockedByEmail, error: blockedByEmailError } = await admin
+    .from("social_blocks")
+    .select("id")
+    .eq("user_id", requesterUserId)
+    .eq("blocked_email", normalizedEmail)
+    .maybeSingle();
+
+  if (blockedByEmailError) {
+    throw new Error(`Failed to verify blocked email list: ${blockedByEmailError.message}`);
+  }
+
+  if (blockedByEmail?.id) {
+    throw new Error("You have blocked this user");
+  }
+}
+
 async function getOrCreatePlanner(admin, user, ownerProfile) {
   const { data: existing, error: existingError } = await admin
     .from("social_planners")
@@ -147,6 +198,8 @@ export default async function handler(req, res) {
 
     const recipientAuthUser = await findAuthUserByEmail(admin, recipientEmail);
 
+    await ensureNotBlocked(admin, user.id, recipientAuthUser?.id || null, recipientEmail);
+
     const { data: existingConnection, error: existingConnectionError } = await admin
       .from("social_connections")
       .select("id")
@@ -216,6 +269,13 @@ export default async function handler(req, res) {
       err?.message === "Invalid or expired token"
     ) {
       return res.status(401).json({ ok: false, error: err.message });
+    }
+
+    if (
+      err?.message === "You have blocked this user" ||
+      err?.message === "This user is unavailable for friend requests"
+    ) {
+      return res.status(403).json({ ok: false, error: err.message });
     }
 
     console.error("[social/friend-request] error:", err);
