@@ -3683,10 +3683,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-friend-row__name {
   font-weight: 800;
-  color: #1a1a1a;
+  color: #F5F7FF;
 }
 
 .social-friend-row__meta {
+  color: rgba(245, 247, 255, 0.78);
   overflow-wrap: anywhere;
 }
 
@@ -3695,6 +3696,24 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.social-friend-row__name,
+.social-friend-row__actions .btn,
+.social-friend-row__actions .btn.btn-ghost,
+.social-friend-row__actions .btn.btn-sm {
+  color: #F5F7FF;
+}
+
+.social-friend-row__actions .btn {
+  border-color: rgba(245, 247, 255, 0.22);
+}
+
+.social-friend-row__actions .btn:hover,
+.social-friend-row__actions .btn:focus-visible {
+  color: #F5F7FF;
+  border-color: rgba(245, 247, 255, 0.4);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .social-frame__cell.is-outside {
@@ -3741,6 +3760,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-day-card {
   display: grid;
   gap: 12px;
+  color: #F5F7FF;
 }
 
 .social-day-card__header,
@@ -3762,22 +3782,19 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .social-day-card__meta,
-.social-friend-row__meta,
-.social-day-card__savehint,
-.social-day-card__label {
-  color: #666;
+.social-day-card__savehint {
+  color: rgba(245, 247, 255, 0.74);
 }
 
 .social-day-card__label {
+  color: #F5F7FF;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   margin-bottom: 6px;
 }
 
 .social-day-card__meta,
-.social-friend-row__meta,
 .social-day-card__savehint {
   font-size: 12px;
 }
@@ -3800,7 +3817,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-day-card__readbox {
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.03);
+  color: #F5F7FF;
+  background: rgba(255, 255, 255, 0.06);
   padding: 12px;
   line-height: 1.5;
 }
@@ -3820,10 +3838,20 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-height: 0;
 }
 
+.social-task-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.social-task-row > .social-day-card__label {
+  flex: 1 0 100%;
+  margin-bottom: 4px;
+}
+
 .social-task-row__archive {
   border: 0;
   background: transparent;
-  color: #666;
+  color: rgba(245, 247, 255, 0.72);
   cursor: pointer;
 }
 

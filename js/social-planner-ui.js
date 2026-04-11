@@ -513,7 +513,33 @@ export class SocialPlannerUI {
       );
 
       this.activeDateYmd = dateYmd;
-      this._renderDaySheet(data);
+      const normalized = {
+        ...data,
+        members: (data.members || []).map((member) => {
+          const note = member.note || {};
+          const noteAuthor =
+            note.author_display_name ||
+            note.author_name ||
+            note.author_email ||
+            member.displayName ||
+            "Member";
+          const tasks = (member.tasks || []).map((task) => ({
+            ...task,
+            author_display_name:
+              task.author_display_name ||
+              task.author_name ||
+              task.author_email ||
+              member.displayName ||
+              "Member"
+          }));
+          return {
+            ...member,
+            note: { ...note, author_display_name: noteAuthor },
+            tasks
+          };
+        })
+      };
+      this._renderDaySheet(normalized);
       this._openSheet(this.els.daySheet, this.els.dayBackdrop);
     } catch (err) {
       console.error("Failed to open social day:", err);
@@ -537,6 +563,12 @@ export class SocialPlannerUI {
         ${members.map((member) => {
           const ownCard = member.isCurrentUser === true;
           const note = member.note?.content || "";
+          const noteEntry = member.note || {};
+          const authorName =
+            noteEntry.author_display_name ||
+            noteEntry.author_name ||
+            noteEntry.author_email ||
+            "Member";
           const tasks = (member.tasks || []).filter((task) => !task.is_archived);
 
           return `
@@ -568,7 +600,7 @@ export class SocialPlannerUI {
                   >${escapeHtml(note)}</textarea>
                   <div class="social-day-card__savehint">Auto-saves to your own card only.</div>
                 ` : `
-                  <div class="social-day-card__label">Notes</div>
+                  <div class="social-day-card__label">${escapeHtml(authorName)}</div>
                   <div class="social-day-card__readbox">${note ? escapeHtml(note).replace(/\n/g, "<br>") : `<span class="text-muted">No note yet.</span>`}</div>
                 `}
               </div>
@@ -584,8 +616,15 @@ export class SocialPlannerUI {
                 ` : ""}
 
                 <div class="social-day-card__tasks">
-                  ${tasks.length ? tasks.map((task) => `
+                  ${tasks.length ? tasks.map((task) => {
+                    const taskAuthorName =
+                      task.author_display_name ||
+                      task.author_name ||
+                      task.author_email ||
+                      "Member";
+                    return `
                     <div class="social-task-row" data-task-id="${escapeHtml(task.id)}">
+                      <div class="social-day-card__label">${escapeHtml(taskAuthorName)}</div>
                       <label class="social-task-row__check">
                         <input
                           type="checkbox"
@@ -596,7 +635,8 @@ export class SocialPlannerUI {
                       </label>
                       ${ownCard ? `<button class="social-task-row__archive" type="button" data-social-task-archive>Archive</button>` : ""}
                     </div>
-                  `).join("") : `<div class="text-muted">No tasks yet.</div>`}
+                  `;
+                  }).join("") : `<div class="text-muted">No tasks yet.</div>`}
                 </div>
               </div>
             </article>
