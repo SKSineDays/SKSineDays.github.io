@@ -640,6 +640,14 @@ function setupNotificationsSheet() {
         const plannerId = btn.dataset.plannerId || null;
         closeNotificationsSheet();
         setDashboardPage(4);
+
+        if (!isPaid()) {
+          showInfo(
+            "Social Planner is a Premium feature. Notifications still work here, but hosting and viewing the shared calendar require Premium."
+          );
+          return;
+        }
+
         await mountSocialPlannerSection();
         await socialPlannerUI?.openDaySheet?.(targetDate, plannerId || undefined);
       }
@@ -693,8 +701,15 @@ function updateDashboardPagerUI() {
 }
 
 function setDashboardPage(index) {
-  dashboardPageIndex = clampDashboardPage(index);
+  const nextIndex = clampDashboardPage(index);
+  const changed = nextIndex !== dashboardPageIndex;
+  dashboardPageIndex = nextIndex;
   updateDashboardPagerUI();
+
+  if (changed) {
+    const activeCard = document.querySelector(".dashboard-page.is-active .dashboard-page__card");
+    activeCard?.scrollIntoView({ block: "start", behavior: "auto" });
+  }
 }
 
 function shouldIgnoreDashboardSwipeStart(target) {
@@ -916,7 +931,7 @@ function renderProfiles() {
     });
   }
 
-  if (getOwnerProfile() && !socialPlannerUI) {
+  if (isPaid() && getOwnerProfile() && !socialPlannerUI) {
     mountSocialPlannerSection().catch(err => {
       console.error("Failed to mount social planner after profiles render:", err);
     });
@@ -1189,6 +1204,16 @@ async function mountSocialPlannerSection() {
   if (socialPlannerUI) {
     socialPlannerUI.destroy();
     socialPlannerUI = null;
+  }
+
+  if (!isPaid()) {
+    section.innerHTML = `
+      <div class="locked-section">
+        <p>🔒 Premium Feature Locked</p>
+        <p class="text-muted">Upgrade to Premium to unlock the Social Planner, shared month view, friend list, and hosted collaboration tools. Notifications can still alert you to requests.</p>
+      </div>
+    `;
+    return;
   }
 
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;

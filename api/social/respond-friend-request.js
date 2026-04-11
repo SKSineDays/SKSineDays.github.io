@@ -96,6 +96,19 @@ export default async function handler(req, res) {
       throw new Error(`Failed to update request: ${updateError.message}`);
     }
 
+    const { error: removeRecipientNotificationError } = await admin
+      .from("social_notifications")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("type", "friend_request")
+      .contains("payload", { request_id: requestId });
+
+    if (removeRecipientNotificationError) {
+      throw new Error(
+        `Failed to clear handled notification: ${removeRecipientNotificationError.message}`
+      );
+    }
+
     if (decision === "declined") {
       if (requestRow.requester_user_id) {
         await admin.from("social_notifications").insert({

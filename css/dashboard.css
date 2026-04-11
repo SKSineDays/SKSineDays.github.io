@@ -3543,9 +3543,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   gap: 10px;
 }
 
-.notification-item,
-.social-friend-row,
-.social-day-card {
+.notification-item {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
@@ -3579,9 +3577,22 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   margin-top: 10px;
 }
 
+.social-frame,
+.social-frame button,
+.social-frame input,
+.social-frame textarea {
+  color: #1a1a1a;
+}
+
 .social-frame {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 20px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: grid;
   gap: 14px;
+  min-height: 0;
 }
 
 .social-frame__header {
@@ -3596,13 +3607,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(245, 247, 255, 0.58);
+  color: #555;
 }
 
 .social-frame__title {
   font-size: 24px;
   font-weight: 800;
-  color: #f5f7ff;
+  color: #1a1a1a;
 }
 
 .social-frame__actions {
@@ -3620,9 +3631,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(122, 167, 255, 0.12);
-  border: 1px solid rgba(122, 167, 255, 0.22);
-  color: #f5f7ff;
+  background: rgba(45, 95, 182, 0.08);
+  border: 1px solid rgba(45, 95, 182, 0.2);
+  color: #2d5fb6;
 }
 
 .social-frame__month {
@@ -3635,19 +3646,27 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(245, 247, 255, 0.58);
+  color: #555;
   padding-bottom: 4px;
 }
 
 .social-frame__cell {
   min-height: 92px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
   padding: 10px;
-  color: #f5f7ff;
+  color: #1a1a1a;
   text-align: left;
   cursor: pointer;
+}
+
+.social-friend-row,
+.social-day-card {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  padding: 14px;
 }
 
 .social-frame__cell.is-outside {
@@ -3716,9 +3735,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-day-card__meta,
 .social-friend-row__meta,
-.social-day-card__savehint {
-  font-size: 12px;
-  color: rgba(245, 247, 255, 0.6);
+.social-day-card__savehint,
+.social-day-card__label {
+  color: #666;
 }
 
 .social-day-card__label {
@@ -3726,17 +3745,22 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(245, 247, 255, 0.6);
   margin-bottom: 6px;
+}
+
+.social-day-card__meta,
+.social-friend-row__meta,
+.social-day-card__savehint {
+  font-size: 12px;
 }
 
 .social-day-card__note,
 .social-day-card__taskinput {
   width: 100%;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.28);
-  color: #f5f7ff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #fff;
+  color: #1a1a1a;
   font: inherit;
   padding: 12px;
 }
@@ -3748,15 +3772,30 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-day-card__readbox {
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.03);
   padding: 12px;
   line-height: 1.5;
+}
+
+#social-planner-section {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+#social-planner-section > .social-frame,
+#social-planner-section > .locked-section {
+  flex: 1 1 auto;
+}
+
+.social-frame__mount {
+  min-height: 0;
 }
 
 .social-task-row__archive {
   border: 0;
   background: transparent;
-  color: rgba(245, 247, 255, 0.6);
+  color: #666;
   cursor: pointer;
 }
 
