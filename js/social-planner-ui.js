@@ -645,7 +645,7 @@ export class SocialPlannerUI {
                       ${ownCard ? `<button class="social-task-row__archive" type="button" data-social-task-archive>Archive</button>` : ""}
                     </div>
                   `;
-                  }).join("") : `<div class="text-muted">No tasks yet.</div>`}
+                  }).join("") : `<div class="social-day-card__tasks-empty">No tasks yet.</div>`}
                 </div>
               </div>
             </article>

@@ -3750,16 +3750,34 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   flex-wrap: wrap;
 }
 
-.social-frame__member-duck,
-.social-day-card__duck {
+.social-frame__member-duck {
   width: 34px;
   height: 34px;
   object-fit: contain;
 }
 
+.social-day-card__duck {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  display: inline-block;
+  flex: 0 0 58px;
+  padding: 6px;
+  margin-right: 10px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f4f7ff 100%
+  );
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.72) inset;
+}
+
 .social-day-card {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   color: #F5F7FF;
 }
 
@@ -3773,12 +3791,20 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   gap: 10px;
 }
 
+.social-day-card__header {
+  align-items: flex-start;
+}
+
 .social-day-card__identity {
   justify-content: flex-start;
+  align-items: center;
+  min-width: 0;
 }
 
 .social-day-card__name {
   font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 4px;
 }
 
 .social-day-card__meta,
@@ -3811,16 +3837,77 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .social-day-card__note {
-  min-height: 140px;
+  min-height: 220px;
   resize: vertical;
+  line-height: 1.5;
 }
 
 .social-day-card__readbox {
   border-radius: 12px;
   color: #F5F7FF;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 12px;
-  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 14px;
+  line-height: 1.55;
+  min-height: 132px;
+}
+
+.social-day-card__tasks {
+  display: grid;
+  gap: 12px;
+}
+
+.social-task-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+.social-task-row + .social-task-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.social-day-card__taskadd {
+  margin-top: 4px;
+  align-items: center;
+  gap: 12px;
+}
+
+.social-day-card__taskinput {
+  min-height: 46px;
+}
+
+.social-day-card__tasks-empty {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(245, 247, 255, 0.72);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .social-day-card__duck {
+    width: 52px;
+    height: 52px;
+    flex-basis: 52px;
+    border-radius: 14px;
+    margin-right: 8px;
+  }
+
+  .social-day-card__note {
+    min-height: 190px;
+  }
+
+  .social-day-card__tasks {
+    gap: 10px;
+  }
+
+  .social-task-row {
+    padding: 8px 0;
+  }
+
+  .social-day-card__taskadd {
+    align-items: stretch;
+  }
 }
 
 .social-day-card__energy-pill {
@@ -3882,11 +3969,6 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-frame__mount {
   min-height: 0;
-}
-
-.social-task-row {
-  flex-wrap: wrap;
-  align-items: flex-start;
 }
 
 .social-task-row > .social-day-card__label {
