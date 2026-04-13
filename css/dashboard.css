@@ -3879,6 +3879,20 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-height: 132px;
 }
 
+/* Collaborator notes: match own-card planner / textarea (paper field, not dark glass) */
+.social-day-card.is-readonly .social-day-card__readbox {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  -webkit-text-fill-color: #111111;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+}
+
+.social-day-card.is-readonly .social-day-card__readbox .text-muted {
+  color: #6b7280;
+  -webkit-text-fill-color: #6b7280;
+}
+
 .social-day-card__tasks {
   display: grid;
   gap: 12px;
@@ -3923,6 +3937,31 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-day-card .planner__tasks-pane {
   position: static;
   top: auto;
+  padding: 12px 14px;
+  gap: 0;
+}
+
+.social-day-card .planner__tasks-header {
+  margin-bottom: 6px;
+}
+
+.social-day-card .planner__task-row {
+  padding: 6px 8px;
+  min-height: 34px;
+  align-items: center;
+}
+
+.social-day-card .planner__task-check {
+  margin-top: 0;
+}
+
+.social-day-card .planner__task-title {
+  font-size: 14px;
+}
+
+.social-day-card .planner__task-row button {
+  transform: scale(0.9);
+  transform-origin: center;
 }
 
 @media (max-width: 640px) {
@@ -3962,6 +4001,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.16);
+}
+
+.social-day-card.is-readonly .social-day-card__energy-pill {
+  min-height: 20px;
+  padding: 2px 8px;
+  font-size: 11px;
 }
 
 .social-day-card__savebar {
