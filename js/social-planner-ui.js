@@ -1760,12 +1760,19 @@ export class SocialPlannerUI {
 
   _openSheet(sheet, backdrop) {
     if (!sheet || !backdrop) return;
+
     sheet.hidden = false;
     backdrop.hidden = false;
+
+    const content = sheet.querySelector(".sheet__content");
+    if (content) content.scrollTop = 0;
+    sheet.scrollTop = 0;
+
     requestAnimationFrame(() => {
       sheet.classList.add("is-open");
       backdrop.classList.add("is-open");
     });
+
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
   }

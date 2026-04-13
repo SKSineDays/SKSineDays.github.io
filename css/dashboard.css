@@ -3486,8 +3486,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-add-sheet,
 .social-create-sheet,
 .social-manage-sheet {
-  max-height: calc(100vh - 16px);
-  overflow-y: auto;
+  top: auto;
+  max-height: min(calc(100vh - 16px), 920px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
@@ -3497,11 +3500,21 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-add-sheet .sheet__content,
 .social-create-sheet .sheet__content,
 .social-manage-sheet .sheet__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.social-day-sheet .sheet__content {
+  padding-top: 8px;
 }
 
 .social-day-sheet__cards {
   max-height: none;
+  padding-bottom: 6px;
 }
 
 .dash-head__actions {
