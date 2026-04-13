@@ -240,6 +240,17 @@ export class CalendarsPdfUI {
     return `week:${profileId}:${this._ymdUTC(this.weekStartDateUTC)}:${this.locale}:${this.weekStart}`;
   }
 
+  _isVisibleInPager() {
+    const page = this.mountEl?.closest?.(".dashboard-page");
+    if (!page) return true;
+    return page.classList.contains("is-active");
+  }
+
+  async refreshWhenVisible() {
+    if (!this._isVisibleInPager()) return;
+    await this.refreshPdfPreview();
+  }
+
   render() {
     const year =
       this.view === "month"
@@ -281,6 +292,16 @@ export class CalendarsPdfUI {
       return;
     }
     this.viewerWrap.style.display = "";
+
+    if (!this._isVisibleInPager()) {
+      this.loadingOverlay.style.display = "";
+      this.loadingOverlay.textContent = "Open Printables to load preview…";
+      this.iframe.src = "";
+      this.currentPdfUrl = null;
+      this.btnDownload.disabled = true;
+      return;
+    }
+
     this.refreshPdfPreview();
   }
 
@@ -344,7 +365,11 @@ export class CalendarsPdfUI {
       if (previewKey !== this._activePreviewKey) return;
 
       this.currentPdfUrl = j.url;
-      this.iframe.src = j.url;
+
+      const iframeUrl = new URL(j.url, window.location.origin);
+      iframeUrl.searchParams.set("_preview", String(Date.now()));
+
+      this.iframe.src = iframeUrl.toString();
       this.btnDownload.disabled = false;
     } catch (e) {
       if (requestGen !== this._previewRequestGen) return;

@@ -721,6 +721,16 @@ function setDashboardPage(index) {
   dashboardPageIndex = nextIndex;
   updateDashboardPagerUI();
 
+  if (dashboardPageIndex === 3 && calendarsUI?.refreshWhenVisible) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        calendarsUI.refreshWhenVisible().catch((err) => {
+          console.error("Failed to refresh printables preview on page activation:", err);
+        });
+      });
+    });
+  }
+
   if (changed) {
     window.scrollTo({
       top: 0,

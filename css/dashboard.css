@@ -3481,6 +3481,25 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
    Social Planner + notifications
    =========================== */
 
+.social-day-sheet,
+.social-friends-sheet,
+.social-add-sheet {
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.social-day-sheet .sheet__content,
+.social-friends-sheet .sheet__content,
+.social-add-sheet .sheet__content {
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.social-day-sheet__cards {
+  max-height: none;
+}
+
 .dash-head__actions {
   display: flex;
   align-items: center;
@@ -3830,10 +3849,19 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   width: 100%;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
-  color: #1a1a1a;
+  background: #ffffff !important;
+  color: #111111 !important;
+  caret-color: #111111;
   font: inherit;
   padding: 12px;
+  -webkit-text-fill-color: #111111;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+}
+
+.social-day-card__taskinput::placeholder,
+.social-day-card__note::placeholder {
+  color: #6b7280;
+  opacity: 1;
 }
 
 .social-day-card__note {
