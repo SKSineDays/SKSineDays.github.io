@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v3';
+const CACHE_NAME = 'sineday-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -89,78 +89,79 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
   if (request.method !== 'GET') {
     return;
   }
 
-  // Skip cross-origin requests
   if (url.origin !== location.origin) {
     return;
   }
 
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        // JS/CSS: Stale-while-revalidate (serve cache fast, but refresh in background)
-        if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
-          const fetchPromise = fetch(request)
-            .then((networkResponse) => {
-              if (networkResponse && networkResponse.status === 200) {
-                const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-              }
-              return networkResponse;
-            })
-            .catch(() => cachedResponse);
-
-          return cachedResponse || fetchPromise;
-        }
-
-        // HTML: Network-first (with cache fallback)
-        if (request.headers.get('accept').includes('text/html')) {
-          return fetch(request)
-            .then((networkResponse) => {
-              // Update cache
-              if (networkResponse && networkResponse.status === 200) {
-                const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME)
-                  .then((cache) => cache.put(request, responseClone));
-              }
-              return networkResponse;
-            })
-            .catch(() => {
-              // Network failed, use cache
-              return cachedResponse || new Response('Offline', {
-                status: 503,
-                statusText: 'Service Unavailable'
-              });
-            });
-        }
-
-        // Assets: Cache-first (with network fallback)
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        return fetch(request)
-          .then((networkResponse) => {
-            // Cache successful responses
-            if (networkResponse && networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => cache.put(request, responseClone));
-            }
-            return networkResponse;
-          })
-          .catch((error) => {
-            console.error('[SW] Fetch failed:', error);
-            return new Response('Network error', {
-              status: 408,
-              statusText: 'Request Timeout'
-            });
-          });
+  // Never cache API traffic.
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' }).catch(() => {
+        return new Response(
+          JSON.stringify({ ok: false, error: 'Network error' }),
+          {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
       })
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+        const fetchPromise = fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        }).catch(() => cachedResponse);
+
+        return cachedResponse || fetchPromise;
+      }
+
+      const accept = request.headers.get('accept') || '';
+
+      if (accept.includes('text/html')) {
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        }).catch(() => {
+          return cachedResponse || new Response('Offline', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        });
+      }
+
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+        }
+        return networkResponse;
+      }).catch((error) => {
+        console.error('[SW] Fetch failed:', error);
+        return new Response('Network error', {
+          status: 408,
+          statusText: 'Request Timeout'
+        });
+      });
+    })
   );
 });
 

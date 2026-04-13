@@ -1,5 +1,6 @@
 import { authenticateUser, getAdminClient } from "../_lib/auth.js";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
+import { formatRepeatMeta, taskOccursOnSocialDate } from "./_socialTaskRecurrence.js";
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -60,7 +61,12 @@ export default async function handler(req, res) {
       return res.status(404).json({ ok: false, error: "Planner not found" });
     }
 
-    const [{ data: members, error: membersError }, { data: notes, error: notesError }, { data: tasks, error: tasksError }] = await Promise.all([
+    const [
+      { data: members, error: membersError },
+      { data: notes, error: notesError },
+      { data: allTasks, error: tasksError },
+      { data: completions, error: completionsError }
+    ] = await Promise.all([
       admin
         .from("social_planner_members")
         .select(`
@@ -83,23 +89,51 @@ export default async function handler(req, res) {
         .eq("entry_date", date),
       admin
         .from("social_day_tasks")
-        .select("id, task_date, author_user_id, title, is_completed, completed_at, is_archived, sort_order, created_at")
+        .select(
+          "id, task_date, start_date, author_user_id, title, is_archived, sort_order, created_at, repeat_mode, repeat_interval, repeat_until, repeat_sinedays"
+        )
         .eq("planner_id", plannerId)
-        .eq("task_date", date)
+        .eq("is_archived", false)
         .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: true }),
+      admin
+        .from("social_day_task_completions")
+        .select("task_id, author_user_id")
+        .eq("planner_id", plannerId)
+        .eq("occurrence_date", date)
     ]);
 
     if (membersError) throw new Error(`Failed to load members: ${membersError.message}`);
     if (notesError) throw new Error(`Failed to load notes: ${notesError.message}`);
     if (tasksError) throw new Error(`Failed to load tasks: ${tasksError.message}`);
+    if (completionsError) {
+      throw new Error(`Failed to load task completions: ${completionsError.message}`);
+    }
 
     const notesByUser = new Map((notes || []).map((row) => [row.author_user_id, row]));
+    const completionKey = (userId, taskId) => `${userId}:${taskId}`;
+    const completionSet = new Set(
+      (completions || []).map((c) => completionKey(c.author_user_id, c.task_id))
+    );
+
+    const profileByUserId = new Map();
+    for (const m of members || []) {
+      profileByUserId.set(m.user_id, m.profiles);
+    }
+
     const tasksByUser = new Map();
 
-    for (const task of tasks || []) {
+    for (const task of allTasks || []) {
+      const profile = profileByUserId.get(task.author_user_id);
+      const birthdate = profile?.birthdate || null;
+      if (!taskOccursOnSocialDate(task, date, birthdate)) continue;
+
       const list = tasksByUser.get(task.author_user_id) || [];
-      list.push(task);
+      list.push({
+        ...task,
+        is_completed: completionSet.has(completionKey(task.author_user_id, task.id)),
+        repeat_meta: formatRepeatMeta(task)
+      });
       tasksByUser.set(task.author_user_id, list);
     }
 

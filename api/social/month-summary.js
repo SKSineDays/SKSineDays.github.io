@@ -1,5 +1,6 @@
 import { authenticateUser, getAdminClient } from "../_lib/auth.js";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
+import { taskOccursOnSocialDate } from "./_socialTaskRecurrence.js";
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -104,7 +105,7 @@ export default async function handler(req, res) {
     const startYmd = ymdUTC(gridStart);
     const endYmd = ymdUTC(gridEnd);
 
-    const [{ data: entries, error: entriesError }, { data: tasks, error: tasksError }] = await Promise.all([
+    const [{ data: entries, error: entriesError }, { data: plannerTasks, error: tasksError }] = await Promise.all([
       admin
         .from("social_day_entries")
         .select("entry_date, author_user_id")
@@ -113,11 +114,11 @@ export default async function handler(req, res) {
         .lte("entry_date", endYmd),
       admin
         .from("social_day_tasks")
-        .select("task_date, author_user_id")
+        .select(
+          "author_user_id, task_date, start_date, repeat_mode, repeat_interval, repeat_until, repeat_sinedays, is_archived"
+        )
         .eq("planner_id", plannerId)
         .eq("is_archived", false)
-        .gte("task_date", startYmd)
-        .lte("task_date", endYmd)
     ]);
 
     if (entriesError) throw new Error(`Failed to load entries: ${entriesError.message}`);
@@ -159,9 +160,21 @@ export default async function handler(req, res) {
       if (bucket) bucket.activityCount += 1;
     }
 
-    for (const row of tasks || []) {
-      const bucket = dayMap.get(row.task_date);
-      if (bucket) bucket.activityCount += 1;
+    const birthByUserId = new Map();
+    for (const member of members || []) {
+      birthByUserId.set(member.user_id, member.profiles?.birthdate || null);
+    }
+
+    for (const task of plannerTasks || []) {
+      const birth = birthByUserId.get(task.author_user_id);
+      for (let i = 0; i < 42; i += 1) {
+        const current = addDaysUTC(gridStart, i);
+        const dateStr = ymdUTC(current);
+        if (taskOccursOnSocialDate(task, dateStr, birth)) {
+          const bucket = dayMap.get(dateStr);
+          if (bucket) bucket.activityCount += 1;
+        }
+      }
     }
 
     for (const bucket of dayMap.values()) {

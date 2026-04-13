@@ -39,6 +39,16 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+const REPEAT_MODES = [
+  "none",
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+  "weekdays",
+  "sineday"
+];
+
 export class SocialPlannerUI {
   constructor(mountEl, opts = {}) {
     this.mountEl = mountEl;
@@ -64,9 +74,20 @@ export class SocialPlannerUI {
     this._noteIndicatorTimer = null;
     this._renderGen = 0;
     this.els = null;
+    this._draftSeq = 0;
+    this._draftMeta = new Map();
+    this._socialDayTaskIndex = new Map();
+    this.repeatSheetState = { open: false, taskId: null, occurrenceYmd: null };
+    this.repeatSheetEls = null;
+    this._repeatSheetEscape = null;
+    this._repeatSheetOverflowPrev = { html: "", body: "" };
   }
 
   destroy() {
+    this._closeRepeatSheet(true);
+    this._draftMeta.clear();
+    this._socialDayTaskIndex.clear();
+
     void this._flushPendingNoteSave();
 
     for (const timerId of this.noteTimers.values()) {
@@ -266,8 +287,9 @@ export class SocialPlannerUI {
 
       this.activePlannerId = this.planner.id;
       const pid = this.planner.id;
+      const bust = `t=${Date.now()}`;
       this.monthSummary = await this._apiJson(
-        `/api/social/month-summary?planner_id=${encodeURIComponent(pid)}&year=${this.monthDateUTC.getUTCFullYear()}&month=${this.monthDateUTC.getUTCMonth() + 1}&week_start=${encodeURIComponent(String(this.weekStart))}`
+        `/api/social/month-summary?planner_id=${encodeURIComponent(pid)}&year=${this.monthDateUTC.getUTCFullYear()}&month=${this.monthDateUTC.getUTCMonth() + 1}&week_start=${encodeURIComponent(String(this.weekStart))}&${bust}`
       );
 
       this.els.chip.textContent = `${this.monthSummary?.planner?.memberCount || 0} members`;
@@ -512,8 +534,9 @@ export class SocialPlannerUI {
       const plannerId = this._currentPlannerId();
       if (!plannerId) return;
 
+      const bust = `t=${Date.now()}`;
       const data = await this._apiJson(
-        `/api/social/day-summary?planner_id=${encodeURIComponent(plannerId)}&date=${encodeURIComponent(dateYmd)}&locale=${encodeURIComponent(this.locale)}`
+        `/api/social/day-summary?planner_id=${encodeURIComponent(plannerId)}&date=${encodeURIComponent(dateYmd)}&locale=${encodeURIComponent(this.locale)}&${bust}`
       );
 
       this.activeDateYmd = dateYmd;
@@ -554,6 +577,13 @@ export class SocialPlannerUI {
   _renderDaySheet(data) {
     const dayLabel = data?.label || this.activeDateYmd;
     const members = data?.members || [];
+
+    this._socialDayTaskIndex = new Map();
+    for (const m of members) {
+      for (const task of (m.tasks || []).filter((t) => !t.is_archived)) {
+        this._socialDayTaskIndex.set(task.id, task);
+      }
+    }
 
     this.els.dayContent.innerHTML = `
       <div class="social-day-sheet__header">
@@ -615,37 +645,53 @@ export class SocialPlannerUI {
               </div>
 
               <div class="social-day-card__section">
-                <div class="social-day-card__label">Tasks</div>
-
-                ${ownCard ? `
-                  <div class="social-day-card__taskadd">
-                    <input type="text" class="social-day-card__taskinput" data-social-task-input placeholder="Add a task for this day">
-                    <button class="btn btn-primary btn-sm" type="button" data-social-task-add>Add</button>
+                <div class="planner__tasks-pane social-day-card__tasks-pane">
+                  <div class="planner__tasks-header">
+                    <div class="planner__tasks-title">Tasks</div>
+                    ${ownCard ? `<button class="planner__task-addbtn" type="button" data-social-task-add-row>Add task</button>` : ""}
                   </div>
-                ` : ""}
 
-                <div class="social-day-card__tasks">
-                  ${tasks.length ? tasks.map((task) => {
-                    const taskAuthorName =
-                      task.author_display_name ||
-                      task.author_name ||
-                      task.author_email ||
-                      "Member";
+                  <div class="planner__task-list social-day-card__task-list" data-social-task-list data-user-id="${escapeHtml(member.userId)}">
+                    ${tasks.length ? tasks.map((task) => {
+                    const repeatMeta = escapeHtml(task.repeat_meta || "");
+                    const mode = task.repeat_mode || "none";
+
                     return `
-                    <div class="social-task-row" data-task-id="${escapeHtml(task.id)}">
-                      <div class="social-day-card__label">${escapeHtml(taskAuthorName)}</div>
-                      <label class="social-task-row__check">
+                      <div class="planner__task-row ${task.is_completed ? "is-completed" : ""}" data-task-id="${escapeHtml(task.id)}">
                         <input
+                          class="planner__task-check"
                           type="checkbox"
                           ${task.is_completed ? "checked" : ""}
                           ${ownCard ? `data-social-task-toggle` : "disabled"}
                         >
-                        <span class="${task.is_completed ? "is-complete" : ""}">${escapeHtml(task.title)}</span>
-                      </label>
-                      ${ownCard ? `<button class="social-task-row__archive" type="button" data-social-task-archive>Archive</button>` : ""}
-                    </div>
-                  `;
-                  }).join("") : `<div class="social-day-card__tasks-empty">No tasks yet.</div>`}
+
+                        <div class="planner__task-row-middle">
+                          <div class="planner__task-title-wrap">
+                            ${
+                              ownCard
+                                ? `<input class="planner__task-title" type="text" value="${escapeHtml(task.title)}" data-social-task-title>`
+                                : `<input class="planner__task-title" type="text" value="${escapeHtml(task.title)}" disabled>`
+                            }
+                            <div class="planner__task-repeatmeta">${repeatMeta}</div>
+                          </div>
+
+                          <div class="planner__task-actions">
+                            ${
+                              ownCard
+                                ? `<button class="planner__task-repeatbtn ${mode !== "none" ? "is-active" : ""}" type="button" data-social-task-repeat>&#128339;</button>`
+                                : ""
+                            }
+                            ${
+                              ownCard
+                                ? `<button class="planner__task-deletebtn" type="button" data-social-task-archive>×</button>`
+                                : ""
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join("") : `<div class="planner__task-empty">No tasks for this day.</div>`}
+                  </div>
                 </div>
               </div>
             </article>
@@ -671,37 +717,28 @@ export class SocialPlannerUI {
       });
     });
 
-    this.els.dayContent.querySelectorAll("[data-social-task-add]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    this.els.dayContent.querySelectorAll("[data-social-task-add-row]").forEach((btn) => {
+      btn.addEventListener("click", () => {
         const card = btn.closest(".social-day-card");
-        const input = card?.querySelector("[data-social-task-input]");
-        const title = input?.value?.trim();
-        if (!title) return;
-
-        try {
-          await this._addTask(this.activeDateYmd, title);
-          input.value = "";
-          await this._loadAndRenderDaySheet(this.activeDateYmd);
-          await this._refresh();
-        } catch (err) {
-          console.error("Add task failed:", err);
-          this.onError("Failed to add task.");
-        }
+        const listEl = card?.querySelector("[data-social-task-list]");
+        if (!listEl || !this.activeDateYmd) return;
+        this._addDraftSocialTaskRow(listEl, this.activeDateYmd);
       });
     });
 
     this.els.dayContent.querySelectorAll("[data-social-task-toggle]").forEach((checkbox) => {
       checkbox.addEventListener("change", async () => {
-        const row = checkbox.closest(".social-task-row");
+        const row = checkbox.closest(".planner__task-row");
         const taskId = row?.dataset.taskId;
         if (!taskId) return;
 
         try {
-          await this._toggleTask(taskId, checkbox.checked);
+          await this._toggleTask(taskId, this.activeDateYmd, checkbox.checked);
           await this._loadAndRenderDaySheet(this.activeDateYmd);
           await this._refresh();
         } catch (err) {
           console.error("Toggle task failed:", err);
+          checkbox.checked = !checkbox.checked;
           this.onError("Failed to update task.");
         }
       });
@@ -709,7 +746,7 @@ export class SocialPlannerUI {
 
     this.els.dayContent.querySelectorAll("[data-social-task-archive]").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const row = btn.closest(".social-task-row");
+        const row = btn.closest(".planner__task-row");
         const taskId = row?.dataset.taskId;
         if (!taskId) return;
 
@@ -721,6 +758,60 @@ export class SocialPlannerUI {
           console.error("Archive task failed:", err);
           this.onError("Failed to archive task.");
         }
+      });
+    });
+
+    this.els.dayContent.querySelectorAll("[data-social-task-title]").forEach((input) => {
+      if (input.disabled) return;
+      const row = input.closest(".planner__task-row");
+      const taskId = row?.dataset.taskId;
+      if (!taskId) return;
+
+      const originalTitle = input.value;
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+      });
+
+      input.addEventListener("blur", async () => {
+        const v = input.value.trim();
+        if (!v) {
+          try {
+            await this._archiveTask(taskId);
+            await this._loadAndRenderDaySheet(this.activeDateYmd);
+            await this._refresh();
+          } catch (err) {
+            console.error("Archive task failed:", err);
+            this.onError("Failed to archive task.");
+            input.value = originalTitle;
+          }
+          return;
+        }
+        if (v === originalTitle) return;
+        try {
+          await this._updateTask(taskId, { title: v });
+          input.value = v;
+          await this._loadAndRenderDaySheet(this.activeDateYmd);
+          await this._refresh();
+        } catch (err) {
+          console.error("Title update failed:", err);
+          this.onError("Failed to update task.");
+          input.value = originalTitle;
+        }
+      });
+    });
+
+    this.els.dayContent.querySelectorAll("[data-social-task-repeat]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const row = btn.closest(".planner__task-row");
+        const taskId = row?.dataset.taskId;
+        if (!taskId) return;
+        const task = this._socialDayTaskIndex.get(taskId);
+        if (!task) return;
+        this._openRepeatSheet(task, this.activeDateYmd);
       });
     });
   }
@@ -831,7 +922,7 @@ export class SocialPlannerUI {
     this.onChange();
   }
 
-  async _toggleTask(taskId, checked) {
+  async _toggleTask(taskId, dateYmd, checked) {
     const plannerId = this._currentPlannerId();
     if (!plannerId) return;
 
@@ -841,7 +932,25 @@ export class SocialPlannerUI {
         action: "toggle_task",
         plannerId,
         taskId,
+        date: dateYmd,
         checked
+      })
+    });
+
+    this.onChange();
+  }
+
+  async _updateTask(taskId, patch) {
+    const plannerId = this._currentPlannerId();
+    if (!plannerId) return;
+
+    await this._apiJson("/api/social/day-entry", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "update_task",
+        plannerId,
+        taskId,
+        ...patch
       })
     });
 
@@ -902,6 +1011,7 @@ export class SocialPlannerUI {
 
     const response = await fetch(url, {
       ...options,
+      cache: "no-store",
       headers: {
         ...(hasBody ? { "Content-Type": "application/json" } : {}),
         ...(options.headers || {}),
@@ -914,6 +1024,355 @@ export class SocialPlannerUI {
       throw new Error(data?.error || "Request failed");
     }
     return data;
+  }
+
+  _addDraftSocialTaskRow(listEl, ymd) {
+    listEl.querySelector(".planner__task-empty")?.remove();
+    const draftId = `draft-${++this._draftSeq}`;
+    const row = el("div", "planner__task-row");
+    row.dataset.draftId = draftId;
+
+    const check = el("input", "planner__task-check");
+    check.type = "checkbox";
+    check.disabled = true;
+    check.title = "Save the task to enable completion";
+
+    const mid = el("div", "planner__task-row-middle");
+    const titleInput = el("input", "planner__task-title");
+    titleInput.type = "text";
+    titleInput.placeholder = "Task title…";
+    titleInput.setAttribute("aria-label", "Task title");
+
+    const meta = el("div", "planner__task-repeatmeta");
+    const titleWrap = el("div", "planner__task-title-wrap");
+    titleWrap.append(titleInput, meta);
+
+    const repeatBtn = el("button", "planner__task-repeatbtn");
+    repeatBtn.type = "button";
+    repeatBtn.innerHTML = "&#128339;";
+    repeatBtn.title = "Repeat settings";
+    repeatBtn.disabled = true;
+
+    const delBtn = el("button", "planner__task-deletebtn");
+    delBtn.type = "button";
+    delBtn.textContent = "×";
+    delBtn.title = "Remove";
+
+    const btnRow = el("div", "planner__task-actions");
+    btnRow.append(repeatBtn, delBtn);
+
+    mid.append(titleWrap, btnRow);
+    row.append(check, mid);
+    listEl.append(row);
+    this._draftMeta.set(draftId, { ymd, listEl });
+
+    const flushDraft = async () => {
+      if (!row.isConnected) return;
+      const v = titleInput.value.trim();
+      if (!v) {
+        row.remove();
+        this._draftMeta.delete(draftId);
+        return;
+      }
+      try {
+        await this._addTask(ymd, v);
+        row.remove();
+        this._draftMeta.delete(draftId);
+        await this._loadAndRenderDaySheet(this.activeDateYmd);
+        await this._refresh();
+      } catch (err) {
+        console.error("Draft task save failed:", err);
+        this.onError("Failed to add task.");
+      }
+    };
+
+    titleInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        titleInput.blur();
+      }
+    });
+
+    titleInput.addEventListener("blur", () => {
+      void flushDraft();
+    });
+
+    delBtn.addEventListener("click", () => {
+      row.remove();
+      this._draftMeta.delete(draftId);
+    });
+
+    titleInput.focus();
+  }
+
+  _ensureRepeatSheet() {
+    if (this.repeatSheetEls) return;
+
+    const backdrop = el("div", "sheet-backdrop planner-repeat-sheet__backdrop");
+    backdrop.hidden = true;
+
+    const sheet = el("div", "sheet planner-repeat-sheet");
+    sheet.hidden = true;
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-label", "Repeat settings");
+
+    const handle = el("div", "sheet__handle");
+    const content = el("div", "sheet__content planner-repeat-sheet__content");
+
+    const title = el("div", "planner-repeat-sheet__title");
+    title.textContent = "Repeat";
+
+    const modeGroup = el("div", "planner-repeat-sheet__group");
+    const modeLabel = el("div", "planner-repeat-sheet__label");
+    modeLabel.textContent = "Frequency";
+    const modeOptions = el("div", "planner-repeat-sheet__options");
+    modeGroup.append(modeLabel, modeOptions);
+
+    const modeRadios = {};
+    const modeLabels = [
+      ["none", "Does not repeat"],
+      ["daily", "Daily"],
+      ["weekly", "Weekly"],
+      ["monthly", "Monthly"],
+      ["yearly", "Yearly"],
+      ["weekdays", "Weekdays"],
+      ["sineday", "SineDuck days"]
+    ];
+
+    for (const [value, text] of modeLabels) {
+      const id = `social-planner-repeat-${value}`;
+      const wrap = el("label", "planner-repeat-sheet__radio");
+      wrap.htmlFor = id;
+      const radio = el("input", "planner-repeat-sheet__radio-input");
+      radio.type = "radio";
+      radio.name = "social_planner_repeat_mode";
+      radio.value = value;
+      radio.id = id;
+      const span = el("span");
+      span.textContent = text;
+      wrap.prepend(radio);
+      wrap.append(span);
+      modeOptions.append(wrap);
+      modeRadios[value] = radio;
+    }
+
+    const intervalGroup = el(
+      "div",
+      "planner-repeat-sheet__group planner-repeat-sheet__interval-wrap"
+    );
+    const intervalLabel = el("label", "planner-repeat-sheet__label");
+    intervalLabel.textContent = "Every (interval)";
+    intervalLabel.htmlFor = "social-planner-repeat-interval";
+    const intervalInput = el("input", "planner-repeat-sheet__interval");
+    intervalInput.id = "social-planner-repeat-interval";
+    intervalInput.type = "number";
+    intervalInput.min = "1";
+    intervalInput.max = "365";
+    intervalInput.value = "1";
+    intervalGroup.append(intervalLabel, intervalInput);
+
+    const untilGroup = el("div", "planner-repeat-sheet__group");
+    const untilLabel = el("label", "planner-repeat-sheet__label");
+    untilLabel.textContent = "Repeat until (optional)";
+    untilLabel.htmlFor = "social-planner-repeat-until";
+    const untilInput = el("input", "planner-repeat-sheet__until");
+    untilInput.id = "social-planner-repeat-until";
+    untilInput.type = "date";
+    untilGroup.append(untilLabel, untilInput);
+
+    const chipGroup = el("div", "planner-repeat-sheet__group planner-repeat-sheet__chipsection");
+    const chipLabel = el("div", "planner-repeat-sheet__label");
+    chipLabel.textContent = "SineDuck days (1–18)";
+    const chipGrid = el("div", "planner-repeat-sheet__chipgrid");
+    const chipToggles = {};
+    for (let day = 1; day <= 18; day++) {
+      const chip = el("button", "planner-repeat-sheet__chip");
+      chip.type = "button";
+      chip.textContent = `Day ${day}`;
+      chip.dataset.sineday = String(day);
+      chipGrid.append(chip);
+      chipToggles[day] = chip;
+    }
+    chipGroup.append(chipLabel, chipGrid);
+
+    const actions = el("div", "planner-repeat-sheet__actions");
+    const saveBtn = el("button", "planner-repeat-sheet__save btn btn-primary");
+    saveBtn.type = "button";
+    saveBtn.textContent = "Save";
+
+    const cancelBtn = el("button", "planner-repeat-sheet__cancel btn btn-ghost");
+    cancelBtn.type = "button";
+    cancelBtn.textContent = "Cancel";
+
+    actions.append(cancelBtn, saveBtn);
+
+    content.append(title, modeGroup, intervalGroup, untilGroup, chipGroup, actions);
+    sheet.append(handle, content);
+
+    document.body.append(backdrop, sheet);
+
+    const syncModeUI = () => {
+      const mode =
+        Object.keys(modeRadios).find((k) => modeRadios[k].checked) || "none";
+      const showInterval = ["daily", "weekly", "monthly", "yearly"].includes(mode);
+      intervalGroup.style.display = showInterval ? "" : "none";
+      chipGroup.style.display = mode === "sineday" ? "" : "none";
+    };
+
+    for (const r of Object.values(modeRadios)) {
+      r.addEventListener("change", syncModeUI);
+    }
+
+    for (let day = 1; day <= 18; day++) {
+      chipToggles[day].addEventListener("click", () => {
+        chipToggles[day].classList.toggle("is-selected");
+      });
+    }
+
+    backdrop.addEventListener("click", () => this._closeRepeatSheet(false));
+    cancelBtn.addEventListener("click", () => this._closeRepeatSheet(false));
+
+    saveBtn.addEventListener("click", async () => {
+      const st = this.repeatSheetState;
+      if (!st.taskId) return;
+
+      const mode =
+        Object.keys(modeRadios).find((k) => modeRadios[k].checked) || "none";
+      let interval = Math.max(1, Math.min(365, Number(intervalInput.value) || 1));
+      if (!["daily", "weekly", "monthly", "yearly"].includes(mode)) {
+        interval = 1;
+      }
+
+      const untilVal = untilInput.value.trim();
+      const repeat_until = untilVal || null;
+
+      let repeat_sinedays = [];
+      if (mode === "sineday") {
+        for (let d = 1; d <= 18; d++) {
+          if (chipToggles[d].classList.contains("is-selected")) {
+            repeat_sinedays.push(d);
+          }
+        }
+        repeat_sinedays.sort((a, b) => a - b);
+      }
+
+      try {
+        await this._updateTask(st.taskId, {
+          repeat_mode: mode,
+          repeat_interval: interval,
+          repeat_until,
+          repeat_sinedays
+        });
+        this._closeRepeatSheet(false);
+        await this._loadAndRenderDaySheet(this.activeDateYmd);
+        await this._refresh();
+      } catch (err) {
+        console.error("Repeat save failed:", err);
+        this.onError(err.message || "Failed to save repeat settings.");
+      }
+    });
+
+    this.repeatSheetEls = {
+      backdrop,
+      sheet,
+      modeRadios,
+      intervalInput,
+      untilInput,
+      chipToggles,
+      syncModeUI
+    };
+  }
+
+  _openRepeatSheet(task, occurrenceYmd) {
+    this._ensureRepeatSheet();
+    const els = this.repeatSheetEls;
+
+    this.repeatSheetState = {
+      open: true,
+      taskId: task.id,
+      occurrenceYmd
+    };
+
+    const mode = task.repeat_mode || "none";
+    for (const m of REPEAT_MODES) {
+      els.modeRadios[m].checked = m === mode;
+    }
+
+    els.intervalInput.value = String(Math.max(1, Math.min(365, task.repeat_interval ?? 1)));
+
+    if (task.repeat_until) {
+      els.untilInput.value = task.repeat_until;
+    } else {
+      els.untilInput.value = "";
+    }
+
+    for (let d = 1; d <= 18; d++) {
+      const arr = task.repeat_sinedays || [];
+      els.chipToggles[d].classList.toggle(
+        "is-selected",
+        arr.some((x) => Number(x) === d)
+      );
+    }
+
+    els.syncModeUI();
+
+    els.backdrop.hidden = false;
+    els.sheet.hidden = false;
+
+    this._repeatSheetOverflowPrev.html = document.documentElement.style.overflow;
+    this._repeatSheetOverflowPrev.body = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    requestAnimationFrame(() => {
+      els.backdrop.classList.add("is-open");
+      els.sheet.classList.add("is-open");
+    });
+
+    if (this._repeatSheetEscape) {
+      document.removeEventListener("keydown", this._repeatSheetEscape);
+    }
+    this._repeatSheetEscape = (e) => {
+      if (e.key === "Escape" && this.repeatSheetState.open) {
+        this._closeRepeatSheet(false);
+      }
+    };
+    document.addEventListener("keydown", this._repeatSheetEscape);
+  }
+
+  _closeRepeatSheet(removeDom) {
+    if (this._repeatSheetEscape) {
+      document.removeEventListener("keydown", this._repeatSheetEscape);
+      this._repeatSheetEscape = null;
+    }
+
+    this.repeatSheetState = {
+      open: false,
+      taskId: null,
+      occurrenceYmd: null
+    };
+
+    if (!this.repeatSheetEls) return;
+
+    const { backdrop, sheet } = this.repeatSheetEls;
+    sheet.classList.remove("is-open");
+    backdrop.classList.remove("is-open");
+
+    document.documentElement.style.overflow = this._repeatSheetOverflowPrev.html;
+    document.body.style.overflow = this._repeatSheetOverflowPrev.body;
+
+    if (removeDom) {
+      backdrop.remove();
+      sheet.remove();
+      this.repeatSheetEls = null;
+      return;
+    }
+
+    setTimeout(() => {
+      if (!this.repeatSheetEls) return;
+      backdrop.hidden = true;
+      sheet.hidden = true;
+    }, 220);
   }
 
   _openSheet(sheet, backdrop) {

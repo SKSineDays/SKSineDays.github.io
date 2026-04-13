@@ -22,6 +22,16 @@ function isValidYmd(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
 }
 
+const REPEAT_MODES = new Set([
+  "none",
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+  "weekdays",
+  "sineday"
+]);
+
 async function loadMembership(admin, plannerId, userId) {
   const { data, error } = await admin
     .from("social_planner_members")
@@ -123,11 +133,15 @@ export default async function handler(req, res) {
         .insert({
           planner_id: plannerId,
           task_date: dateYmd,
+          start_date: dateYmd,
           author_user_id: user.id,
           author_profile_id: ownerProfile.id,
           title,
           is_completed: false,
-          sort_order: 0
+          sort_order: 0,
+          repeat_mode: "none",
+          repeat_interval: 1,
+          repeat_sinedays: []
         });
 
       if (error) throw new Error(`Failed to add task: ${error.message}`);
@@ -137,17 +151,99 @@ export default async function handler(req, res) {
 
     if (action === "toggle_task") {
       const taskId = String(body.taskId || "").trim();
+      const occurrenceDate = String(body.date || "").trim();
       const checked = body.checked === true;
 
       if (!taskId) {
         return res.status(400).json({ ok: false, error: "taskId is required" });
       }
+      if (!isValidYmd(occurrenceDate)) {
+        return res.status(400).json({ ok: false, error: "date must be YYYY-MM-DD" });
+      }
+
+      if (checked) {
+        const { error } = await admin
+          .from("social_day_task_completions")
+          .upsert(
+            {
+              task_id: taskId,
+              planner_id: plannerId,
+              author_user_id: user.id,
+              occurrence_date: occurrenceDate
+            },
+            { onConflict: "task_id,occurrence_date" }
+          );
+
+        if (error) throw new Error(`Failed to complete task: ${error.message}`);
+      } else {
+        const { error } = await admin
+          .from("social_day_task_completions")
+          .delete()
+          .eq("task_id", taskId)
+          .eq("planner_id", plannerId)
+          .eq("author_user_id", user.id)
+          .eq("occurrence_date", occurrenceDate);
+
+        if (error) throw new Error(`Failed to uncomplete task: ${error.message}`);
+      }
+
+      return res.status(200).json({ ok: true });
+    }
+
+    if (action === "update_task") {
+      const taskId = String(body.taskId || "").trim();
+      if (!taskId) {
+        return res.status(400).json({ ok: false, error: "taskId is required" });
+      }
+
+      const patch = {};
+
+      if (body.title !== undefined) {
+        const title = String(body.title || "").trim();
+        if (!title) {
+          return res.status(400).json({ ok: false, error: "title is required" });
+        }
+        patch.title = title;
+      }
+
+      if (body.repeat_mode !== undefined) {
+        const mode = String(body.repeat_mode || "none");
+        if (!REPEAT_MODES.has(mode)) {
+          return res.status(400).json({ ok: false, error: "Invalid repeat_mode" });
+        }
+        patch.repeat_mode = mode;
+      }
+      if (body.repeat_interval !== undefined) {
+        patch.repeat_interval = Math.max(1, Math.min(365, Number(body.repeat_interval) || 1));
+      }
+      if (body.repeat_until !== undefined) {
+        const u = body.repeat_until;
+        if (u === null || u === "") {
+          patch.repeat_until = null;
+        } else {
+          const s = String(u).trim();
+          if (!isValidYmd(s)) {
+            return res.status(400).json({ ok: false, error: "repeat_until must be YYYY-MM-DD or empty" });
+          }
+          patch.repeat_until = s;
+        }
+      }
+      if (body.repeat_sinedays !== undefined) {
+        const raw = Array.isArray(body.repeat_sinedays) ? body.repeat_sinedays : [];
+        patch.repeat_sinedays = raw
+          .map((x) => Number(x))
+          .filter((d) => Number.isInteger(d) && d >= 1 && d <= 18);
+      }
+
+      if (Object.keys(patch).length === 0) {
+        return res.status(400).json({ ok: false, error: "No fields to update" });
+      }
 
       const { error } = await admin
         .from("social_day_tasks")
         .update({
-          is_completed: checked,
-          completed_at: checked ? new Date().toISOString() : null
+          ...patch,
+          updated_at: new Date().toISOString()
         })
         .eq("id", taskId)
         .eq("planner_id", plannerId)

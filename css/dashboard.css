@@ -3912,6 +3912,19 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   line-height: 1.45;
 }
 
+.social-day-card__tasks-pane {
+  margin-top: 0;
+}
+
+.social-day-card__task-list {
+  min-height: 48px;
+}
+
+.social-day-card .planner__tasks-pane {
+  position: static;
+  top: auto;
+}
+
 @media (max-width: 640px) {
   .social-day-card__duck {
     width: 52px;
