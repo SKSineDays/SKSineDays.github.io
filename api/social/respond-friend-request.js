@@ -111,16 +111,17 @@ export default async function handler(req, res) {
 
     if (decision === "declined") {
       if (requestRow.requester_user_id) {
+        const declinePayload = { request_id: requestId };
+        if (requestRow.planner_id) {
+          declinePayload.planner_id = requestRow.planner_id;
+        }
         await admin.from("social_notifications").insert({
           user_id: requestRow.requester_user_id,
           actor_user_id: user.id,
           type: "planner_update",
           title: `${recipientOwnerProfile.display_name || authedEmail} declined your friend request`,
           body: "You can send another request later if needed.",
-          payload: {
-            request_id: requestId,
-            planner_id: requestRow.planner_id
-          }
+          payload: declinePayload
         });
       }
 
@@ -143,24 +144,6 @@ export default async function handler(req, res) {
 
     const recipientDisplayName = recipientOwnerProfile.display_name || authedEmail;
     const requesterDisplayName = requesterProfile.display_name || requestRow.requester_email;
-
-    const { error: addMemberError } = await admin
-      .from("social_planner_members")
-      .upsert(
-        {
-          planner_id: requestRow.planner_id,
-          user_id: user.id,
-          owner_profile_id: recipientOwnerProfile.id,
-          role: "member",
-          status: "active",
-          invited_by_user_id: requestRow.requester_user_id
-        },
-        { onConflict: "planner_id,user_id" }
-      );
-
-    if (addMemberError) {
-      throw new Error(`Failed to add planner membership: ${addMemberError.message}`);
-    }
 
     const connectionRows = [
       {
@@ -195,22 +178,16 @@ export default async function handler(req, res) {
         actor_user_id: user.id,
         type: "friend_accept",
         title: `${recipientDisplayName} accepted your friend request`,
-        body: "They now appear in your Social Planner.",
-        payload: {
-          planner_id: requestRow.planner_id,
-          request_id: requestId
-        }
+        body: "You are now connected in Social Planner.",
+        payload: { request_id: requestId }
       },
       {
         user_id: user.id,
         actor_user_id: requestRow.requester_user_id,
         type: "friend_accept",
-        title: `You joined ${requesterDisplayName}'s Social Planner`,
-        body: "You can now view shared month and day planning.",
-        payload: {
-          planner_id: requestRow.planner_id,
-          request_id: requestId
-        }
+        title: "You are now connected in Social Planner",
+        body: `You and ${requesterDisplayName} can share calendars when you choose.`,
+        payload: { request_id: requestId }
       }
     ]);
 

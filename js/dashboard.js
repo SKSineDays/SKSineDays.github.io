@@ -656,13 +656,6 @@ function setupNotificationsSheet() {
         closeNotificationsSheet();
         setDashboardPage(4);
 
-        if (!isPaid()) {
-          showInfo(
-            "Social Planner is a Premium feature. Notifications still work here, but hosting and viewing the shared calendar require Premium."
-          );
-          return;
-        }
-
         await mountSocialPlannerSection();
         await socialPlannerUI?.openDaySheet?.(targetDate, plannerId || undefined);
       }
@@ -1232,16 +1225,6 @@ async function mountSocialPlannerSection() {
   if (socialPlannerUI) {
     socialPlannerUI.destroy();
     socialPlannerUI = null;
-  }
-
-  if (!isPaid()) {
-    section.innerHTML = `
-      <div class="locked-section">
-        <p>🔒 Premium Feature Locked</p>
-        <p class="text-muted">Upgrade to Premium to unlock the Social Planner, shared month view, friend list, and hosted collaboration tools. Notifications can still alert you to requests.</p>
-      </div>
-    `;
-    return;
   }
 
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;

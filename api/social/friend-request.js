@@ -106,64 +106,6 @@ async function ensureNotBlocked(admin, requesterUserId, recipientUserId, recipie
   }
 }
 
-async function getOrCreatePlanner(admin, user, ownerProfile) {
-  const { data: existing, error: existingError } = await admin
-    .from("social_planners")
-    .select("id, owner_user_id, owner_profile_id, title, timezone")
-    .eq("owner_user_id", user.id)
-    .eq("is_archived", false)
-    .maybeSingle();
-
-  if (existingError) throw new Error(`Failed to load planner: ${existingError.message}`);
-  if (existing?.id) {
-    await admin
-      .from("social_planner_members")
-      .upsert(
-        {
-          planner_id: existing.id,
-          user_id: user.id,
-          owner_profile_id: ownerProfile.id,
-          role: "owner",
-          status: "active",
-          invited_by_user_id: user.id
-        },
-        { onConflict: "planner_id,user_id" }
-      );
-    return existing;
-  }
-
-  const { data: planner, error: createError } = await admin
-    .from("social_planners")
-    .insert({
-      owner_user_id: user.id,
-      owner_profile_id: ownerProfile.id,
-      title: "Social Planner",
-      timezone: ownerProfile.timezone || "America/Chicago"
-    })
-    .select("id, owner_user_id, owner_profile_id, title, timezone")
-    .single();
-
-  if (createError) throw new Error(`Failed to create planner: ${createError.message}`);
-
-  const { error: memberError } = await admin
-    .from("social_planner_members")
-    .upsert(
-      {
-        planner_id: planner.id,
-        user_id: user.id,
-        owner_profile_id: ownerProfile.id,
-        role: "owner",
-        status: "active",
-        invited_by_user_id: user.id
-      },
-      { onConflict: "planner_id,user_id" }
-    );
-
-  if (memberError) throw new Error(`Failed to create owner membership: ${memberError.message}`);
-
-  return planner;
-}
-
 export default async function handler(req, res) {
   setCors(res);
 
@@ -194,7 +136,6 @@ export default async function handler(req, res) {
     }
 
     const ownerProfile = await getOwnerProfile(admin, user.id);
-    const planner = await getOrCreatePlanner(admin, user, ownerProfile);
 
     const recipientAuthUser = await findAuthUserByEmail(admin, recipientEmail);
 
@@ -226,16 +167,17 @@ export default async function handler(req, res) {
         requester_email: senderEmail,
         recipient_email: recipientEmail,
         recipient_user_id: recipientAuthUser?.id || null,
-        planner_id: planner.id,
+        planner_id: null,
         status: "pending"
       })
-      .select("id, planner_id")
+      .select("id")
       .single();
 
     if (requestError) {
-      const message = requestError.code === "23505"
-        ? "A pending request already exists for that email"
-        : `Failed to create friend request: ${requestError.message}`;
+      const message =
+        requestError.code === "23505"
+          ? "A pending request already exists for that email"
+          : `Failed to create friend request: ${requestError.message}`;
       return res.status(400).json({ ok: false, error: message });
     }
 
@@ -244,11 +186,10 @@ export default async function handler(req, res) {
         user_id: recipientAuthUser.id,
         actor_user_id: user.id,
         type: "friend_request",
-        title: `${requesterDisplayName} invited you to a Social Planner`,
-        body: "Open notifications to accept or decline the request.",
+        title: `${requesterDisplayName} wants to connect in Social Planner`,
+        body: "Accept to appear in each other's friend list.",
         payload: {
           request_id: insertedRequest.id,
-          planner_id: planner.id,
           requester_display_name: requesterDisplayName
         }
       });
@@ -256,7 +197,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      plannerId: planner.id,
       requestId: insertedRequest.id
     });
   } catch (err) {

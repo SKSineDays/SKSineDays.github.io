@@ -64,12 +64,14 @@ export class SocialPlannerUI {
     this.onChange = opts.onChange || (() => {});
 
     this.monthDateUTC = monthStartUTC();
+    this.viewMode = "list";
+    this.planners = [];
+    this.activePlanner = null;
     this.planner = null;
     this.friends = [];
     this.monthSummary = null;
     this.activeDateYmd = null;
     this.activePlannerId = null;
-    this.preferredPlannerId = null;
     this.noteTimers = new Map();
     this._noteIndicatorTimer = null;
     this._renderGen = 0;
@@ -94,7 +96,6 @@ export class SocialPlannerUI {
       clearTimeout(timerId);
     }
     this.noteTimers.clear();
-    this.preferredPlannerId = null;
     this.mountEl.innerHTML = "";
   }
 
@@ -115,7 +116,7 @@ export class SocialPlannerUI {
   }
 
   _currentPlannerId() {
-    return this.activePlannerId || this.planner?.id || null;
+    return this.activePlannerId || this.activePlanner?.id || null;
   }
 
   async render() {
@@ -124,23 +125,37 @@ export class SocialPlannerUI {
 
     const frame = el("div", "social-frame");
     frame.innerHTML = `
-      <div class="social-frame__header">
-        <div>
-          <div class="social-frame__eyebrow">Shared planning</div>
-          <div class="social-frame__title">Social Planner</div>
+      <div class="social-frame__list-head" data-social-list-head>
+        <div class="social-frame__header social-frame__header--list">
+          <div>
+            <div class="social-frame__eyebrow">Shared planning</div>
+            <div class="social-frame__title">Social Planner</div>
+          </div>
         </div>
-
-        <div class="social-frame__nav planner-frame__nav">
-          <button class="planner-frame__navbtn" type="button" data-social-nav="-1" aria-label="Previous month">←</button>
-          <div class="planner-frame__range" data-social-range></div>
-          <button class="planner-frame__navbtn" type="button" data-social-nav="1" aria-label="Next month">→</button>
+        <div class="social-frame__actions social-frame__actions--list">
+          <button class="btn btn-primary btn-sm" type="button" data-social-new-calendar>New Social Calendar</button>
+          <button class="btn btn-primary btn-sm" type="button" data-social-open-add>+ Add Friend</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-social-open-friends>Friends List</button>
         </div>
       </div>
 
-      <div class="social-frame__actions">
-        <button class="btn btn-primary btn-sm" type="button" data-social-open-add>+ Add Friend</button>
-        <button class="btn btn-ghost btn-sm" type="button" data-social-open-friends>Friends List</button>
-        <span class="social-frame__chip" data-social-chip>Invite-only</span>
+      <div class="social-frame__month-head" data-social-month-head hidden>
+        <div class="social-frame__month-top">
+          <button class="btn btn-ghost btn-sm social-frame__backbtn" type="button" data-social-back>← Calendars</button>
+          <div class="social-frame__month-titles">
+            <div class="social-frame__eyebrow">Shared calendar</div>
+            <div class="social-frame__title" data-social-planner-title>Calendar</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" data-social-manage-members hidden>Manage Members</button>
+        </div>
+        <div class="social-frame__header social-frame__header--month">
+          <div class="social-frame__nav planner-frame__nav">
+            <button class="planner-frame__navbtn" type="button" data-social-nav="-1" aria-label="Previous month">←</button>
+            <div class="planner-frame__range" data-social-range></div>
+            <button class="planner-frame__navbtn" type="button" data-social-nav="1" aria-label="Next month">→</button>
+          </div>
+          <span class="social-frame__chip" data-social-chip>0 members</span>
+        </div>
       </div>
 
       <div class="social-frame__mount" data-social-mount>
@@ -152,7 +167,7 @@ export class SocialPlannerUI {
         <div class="sheet__handle" aria-hidden="true"></div>
         <div class="sheet__content">
           <h3 class="social-sheet__title">Add Friend</h3>
-          <p class="text-muted" style="margin-top:0;">Send a request by email. Once accepted, they appear in this shared planner.</p>
+          <p class="text-muted" style="margin-top:0;">Send a request by email. Once accepted, they appear in your friend list. You can add them to a shared calendar afterward.</p>
           <form data-social-add-form>
             <div class="form-group">
               <label for="social-friend-email">Friend email</label>
@@ -163,6 +178,37 @@ export class SocialPlannerUI {
               <button class="btn btn-primary" type="submit">Send Request</button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <div class="sheet-backdrop" data-social-create-backdrop hidden></div>
+      <section class="sheet social-create-sheet" data-social-create-sheet hidden role="dialog" aria-modal="true" aria-label="New Social Calendar">
+        <div class="sheet__handle" aria-hidden="true"></div>
+        <div class="sheet__content">
+          <h3 class="social-sheet__title">New Social Calendar</h3>
+          <form data-social-create-form>
+            <div class="form-group">
+              <label for="social-create-title">Calendar title</label>
+              <input id="social-create-title" name="title" type="text" required maxlength="200" placeholder="Family, School, Trip…">
+            </div>
+            <div class="form-group">
+              <div class="social-create-friends-label">Add friends now (optional)</div>
+              <div class="social-create-friends" data-social-create-friends></div>
+            </div>
+            <div class="add-profile-sheet__actions">
+              <button class="btn btn-ghost" type="button" data-social-close-create>Cancel</button>
+              <button class="btn btn-primary" type="submit">Create</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="sheet-backdrop" data-social-manage-backdrop hidden></div>
+      <section class="sheet social-manage-sheet" data-social-manage-sheet hidden role="dialog" aria-modal="true" aria-label="Manage Members">
+        <div class="sheet__handle" aria-hidden="true"></div>
+        <div class="sheet__content">
+          <h3 class="social-sheet__title">Manage members</h3>
+          <div data-social-manage-content></div>
         </div>
       </section>
 
@@ -186,6 +232,10 @@ export class SocialPlannerUI {
 
     this.els = {
       frame,
+      listHead: frame.querySelector("[data-social-list-head]"),
+      monthHead: frame.querySelector("[data-social-month-head]"),
+      plannerTitle: frame.querySelector("[data-social-planner-title]"),
+      manageMembersBtn: frame.querySelector("[data-social-manage-members]"),
       range: frame.querySelector("[data-social-range]"),
       chip: frame.querySelector("[data-social-chip]"),
       mount: frame.querySelector("[data-social-mount]"),
@@ -193,16 +243,25 @@ export class SocialPlannerUI {
       addSheet: frame.querySelector("[data-social-add-sheet]"),
       addForm: frame.querySelector("[data-social-add-form]"),
       addClose: frame.querySelector("[data-social-close-add]"),
+      createBackdrop: frame.querySelector("[data-social-create-backdrop]"),
+      createSheet: frame.querySelector("[data-social-create-sheet]"),
+      createForm: frame.querySelector("[data-social-create-form]"),
+      createFriends: frame.querySelector("[data-social-create-friends]"),
+      createClose: frame.querySelector("[data-social-close-create]"),
+      manageBackdrop: frame.querySelector("[data-social-manage-backdrop]"),
+      manageSheet: frame.querySelector("[data-social-manage-sheet]"),
+      manageContent: frame.querySelector("[data-social-manage-content]"),
       friendsBackdrop: frame.querySelector("[data-social-friends-backdrop]"),
       friendsSheet: frame.querySelector("[data-social-friends-sheet]"),
       friendsList: frame.querySelector("[data-social-friends-list]"),
       dayBackdrop: frame.querySelector("[data-social-day-backdrop]"),
       daySheet: frame.querySelector("[data-social-day-sheet]"),
-      dayContent: frame.querySelector("[data-social-day-content]"),
+      dayContent: frame.querySelector("[data-social-day-content]")
     };
 
     frame.querySelectorAll("[data-social-nav]").forEach((btn) => {
       btn.addEventListener("click", async () => {
+        if (this.viewMode !== "month") return;
         const delta = Number(btn.dataset.socialNav || "0");
         this.monthDateUTC = new Date(Date.UTC(
           this.monthDateUTC.getUTCFullYear(),
@@ -213,9 +272,28 @@ export class SocialPlannerUI {
       });
     });
 
+    frame.querySelector("[data-social-back]")?.addEventListener("click", async () => {
+      await this._flushPendingNoteSave();
+      this._goToListView();
+    });
+
+    frame.querySelector("[data-social-new-calendar]")?.addEventListener("click", () => {
+      if (!this.canHost) {
+        this.onError("Premium is required to host your own social calendars.");
+        return;
+      }
+      if (!this.ownerProfile?.id) {
+        this.onError("Owner profile required to create a calendar.");
+        return;
+      }
+      this._populateCreateFriendsChecklist();
+      this._openSheet(this.els.createSheet, this.els.createBackdrop);
+      this.els.createForm?.querySelector("input[name='title']")?.focus();
+    });
+
     frame.querySelector("[data-social-open-add]")?.addEventListener("click", () => {
       if (!this.canHost) {
-        this.onError("Hosting the Social Planner requires Premium. Accepted invites can still appear here.");
+        this.onError("Sending friend requests requires Premium.");
         return;
       }
       this._openSheet(this.els.addSheet, this.els.addBackdrop);
@@ -227,12 +305,33 @@ export class SocialPlannerUI {
       this._openSheet(this.els.friendsSheet, this.els.friendsBackdrop);
     });
 
+    frame.querySelector("[data-social-manage-members]")?.addEventListener("click", () => {
+      void this._openManageMembersSheet();
+    });
+
     this.els.addClose?.addEventListener("click", () => {
       this._closeSheet(this.els.addSheet, this.els.addBackdrop);
     });
 
     this.els.addBackdrop?.addEventListener("click", () => {
       this._closeSheet(this.els.addSheet, this.els.addBackdrop);
+    });
+
+    this.els.createClose?.addEventListener("click", () => {
+      this._closeSheet(this.els.createSheet, this.els.createBackdrop);
+    });
+
+    this.els.createBackdrop?.addEventListener("click", () => {
+      this._closeSheet(this.els.createSheet, this.els.createBackdrop);
+    });
+
+    this.els.createForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await this._submitCreateCalendar();
+    });
+
+    this.els.manageBackdrop?.addEventListener("click", () => {
+      this._closeSheet(this.els.manageSheet, this.els.manageBackdrop);
     });
 
     this.els.friendsBackdrop?.addEventListener("click", () => {
@@ -254,8 +353,10 @@ export class SocialPlannerUI {
   }
 
   async openDaySheet(dateYmd, plannerId = null) {
-    if (plannerId) {
-      this.preferredPlannerId = plannerId;
+    const pid = plannerId ? String(plannerId).trim() : "";
+    if (pid) {
+      this.activePlannerId = pid;
+      this.viewMode = "month";
     }
     if (dateYmd && /^\d{4}-\d{2}-\d{2}$/.test(dateYmd)) {
       const [y, m] = dateYmd.split("-").map(Number);
@@ -267,26 +368,271 @@ export class SocialPlannerUI {
     }
   }
 
-  async _refresh() {
-    this.els.range.textContent = new Intl.DateTimeFormat(this.locale, {
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC"
-    }).format(this.monthDateUTC);
+  async _loadPlannerList() {
+    const bust = `t=${Date.now()}`;
+    const data = await this._apiJson(`/api/social/planners?${bust}`);
+    return data.planners || [];
+  }
+
+  _goToListView() {
+    this.viewMode = "list";
+    this.activePlannerId = null;
+    this.activePlanner = null;
+    this.planner = null;
+    void this._refresh();
+  }
+
+  _goToMonthView(plannerId) {
+    this.activePlannerId = plannerId;
+    this.viewMode = "month";
+    this.activePlanner = this.planners.find((p) => p.id === plannerId) || null;
+    void this._refresh();
+  }
+
+  _syncViewChrome() {
+    if (!this.els?.listHead || !this.els?.monthHead) return;
+    const isList = this.viewMode === "list";
+    this.els.listHead.hidden = !isList;
+    this.els.monthHead.hidden = isList;
+
+    if (this.viewMode === "month" && this.activePlanner) {
+      this.els.plannerTitle.textContent = this.activePlanner.title || "Calendar";
+      const showManage = this.canHost && this.activePlanner.isOwner === true;
+      this.els.manageMembersBtn.hidden = !showManage;
+    }
+
+    if (this.els.range) {
+      this.els.range.textContent = new Intl.DateTimeFormat(this.locale, {
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC"
+      }).format(this.monthDateUTC);
+    }
+  }
+
+  _populateCreateFriendsChecklist() {
+    const box = this.els?.createFriends;
+    if (!box) return;
+
+    if (!this.friends.length) {
+      box.innerHTML = `<p class="text-muted">No friends yet. Add friends from the list view first.</p>`;
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="social-create-friends__list">
+        ${this.friends
+          .map(
+            (friend) => `
+          <label class="social-create-friends__row">
+            <input type="checkbox" name="member" value="${escapeHtml(friend.friend_user_id)}">
+            <span>${escapeHtml(friend.friend_display_name || friend.friend_email || "Friend")}</span>
+          </label>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  async _submitCreateCalendar() {
+    const form = this.els?.createForm;
+    if (!form) return;
+
+    const titleInput = form.querySelector("input[name='title']");
+    const title = titleInput?.value?.trim() || "";
+    if (!title) return;
+
+    const memberUserIds = Array.from(form.querySelectorAll("input[name='member']:checked"))
+      .map((input) => input.value)
+      .filter(Boolean);
 
     try {
+      const data = await this._apiJson("/api/social/create-planner", {
+        method: "POST",
+        body: JSON.stringify({ title, memberUserIds })
+      });
+
+      const p = data.planner;
+      if (p?.id) {
+        this.planners = await this._loadPlannerList();
+        this.activePlannerId = p.id;
+        this.activePlanner = this.planners.find((x) => x.id === p.id) || p;
+        this.viewMode = "month";
+      }
+
+      form.reset();
+      this._closeSheet(this.els.createSheet, this.els.createBackdrop);
+      this.onSuccess("Calendar created.");
+      this.onChange();
+      await this._refresh();
+    } catch (err) {
+      console.error("Create calendar failed:", err);
+      this.onError(err.message || "Failed to create calendar.");
+    }
+  }
+
+  async _openManageMembersSheet() {
+    const plannerId = this._currentPlannerId();
+    if (!plannerId) return;
+
+    try {
+      await this._renderManageMembersContent(plannerId);
+      this._openSheet(this.els.manageSheet, this.els.manageBackdrop);
+    } catch (err) {
+      console.error("Manage members failed:", err);
+      this.onError(err.message || "Failed to load members.");
+    }
+  }
+
+  async _renderManageMembersContent(plannerId) {
+    const bust = `t=${Date.now()}`;
+    const data = await this._apiJson(
+      `/api/social/planner-members?planner_id=${encodeURIComponent(plannerId)}&${bust}`
+    );
+
+    const members = data.members || [];
+    const addable = data.addableFriends || [];
+
+    const content = this.els.manageContent;
+    if (!content) return;
+
+    content.innerHTML = `
+      <p class="text-muted" style="margin-top:0;">${escapeHtml(data.planner?.title || "Calendar")}</p>
+      <div class="social-manage-members__section">
+        <div class="social-manage-members__label">Members</div>
+        <div class="social-manage-members__list">
+          ${members
+            .map((m) => {
+              const isOwner = m.role === "owner";
+              return `
+            <div class="social-member-row">
+              <div class="social-member-row__identity">
+                <div class="social-member-row__name">${escapeHtml(m.displayName)}</div>
+                <div class="social-member-row__meta">${escapeHtml(m.email || "")}</div>
+              </div>
+              <div class="social-member-row__actions">
+                ${
+                  isOwner
+                    ? `<span class="social-frame__chip" style="margin:0;">Owner</span>`
+                    : `<button class="btn btn-ghost btn-sm" type="button" data-social-remove-member="${escapeHtml(m.userId)}">Remove</button>`
+                }
+              </div>
+            </div>
+          `;
+            })
+            .join("")}
+        </div>
+      </div>
+      ${
+        addable.length
+          ? `
+        <div class="social-manage-members__section">
+          <div class="social-manage-members__label">Add friends</div>
+          <div class="social-manage-members__list">
+            ${addable
+              .map(
+                (f) => `
+              <div class="social-member-row">
+                <div class="social-member-row__identity">
+                  <div class="social-member-row__name">${escapeHtml(f.displayName)}</div>
+                  <div class="social-member-row__meta">${escapeHtml(f.email || "")}</div>
+                </div>
+                <div class="social-member-row__actions">
+                  <button class="btn btn-primary btn-sm" type="button" data-social-add-member="${escapeHtml(f.userId)}">Add</button>
+                </div>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+          : ""
+      }
+    `;
+
+    content.querySelectorAll("[data-social-remove-member]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.getAttribute("data-social-remove-member");
+        if (!uid) return;
+        const ok = window.confirm("Remove this member from the calendar? Their notes and tasks on this calendar will be deleted.");
+        if (!ok) return;
+        try {
+          await this._apiJson("/api/social/planner-members", {
+            method: "POST",
+            body: JSON.stringify({
+              action: "remove_member",
+              plannerId,
+              memberUserId: uid
+            })
+          });
+          this.onSuccess("Member removed.");
+          this.onChange();
+          await this._refresh();
+          await this._renderManageMembersContent(plannerId);
+        } catch (err) {
+          console.error("Remove member failed:", err);
+          this.onError(err.message || "Failed to remove member.");
+        }
+      });
+    });
+
+    content.querySelectorAll("[data-social-add-member]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const uid = btn.getAttribute("data-social-add-member");
+        if (!uid) return;
+        try {
+          await this._apiJson("/api/social/planner-members", {
+            method: "POST",
+            body: JSON.stringify({
+              action: "add_members",
+              plannerId,
+              memberUserIds: [uid]
+            })
+          });
+          this.onSuccess("Member added.");
+          this.onChange();
+          await this._refresh();
+          await this._renderManageMembersContent(plannerId);
+        } catch (err) {
+          console.error("Add member failed:", err);
+          this.onError(err.message || "Failed to add member.");
+        }
+      });
+    });
+  }
+
+  async _refresh() {
+    try {
       this.friends = await this._loadFriends();
-      this.planner = await this._resolvePlanner();
+      this.planners = await this._loadPlannerList();
       this._renderFriendsList();
 
-      if (!this.planner) {
+      if (this.viewMode === "list") {
         this.activePlannerId = null;
-        this._renderEmptyState();
+        this.activePlanner = null;
+        this.planner = null;
+        this._syncViewChrome();
+        this._renderPlannerList();
         return;
       }
 
-      this.activePlannerId = this.planner.id;
-      const pid = this.planner.id;
+      this.activePlanner = this.planners.find((p) => p.id === this.activePlannerId) || null;
+      if (!this.activePlanner) {
+        this.viewMode = "list";
+        this.activePlannerId = null;
+        this.activePlanner = null;
+        this.planner = null;
+        this._syncViewChrome();
+        this._renderPlannerList();
+        return;
+      }
+
+      this.planner = this.activePlanner;
+      this._syncViewChrome();
+
+      const pid = this.activePlanner.id;
       const bust = `t=${Date.now()}`;
       this.monthSummary = await this._apiJson(
         `/api/social/month-summary?planner_id=${encodeURIComponent(pid)}&year=${this.monthDateUTC.getUTCFullYear()}&month=${this.monthDateUTC.getUTCMonth() + 1}&week_start=${encodeURIComponent(String(this.weekStart))}&${bust}`
@@ -300,56 +646,52 @@ export class SocialPlannerUI {
     }
   }
 
-  async _resolvePlanner() {
-    if (!this.supabaseClient || !this.userId) return null;
+  _renderPlannerList() {
+    if (!this.els?.mount) return;
 
-    if (this.preferredPlannerId) {
-      const { data: preferred, error: prefErr } = await this.supabaseClient
-        .from("social_planners")
-        .select("id, title, owner_user_id, owner_profile_id, timezone")
-        .eq("id", this.preferredPlannerId)
-        .eq("is_archived", false)
-        .maybeSingle();
+    if (!this.planners.length) {
+      const emptyPremium =
+        this.canHost && this.ownerProfile?.id
+          ? "No calendars yet. Create your first shared social calendar."
+          : "No shared calendars yet. Calendars shared with you will appear here. Premium is required to host your own calendars.";
 
-      if (!prefErr && preferred) {
-        return preferred;
-      }
-      this.preferredPlannerId = null;
+      this.els.mount.innerHTML = `
+        <div class="locked-section social-calendar-list social-calendar-list--empty">
+          <p>${escapeHtml(emptyPremium)}</p>
+        </div>
+      `;
+      return;
     }
 
-    if (this.canHost && this.ownerProfile?.id) {
-      const { data: ownedPlanner, error: ownedErr } = await this.supabaseClient
-        .from("social_planners")
-        .select("id, title, owner_user_id, owner_profile_id, timezone")
-        .eq("owner_user_id", this.userId)
-        .eq("is_archived", false)
-        .maybeSingle();
+    this.els.mount.innerHTML = `
+      <div class="social-calendar-list">
+        ${this.planners
+          .map(
+            (p) => `
+          <article class="social-calendar-card">
+            <div class="social-calendar-card__main">
+              <div class="social-calendar-card__title">${escapeHtml(p.title || "Calendar")}</div>
+              <div class="social-calendar-card__meta">
+                ${p.memberCount ?? 0} member${(p.memberCount ?? 0) === 1 ? "" : "s"}
+                · ${p.isOwner ? "Owner" : "Member"}
+              </div>
+            </div>
+            <div class="social-calendar-card__actions">
+              <button class="btn btn-primary btn-sm" type="button" data-social-open-planner="${escapeHtml(p.id)}">Open</button>
+            </div>
+          </article>
+        `
+          )
+          .join("")}
+      </div>
+    `;
 
-      if (ownedErr) throw ownedErr;
-      if (ownedPlanner) return ownedPlanner;
-    }
-
-    const { data: membership, error: memberErr } = await this.supabaseClient
-      .from("social_planner_members")
-      .select("planner_id, created_at")
-      .eq("user_id", this.userId)
-      .eq("status", "active")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (memberErr) throw memberErr;
-    if (!membership?.planner_id) return null;
-
-    const { data: planner, error: plannerErr } = await this.supabaseClient
-      .from("social_planners")
-      .select("id, title, owner_user_id, owner_profile_id, timezone")
-      .eq("id", membership.planner_id)
-      .eq("is_archived", false)
-      .maybeSingle();
-
-    if (plannerErr) throw plannerErr;
-    return planner || null;
+    this.els.mount.querySelectorAll("[data-social-open-planner]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-social-open-planner");
+        if (id) this._goToMonthView(id);
+      });
+    });
   }
 
   async _loadFriends() {
@@ -362,20 +704,6 @@ export class SocialPlannerUI {
 
     if (error) throw error;
     return data || [];
-  }
-
-  _renderEmptyState() {
-    const canHostText = this.canHost
-      ? "Use Add Friend to start your shared planner."
-      : "Hosting requires Premium. If someone invites you, their shared planner will appear here.";
-
-    this.els.chip.textContent = this.canHost ? "Ready to host" : "Invite-only";
-    this.els.mount.innerHTML = `
-      <div class="locked-section">
-        <p>Social Planner is ready.</p>
-        <p class="text-muted">${escapeHtml(canHostText)}</p>
-      </div>
-    `;
   }
 
   _renderFriendsList() {
