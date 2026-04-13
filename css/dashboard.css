@@ -3654,6 +3654,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   flex-wrap: wrap;
 }
 
+.social-frame__month-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .social-frame__month-titles {
   flex: 1;
   min-width: 0;
@@ -3669,7 +3677,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-calendar-list {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .social-calendar-list--empty {
@@ -3680,28 +3688,76 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
-  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(122, 167, 255, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(14, 18, 28, 0.98) 0%, rgba(9, 11, 17, 0.96) 100%);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 16px 18px;
+}
+
+.social-calendar-card__main {
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.social-calendar-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .social-calendar-card__title {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: #F5F7FF;
+}
+
+.social-calendar-card__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(122, 167, 255, 0.14);
+  border: 1px solid rgba(122, 167, 255, 0.22);
+  color: rgba(245, 247, 255, 0.92);
 }
 
 .social-calendar-card__meta {
-  margin-top: 4px;
+  margin-top: 8px;
   font-size: 13px;
-  color: #555;
+  color: rgba(245, 247, 255, 0.72);
 }
 
 .social-calendar-card__actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.social-calendar-card__delete {
+  color: #fff;
+  border: 1px solid rgba(255, 107, 107, 0.32);
+  background: rgba(255, 107, 107, 0.14);
+}
+
+.social-calendar-card__delete:hover,
+.social-calendar-card__delete:focus-visible {
+  color: #fff;
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.22);
 }
 
 .social-create-friends-label {
@@ -3752,8 +3808,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   gap: 12px;
   flex-wrap: wrap;
   border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top right, rgba(122, 167, 255, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(14, 18, 28, 0.55) 0%, rgba(9, 11, 17, 0.45) 100%);
   padding: 12px 14px;
 }
 
@@ -3765,11 +3823,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-member-row__name {
   font-weight: 700;
   font-size: 15px;
+  color: #F5F7FF;
 }
 
 .social-member-row__meta {
   font-size: 12px;
-  color: #555;
+  color: rgba(245, 247, 255, 0.72);
   word-break: break-all;
 }
 
@@ -3778,6 +3837,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.social-member-row__actions .btn,
+.social-member-row__actions .btn.btn-ghost,
+.social-member-row__actions .btn.btn-sm {
+  color: #F5F7FF;
+}
+
+.social-member-row__actions .btn {
+  border-color: rgba(245, 247, 255, 0.2);
+}
+
+.social-member-row__actions .btn:hover,
+.social-member-row__actions .btn:focus-visible {
+  color: #F5F7FF;
+  border-color: rgba(245, 247, 255, 0.38);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .social-frame__chip,
@@ -4225,5 +4301,44 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   .social-frame__cell {
     min-height: 84px;
     padding: 8px;
+  }
+}
+
+@media (min-width: 900px) {
+  .sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(720px, calc(100vw - 32px));
+    max-height: min(82vh, 900px);
+    border-radius: 22px;
+    transform: translate(-50%, calc(-50% + 40px));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .sheet.is-open {
+    transform: translate(-50%, -50%);
+  }
+
+  .sheet__content {
+    max-height: calc(min(82vh, 900px) - 28px - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .add-profile-sheet__panel {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    width: min(720px, calc(100vw - 32px));
+    max-height: min(82vh, 900px);
+    border-radius: 22px;
+    transform: translate(-50%, calc(-50% + 40px));
+  }
+
+  .add-profile-sheet.is-open .add-profile-sheet__panel {
+    transform: translate(-50%, -50%);
   }
 }

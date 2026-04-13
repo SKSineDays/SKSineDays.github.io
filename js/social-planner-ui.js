@@ -146,7 +146,10 @@ export class SocialPlannerUI {
             <div class="social-frame__eyebrow">Shared calendar</div>
             <div class="social-frame__title" data-social-planner-title>Calendar</div>
           </div>
-          <button class="btn btn-ghost btn-sm" type="button" data-social-manage-members hidden>Manage Members</button>
+          <div class="social-frame__month-actions">
+            <button class="btn btn-ghost btn-sm" type="button" data-social-manage-members hidden>Manage Members</button>
+            <button class="btn btn-sm social-calendar-card__delete" type="button" data-social-delete-from-month hidden>Delete Calendar</button>
+          </div>
         </div>
         <div class="social-frame__header social-frame__header--month">
           <div class="social-frame__nav planner-frame__nav">
@@ -236,6 +239,7 @@ export class SocialPlannerUI {
       monthHead: frame.querySelector("[data-social-month-head]"),
       plannerTitle: frame.querySelector("[data-social-planner-title]"),
       manageMembersBtn: frame.querySelector("[data-social-manage-members]"),
+      deletePlannerBtn: frame.querySelector("[data-social-delete-from-month]"),
       range: frame.querySelector("[data-social-range]"),
       chip: frame.querySelector("[data-social-chip]"),
       mount: frame.querySelector("[data-social-mount]"),
@@ -307,6 +311,12 @@ export class SocialPlannerUI {
 
     frame.querySelector("[data-social-manage-members]")?.addEventListener("click", () => {
       void this._openManageMembersSheet();
+    });
+
+    frame.querySelector("[data-social-delete-from-month]")?.addEventListener("click", async () => {
+      const plannerId = this._currentPlannerId();
+      const title = this.activePlanner?.title || "Calendar";
+      await this._deletePlannerById(plannerId, title);
     });
 
     this.els.addClose?.addEventListener("click", () => {
@@ -382,6 +392,35 @@ export class SocialPlannerUI {
     void this._refresh();
   }
 
+  async _deletePlannerById(plannerId, displayTitle) {
+    const id = String(plannerId || "").trim();
+    if (!id) return;
+
+    const plannerTitle = displayTitle || "this calendar";
+    const confirmed = window.confirm(
+      `Delete ${plannerTitle}? This permanently removes the calendar for all members, including its notes and tasks.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await this._apiJson("/api/social/delete-planner", {
+        method: "POST",
+        body: JSON.stringify({ plannerId: id })
+      });
+      this._closeSheet(this.els.manageSheet, this.els.manageBackdrop);
+      this._closeSheet(this.els.daySheet, this.els.dayBackdrop);
+      this.onSuccess("Calendar deleted.");
+      this.viewMode = "list";
+      this.activePlannerId = null;
+      this.activePlanner = null;
+      this.planner = null;
+      await this._refresh();
+    } catch (err) {
+      console.error("Delete planner failed:", err);
+      this.onError(err.message || "Failed to delete calendar.");
+    }
+  }
+
   _goToMonthView(plannerId) {
     this.activePlannerId = plannerId;
     this.viewMode = "month";
@@ -398,7 +437,12 @@ export class SocialPlannerUI {
     if (this.viewMode === "month" && this.activePlanner) {
       this.els.plannerTitle.textContent = this.activePlanner.title || "Calendar";
       const showManage = this.canHost && this.activePlanner.isOwner === true;
+      const showDelete = this.activePlanner.isOwner === true;
       this.els.manageMembersBtn.hidden = !showManage;
+      if (this.els.deletePlannerBtn) this.els.deletePlannerBtn.hidden = !showDelete;
+    } else {
+      this.els.manageMembersBtn.hidden = true;
+      if (this.els.deletePlannerBtn) this.els.deletePlannerBtn.hidden = true;
     }
 
     if (this.els.range) {
@@ -670,14 +714,17 @@ export class SocialPlannerUI {
             (p) => `
           <article class="social-calendar-card">
             <div class="social-calendar-card__main">
-              <div class="social-calendar-card__title">${escapeHtml(p.title || "Calendar")}</div>
+              <div class="social-calendar-card__title-row">
+                <div class="social-calendar-card__title">${escapeHtml(p.title || "Calendar")}</div>
+                <span class="social-calendar-card__badge">${p.isOwner ? "Owner" : "Shared with you"}</span>
+              </div>
               <div class="social-calendar-card__meta">
                 ${p.memberCount ?? 0} member${(p.memberCount ?? 0) === 1 ? "" : "s"}
-                · ${p.isOwner ? "Owner" : "Member"}
               </div>
             </div>
             <div class="social-calendar-card__actions">
               <button class="btn btn-primary btn-sm" type="button" data-social-open-planner="${escapeHtml(p.id)}">Open</button>
+              ${p.isOwner ? `<button class="btn btn-sm social-calendar-card__delete" type="button" data-social-delete-planner="${escapeHtml(p.id)}" data-social-delete-title="${escapeHtml(p.title || "Calendar")}">Delete</button>` : ""}
             </div>
           </article>
         `
@@ -690,6 +737,14 @@ export class SocialPlannerUI {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-social-open-planner");
         if (id) this._goToMonthView(id);
+      });
+    });
+
+    this.els.mount.querySelectorAll("[data-social-delete-planner]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const plannerId = btn.getAttribute("data-social-delete-planner");
+        const plannerTitle = btn.getAttribute("data-social-delete-title") || "this calendar";
+        await this._deletePlannerById(plannerId, plannerTitle);
       });
     });
   }
