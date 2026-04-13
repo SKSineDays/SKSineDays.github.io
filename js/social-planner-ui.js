@@ -350,7 +350,7 @@ export class SocialPlannerUI {
 
     this.els.dayBackdrop?.addEventListener("click", async () => {
       await this._flushPendingNoteSave();
-      this._closeSheet(this.els.daySheet, this.els.dayBackdrop);
+      this._closeSheet(this.els.daySheet, this.els.dayBackdrop, { lockPageScroll: false });
     });
 
     this.els.addForm?.addEventListener("submit", async (e) => {
@@ -408,7 +408,7 @@ export class SocialPlannerUI {
         body: JSON.stringify({ plannerId: id })
       });
       this._closeSheet(this.els.manageSheet, this.els.manageBackdrop);
-      this._closeSheet(this.els.daySheet, this.els.dayBackdrop);
+      this._closeSheet(this.els.daySheet, this.els.dayBackdrop, { lockPageScroll: false });
       this.onSuccess("Calendar deleted.");
       this.viewMode = "list";
       this.activePlannerId = null;
@@ -950,7 +950,7 @@ export class SocialPlannerUI {
         })
       };
       this._renderDaySheet(normalized);
-      this._openSheet(this.els.daySheet, this.els.dayBackdrop);
+      this._openSheet(this.els.daySheet, this.els.dayBackdrop, { lockPageScroll: false });
     } catch (err) {
       console.error("Failed to open social day:", err);
       this.onError(err.message || "Failed to open social day.");
@@ -1758,8 +1758,10 @@ export class SocialPlannerUI {
     }, 220);
   }
 
-  _openSheet(sheet, backdrop) {
+  _openSheet(sheet, backdrop, options = {}) {
     if (!sheet || !backdrop) return;
+
+    const lockPageScroll = options.lockPageScroll !== false;
 
     sheet.hidden = false;
     backdrop.hidden = false;
@@ -1773,20 +1775,28 @@ export class SocialPlannerUI {
       backdrop.classList.add("is-open");
     });
 
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+    if (lockPageScroll) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    }
   }
 
-  _closeSheet(sheet, backdrop) {
+  _closeSheet(sheet, backdrop, options = {}) {
     if (!sheet || !backdrop) return;
+
+    const lockPageScroll = options.lockPageScroll !== false;
+
     sheet.classList.remove("is-open");
     backdrop.classList.remove("is-open");
 
-    setTimeout(() => {
-      sheet.hidden = true;
-      backdrop.hidden = true;
+    if (lockPageScroll) {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+    }
+
+    window.setTimeout(() => {
+      if (!sheet.classList.contains("is-open")) sheet.hidden = true;
+      if (!backdrop.classList.contains("is-open")) backdrop.hidden = true;
     }, 220);
   }
 }

@@ -3495,6 +3495,18 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   -webkit-overflow-scrolling: touch;
 }
 
+.sheet-backdrop[data-social-add-backdrop],
+.sheet-backdrop[data-social-create-backdrop],
+.sheet-backdrop[data-social-manage-backdrop],
+.sheet-backdrop[data-social-friends-backdrop],
+.sheet-backdrop[data-social-day-backdrop] {
+  overscroll-behavior: auto;
+}
+
+.social-day-sheet {
+  max-height: min(calc(100vh - 24px), 820px);
+}
+
 .social-day-sheet .sheet__content,
 .social-friends-sheet .sheet__content,
 .social-add-sheet .sheet__content,
