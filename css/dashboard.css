@@ -1208,12 +1208,16 @@ option {
 .duck-ring__sphere {
   position: absolute;
   left: 50%;
-  top: 54%;
-  width: clamp(460px, 64vw, 760px);
+  top: 53%;
+  width: clamp(440px, 64vw, 730px);
   aspect-ratio: 1 / 1;
   pointer-events: none;
   transform-style: preserve-3d;
   will-change: transform, opacity;
+  opacity: 0.98;
+  filter:
+    drop-shadow(0 34px 76px rgba(0, 0, 0, 0.48))
+    drop-shadow(0 0 78px rgba(122, 167, 255, 0.20));
 }
 
 .duck-ring__sphere img {
@@ -1225,6 +1229,44 @@ option {
   -webkit-user-drag: none;
   position: relative;
   z-index: 0;
+}
+
+.duck-ring__sphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0) 36%,
+      rgba(8, 12, 22, 0.02) 48%,
+      rgba(6, 10, 18, 0.08) 60%,
+      rgba(4, 7, 14, 0.18) 74%,
+      rgba(3, 5, 10, 0.32) 88%,
+      rgba(2, 4, 9, 0.52) 100%
+    ),
+    radial-gradient(
+      circle at 18% 58%,
+      rgba(3, 5, 10, 0.38) 0%,
+      rgba(3, 5, 10, 0.12) 24%,
+      rgba(3, 5, 10, 0) 42%
+    ),
+    radial-gradient(
+      circle at 82% 58%,
+      rgba(3, 5, 10, 0.38) 0%,
+      rgba(3, 5, 10, 0.12) 24%,
+      rgba(3, 5, 10, 0) 42%
+    ),
+    radial-gradient(
+      circle at 50% 22%,
+      rgba(140, 195, 255, 0.08) 0%,
+      rgba(122, 167, 255, 0.04) 14%,
+      rgba(122, 167, 255, 0) 30%
+    );
 }
 
 .duck-ring__sphere--back {
@@ -1428,6 +1470,16 @@ option {
     drop-shadow(0 0 34px rgba(122, 167, 255, 0.10));
 }
 
+.duck-stack:not(.is-front) {
+  opacity: 0.82;
+}
+
+.duck-stack:not(.is-front) .duck-stack__meta,
+.duck-stack:not(.is-front) .duck-stack__subline,
+.duck-stack:not(.is-front) .duck-stack__label {
+  opacity: 0.82;
+}
+
 .duck-stack.is-near-front {
   opacity: 0.88;
   transition: opacity 180ms ease, filter 180ms ease;
@@ -1458,7 +1510,7 @@ option {
     0 26px 70px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(255, 255, 255, 0.30) inset,
     0 0 110px -12px rgba(var(--color-accent-rgb), 0.45);
-  transform: translateZ(48px);
+  transform: translateZ(56px);
 }
 
 /* Hologram Z-pop on hover */
@@ -1597,12 +1649,12 @@ option {
   }
 
   .duck-ring__scene {
-    height: 540px;
+    height: 520px;
   }
 
   .duck-ring__sphere {
-    width: clamp(420px, 108vw, 620px);
-    top: 56%;
+    width: clamp(360px, 90vw, 580px);
+    top: 55%;
   }
 
   .duck-ring__sphere--front::before {
@@ -1634,12 +1686,12 @@ option {
 
 @media (max-width: 480px) {
   .duck-ring__scene {
-    height: 560px;
+    height: 540px;
   }
 
   .duck-ring__sphere {
-    width: clamp(450px, 118vw, 640px);
-    top: 57%;
+    width: clamp(380px, 96vw, 610px);
+    top: 56%;
   }
 }
 

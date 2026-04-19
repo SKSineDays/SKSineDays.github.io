@@ -194,7 +194,7 @@ export class DuckCarousel {
 
     if (this.sphereBackEl) {
       this.sphereBackEl.style.transform =
-        `translate3d(-50%, -50%, -90px) rotate(${sphereSpin}deg)`;
+        `translate3d(-50%, -50%, -55px) rotate(${sphereSpin}deg)`;
     }
 
     if (this.sphereFrontEl) {
