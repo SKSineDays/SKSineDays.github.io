@@ -49,6 +49,8 @@ let userSettings = null;
 let dashboardPageIndex = 0;
 let dashboardPageCount = 5;
 let dashboardPagerBound = false;
+let deferredInstallPrompt = null;
+let installPromptAvailable = false;
 
 /**
  * Initialize dashboard on page load
@@ -59,6 +61,7 @@ async function init() {
   // ✅ Always attach UI handlers first
   setupEventListeners();
   bindDailyEmailEvents();
+  setupInstallPromptUI();
 
   // Show loading (optional)
   showLoading();
@@ -388,6 +391,59 @@ function bindDailyEmailEvents() {
 
     await enableDailyEmailFromOwnerProfile();
   });
+}
+
+function isStandaloneDisplayMode() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: window-controls-overlay)').matches
+    || window.navigator.standalone === true;
+}
+
+function renderInstallButton() {
+  const btn = document.getElementById('install-app-btn');
+  if (!btn) return;
+
+  const shouldShow = installPromptAvailable && !!deferredInstallPrompt && !isStandaloneDisplayMode();
+  btn.hidden = !shouldShow;
+}
+
+function setupInstallPromptUI() {
+  const btn = document.getElementById('install-app-btn');
+  if (!btn) return;
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installPromptAvailable = true;
+    renderInstallButton();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    installPromptAvailable = false;
+    renderInstallButton();
+    showSuccess('SineDay installed.');
+  });
+
+  btn.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+
+    try {
+      const promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+
+      await promptEvent.prompt();
+      await promptEvent.userChoice;
+
+      installPromptAvailable = false;
+      renderInstallButton();
+    } catch (err) {
+      console.error('Install prompt failed:', err);
+      renderInstallButton();
+    }
+  });
+
+  renderInstallButton();
 }
 
 async function loadNotificationsBadge() {
@@ -1928,6 +1984,7 @@ function showAuthenticatedView() {
 
   bindDashboardPager();
   updateDashboardPagerUI();
+  renderInstallButton();
 }
 
 /**
