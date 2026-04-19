@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v4';
+const CACHE_NAME = 'sineday-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -13,6 +13,10 @@ const ASSETS_TO_CACHE = [
   '/js/wave-canvas.js',
   '/js/ui.js',
   '/manifest.json',
+  '/assets/app-icon/icon-square.png',
+  '/assets/app-icon/icon-rounded.png',
+  '/assets/app-icon/maskable-192.png',
+  '/assets/app-icon/maskable-512.png',
   // Day images
   '/Day1.jpeg',
   '/Day2.jpeg',

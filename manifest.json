@@ -10,22 +10,28 @@
   "scope": "/",
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/assets/app-icon/icon-square.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png",
+      "src": "/assets/app-icon/maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/assets/app-icon/maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/app-icon/icon-rounded.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "categories": ["lifestyle", "utilities"],
@@ -44,7 +50,7 @@
       "url": "/",
       "icons": [
         {
-          "src": "icon-192.png",
+          "src": "/assets/app-icon/maskable-192.png",
           "sizes": "192x192"
         }
       ]
