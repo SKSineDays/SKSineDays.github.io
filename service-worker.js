@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v7';
+const CACHE_NAME = 'sineday-v8';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -12,18 +12,19 @@ const ASSETS_TO_CACHE = [
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',
-  '/site.webmanifest',
-  '/apple-touch-icon.png',
-  '/assets/app-icon/apple-touch-icon-180.png',
-  '/assets/app-icon/apple-touch-icon-167.png',
-  '/assets/app-icon/apple-touch-icon-152.png',
+  '/site.webmanifest?v=2',
+  '/apple-touch-icon.png?v=2',
+  '/assets/app-icon/apple-touch-icon-180.png?v=2',
+  '/assets/app-icon/apple-touch-icon-167.png?v=2',
+  '/assets/app-icon/apple-touch-icon-152.png?v=2',
   '/assets/app-icon/icon-square.png',
   '/assets/app-icon/icon-rounded.png',
   '/assets/app-icon/maskable-192.png',
   '/assets/app-icon/maskable-512.png',
-  '/favicon.ico',
-  '/favicon-16.png',
-  '/favicon-32.png',
+  '/favicon.ico?v=2',
+  '/favicon-16.png?v=2',
+  '/favicon-32.png?v=2',
+  '/breathingicon.svg?v=2',
   // Day images
   '/Day1.jpeg',
   '/Day2.jpeg',
