@@ -1,16 +1,22 @@
 {
   "name": "SineDay",
   "short_name": "SineDay",
-  "description": "Intrinsic Power Rhythm — a natural 18-day personal power rhythm cycle.",
+  "description": "SineDay reveals your Intrinsic Power Rhythm.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#05060A",
   "theme_color": "#05060A",
   "orientation": "portrait-primary",
-  "scope": "/",
   "icons": [
     {
       "src": "/assets/app-icon/icon-square.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app-icon/icon-rounded.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -26,18 +32,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/assets/app-icon/icon-rounded.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
   "categories": ["lifestyle", "utilities"],
   "screenshots": [
     {
-      "src": "Day9.jpeg",
+      "src": "/Day9.jpeg",
       "sizes": "1080x1920",
       "type": "image/jpeg"
     }
