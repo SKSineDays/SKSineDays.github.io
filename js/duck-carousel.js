@@ -1,7 +1,8 @@
 // js/duck-carousel.js
 //
-// 3D Duck Ring — Origin Duck (circle) + Energy Duck (square) stacked cards
-// in a full 3D ring with drag/inertia spin and perspective.
+// Horizontal Duck Carousel — side-scroll rail with centered active profile.
+// Replaces the old 3D ring with a production-safer sideways carousel.
+// The sphere remains as a rotating ambient backdrop only.
 //
 // Public API:
 //   const carousel = new DuckCarousel(containerEl, opts)
@@ -11,28 +12,38 @@
 
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { calculateSineDayForTimezone, getDayData } from "./sineday-engine.js";
-
-/* ────────────────────────────
-   DuckCarousel (3D Ring)
-   ──────────────────────────── */
+import { calculateSineDayForTimezone } from "./sineday-engine.js";
 
 export class DuckCarousel {
-  /**
-   * @param {HTMLElement} wrapEl  - the .duck-carousel-wrap container
-   * @param {Object}      opts
-   * @param {string}     [opts.anchorDate]
-   */
   constructor(wrapEl, opts = {}) {
     this.wrapEl = wrapEl;
-    this.sphereBackEl = null;
     this.anchorDate = opts.anchorDate || ORIGIN_ANCHOR_DATE;
+
+    this.rootEl = null;
+    this.sceneEl = null;
+    this.sphereBackEl = null;
+    this.viewportEl = null;
+    this.trackEl = null;
+    this.emptyEl = null;
+    this.prevBtn = null;
+    this.nextBtn = null;
+
     this.profiles = [];
-    this.cards = []; // { el, index }
-    this.rotation = 0;
-    this.velocity = 0;
-    this.radius = 280;
-    this.raf = null;
+    this.cards = [];
+    this.currentIndex = 0;
+
+    this.cardWidth = 240;
+    this.cardGap = 24;
+    this.baseTranslate = 0;
+    this.dragOffset = 0;
+
+    this._drag = {
+      active: false,
+      pointerId: null,
+      startX: 0,
+      lastX: 0,
+      totalDx: 0
+    };
 
     this._buildDOM();
     this._initPointer();
@@ -40,53 +51,54 @@ export class DuckCarousel {
     this._initClickToCenter();
 
     this._ro = new ResizeObserver(() => {
-      this._layoutRing();
-      this._snapToNearest(false);
+      this._layout();
+      this._applyPosition(false);
     });
     this._ro.observe(this.sceneEl);
   }
 
-  /* ── DOM skeleton ── */
-
   _buildDOM() {
-    // Preserve header if present
     const header = this.wrapEl.querySelector(".duck-carousel-header");
     this.wrapEl.innerHTML = "";
-
     if (header) this.wrapEl.appendChild(header);
 
     this.rootEl = _el("div", "duck-ring");
     this.rootEl.setAttribute("role", "region");
-    this.rootEl.setAttribute("aria-label", "Origin ducks 3D carousel");
+    this.rootEl.setAttribute("aria-label", "Origin ducks carousel");
 
     this.sceneEl = _el("div", "duck-ring__scene");
 
     this.sphereBackEl = _el("div", "duck-ring__sphere duck-ring__sphere--back");
     this.sphereBackEl.setAttribute("aria-hidden", "true");
-    const sphereBackImg = document.createElement("img");
-    sphereBackImg.src = "/assets/sineday-sphere.png";
-    sphereBackImg.alt = "";
-    sphereBackImg.decoding = "async";
-    sphereBackImg.loading = "eager";
-    this.sphereBackEl.appendChild(sphereBackImg);
+    const sphereImg = document.createElement("img");
+    sphereImg.src = "/assets/sineday-sphere.png";
+    sphereImg.alt = "";
+    sphereImg.decoding = "async";
+    sphereImg.loading = "eager";
+    this.sphereBackEl.appendChild(sphereImg);
 
-    this.ringEl = _el("div", "duck-ring__ring");
-    this.ringEl.setAttribute("aria-live", "polite");
+    this.viewportEl = _el("div", "duck-ring__viewport");
+    this.trackEl = _el("div", "duck-ring__track");
+    this.trackEl.setAttribute("aria-live", "polite");
+    this.viewportEl.appendChild(this.trackEl);
 
     this.emptyEl = _el("div", "duck-ring__empty");
     this.emptyEl.textContent = "Add a profile to see your first Origin Duck 🦆";
+
     this.sceneEl.appendChild(this.sphereBackEl);
-    this.sceneEl.appendChild(this.ringEl);
+    this.sceneEl.appendChild(this.viewportEl);
     this.sceneEl.appendChild(this.emptyEl);
 
     this.rootEl.appendChild(this.sceneEl);
 
     this.prevBtn = _el("button", "duck-ring__nav duck-ring__nav--prev");
-    this.prevBtn.setAttribute("aria-label", "Previous");
+    this.prevBtn.type = "button";
+    this.prevBtn.setAttribute("aria-label", "Previous profile");
     this.prevBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>`;
 
     this.nextBtn = _el("button", "duck-ring__nav duck-ring__nav--next");
-    this.nextBtn.setAttribute("aria-label", "Next");
+    this.nextBtn.type = "button";
+    this.nextBtn.setAttribute("aria-label", "Next profile");
     this.nextBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>`;
 
     this.rootEl.appendChild(this.prevBtn);
@@ -94,8 +106,6 @@ export class DuckCarousel {
 
     this.wrapEl.appendChild(this.rootEl);
   }
-
-  /* ── Card build (energy square + origin circle stacked) ── */
 
   _buildCard(profile) {
     const name = profile.display_name || "Unnamed";
@@ -116,35 +126,27 @@ export class DuckCarousel {
     );
 
     const energy = _el("div", "duck-stack__energy");
-    if (energyUrl) {
-      energy.innerHTML = `<img src="/${energyUrl}" alt="" />`;
-    } else {
-      energy.innerHTML = `<span aria-hidden="true">&nbsp;</span>`;
-    }
+    energy.innerHTML = energyUrl
+      ? `<img src="/${energyUrl}" alt="" />`
+      : `<span aria-hidden="true">&nbsp;</span>`;
 
     const origin = _el("div", "duck-stack__origin");
-    if (originUrl) {
-      origin.innerHTML = `<img src="/${originUrl}" alt="" />`;
-    } else {
-      origin.innerHTML = `<span aria-hidden="true">&nbsp;</span>`;
-    }
+    origin.innerHTML = originUrl
+      ? `<img src="/${originUrl}" alt="" />`
+      : `<span aria-hidden="true">&nbsp;</span>`;
 
-    // Today's Duck header
     const energyMeta = _el("div", "duck-stack__meta duck-stack__meta--energy");
     energyMeta.textContent = `Today's Duck${energyDay ? ` • ${energyDay}` : ""}`;
 
-    // Daily poetic line (like index page)
     const energyLine = _el("div", "duck-stack__subline");
     energyLine.textContent = energyDescription;
 
-    // Origin header
     const originMeta = _el("div", "duck-stack__meta duck-stack__meta--origin");
     originMeta.textContent = `Origin Duck ${originDay ?? "?"}`;
 
     const label = _el("div", "duck-stack__label");
     label.textContent = name;
 
-    // Order
     card.append(
       energy,
       energyMeta,
@@ -153,261 +155,204 @@ export class DuckCarousel {
       originMeta,
       label
     );
-    return { el: card };
+
+    return { el: card, profile };
   }
 
-  /* ── 3D Ring layout ── */
-
-  _layoutRing() {
-    const n = this.cards.length;
-    if (n === 0) return;
-
-    const step = 360 / n;
+  _layout() {
     const sceneW = this.sceneEl.clientWidth || 400;
-    this.radius = Math.max(220, Math.min(520, sceneW * 0.38));
 
-    this.ringEl.style.setProperty("--radius", `${this.radius}px`);
-    this.cards.forEach((c, i) => {
-      const angle = i * step;
-      c.el.style.transform = `rotateY(${angle}deg) translateZ(${this.radius}px)`;
-      c.el.dataset.index = String(i);
+    if (sceneW <= 420) {
+      this.cardWidth = 230;
+      this.cardGap = 16;
+    } else if (sceneW <= 640) {
+      this.cardWidth = 246;
+      this.cardGap = 20;
+    } else {
+      this.cardWidth = 270;
+      this.cardGap = 26;
+    }
+
+    this.rootEl.style.setProperty("--duck-card-width", `${this.cardWidth}px`);
+    this.rootEl.style.setProperty("--duck-card-gap", `${this.cardGap}px`);
+    this.cards.forEach((card) => {
+      card.el.style.width = `${this.cardWidth}px`;
+      card.el.style.flexBasis = `${this.cardWidth}px`;
     });
 
-    this._applyRotation();
+    this.baseTranslate = this._translateForIndex(this.currentIndex);
   }
 
-  _applyRotation() {
-    this.ringEl.style.transform = `translateZ(${-this.radius}px) rotateY(${this.rotation}deg)`;
-
-    const sphereSpin = this.rotation * 0.35;
-
-    if (this.sphereBackEl) {
-      this.sphereBackEl.style.transform =
-        `translate3d(-50%, -50%, -55px) rotate(${sphereSpin}deg)`;
-    }
-
-    this._updateFrontCard();
+  _translateForIndex(index) {
+    const sceneW = this.sceneEl.clientWidth || 400;
+    const pitch = this.cardWidth + this.cardGap;
+    return (sceneW / 2) - (this.cardWidth / 2) - (index * pitch);
   }
 
-  _stepDeg() {
-    return this.cards.length ? 360 / this.cards.length : 90;
+  _applyPosition(animate = true) {
+    if (!this.cards.length) return;
+
+    this.baseTranslate = this._translateForIndex(this.currentIndex);
+
+    this.trackEl.style.transition = animate
+      ? "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)"
+      : "none";
+
+    this.trackEl.style.transform = `translate3d(${this.baseTranslate + this.dragOffset}px, 0, 0)`;
+    this._updateCardStates();
+    this._updateNavState();
   }
 
-  _nearestIndex() {
-    const n = this.cards.length;
-    if (!n) return 0;
-    const step = this._stepDeg();
-    let idx = Math.round((-this.rotation) / step);
-    idx = ((idx % n) + n) % n;
-    return idx;
-  }
+  _updateCardStates() {
+    this.cards.forEach((card, i) => {
+      const delta = i - this.currentIndex;
+      const abs = Math.abs(delta);
 
-  _normalizeAngle(deg) {
-    let a = ((deg + 180) % 360) - 180;
-    if (a < -180) a += 360;
-    return a;
-  }
-
-  _updateFrontCard() {
-    const n = this.cards.length;
-    if (n === 0) return;
-
-    const step = 360 / n;
-    // Normalize rotation to 0..360
-    const r = ((this.rotation % 360) + 360) % 360;
-    // Each card i is at angle i*step; "front" is the one whose angle is closest to 0 (or 360)
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < n; i++) {
-      const cardAngle = (i * step + r) % 360;
-      const dist = Math.min(cardAngle, 360 - cardAngle);
-      if (dist < bestDist) {
-        bestDist = dist;
-        bestIdx = i;
-      }
-    }
-    this.cards.forEach((c, i) => {
-      const cardAngle = (i * step + r) % 360;
-      const dist = Math.min(cardAngle, 360 - cardAngle);
-      const isFront = i === bestIdx;
-      const isNearFront = !isFront && dist < 65;
-      const isBehindSphere = dist >= 65;
-
-      c.el.classList.toggle("is-front", isFront);
-      c.el.classList.toggle("is-near-front", isNearFront);
-      c.el.classList.toggle("is-behind-sphere", isBehindSphere);
-
-      c.el.tabIndex = isFront ? 0 : -1;
+      card.el.classList.toggle("is-active", i === this.currentIndex);
+      card.el.classList.toggle("is-near", abs === 1);
+      card.el.classList.toggle("is-far", abs >= 2);
+      card.el.tabIndex = i === this.currentIndex ? 0 : -1;
     });
   }
 
-  /* ── Pointer drag + snap-on-release ── */
+  _updateNavState() {
+    const n = this.cards.length;
+    const multi = n > 1;
+
+    this.prevBtn.style.display = multi ? "" : "none";
+    this.nextBtn.style.display = multi ? "" : "none";
+
+    this.prevBtn.disabled = !multi || this.currentIndex <= 0;
+    this.nextBtn.disabled = !multi || this.currentIndex >= n - 1;
+  }
+
+  _goToIndex(index, animate = true) {
+    if (!this.cards.length) return;
+    const clamped = Math.max(0, Math.min(index, this.cards.length - 1));
+    this.currentIndex = clamped;
+    this.dragOffset = 0;
+    this._applyPosition(animate);
+  }
 
   _initPointer() {
-    let dragging = false;
-    let lastX = 0;
-    let dragTotal = 0;
-
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReduced = () =>
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const onDown = (e) => {
-      dragging = true;
-      lastX = e.clientX;
-      dragTotal = 0;
+      if (this.cards.length <= 1) return;
 
+      this._drag.active = true;
+      this._drag.pointerId = e.pointerId;
+      this._drag.startX = e.clientX;
+      this._drag.lastX = e.clientX;
+      this._drag.totalDx = 0;
+      this.dragOffset = 0;
+
+      this.trackEl.style.transition = "none";
       this.sceneEl.setPointerCapture?.(e.pointerId);
     };
 
     const onMove = (e) => {
-      if (!dragging) return;
+      if (!this._drag.active) return;
 
-      const x = e.clientX;
-      const dx = x - lastX;
-      lastX = x;
+      const dx = e.clientX - this._drag.startX;
+      this._drag.lastX = e.clientX;
+      this._drag.totalDx = dx;
 
-      dragTotal += Math.abs(dx);
+      let effectiveDx = dx;
+      const atStart = this.currentIndex === 0 && dx > 0;
+      const atEnd = this.currentIndex === this.cards.length - 1 && dx < 0;
+      if (atStart || atEnd) effectiveDx *= 0.35;
 
-      // Smooth continuous rotation while dragging
-      this.rotation += dx * 0.25;
-      this._applyRotation();
+      this.dragOffset = effectiveDx;
+      this.trackEl.style.transform = `translate3d(${this.baseTranslate + this.dragOffset}px, 0, 0)`;
     };
 
     const onUp = () => {
-      if (!dragging) return;
-      dragging = false;
+      if (!this._drag.active) return;
 
-      this._didDragRecently = dragTotal > 6;
-      setTimeout(() => { this._didDragRecently = false; }, 120);
+      this._drag.active = false;
 
-      // Always snap to nearest duck index so we never "rest" on blank space
-      this._snapToNearest(!reduce);
+      const dx = this._drag.totalDx;
+      const threshold = Math.min(96, this.cardWidth * 0.18);
+
+      if (Math.abs(dx) > threshold) {
+        if (dx < 0) this.currentIndex = Math.min(this.cards.length - 1, this.currentIndex + 1);
+        if (dx > 0) this.currentIndex = Math.max(0, this.currentIndex - 1);
+      }
+
+      this.dragOffset = 0;
+      this._applyPosition(!prefersReduced());
     };
 
     this.sceneEl.addEventListener("pointerdown", onDown);
     this.sceneEl.addEventListener("pointermove", onMove);
     this.sceneEl.addEventListener("pointerup", onUp);
     this.sceneEl.addEventListener("pointercancel", onUp);
+    this.sceneEl.addEventListener("lostpointercapture", onUp);
 
-    // Prevent touch scrolling from fighting the carousel drag
     this.sceneEl.style.touchAction = "pan-y";
   }
 
   _initClickToCenter() {
-    this._didDragRecently = false;
-    this.ringEl.addEventListener("click", (e) => {
+    this.trackEl.addEventListener("click", (e) => {
+      if (this._drag.active || Math.abs(this._drag.totalDx) > 6) return;
       const btn = e.target.closest(".duck-stack");
       if (!btn) return;
-
-      if (this._didDragRecently) return;
-
       const idx = Number(btn.dataset.index);
       if (!Number.isFinite(idx)) return;
-
       this._goToIndex(idx, true);
     });
   }
 
-  _goToIndex(index, animate = true) {
-    const n = this.cards.length;
-    if (!n || index < 0 || index >= n) return;
-
-    const step = this._stepDeg();
-    const targetBase = -index * step;
-    const delta = this._normalizeAngle(targetBase - this.rotation);
-    const target = this.rotation + delta;
-
-    if (!animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      this.rotation = target;
-      this._applyRotation();
-      return;
-    }
-
-    const start = this.rotation;
-    const change = target - start;
-    const dur = 260;
-    const t0 = performance.now();
-    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-
-    const tick = (now) => {
-      const t = Math.min(1, (now - t0) / dur);
-      this.rotation = start + change * easeOutCubic(t);
-      this._applyRotation();
-      if (t < 1) requestAnimationFrame(tick);
-    };
-
-    requestAnimationFrame(tick);
-  }
-
-  _snapToNearest(animate = true) {
-    if (!this.cards.length) return;
-    this._goToIndex(this._nearestIndex(), animate);
-  }
-
-  /* ── Nav arrows ── */
-
   _initNav() {
     this.prevBtn.addEventListener("click", () => {
-      const n = this.cards.length || 1;
-      const i = this._nearestIndex();
-      this._goToIndex((i - 1 + n) % n, true);
+      this._goToIndex(this.currentIndex - 1, true);
     });
 
     this.nextBtn.addEventListener("click", () => {
-      const n = this.cards.length || 1;
-      const i = this._nearestIndex();
-      this._goToIndex((i + 1) % n, true);
+      this._goToIndex(this.currentIndex + 1, true);
     });
   }
-
-  /* ── Profile sync ── */
 
   setProfiles(profiles) {
     this.profiles = profiles || [];
     this.cards = [];
+    this.trackEl.innerHTML = "";
 
-    // Clear ring
-    const children = Array.from(this.ringEl.children).filter(
-      (c) => !c.classList.contains("duck-ring__empty")
-    );
-    children.forEach((c) => c.remove());
-    this.emptyEl.style.display = this.profiles.length === 0 ? "block" : "none";
+    const hasProfiles = this.profiles.length > 0;
+    this.emptyEl.style.display = hasProfiles ? "none" : "flex";
+    this.viewportEl.style.display = hasProfiles ? "" : "none";
+    this.sphereBackEl.style.display = hasProfiles ? "" : "none";
 
-    if (this.profiles.length === 0) {
-      if (this.sphereBackEl) this.sphereBackEl.style.display = "none";
+    if (!hasProfiles) {
       this.prevBtn.style.display = "none";
       this.nextBtn.style.display = "none";
       return;
     }
 
-    if (this.sphereBackEl) this.sphereBackEl.style.display = "";
-    this.prevBtn.style.display = "";
-    this.nextBtn.style.display = "";
+    this.currentIndex = Math.max(0, Math.min(this.currentIndex, this.profiles.length - 1));
 
-    for (const p of this.profiles) {
+    for (const [i, p] of this.profiles.entries()) {
       const card = this._buildCard(p);
+      card.el.dataset.index = String(i);
       this.cards.push(card);
-      this.ringEl.appendChild(card.el);
+      this.trackEl.appendChild(card.el);
     }
 
-    this._layoutRing();
-    this._snapToNearest(false);
+    this._layout();
+    this._applyPosition(false);
   }
-
-  /* ── Reload ── */
 
   reload(profiles) {
     this.setProfiles(profiles);
   }
-
-  /* ── Cleanup ── */
 
   destroy() {
     this._ro?.disconnect();
     this.wrapEl.innerHTML = "";
   }
 }
-
-/* ── Helpers ── */
 
 function _el(tag, className) {
   const e = document.createElement(tag);

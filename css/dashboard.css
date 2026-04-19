@@ -1150,7 +1150,7 @@ option {
 }
 
 /* ===========================
-   Origin Duck Carousel (3D Ring)
+   Origin Duck Carousel (Side Rail Revamp)
    =========================== */
 
 .duck-carousel-wrap {
@@ -1175,11 +1175,9 @@ option {
   margin: 6px 0 0;
 }
 
-/* ===========================
-   3D Duck Ring
-   =========================== */
-
 .duck-ring {
+  --duck-card-width: 270px;
+  --duck-card-gap: 26px;
   position: relative;
   width: 100%;
   margin-top: 14px;
@@ -1187,37 +1185,40 @@ option {
 
 .duck-ring__scene {
   position: relative;
-  height: 540px;
-  border-radius: 18px;
+  height: 560px;
+  border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    radial-gradient(circle at 50% 20%, rgba(122, 167, 255, 0.10), transparent 42%),
+    rgba(255, 255, 255, 0.03);
   overflow: hidden;
-
-  perspective: 1100px;
-  perspective-origin: 50% 45%;
-  transform-style: preserve-3d;
+  isolation: isolate;
 }
 
-.duck-ring__ring {
+.duck-ring__scene::before {
+  content: "";
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
-  will-change: transform;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5, 6, 10, 0.92) 0%, rgba(5, 6, 10, 0) 12%, rgba(5, 6, 10, 0) 88%, rgba(5, 6, 10, 0.92) 100%);
+  z-index: 2;
 }
 
 .duck-ring__sphere {
   position: absolute;
   left: 50%;
-  top: 53%;
-  width: clamp(520px, 74vw, 880px);
+  top: 54%;
+  width: clamp(500px, 78vw, 900px);
   aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
-  opacity: 0.98;
+  z-index: 0;
+  opacity: 0.96;
   filter:
-    drop-shadow(0 34px 76px rgba(0, 0, 0, 0.48))
-    drop-shadow(0 0 78px rgba(122, 167, 255, 0.20));
+    drop-shadow(0 36px 90px rgba(0, 0, 0, 0.54))
+    drop-shadow(0 0 84px rgba(122, 167, 255, 0.18));
 }
 
 .duck-ring__sphere img {
@@ -1227,8 +1228,8 @@ option {
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-  position: relative;
-  z-index: 0;
+  animation: duckSphereSpin 42s linear infinite;
+  transform-origin: 50% 50%;
 }
 
 .duck-ring__sphere::after {
@@ -1237,119 +1238,123 @@ option {
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 1;
   background:
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0) 36%,
-      rgba(8, 12, 22, 0.02) 48%,
-      rgba(6, 10, 18, 0.08) 60%,
-      rgba(4, 7, 14, 0.18) 74%,
-      rgba(3, 5, 10, 0.32) 88%,
-      rgba(2, 4, 9, 0.52) 100%
-    ),
-    radial-gradient(
-      circle at 18% 58%,
-      rgba(3, 5, 10, 0.38) 0%,
-      rgba(3, 5, 10, 0.12) 24%,
-      rgba(3, 5, 10, 0) 42%
-    ),
-    radial-gradient(
-      circle at 82% 58%,
-      rgba(3, 5, 10, 0.38) 0%,
-      rgba(3, 5, 10, 0.12) 24%,
-      rgba(3, 5, 10, 0) 42%
-    ),
-    radial-gradient(
-      circle at 50% 22%,
-      rgba(140, 195, 255, 0.08) 0%,
-      rgba(122, 167, 255, 0.04) 14%,
-      rgba(122, 167, 255, 0) 30%
-    );
+    radial-gradient(circle at 34% 34%, rgba(150, 202, 255, 0.18), rgba(122, 167, 255, 0) 18%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 42%, rgba(7, 10, 18, 0.10) 64%, rgba(3, 5, 10, 0.34) 100%);
 }
 
-.duck-ring__sphere--back {
-  opacity: 0.94;
-  filter:
-    drop-shadow(0 36px 80px rgba(0, 0, 0, 0.48))
-    drop-shadow(0 0 80px rgba(122, 167, 255, 0.20));
-}
-
-/* Each stack is absolutely centered, then rotated around ring by JS */
-.duck-stack {
+.duck-ring__viewport {
   position: absolute;
-  left: 50%;
-  top: 46%;
-  transform-style: preserve-3d;
-  transform-origin: center center;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+}
 
-  width: 220px;
-  height: 250px;
-  z-index: 2;
+.duck-ring__track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--duck-card-gap);
+  padding: 0 28px;
+  will-change: transform;
+}
 
+.duck-stack {
+  position: relative;
+  flex: 0 0 var(--duck-card-width);
+  width: var(--duck-card-width);
+  min-height: 398px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   background: transparent;
   border: 0;
-  padding: 0;
-  cursor: grab;
+  padding: 14px 0 0;
+  cursor: pointer;
   user-select: none;
-
-  translate: -50% -50%;
+  z-index: 1;
+  opacity: 0.5;
+  transform: scale(0.86) translateY(14px);
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease,
+    filter 220ms ease;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.26));
 }
 
-.duck-stack:active { cursor: grabbing; }
+.duck-stack:hover {
+  opacity: 0.82;
+}
 
-/* ENERGY square (top) */
+.duck-stack.is-near {
+  opacity: 0.78;
+  transform: scale(0.93) translateY(8px);
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.32));
+}
+
+.duck-stack.is-far .duck-stack__meta,
+.duck-stack.is-far .duck-stack__subline,
+.duck-stack.is-far .duck-stack__label {
+  opacity: 0.7;
+}
+
+.duck-stack.is-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  filter:
+    drop-shadow(0 32px 58px rgba(0, 0, 0, 0.46))
+    drop-shadow(0 0 34px rgba(122, 167, 255, 0.12));
+  z-index: 2;
+}
+
 .duck-stack__energy {
-  width: 92px;
-  height: 92px;
+  width: 102px;
+  height: 102px;
   margin: 0 auto 10px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
   display: grid;
   place-items: center;
   box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
-    0 0 70px -12px rgba(var(--color-accent-rgb), 0.35);
-
-  transform: translateZ(36px);
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 255, 255, 0.20) inset,
+    0 0 72px -12px rgba(var(--color-accent-rgb), 0.30);
 }
 
 .duck-stack__energy img {
-  width: 72px;
-  height: 72px;
+  width: 78px;
+  height: 78px;
   display: block;
   animation: duckFloatTop 3.2s ease-in-out infinite;
 }
 
-/* ORIGIN circle (bottom) */
 .duck-stack__origin {
-  width: 138px;
-  height: 138px;
+  width: 152px;
+  height: 152px;
   margin: 0 auto;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   display: grid;
   place-items: center;
   box-shadow:
-    0 20px 55px rgba(0, 0, 0, 0.50),
-    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
-    0 0 90px -10px rgba(var(--color-accent-rgb), 0.28);
-
-  transform: translateZ(10px);
+    0 22px 60px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 255, 255, 0.20) inset,
+    0 0 92px -10px rgba(var(--color-accent-rgb), 0.24);
 }
 
 .duck-stack__origin img {
-  width: 108px;
-  height: 108px;
+  width: 118px;
+  height: 118px;
   display: block;
   animation: duckFloatBottom 3.6s ease-in-out infinite;
 }
 
-/* Mini headers under each duck (match index.html day-phase vibe) */
 .duck-stack__meta {
-  margin: 6px 0 10px;
+  margin: 8px 0 10px;
   text-align: center;
   font-size: 11px;
   font-weight: 800;
@@ -1357,41 +1362,34 @@ option {
   text-transform: uppercase;
   color: var(--color-accent);
   text-shadow: 0 0 10px rgba(122, 167, 255, 0.35);
-  transform: translateZ(12px);
   opacity: 0.92;
   user-select: none;
+  transition: opacity 220ms ease;
 }
 
-/* tighter spacing just under the square */
 .duck-stack__meta--energy {
-  margin-top: 2px;
+  margin-top: 4px;
   margin-bottom: 12px;
-  transform: translateZ(22px);
   font-size: 10px;
   opacity: 0.85;
 }
 
-/* sits under the big circle */
 .duck-stack__meta--origin {
-  margin-top: 8px;
+  margin-top: 10px;
   margin-bottom: 6px;
-  transform: translateZ(14px);
 }
 
-/* Poetic daily line (like index.html phase line) */
 .duck-stack__subline {
-  margin: -4px 0 16px;
+  margin: -2px auto 18px;
   text-align: center;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  color: rgba(235, 240, 255, 0.78);
+  color: rgba(235, 240, 255, 0.80);
   text-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   line-height: 1.3;
-  transform: translateZ(18px);
-  max-width: 180px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 210px;
+  transition: opacity 220ms ease;
 }
 
 .duck-stack__label {
@@ -1399,114 +1397,53 @@ option {
   text-align: center;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: rgba(245, 247, 255, 0.92);
+  color: rgba(245, 247, 255, 0.94);
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  transform: translateZ(6px);
+  transition: opacity 220ms ease;
 }
 
-/* Subtle depth fade */
-.duck-stack {
-  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.24));
-}
-
-.duck-stack:hover {
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.30));
-}
-
-.duck-stack.is-front {
-  filter:
-    drop-shadow(0 30px 54px rgba(0, 0, 0, 0.44))
-    drop-shadow(0 0 34px rgba(122, 167, 255, 0.10));
-}
-
-.duck-stack:not(.is-front) {
-  opacity: 0.82;
-}
-
-.duck-stack:not(.is-front) .duck-stack__meta,
-.duck-stack:not(.is-front) .duck-stack__subline,
-.duck-stack:not(.is-front) .duck-stack__label {
-  opacity: 0.82;
-}
-
-.duck-stack.is-near-front {
-  opacity: 0.88;
-  transition: opacity 180ms ease, filter 180ms ease;
-}
-
-.duck-stack.is-behind-sphere {
-  opacity: 0.58;
-  transition: opacity 180ms ease, filter 180ms ease;
-}
-
-.duck-stack.is-behind-sphere .duck-stack__origin,
-.duck-stack.is-behind-sphere .duck-stack__energy {
+.duck-stack.is-active .duck-stack__origin,
+.duck-stack.is-active .duck-stack__energy {
   box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.16) inset;
-}
-
-.duck-stack.is-behind-sphere .duck-stack__subline,
-.duck-stack.is-behind-sphere .duck-stack__meta,
-.duck-stack.is-behind-sphere .duck-stack__label {
-  opacity: 0.78;
-}
-
-/* Front duck pops more */
-.duck-stack.is-front .duck-stack__origin,
-.duck-stack.is-front .duck-stack__energy {
-  box-shadow:
-    0 26px 70px rgba(0, 0, 0, 0.55),
+    0 28px 76px rgba(0, 0, 0, 0.58),
     0 0 0 1px rgba(255, 255, 255, 0.30) inset,
     0 0 110px -12px rgba(var(--color-accent-rgb), 0.45);
-  transform: translateZ(56px);
 }
 
-/* Hologram Z-pop on hover */
-.duck-stack:hover .duck-stack__origin,
-.duck-stack:hover .duck-stack__energy {
-  transform: translateZ(64px);
-}
-
-@keyframes duckFloatTop {
-  0%, 100% { transform: translateY(0); }
-  50%     { transform: translateY(-6px); }
-}
-@keyframes duckFloatBottom {
-  0%, 100% { transform: translateY(0); }
-  50%     { transform: translateY(-4px); }
-}
-
-/* Nav arrows */
 .duck-ring__nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.44);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: rgba(255, 255, 255, 0.88);
   cursor: pointer;
-  z-index: 5;
+  z-index: 3;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 
-.duck-ring__nav:hover {
-  background: rgba(0, 0, 0, 0.65);
+.duck-ring__nav:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.64);
   border-color: rgba(255, 255, 255, 0.30);
   color: #fff;
   transform: translateY(-50%) scale(1.08);
 }
 
-.duck-ring__nav:active {
+.duck-ring__nav:active:not(:disabled) {
   transform: translateY(-50%) scale(0.95);
+}
+
+.duck-ring__nav:disabled {
+  opacity: 0.28;
+  cursor: default;
 }
 
 .duck-ring__nav svg {
@@ -1514,20 +1451,35 @@ option {
   height: 18px;
 }
 
-.duck-ring__nav--prev { left: 10px; }
-.duck-ring__nav--next { right: 10px; }
+.duck-ring__nav--prev { left: 12px; }
+.duck-ring__nav--next { right: 12px; }
 
-/* Empty state */
 .duck-ring__empty {
   position: absolute;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
   text-align: center;
   color: var(--color-text-muted);
   font-size: 16px;
+  z-index: 2;
+}
+
+@keyframes duckFloatTop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes duckFloatBottom {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes duckSphereSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ===========================
@@ -1597,13 +1549,23 @@ option {
     gap: 12px;
   }
 
+  .duck-ring {
+    --duck-card-width: 246px;
+    --duck-card-gap: 20px;
+  }
+
   .duck-ring__scene {
-    height: 520px;
+    height: 540px;
+    border-radius: 20px;
   }
 
   .duck-ring__sphere {
-    width: clamp(420px, 96vw, 700px);
+    width: clamp(420px, 96vw, 720px);
     top: 55%;
+  }
+
+  .duck-ring__track {
+    padding: 0 20px;
   }
 
   .duck-ring__nav--prev { left: 6px; }
@@ -1617,13 +1579,69 @@ option {
 }
 
 @media (max-width: 480px) {
+  .duck-ring {
+    --duck-card-width: 230px;
+    --duck-card-gap: 16px;
+  }
+
   .duck-ring__scene {
-    height: 540px;
+    height: 520px;
   }
 
   .duck-ring__sphere {
-    width: clamp(440px, 98vw, 720px);
+    width: clamp(400px, 100vw, 700px);
     top: 56%;
+  }
+
+  .duck-ring__track {
+    padding: 0 14px;
+  }
+
+  .duck-ring__nav {
+    width: 42px;
+    height: 42px;
+  }
+
+  .duck-stack {
+    min-height: 384px;
+    padding-top: 8px;
+  }
+
+  .duck-stack__energy {
+    width: 94px;
+    height: 94px;
+  }
+
+  .duck-stack__energy img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .duck-stack__origin {
+    width: 144px;
+    height: 144px;
+  }
+
+  .duck-stack__origin img {
+    width: 112px;
+    height: 112px;
+  }
+
+  .duck-stack__subline {
+    max-width: 198px;
+    font-size: 12.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .duck-ring__sphere img,
+  .duck-stack__energy img,
+  .duck-stack__origin img,
+  .duck-stack,
+  .duck-ring__nav,
+  .duck-ring__track {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
