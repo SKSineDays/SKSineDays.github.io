@@ -2,11 +2,11 @@
 
 ## Current Status
 
-The app currently has an SVG icon (`icon.svg`) but needs PNG versions for full PWA support.
+The app currently has an SVG icon (`breathingicon.svg`) but needs PNG versions for full PWA support.
 
 ## Required Icons
 
-Generate these PNG files from `icon.svg`:
+Generate these PNG files from `breathingicon.svg`:
 
 1. **icon-192.png** - 192x192px
 2. **icon-512.png** - 512x512px
@@ -18,7 +18,7 @@ Generate these PNG files from `icon.svg`:
 ### Option 1: Online Tool
 
 1. Go to https://realfavicongenerator.net/
-2. Upload `icon.svg`
+2. Upload `breathingicon.svg`
 3. Download generated icons
 4. Replace placeholder files
 
@@ -30,15 +30,15 @@ Generate these PNG files from `icon.svg`:
 # Ubuntu: apt-get install imagemagick
 
 # Generate icons
-convert icon.svg -resize 192x192 icon-192.png
-convert icon.svg -resize 512x512 icon-512.png
-convert icon.svg -resize 32x32 favicon.png
-convert icon.svg -resize 180x180 apple-touch-icon.png
+convert breathingicon.svg -resize 192x192 icon-192.png
+convert breathingicon.svg -resize 512x512 icon-512.png
+convert breathingicon.svg -resize 32x32 favicon.png
+convert breathingicon.svg -resize 180x180 apple-touch-icon.png
 ```
 
 ### Option 3: Using Inkscape
 
-1. Open `icon.svg` in Inkscape
+1. Open `breathingicon.svg` in Inkscape
 2. File → Export PNG Image
 3. Set width/height for each required size
 4. Export

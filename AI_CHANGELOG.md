@@ -60,7 +60,7 @@ Each entry includes:
 
 ## 2026-01-04T01:54:11.525Z
 
-**Files:** manifest.json, service-worker.js, icon.svg, ICONS_TODO.md
+**Files:** manifest.json, service-worker.js, breathingicon.svg, ICONS_TODO.md
 
 **Summary:** Added PWA manifest, service worker for offline support, and SVG icon template
 
