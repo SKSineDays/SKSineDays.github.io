@@ -1209,7 +1209,7 @@ option {
   position: absolute;
   left: 50%;
   top: 53%;
-  width: clamp(440px, 64vw, 730px);
+  width: clamp(520px, 74vw, 880px);
   aspect-ratio: 1 / 1;
   pointer-events: none;
   transform-style: preserve-3d;
@@ -1270,61 +1270,10 @@ option {
 }
 
 .duck-ring__sphere--back {
-  opacity: 0.92;
+  opacity: 0.94;
   filter:
-    drop-shadow(0 32px 72px rgba(0, 0, 0, 0.46))
-    drop-shadow(0 0 72px rgba(122, 167, 255, 0.18));
-}
-
-.duck-ring__sphere--front {
-  opacity: 0.98;
-  filter:
-    drop-shadow(0 10px 26px rgba(0, 0, 0, 0.20))
-    drop-shadow(0 0 28px rgba(122, 167, 255, 0.10));
-  isolation: isolate;
-}
-
-.duck-ring__sphere--front::before,
-.duck-ring__sphere--front::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.duck-ring__sphere--front::before {
-  z-index: 1;
-  background:
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0) 48%,
-      rgba(9, 13, 24, 0.06) 58%,
-      rgba(6, 9, 18, 0.18) 68%,
-      rgba(4, 7, 14, 0.34) 78%,
-      rgba(3, 5, 11, 0.54) 88%,
-      rgba(2, 4, 9, 0.78) 100%
-    );
-  mix-blend-mode: normal;
-}
-
-.duck-ring__sphere--front::after {
-  z-index: 2;
-  background:
-    radial-gradient(
-      circle at 34% 34%,
-      rgba(160, 205, 255, 0.20) 0%,
-      rgba(122, 167, 255, 0.10) 12%,
-      rgba(122, 167, 255, 0.00) 30%
-    ),
-    radial-gradient(
-      circle at 52% 52%,
-      rgba(122, 167, 255, 0.00) 44%,
-      rgba(122, 167, 255, 0.05) 62%,
-      rgba(5, 8, 16, 0.24) 86%,
-      rgba(3, 5, 10, 0.46) 100%
-    );
-  opacity: 0.95;
+    drop-shadow(0 36px 80px rgba(0, 0, 0, 0.48))
+    drop-shadow(0 0 80px rgba(122, 167, 255, 0.20));
 }
 
 /* Each stack is absolutely centered, then rotated around ring by JS */
@@ -1653,25 +1602,8 @@ option {
   }
 
   .duck-ring__sphere {
-    width: clamp(360px, 90vw, 580px);
+    width: clamp(420px, 96vw, 700px);
     top: 55%;
-  }
-
-  .duck-ring__sphere--front::before {
-    background:
-      radial-gradient(
-        circle at 50% 52%,
-        rgba(255, 255, 255, 0) 42%,
-        rgba(9, 13, 24, 0.08) 54%,
-        rgba(6, 9, 18, 0.24) 66%,
-        rgba(4, 7, 14, 0.42) 78%,
-        rgba(3, 5, 11, 0.68) 90%,
-        rgba(2, 4, 9, 0.86) 100%
-      );
-  }
-
-  .duck-ring__sphere--front::after {
-    opacity: 1;
   }
 
   .duck-ring__nav--prev { left: 6px; }
@@ -1690,7 +1622,7 @@ option {
   }
 
   .duck-ring__sphere {
-    width: clamp(380px, 96vw, 610px);
+    width: clamp(440px, 98vw, 720px);
     top: 56%;
   }
 }

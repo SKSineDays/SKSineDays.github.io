@@ -26,7 +26,6 @@ export class DuckCarousel {
   constructor(wrapEl, opts = {}) {
     this.wrapEl = wrapEl;
     this.sphereBackEl = null;
-    this.sphereFrontEl = null;
     this.anchorDate = opts.anchorDate || ORIGIN_ANCHOR_DATE;
     this.profiles = [];
     this.cards = []; // { el, index }
@@ -74,20 +73,10 @@ export class DuckCarousel {
     this.ringEl = _el("div", "duck-ring__ring");
     this.ringEl.setAttribute("aria-live", "polite");
 
-    this.sphereFrontEl = _el("div", "duck-ring__sphere duck-ring__sphere--front");
-    this.sphereFrontEl.setAttribute("aria-hidden", "true");
-    const sphereFrontImg = document.createElement("img");
-    sphereFrontImg.src = "/assets/sineday-sphere.png";
-    sphereFrontImg.alt = "";
-    sphereFrontImg.decoding = "async";
-    sphereFrontImg.loading = "eager";
-    this.sphereFrontEl.appendChild(sphereFrontImg);
-
     this.emptyEl = _el("div", "duck-ring__empty");
     this.emptyEl.textContent = "Add a profile to see your first Origin Duck 🦆";
     this.sceneEl.appendChild(this.sphereBackEl);
     this.sceneEl.appendChild(this.ringEl);
-    this.sceneEl.appendChild(this.sphereFrontEl);
     this.sceneEl.appendChild(this.emptyEl);
 
     this.rootEl.appendChild(this.sceneEl);
@@ -195,11 +184,6 @@ export class DuckCarousel {
     if (this.sphereBackEl) {
       this.sphereBackEl.style.transform =
         `translate3d(-50%, -50%, -55px) rotate(${sphereSpin}deg)`;
-    }
-
-    if (this.sphereFrontEl) {
-      this.sphereFrontEl.style.transform =
-        `translate3d(-50%, -50%, 120px) rotate(${sphereSpin}deg)`;
     }
 
     this._updateFrontCard();
@@ -390,14 +374,12 @@ export class DuckCarousel {
 
     if (this.profiles.length === 0) {
       if (this.sphereBackEl) this.sphereBackEl.style.display = "none";
-      if (this.sphereFrontEl) this.sphereFrontEl.style.display = "none";
       this.prevBtn.style.display = "none";
       this.nextBtn.style.display = "none";
       return;
     }
 
     if (this.sphereBackEl) this.sphereBackEl.style.display = "";
-    if (this.sphereFrontEl) this.sphereFrontEl.style.display = "";
     this.prevBtn.style.display = "";
     this.nextBtn.style.display = "";
 
