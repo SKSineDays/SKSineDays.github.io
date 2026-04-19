@@ -1208,18 +1208,12 @@ option {
 .duck-ring__sphere {
   position: absolute;
   left: 50%;
-  top: 52%;
-  width: clamp(420px, 62vw, 700px);
+  top: 54%;
+  width: clamp(460px, 64vw, 760px);
   aspect-ratio: 1 / 1;
-  /* translate removed — JS transform handles -50% centering */
   pointer-events: none;
-  /* z-index removed — 3D depth sorting via translateZ handles paint order */
   transform-style: preserve-3d;
   will-change: transform, opacity;
-  opacity: 0.97;
-  filter:
-    drop-shadow(0 32px 72px rgba(0, 0, 0, 0.46))
-    drop-shadow(0 0 72px rgba(122, 167, 255, 0.18));
 }
 
 .duck-ring__sphere img {
@@ -1229,6 +1223,66 @@ option {
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
+  position: relative;
+  z-index: 0;
+}
+
+.duck-ring__sphere--back {
+  opacity: 0.92;
+  filter:
+    drop-shadow(0 32px 72px rgba(0, 0, 0, 0.46))
+    drop-shadow(0 0 72px rgba(122, 167, 255, 0.18));
+}
+
+.duck-ring__sphere--front {
+  opacity: 0.98;
+  filter:
+    drop-shadow(0 10px 26px rgba(0, 0, 0, 0.20))
+    drop-shadow(0 0 28px rgba(122, 167, 255, 0.10));
+  isolation: isolate;
+}
+
+.duck-ring__sphere--front::before,
+.duck-ring__sphere--front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.duck-ring__sphere--front::before {
+  z-index: 1;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0) 48%,
+      rgba(9, 13, 24, 0.06) 58%,
+      rgba(6, 9, 18, 0.18) 68%,
+      rgba(4, 7, 14, 0.34) 78%,
+      rgba(3, 5, 11, 0.54) 88%,
+      rgba(2, 4, 9, 0.78) 100%
+    );
+  mix-blend-mode: normal;
+}
+
+.duck-ring__sphere--front::after {
+  z-index: 2;
+  background:
+    radial-gradient(
+      circle at 34% 34%,
+      rgba(160, 205, 255, 0.20) 0%,
+      rgba(122, 167, 255, 0.10) 12%,
+      rgba(122, 167, 255, 0.00) 30%
+    ),
+    radial-gradient(
+      circle at 52% 52%,
+      rgba(122, 167, 255, 0.00) 44%,
+      rgba(122, 167, 255, 0.05) 62%,
+      rgba(5, 8, 16, 0.24) 86%,
+      rgba(3, 5, 10, 0.46) 100%
+    );
+  opacity: 0.95;
 }
 
 /* Each stack is absolutely centered, then rotated around ring by JS */
@@ -1361,17 +1415,40 @@ option {
 
 /* Subtle depth fade */
 .duck-stack {
-  filter: drop-shadow(0 24px 40px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.24));
 }
 
 .duck-stack:hover {
-  filter: drop-shadow(0 26px 44px rgba(0, 0, 0, 0.42));
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.30));
 }
 
 .duck-stack.is-front {
   filter:
     drop-shadow(0 30px 54px rgba(0, 0, 0, 0.44))
     drop-shadow(0 0 34px rgba(122, 167, 255, 0.10));
+}
+
+.duck-stack.is-near-front {
+  opacity: 0.88;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.duck-stack.is-behind-sphere {
+  opacity: 0.58;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.duck-stack.is-behind-sphere .duck-stack__origin,
+.duck-stack.is-behind-sphere .duck-stack__energy {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.16) inset;
+}
+
+.duck-stack.is-behind-sphere .duck-stack__subline,
+.duck-stack.is-behind-sphere .duck-stack__meta,
+.duck-stack.is-behind-sphere .duck-stack__label {
+  opacity: 0.78;
 }
 
 /* Front duck pops more */
@@ -1520,12 +1597,29 @@ option {
   }
 
   .duck-ring__scene {
-    height: 500px;
+    height: 540px;
   }
 
   .duck-ring__sphere {
-    width: clamp(320px, 78vw, 520px);
-    top: 50%;
+    width: clamp(420px, 108vw, 620px);
+    top: 56%;
+  }
+
+  .duck-ring__sphere--front::before {
+    background:
+      radial-gradient(
+        circle at 50% 52%,
+        rgba(255, 255, 255, 0) 42%,
+        rgba(9, 13, 24, 0.08) 54%,
+        rgba(6, 9, 18, 0.24) 66%,
+        rgba(4, 7, 14, 0.42) 78%,
+        rgba(3, 5, 11, 0.68) 90%,
+        rgba(2, 4, 9, 0.86) 100%
+      );
+  }
+
+  .duck-ring__sphere--front::after {
+    opacity: 1;
   }
 
   .duck-ring__nav--prev { left: 6px; }
@@ -1535,6 +1629,17 @@ option {
     right: 16px;
     left: 16px;
     max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .duck-ring__scene {
+    height: 560px;
+  }
+
+  .duck-ring__sphere {
+    width: clamp(450px, 118vw, 640px);
+    top: 57%;
   }
 }
 
