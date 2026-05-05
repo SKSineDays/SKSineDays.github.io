@@ -499,17 +499,21 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
+  background: var(--color-bg);
 }
 
 .discover-slide {
   --scroll-progress: 0.4;
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 100dvh;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 28px 20px 40px;
+  background: var(--color-bg);
 }
 
 .discover-slide__visual {
@@ -631,6 +635,71 @@ body {
 
 .discover-story.is-open.discover-story--scrolled .discover-scroll-cue {
   opacity: 0.35;
+}
+
+@media (min-width: 768px) {
+  .discover-story__panel {
+    margin: calc(24px + var(--safe-area-top)) clamp(24px, 5vw, 72px) calc(24px + var(--safe-area-bottom));
+    background: rgba(5, 6, 10, 0.82);
+  }
+
+  .discover-slide {
+    min-height: clamp(620px, 86vh, 860px);
+    padding: clamp(56px, 8vh, 92px) clamp(42px, 7vw, 96px);
+    border-bottom: 1px solid rgba(122, 167, 255, 0.08);
+  }
+
+  .discover-slide:last-child {
+    border-bottom: 0;
+  }
+
+  .discover-slide__visual {
+    inset: 0;
+    opacity: calc(0.26 + 0.36 * var(--scroll-progress));
+    transform: scale(calc(1 + 0.08 * var(--scroll-progress)));
+  }
+
+  .discover-slide--bg-1 .discover-slide__visual {
+    background-size: min(880px, 68vw);
+    background-position: 50% 36%;
+  }
+
+  .discover-slide--bg-2 .discover-slide__visual {
+    background-size: min(980px, 78vw);
+    background-position: 22% 52%;
+  }
+
+  .discover-slide--bg-3 .discover-slide__visual {
+    background-size: min(1120px, 88vw);
+    background-position: 78% 42%;
+  }
+
+  .discover-slide--bg-4 .discover-slide__visual {
+    background-size: min(940px, 72vw);
+    background-position: 50% 66%;
+  }
+
+  .discover-slide--bg-5 .discover-slide__visual {
+    background-size: min(1160px, 92vw);
+    background-position: 50% 46%;
+  }
+
+  .discover-slide__content {
+    max-width: 520px;
+    padding: 28px 30px;
+  }
+
+  .discover-slide__heading {
+    font-size: clamp(24px, 3vw, 38px);
+  }
+
+  .discover-slide__body {
+    font-size: 17px;
+  }
+
+  .discover-slide__actions {
+    flex-direction: row;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
