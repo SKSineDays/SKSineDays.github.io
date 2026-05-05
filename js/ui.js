@@ -12,7 +12,6 @@
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
-import { getSupabaseClient, getAccessToken, getCurrentUser } from './supabase-client.js';
 
 export class SineDayUI {
   constructor() {
@@ -36,8 +35,12 @@ export class SineDayUI {
       dayDetailsCard: document.getElementById('day-details-card'),
       dayDetailsParagraph: document.getElementById('day-details-paragraph'),
       dayDetailsBullets: document.getElementById('day-details-bullets'),
-      premiumCard: document.getElementById('premium-card'),
-      premiumBtn: document.getElementById('premium-btn'),
+      discoverStory: document.getElementById('discover-story'),
+      discoverMoreBtn: document.getElementById('discover-more-btn'),
+      discoverStoryClose: document.getElementById('discover-story-close'),
+      discoverStoryBackdrop: document.querySelector('#discover-story .discover-story__backdrop'),
+      discoverScroller: document.getElementById('discover-story-scroller'),
+      discoverMySinedayBtn: document.getElementById('discover-my-sineday-btn'),
       infoModal: document.getElementById('info-modal'),
       infoModalClose: document.getElementById('info-modal-close'),
       infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop'),
@@ -60,6 +63,14 @@ export class SineDayUI {
     this._lastFocus = null;
     this._modalFocusables = [];
     this._boundModalKeydown = null;
+
+    // Discover story overlay
+    this._discoverStoryOpen = false;
+    this._lastDiscoverFocus = null;
+    this._discoverFocusables = [];
+    this._boundDiscoverKeydown = null;
+    this._onDiscoverScroll = null;
+    this._discoverScrollRaf = 0;
 
     // Initialize
     this.init();
@@ -91,9 +102,7 @@ export class SineDayUI {
     // Check for saved birthdate
     this.loadSavedBirthdate();
 
-    // Show input and premium card on first visit
     this.showInput();
-    this.showPremiumCard();
   }
 
   /**
@@ -105,9 +114,18 @@ export class SineDayUI {
       this.elements.calculateBtn.addEventListener('click', () => this.handleCalculate());
     }
 
-    // Premium button
-    if (this.elements.premiumBtn) {
-      this.elements.premiumBtn.addEventListener('click', () => this.handlePremium());
+    // Discover More story
+    if (this.elements.discoverMoreBtn) {
+      this.elements.discoverMoreBtn.addEventListener('click', () => this.openDiscoverStory());
+    }
+    if (this.elements.discoverStoryClose) {
+      this.elements.discoverStoryClose.addEventListener('click', () => this.closeDiscoverStory());
+    }
+    if (this.elements.discoverStoryBackdrop) {
+      this.elements.discoverStoryBackdrop.addEventListener('click', () => this.closeDiscoverStory());
+    }
+    if (this.elements.discoverMySinedayBtn) {
+      this.elements.discoverMySinedayBtn.addEventListener('click', () => this.handleDiscoverMySineday());
     }
 
     // Enter key on input
@@ -138,9 +156,19 @@ export class SineDayUI {
       this.elements.infoModalBackdrop.addEventListener('click', () => this.closeInfoModal());
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this._modalOpen) this.closeInfoModal();
-    });
+    this._boundGlobalKeydown = (e) => {
+      if (e.key !== 'Escape') return;
+      if (this._discoverStoryOpen) {
+        e.preventDefault();
+        this.closeDiscoverStory();
+        return;
+      }
+      if (this._modalOpen) {
+        e.preventDefault();
+        this.closeInfoModal();
+      }
+    };
+    document.addEventListener('keydown', this._boundGlobalKeydown);
 
     // Swipe gesture on result card
     if (this.elements.resultCard) {
@@ -158,82 +186,6 @@ export class SineDayUI {
   }
 
   /**
-   * Handle premium button click
-   */
-  async handlePremium() {
-    const premiumBtn = this.elements.premiumBtn;
-    if (!premiumBtn) return;
-
-    // Show loading state
-    const originalText = premiumBtn.textContent;
-    premiumBtn.disabled = true;
-    premiumBtn.textContent = 'Loading...';
-
-    try {
-      // Check if user is authenticated
-      const user = await getCurrentUser();
-      
-      if (!user) {
-        // User not authenticated - redirect to Stripe checkout
-        // But first, they need to authenticate, so we'll redirect to dashboard
-        // which will handle authentication flow
-        window.location.href = '/dashboard.html';
-        return;
-      }
-
-      // User is authenticated - check subscription status
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        window.location.href = '/dashboard.html';
-        return;
-      }
-
-      const client = await getSupabaseClient();
-      const { data: subscription, error } = await client
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking subscription:', error);
-        // On error, try to create checkout session anyway
-      }
-
-      // Check if user has active subscription
-      const isSubscribed = subscription && subscription.status === 'active';
-
-      if (isSubscribed) {
-        // User is subscribed - navigate to dashboard
-        window.location.href = '/dashboard.html';
-      } else {
-        // User is not subscribed - redirect to Stripe Checkout
-        const response = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.ok && data.url) {
-          // Redirect to Stripe Checkout
-          window.location.href = data.url;
-        } else {
-          throw new Error(data.error || 'Failed to create checkout session');
-        }
-      }
-    } catch (error) {
-      console.error('Premium button error:', error);
-      alert('Failed to start checkout. Please try again.');
-      premiumBtn.disabled = false;
-      premiumBtn.textContent = originalText;
-    }
-  }
-
-  /**
    * Handle calculate button click
    */
   handleCalculate() {
@@ -247,9 +199,6 @@ export class SineDayUI {
     // Calculate SineDay (timezone-safe: rollover = local midnight)
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const result = calculateSineDayForTimezone(birthdateValue, tz);
-
-    console.log("Timezone:", tz);
-    if (result && !result.error) console.log("Cycle Day:", result.day);
 
     if (result?.error) {
       this.showError(result.error);
@@ -350,24 +299,19 @@ export class SineDayUI {
     // Hide input
     this.hideInput();
 
-    // Move intro card to bottom after premium card (post-DOB state)
+    // Move intro below day details / day image / result stack (post-DOB state)
     if (this.elements.waveIntro) {
-      const premiumCard = document.getElementById('premium-card');
+      const anchor =
+        this.elements.dayDetailsCard ||
+        this.elements.dayImageCard ||
+        this.elements.resultCard;
 
-      if (premiumCard && premiumCard.parentNode) {
-        premiumCard.parentNode.insertBefore(
-          this.elements.waveIntro,
-          premiumCard.nextSibling
-        );
+      if (anchor && anchor.parentNode) {
+        anchor.parentNode.insertBefore(this.elements.waveIntro, anchor.nextSibling);
       }
 
       this.elements.waveIntro.classList.remove('hidden');
       this.elements.waveIntro.classList.add('bottom-placement');
-    }
-
-    // Move premium card to bottom (results shown state)
-    if (this.elements.premiumCard) {
-      this.elements.premiumCard.classList.add('results-shown');
     }
 
     // Feature the Duck (Result Card) after calculation
@@ -566,22 +510,6 @@ export class SineDayUI {
   }
 
   /**
-   * Show premium card
-   */
-  showPremiumCard() {
-    if (!this.elements.premiumCard) return;
-    this.elements.premiumCard.classList.add('visible');
-  }
-
-  /**
-   * Hide premium card
-   */
-  hidePremiumCard() {
-    if (!this.elements.premiumCard) return;
-    this.elements.premiumCard.classList.remove('visible');
-  }
-
-  /**
    * Save birthdate to localStorage
    */
   saveBirthdate(birthdate) {
@@ -683,16 +611,10 @@ export class SineDayUI {
   }
 
   /**
-   * Handle keyboard events in modal (focus trap + Escape)
+   * Handle keyboard events in modal (focus trap; Escape via global handler)
    */
   handleModalKeydown(e) {
     if (!this._modalOpen) return;
-
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      this.closeInfoModal();
-      return;
-    }
 
     if (e.key !== 'Tab') return;
 
@@ -863,14 +785,7 @@ export class SineDayUI {
       this.elements.backgroundImage.classList.remove('fade-out');
     }
 
-    // Show input container and premium card
     this.showInput();
-    this.showPremiumCard();
-
-    // Move premium card back to initial position (near input)
-    if (this.elements.premiumCard) {
-      this.elements.premiumCard.classList.remove('results-shown');
-    }
 
     // Bring the user back to the input section for a clean "new date" reset
     setTimeout(() => {
@@ -919,6 +834,160 @@ export class SineDayUI {
   }
 
   /**
+   * Discover story: scroll-driven slide emphasis
+   */
+  updateDiscoverSlideScrollFx() {
+    const root = this.elements.discoverScroller;
+    const story = this.elements.discoverStory;
+    if (!root || !story || !story.classList.contains('is-open')) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const slides = root.querySelectorAll('.discover-slide');
+    if (reduceMotion) {
+      slides.forEach((slide) => slide.style.setProperty('--scroll-progress', '1'));
+      return;
+    }
+
+    const r = root.getBoundingClientRect();
+    const focalY = r.top + r.height * 0.42;
+    const span = Math.max(r.height * 0.52, 240);
+
+    slides.forEach((slide) => {
+      const sr = slide.getBoundingClientRect();
+      const center = sr.top + sr.height * 0.5;
+      const dist = Math.abs(center - focalY);
+      const p = Math.max(0, Math.min(1, 1 - dist / span));
+      slide.style.setProperty('--scroll-progress', String(p));
+    });
+  }
+
+  bindDiscoverScrollListeners() {
+    const el = this.elements.discoverScroller;
+    if (!el || this._onDiscoverScroll) return;
+
+    this._onDiscoverScroll = () => {
+      if (this._discoverScrollRaf) return;
+      this._discoverScrollRaf = requestAnimationFrame(() => {
+        this._discoverScrollRaf = 0;
+        this.updateDiscoverSlideScrollFx();
+        if (this.elements.discoverStory && this.elements.discoverScroller) {
+          this.elements.discoverStory.classList.toggle(
+            'discover-story--scrolled',
+            this.elements.discoverScroller.scrollTop > 48
+          );
+        }
+      });
+    };
+
+    el.addEventListener('scroll', this._onDiscoverScroll, { passive: true });
+    this.updateDiscoverSlideScrollFx();
+  }
+
+  unbindDiscoverScrollListeners() {
+    const el = this.elements.discoverScroller;
+    if (el && this._onDiscoverScroll) {
+      el.removeEventListener('scroll', this._onDiscoverScroll);
+    }
+    this._onDiscoverScroll = null;
+    if (this._discoverScrollRaf) {
+      cancelAnimationFrame(this._discoverScrollRaf);
+      this._discoverScrollRaf = 0;
+    }
+  }
+
+  handleDiscoverKeydown(e) {
+    if (!this._discoverStoryOpen) return;
+    if (e.key !== 'Tab') return;
+
+    const focusables = this._discoverFocusables || [];
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  openDiscoverStory() {
+    const story = this.elements.discoverStory;
+    if (!story || this._discoverStoryOpen) return;
+
+    if (this._modalOpen) {
+      this.closeInfoModal();
+    }
+
+    this._lastDiscoverFocus = document.activeElement;
+    this._discoverStoryOpen = true;
+
+    document.body.classList.add('discover-story-open');
+    story.classList.remove('discover-story--scrolled');
+    story.classList.add('is-open');
+    story.setAttribute('aria-hidden', 'false');
+
+    if (this.elements.discoverScroller) {
+      this.elements.discoverScroller.scrollTop = 0;
+    }
+
+    this.setAppInert(true);
+
+    const panel = story.querySelector('.discover-story__panel');
+    this._discoverFocusables = this.getFocusableElements(panel);
+
+    this._boundDiscoverKeydown = (e) => this.handleDiscoverKeydown(e);
+    document.addEventListener('keydown', this._boundDiscoverKeydown);
+
+    this.bindDiscoverScrollListeners();
+
+    const focusTarget = this.elements.discoverStoryClose || this._discoverFocusables[0];
+    if (focusTarget) focusTarget.focus();
+  }
+
+  /**
+   * @param {HTMLElement | null} [focusOverride]
+   */
+  closeDiscoverStory(focusOverride = null) {
+    const story = this.elements.discoverStory;
+    if (!story || !this._discoverStoryOpen) return;
+
+    this._discoverStoryOpen = false;
+
+    document.body.classList.remove('discover-story-open');
+    story.classList.remove('is-open');
+    story.classList.remove('discover-story--scrolled');
+    story.setAttribute('aria-hidden', 'true');
+
+    this.unbindDiscoverScrollListeners();
+
+    if (this._boundDiscoverKeydown) {
+      document.removeEventListener('keydown', this._boundDiscoverKeydown);
+      this._boundDiscoverKeydown = null;
+    }
+
+    this.setAppInert(false);
+
+    const refocus = focusOverride || this._lastDiscoverFocus;
+    if (refocus && typeof refocus.focus === 'function') {
+      refocus.focus();
+    } else if (this.elements.discoverMoreBtn) {
+      this.elements.discoverMoreBtn.focus();
+    }
+  }
+
+  handleDiscoverMySineday() {
+    this.closeDiscoverStory(this.elements.birthdateInput || null);
+    requestAnimationFrame(() => {
+      const input = this.elements.birthdateInput;
+      if (input) input.focus();
+    });
+  }
+
+  /**
    * Cleanup
    */
   destroy() {
@@ -927,6 +996,19 @@ export class SineDayUI {
     }
     if (this._onScroll) {
       window.removeEventListener('scroll', this._onScroll);
+    }
+    if (this._boundGlobalKeydown) {
+      document.removeEventListener('keydown', this._boundGlobalKeydown);
+      this._boundGlobalKeydown = null;
+    }
+    if (this._discoverStoryOpen) {
+      this.closeDiscoverStory();
+    } else {
+      this.unbindDiscoverScrollListeners();
+    }
+    if (this._boundDiscoverKeydown) {
+      document.removeEventListener('keydown', this._boundDiscoverKeydown);
+      this._boundDiscoverKeydown = null;
     }
   }
 }

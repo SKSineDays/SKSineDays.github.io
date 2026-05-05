@@ -129,6 +129,11 @@
               the direction is always yours.
             </p>
           </div>
+
+          <div class="hero-action-row">
+            <a href="/login.html" class="hero-btn hero-btn--secondary">Login</a>
+            <button type="button" id="discover-more-btn" class="hero-btn hero-btn--primary">Discover More</button>
+          </div>
         </section>
 
         <!-- Input Container (Collapsible, initially visible) -->
@@ -187,52 +192,67 @@
                 <ul id="day-details-bullets" class="day-details-bullets"></ul>
             </div>
         </div>
-
-        <!-- Premium Upsell Card -->
-        <div id="premium-card" class="premium-card visible">
-            <div class="input-card premium-card-content">
-                <h2 class="premium-title">Discover Your SineDay — Free</h2>
-
-                <p class="sineday-intro">
-                  SineDay reveals your <strong>Intrinsic Power Rhythm</strong> — a natural 18-day personal rhythm cycle that has moved with you since birth.
-                </p>
-
-                <p class="premium-body">
-                    Enter your birthdate, discover your SineDay, meet your SineDuck guide, and begin exploring the rhythm of your wave.
-                </p>
-
-                <h3 class="premium-subsection">Your Free SineDay Membership</h3>
-                <ul class="premium-bullets">
-                    <li><strong>🦆 Today's SineDay + SineDuck</strong><br>See where you are on your personal wave today.</li>
-                    <li><strong>👥 Save Up to 10 Profiles</strong><br>Add family and friends and explore their SineDays together.</li>
-                    <li><strong>🌊 Your Personal SineDay Wave</strong><br>Understand the 18-day rhythm that moves through your life.</li>
-                </ul>
-
-                <h3 class="premium-subsection">Upgrade to Unlock the Planner</h3>
-                <p class="premium-body">Turn your SineDay Wave into a powerful planning system.</p>
-                <ul class="premium-bullets">
-                    <li><strong>🌊 Wave Calendar</strong><br>Transform your month into a living rhythm map. Use colors and descriptors to visualize patterns in your SineDay cycle and plan with the flow of your wave.</li>
-                    <li><strong>✍️ Cloud-Synced Digital Planner</strong><br>Daily notes that follow your personal cycle across devices.</li>
-                    <li><strong>📅 Printable Wave Calendars</strong><br>Generate beautiful monthly calendars with SineDuck day markers.</li>
-                    <li><strong>🗓 Printable Weekly Planner Pages</strong><br>Clean write-on pages designed to flow with your cycle.</li>
-                    <li><strong>🖨 Plan for All Your Saved Profiles</strong><br>Bring the rhythm system to your family, friends, or team.</li>
-                </ul>
-
-                <p class="premium-invitation"><strong>Free access forever.</strong> Upgrade anytime for the full planner experience.</p>
-                <p class="premium-subtext">Upgrade anytime · Cancel anytime</p>
-                <p class="checkout-disclosure">
-                  By upgrading to SineDay Premium, you agree to the
-                  <a href="/terms.html">Terms of Service</a>,
-                  <a href="/refunds.html">Refund, Cancellation, and Dispute Policy</a>, and
-                  <a href="/privacy.html">Privacy Policy</a>.
-                  Premium renews automatically until canceled. No prorated refunds.
-                </p>
-                <button id="premium-btn" class="calculate-btn premium-btn" style="margin-top: 20px;">
-                    Login to Dashboard
-                </button>
-            </div>
-        </div>
     </main>
+
+    <!-- Discover More: full-screen scroll story (same page) -->
+    <div id="discover-story" class="discover-story" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="discover-story-label">
+      <div class="discover-story__backdrop" data-discover-close tabindex="-1" aria-hidden="true"></div>
+      <div class="discover-story__panel">
+        <div class="discover-story__topbar">
+          <p id="discover-story-label" class="discover-story__label">Discover SineDay</p>
+          <button type="button" id="discover-story-close" class="discover-story__close" aria-label="Close story">
+            <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div id="discover-story-scroller" class="discover-story__scroller">
+          <article class="discover-slide discover-slide--bg-1">
+            <div class="discover-slide__visual" aria-hidden="true"></div>
+            <div class="discover-slide__content">
+              <h2 class="discover-slide__heading">SineDay begins with your personal wave.</h2>
+              <p class="discover-slide__body">Every person moves through an 18-day rhythm that changes day by day. Your SineDay shows where you are on that wave today — not to control your choices, but to help you notice your timing.</p>
+            </div>
+          </article>
+          <article class="discover-slide discover-slide--bg-2">
+            <div class="discover-slide__visual" aria-hidden="true"></div>
+            <div class="discover-slide__content">
+              <h2 class="discover-slide__heading">Each day has its own SineDuck.</h2>
+              <p class="discover-slide__body">Your SineDuck gives the day a visual identity — a simple way to recognize the energy, phase, and feeling of your current rhythm.</p>
+            </div>
+          </article>
+          <article class="discover-slide discover-slide--bg-3">
+            <div class="discover-slide__visual" aria-hidden="true"></div>
+            <div class="discover-slide__content">
+              <h2 class="discover-slide__heading">Your Origin Day is your rhythm signature.</h2>
+              <p class="discover-slide__body">SineDay uses your birthdate to calculate your Origin Day — a number from 1 to 18 that keeps your wave aligned and helps show the right SineDuck each day.</p>
+            </div>
+          </article>
+          <article class="discover-slide discover-slide--bg-4">
+            <div class="discover-slide__visual" aria-hidden="true"></div>
+            <div class="discover-slide__content">
+              <h2 class="discover-slide__heading">SineDay turns time into a living map.</h2>
+              <p class="discover-slide__body">Use your rhythm to notice patterns, plan with more awareness, and bring your days into better alignment with your natural flow.</p>
+            </div>
+          </article>
+          <article class="discover-slide discover-slide--bg-5">
+            <div class="discover-slide__visual" aria-hidden="true"></div>
+            <div class="discover-slide__content">
+              <h2 class="discover-slide__heading">Start with today's SineDay.</h2>
+              <p class="discover-slide__body">Enter your birthdate to see your current day, meet your SineDuck, and begin exploring the rhythm that has moved with you since birth.</p>
+              <div class="discover-slide__actions">
+                <button type="button" id="discover-my-sineday-btn" class="hero-btn hero-btn--primary">Discover My SineDay</button>
+                <a href="/login.html" class="hero-btn hero-btn--secondary">Login</a>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="discover-scroll-cue" aria-hidden="true">
+          <span>Scroll</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
 
     <!-- Load Supabase from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
