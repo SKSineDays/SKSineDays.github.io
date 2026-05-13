@@ -125,6 +125,33 @@ export async function signInWithGoogle() {
 }
 
 /**
+ * Sign in with Apple OAuth
+ */
+export async function signInWithApple() {
+  const client = await getSupabaseClient();
+  const config = await fetchConfig();
+
+  // Redirect to the same app-side callback page used by other OAuth providers.
+  // Apple Developer should only contain the Supabase OAuth callback URL:
+  // https://auth.sineday.app/auth/v1/callback
+  const baseUrl = config.appUrl || window.location.origin;
+  const redirectTo = `${baseUrl}/auth/callback.html`;
+
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
  * Sign out
  */
 export async function signOut() {

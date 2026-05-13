@@ -1,10 +1,10 @@
 /**
  * Login Page Logic
  *
- * Handles sign-in with Google.
+ * Handles sign-in with Google and Apple.
  */
 
-import { getCurrentSession, signInWithGoogle } from './supabase-client.js';
+import { getCurrentSession, signInWithApple, signInWithGoogle } from './supabase-client.js';
 
 /**
  * Initialize login page
@@ -32,6 +32,12 @@ function setupEventListeners() {
   const googleBtn = document.getElementById('google-signin-btn');
   if (googleBtn) {
     googleBtn.addEventListener('click', handleGoogleSignIn);
+  }
+
+  // Apple sign-in button
+  const appleBtn = document.getElementById('apple-signin-btn');
+  if (appleBtn) {
+    appleBtn.addEventListener('click', handleAppleSignIn);
   }
 }
 
@@ -79,6 +85,59 @@ async function handleGoogleSignIn(e) {
       googleBtn.disabled = false;
       googleBtn.textContent = 'Continue with Google';
       googleBtn.dataset.sending = '0';
+    }
+  }
+}
+
+/**
+ * Handle Apple sign-in
+ */
+async function handleAppleSignIn(e) {
+  e.preventDefault();
+
+  const appleBtn = document.getElementById('apple-signin-btn');
+  const appleText = appleBtn?.querySelector('.provider-text');
+  const statusEl = document.getElementById('login-status');
+
+  // Guard against spam clicks
+  if (appleBtn?.dataset?.sending === '1') return;
+  if (appleBtn) {
+    appleBtn.dataset.sending = '1';
+    appleBtn.disabled = true;
+  }
+  if (appleText) {
+    appleText.textContent = 'Redirecting...';
+  }
+
+  // Show status
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.className = 'status-message info';
+    statusEl.textContent = 'Redirecting to Apple...';
+  }
+
+  try {
+    await signInWithApple();
+    // User will be redirected by OAuth flow
+  } catch (error) {
+    console.error('Apple sign-in error:', error);
+
+    const msg =
+      error?.message?.includes('Failed to fetch config') || error?.message?.includes('Config')
+        ? 'Server config error (/api/config). Check Vercel env vars SUPABASE_URL and SUPABASE_ANON_KEY.'
+        : (error?.message || 'Unknown error');
+
+    if (statusEl) {
+      statusEl.textContent = `Failed to sign in with Apple: ${msg}`;
+      statusEl.className = 'status-message error';
+    }
+
+    if (appleBtn) {
+      appleBtn.disabled = false;
+      appleBtn.dataset.sending = '0';
+    }
+    if (appleText) {
+      appleText.textContent = 'Continue with Apple';
     }
   }
 }
