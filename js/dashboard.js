@@ -711,7 +711,9 @@ function setupNotificationsSheet() {
         showSuccess(action === "accept-request" ? "Friend request accepted." : "Friend request declined.");
         await loadNotificationsBadge();
         await openNotificationsSheet();
-        await mountSocialPlannerSection();
+        if (isPaid()) {
+          await mountSocialPlannerSection();
+        }
         return;
       }
 
@@ -722,6 +724,7 @@ function setupNotificationsSheet() {
         setDashboardPage(4);
 
         await mountSocialPlannerSection();
+        if (!isPaid()) return;
         await socialPlannerUI?.openDaySheet?.(targetDate, plannerId || undefined);
       }
     } catch (err) {
@@ -1283,6 +1286,16 @@ async function mountWaveCalendarSection() {
   });
 }
 
+function renderSocialPlannerLocked(section) {
+  if (!section) return;
+  section.innerHTML = `
+    <div class="locked-section">
+      <p>🔒 Premium Feature Locked</p>
+      <p class="text-muted">Upgrade to Premium to unlock Social Planner with shared calendars, friend connections, and collaborative day cards.</p>
+    </div>
+  `;
+}
+
 async function mountSocialPlannerSection() {
   const section = document.getElementById("social-planner-section");
   if (!section || !currentUser?.id) return;
@@ -1290,6 +1303,11 @@ async function mountSocialPlannerSection() {
   if (socialPlannerUI) {
     socialPlannerUI.destroy();
     socialPlannerUI = null;
+  }
+
+  if (!isPaid()) {
+    renderSocialPlannerLocked(section);
+    return;
   }
 
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
@@ -1422,7 +1440,14 @@ async function renderSubscriptionStatus() {
     }
     if (waveCalendarUI) { waveCalendarUI.destroy(); waveCalendarUI = null; }
 
-    await mountSocialPlannerSection();
+    if (socialPlannerUI) {
+      socialPlannerUI.destroy();
+      socialPlannerUI = null;
+    }
+    const socialPlannerSection = document.getElementById("social-planner-section");
+    if (socialPlannerSection) {
+      renderSocialPlannerLocked(socialPlannerSection);
+    }
   }
 
   loadNotificationsBadge().catch((err) => {
