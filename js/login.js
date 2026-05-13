@@ -9,8 +9,42 @@ import { getCurrentSession, signInWithApple, signInWithGoogle } from './supabase
 /**
  * Initialize login page
  */
+function showStoredAuthError() {
+  const statusEl = document.getElementById('login-status');
+  if (!statusEl) return;
+
+  let stored = null;
+
+  try {
+    stored = JSON.parse(sessionStorage.getItem('sineday_auth_error') || 'null');
+    sessionStorage.removeItem('sineday_auth_error');
+  } catch (_) {
+    stored = null;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const hasAuthError = params.has('auth_error');
+
+  if (!stored && !hasAuthError) return;
+
+  const description =
+    stored?.description ||
+    'Sign in could not be completed. Please try again.';
+
+  statusEl.style.display = 'block';
+  statusEl.className = 'status-message error';
+  statusEl.textContent = description;
+
+  if (hasAuthError) {
+    const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+}
+
 async function init() {
   console.log('Initializing login page...');
+
+  showStoredAuthError();
 
   // Check if already logged in
   const session = await getCurrentSession();
