@@ -82,6 +82,7 @@ async function handleGoogleSignIn(e) {
   e.preventDefault();
 
   const googleBtn = document.getElementById('google-signin-btn');
+  const googleText = googleBtn?.querySelector('.provider-text');
   const statusEl = document.getElementById('login-status');
 
   // Guard against spam clicks
@@ -89,7 +90,9 @@ async function handleGoogleSignIn(e) {
   if (googleBtn) {
     googleBtn.dataset.sending = '1';
     googleBtn.disabled = true;
-    googleBtn.textContent = 'Redirecting...';
+  }
+  if (googleText) {
+    googleText.textContent = 'Redirecting...';
   }
 
   // Show status
@@ -117,8 +120,11 @@ async function handleGoogleSignIn(e) {
 
     if (googleBtn) {
       googleBtn.disabled = false;
-      googleBtn.textContent = 'Continue with Google';
       googleBtn.dataset.sending = '0';
+    }
+
+    if (googleText) {
+      googleText.textContent = 'Google';
     }
   }
 }
@@ -171,7 +177,7 @@ async function handleAppleSignIn(e) {
       appleBtn.dataset.sending = '0';
     }
     if (appleText) {
-      appleText.textContent = 'Continue with Apple';
+      appleText.textContent = 'Apple';
     }
   }
 }
