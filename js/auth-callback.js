@@ -28,7 +28,7 @@ function redirectToLoginWithError(authError) {
   try {
     sessionStorage.setItem('sineday_auth_error', JSON.stringify(authError));
   } catch (_) {
-    // If browser storage is unavailable, the query string still lets login show a generic error.
+    // Ignore storage failures.
   }
 
   const params = new URLSearchParams({
@@ -38,19 +38,32 @@ function redirectToLoginWithError(authError) {
   window.location.replace(`/login.html?${params.toString()}`);
 }
 
+function redirectToDashboard(params = {}) {
+  const url = new URL('/dashboard.html', window.location.origin);
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  window.location.replace(url.toString());
+}
+
 (async function () {
   try {
+    const client = await getSupabaseClient();
     const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.substring(1));
+    const searchParams = new URLSearchParams(url.search);
+
     const providerError = readAuthError(url);
     if (providerError) {
       redirectToLoginWithError(providerError);
       return;
     }
 
-    const client = await getSupabaseClient();
-    const hashParams = new URLSearchParams(url.hash.substring(1));
-    const searchParams = new URLSearchParams(url.search);
-
+    const identityLink = searchParams.get('identity_link');
     const access_token = hashParams.get('access_token');
     const refresh_token = hashParams.get('refresh_token');
 
@@ -58,15 +71,29 @@ function redirectToLoginWithError(authError) {
       const { error } = await client.auth.setSession({ access_token, refresh_token });
       if (error) throw error;
 
-      window.location.replace('/dashboard.html');
+      if (identityLink === 'apple') {
+        sessionStorage.setItem('sineday_identity_link_success', 'apple');
+        redirectToDashboard({ linked: 'apple' });
+        return;
+      }
+
+      redirectToDashboard();
       return;
     }
 
-    if (searchParams.has('code')) {
+    const code = searchParams.get('code');
+
+    if (code) {
       const { error } = await client.auth.exchangeCodeForSession(window.location.href);
       if (error) throw error;
 
-      window.location.replace('/dashboard.html');
+      if (identityLink === 'apple') {
+        sessionStorage.setItem('sineday_identity_link_success', 'apple');
+        redirectToDashboard({ linked: 'apple' });
+        return;
+      }
+
+      redirectToDashboard();
       return;
     }
 

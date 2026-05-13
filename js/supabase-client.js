@@ -99,6 +99,19 @@ export async function getAccessToken() {
   return session?.access_token || null;
 }
 
+function buildAuthCallbackUrl(config, params = {}) {
+  const baseUrl = config.appUrl || window.location.origin;
+  const url = new URL('/auth/callback.html', baseUrl);
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, value);
+    }
+  }
+
+  return url.toString();
+}
+
 /**
  * Sign in with Google OAuth
  */
@@ -106,14 +119,10 @@ export async function signInWithGoogle() {
   const client = await getSupabaseClient();
   const config = await fetchConfig();
 
-  // Redirect to callback page
-  const baseUrl = config.appUrl || window.location.origin;
-  const redirectTo = `${baseUrl}/auth/callback.html`;
-
   const { data, error } = await client.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: redirectTo
+      redirectTo: buildAuthCallbackUrl(config)
     }
   });
 
@@ -131,16 +140,49 @@ export async function signInWithApple() {
   const client = await getSupabaseClient();
   const config = await fetchConfig();
 
-  // Redirect to the same app-side callback page used by other OAuth providers.
-  // Apple Developer should only contain the Supabase OAuth callback URL:
-  // https://auth.sineday.app/auth/v1/callback
-  const baseUrl = config.appUrl || window.location.origin;
-  const redirectTo = `${baseUrl}/auth/callback.html`;
-
   const { data, error } = await client.auth.signInWithOAuth({
     provider: 'apple',
     options: {
-      redirectTo
+      redirectTo: buildAuthCallbackUrl(config)
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Get identities connected to the current Supabase auth user.
+ */
+export async function getLinkedIdentities() {
+  const client = await getSupabaseClient();
+  const { data, error } = await client.auth.getUserIdentities();
+
+  if (error) {
+    throw error;
+  }
+
+  return data?.identities || [];
+}
+
+/**
+ * Link Apple as an additional login method on the current signed-in account.
+ *
+ * This does not merge database rows. It connects the Apple OAuth identity
+ * to the already-authenticated Supabase user, so all existing SineDay data
+ * remains under the same user_id.
+ */
+export async function linkAppleIdentity() {
+  const client = await getSupabaseClient();
+  const config = await fetchConfig();
+
+  const { data, error } = await client.auth.linkIdentity({
+    provider: 'apple',
+    options: {
+      redirectTo: buildAuthCallbackUrl(config, { identity_link: 'apple' })
     }
   });
 

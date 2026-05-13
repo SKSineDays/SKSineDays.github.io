@@ -9,6 +9,8 @@ import {
   getCurrentSession,
   getCurrentUser,
   getAccessToken,
+  getLinkedIdentities,
+  linkAppleIdentity,
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
@@ -45,6 +47,7 @@ let plannerUI = null;
 let waveCalendarUI = null;
 let socialPlannerUI = null;
 let userSettings = null;
+let linkedIdentities = [];
 
 let dashboardPageIndex = 0;
 let dashboardPageCount = 5;
@@ -77,6 +80,7 @@ async function init() {
       userSettings = await loadUserSettings(currentUser.id);
       setupLanguageRegionUI();
 
+      await loadLinkedIdentities();
       await loadUserData();
       await loadDailyEmailState();
 
@@ -100,6 +104,11 @@ async function init() {
       console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
+
+        loadLinkedIdentities()
+          .then(() => renderIdentityLinkUI())
+          .catch((err) => console.error('[Auth Identity] Refresh failed:', err));
+
         loadUserData();
         loadDailyEmailState();
         showAuthenticatedView();
@@ -1471,6 +1480,89 @@ function setupAccountSheet() {
   });
 }
 
+async function loadLinkedIdentities() {
+  try {
+    linkedIdentities = await getLinkedIdentities();
+  } catch (err) {
+    console.error('[Auth Identity] Failed to load linked identities:', err);
+    linkedIdentities = [];
+  }
+}
+
+function hasLinkedIdentity(provider) {
+  return linkedIdentities.some((identity) => identity?.provider === provider);
+}
+
+function renderIdentityLinkUI() {
+  const appleBtn = document.getElementById('connect-apple-btn');
+  const note = document.getElementById('identity-link-note');
+  if (!appleBtn || !note) return;
+
+  const appleLinked = hasLinkedIdentity('apple');
+
+  appleBtn.style.display = appleLinked ? 'none' : 'inline-flex';
+  appleBtn.disabled = false;
+  appleBtn.textContent = 'Connect Apple Login';
+
+  note.textContent = appleLinked
+    ? 'Apple sign-in is connected to this SineDay account.'
+    : 'Connect Apple so this same SineDay account can be opened with Apple or Google.';
+}
+
+async function handleConnectAppleIdentity() {
+  const appleBtn = document.getElementById('connect-apple-btn');
+  const note = document.getElementById('identity-link-note');
+
+  try {
+    if (appleBtn) {
+      appleBtn.disabled = true;
+      appleBtn.textContent = 'Opening Apple...';
+    }
+
+    if (note) {
+      note.textContent = 'Apple will open to confirm this login method.';
+    }
+
+    await linkAppleIdentity();
+    // Browser redirects to Apple.
+  } catch (err) {
+    console.error('[Auth Identity] Apple link failed:', err);
+
+    if (appleBtn) {
+      appleBtn.disabled = false;
+      appleBtn.textContent = 'Connect Apple Login';
+    }
+
+    if (note) {
+      note.textContent = err?.message || 'Apple login could not be connected.';
+    }
+
+    showError(err?.message || 'Apple login could not be connected.');
+  }
+}
+
+function consumeIdentityLinkNotice() {
+  let linkedProvider = null;
+
+  try {
+    linkedProvider = sessionStorage.getItem('sineday_identity_link_success');
+    sessionStorage.removeItem('sineday_identity_link_success');
+  } catch (_) {
+    linkedProvider = null;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const linkedParam = params.get('linked');
+
+  if (linkedProvider === 'apple' || linkedParam === 'apple') {
+    showSuccess('Apple sign-in is now connected to this SineDay account.');
+
+    if (linkedParam) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+}
+
 /**
  * Set up Language & Region controls in account sheet
  */
@@ -1616,6 +1708,11 @@ function setupEventListeners() {
   const syncPremiumBtn = document.getElementById('sync-premium-btn');
   if (syncPremiumBtn) {
     syncPremiumBtn.addEventListener('click', handleSyncPremium);
+  }
+
+  const connectAppleBtn = document.getElementById('connect-apple-btn');
+  if (connectAppleBtn) {
+    connectAppleBtn.addEventListener('click', handleConnectAppleIdentity);
   }
 
   // Delete profile buttons (delegated)
@@ -1985,6 +2082,8 @@ function showAuthenticatedView() {
   bindDashboardPager();
   updateDashboardPagerUI();
   renderInstallButton();
+  renderIdentityLinkUI();
+  consumeIdentityLinkNotice();
 }
 
 /**
