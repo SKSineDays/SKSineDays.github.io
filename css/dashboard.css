@@ -4517,10 +4517,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .today-day-details-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+  gap: 20px;
+  align-items: stretch;
   margin-top: 4px;
-  padding: 16px;
+  padding: 20px;
+  min-height: min(42vw, 320px);
   border: 1px solid rgba(122, 167, 255, 0.22);
   border-radius: 24px;
   background:
@@ -4531,27 +4532,38 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .today-day-details-card__media {
   min-width: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
 .today-day-details-card__image {
   width: 100%;
-  max-height: 220px;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
   display: block;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .today-day-details-card__copy {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 2px;
 }
 
 .today-day-details-card__paragraph {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   color: rgba(245, 247, 255, 0.88);
-  font-size: 0.92rem;
-  line-height: 1.55;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .today-day-details-card__bullets {
@@ -4563,10 +4575,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .today-day-details-card__bullets li {
   position: relative;
   padding-left: 16px;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: rgba(245, 247, 255, 0.72);
-  font-size: 0.86rem;
-  line-height: 1.45;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.today-day-details-card__bullets li:last-child {
+  margin-bottom: 0;
 }
 
 .today-day-details-card__bullets li::before {
@@ -4585,10 +4601,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 @media (max-width: 720px) {
   .today-day-details-card {
     grid-template-columns: 1fr;
+    min-height: 0;
   }
 
-  .today-day-details-card__image {
-    max-height: 180px;
+  .today-day-details-card__media {
+    width: min(100%, 260px);
+    margin: 0 auto;
   }
 }
 
