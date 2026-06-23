@@ -20,7 +20,7 @@ import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
-import { calculateSineDayForTimezone } from "./sineday-engine.js";
+import { calculateSineDayForTimezone, getDayDetails } from "./sineday-engine.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -745,6 +745,78 @@ function getTodayYmdForProfile(profile) {
   return `${year}-${month}-${day}`;
 }
 
+function resolveDayImageUrl(imageUrl) {
+  if (!imageUrl) return "";
+  return imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
+}
+
+function clearTodayDayDetailsSection() {
+  const section = document.getElementById("today-day-details-section");
+  if (!section) return;
+  section.innerHTML = "";
+  section.hidden = true;
+}
+
+function renderTodayDayDetailsSection(result) {
+  const section = document.getElementById("today-day-details-section");
+  if (!section) return;
+
+  if (!result || result.error) {
+    clearTodayDayDetailsSection();
+    return;
+  }
+
+  const details = getDayDetails(result.day);
+  const imageUrl = resolveDayImageUrl(result.imageUrl);
+  if (!imageUrl && !details) {
+    clearTodayDayDetailsSection();
+    return;
+  }
+
+  const bulletsHtml = details?.bullets?.length
+    ? `<ul class="day-details-bullets">${details.bullets
+        .map((bullet) => `<li>${escapeHtml(bullet)}</li>`)
+        .join("")}</ul>`
+    : "";
+
+  const paragraphHtml = details?.paragraph
+    ? `<p class="day-details-paragraph">${escapeHtml(details.paragraph)}</p>`
+    : "";
+
+  section.hidden = false;
+  section.innerHTML = `
+    <div class="today-day-details-stack">
+      ${
+        imageUrl
+          ? `
+        <div class="day-image-card visible">
+          <div class="day-image-content">
+            <img
+              class="day-full-image"
+              src="${escapeHtml(imageUrl)}"
+              alt="Full image for SineDay ${escapeHtml(String(result.day))}"
+            >
+          </div>
+        </div>
+      `
+          : ""
+      }
+      ${
+        details
+          ? `
+        <div class="day-details-card visible">
+          <div class="day-details-content">
+            ${paragraphHtml}
+            ${bulletsHtml}
+          </div>
+        </div>
+      `
+          : ""
+      }
+    </div>
+  `;
+}
+
 function renderTodayWaveSection() {
   const section = document.getElementById("today-wave-section");
   if (!section) return;
@@ -756,6 +828,7 @@ function renderTodayWaveSection() {
         <p class="text-muted">Create your owner profile to see Today’s Wave.</p>
       </div>
     `;
+    clearTodayDayDetailsSection();
     return;
   }
 
@@ -767,6 +840,7 @@ function renderTodayWaveSection() {
         <p class="text-muted">Today’s Wave could not be calculated yet.</p>
       </div>
     `;
+    clearTodayDayDetailsSection();
     return;
   }
 
@@ -811,6 +885,8 @@ function renderTodayWaveSection() {
       syncJournalRangeLabel();
     }
   });
+
+  renderTodayDayDetailsSection(result);
 }
 
 /**

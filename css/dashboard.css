@@ -4509,6 +4509,42 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   }
 }
 
+/* Today's day image + guidance (matches index day details stack) */
+.today-day-details-section[hidden] {
+  display: none;
+}
+
+.today-day-details-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.today-day-details-stack .day-image-card,
+.today-day-details-stack .day-details-card {
+  position: static;
+  width: 100%;
+  padding: 0;
+  margin-top: 0;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.today-day-details-stack .day-details-card {
+  margin-top: -12px;
+}
+
+.today-day-details-stack .day-image-content,
+.today-day-details-stack .day-details-content {
+  max-width: none;
+}
+
+.today-day-details-stack .day-details-content {
+  padding-bottom: 18px;
+}
+
 /* Journal pivot surfaces */
 .today-wave-card {
   display: grid;
