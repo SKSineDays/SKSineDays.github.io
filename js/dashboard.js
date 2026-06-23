@@ -774,29 +774,23 @@ function renderTodayDayDetailsSection(result) {
   }
 
   const bulletsHtml = details?.bullets?.length
-    ? `<ul class="day-details-bullets">${details.bullets
+    ? details.bullets
         .map((bullet) => `<li>${escapeHtml(bullet)}</li>`)
-        .join("")}</ul>`
-    : "";
-
-  const paragraphHtml = details?.paragraph
-    ? `<p class="day-details-paragraph">${escapeHtml(details.paragraph)}</p>`
+        .join("")
     : "";
 
   section.hidden = false;
   section.innerHTML = `
-    <div class="today-day-details-stack">
+    <article class="today-day-details-card">
       ${
         imageUrl
           ? `
-        <div class="day-image-card visible">
-          <div class="day-image-content">
-            <img
-              class="day-full-image"
-              src="${escapeHtml(imageUrl)}"
-              alt="Full image for SineDay ${escapeHtml(String(result.day))}"
-            >
-          </div>
+        <div class="today-day-details-card__media">
+          <img
+            class="today-day-details-card__image"
+            src="${escapeHtml(imageUrl)}"
+            alt="Full image for SineDay ${escapeHtml(String(result.day))}"
+          >
         </div>
       `
           : ""
@@ -804,16 +798,14 @@ function renderTodayDayDetailsSection(result) {
       ${
         details
           ? `
-        <div class="day-details-card visible">
-          <div class="day-details-content">
-            ${paragraphHtml}
-            ${bulletsHtml}
-          </div>
+        <div class="today-day-details-card__copy">
+          ${details.paragraph ? `<p class="today-day-details-card__paragraph">${escapeHtml(details.paragraph)}</p>` : ""}
+          ${bulletsHtml ? `<ul class="today-day-details-card__bullets">${bulletsHtml}</ul>` : ""}
         </div>
       `
           : ""
       }
-    </div>
+    </article>
   `;
 }
 
