@@ -174,10 +174,12 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: none;
   background: rgba(255, 255, 255, 0.02);
+  transition: height 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .dashboard-pager__track {
   display: flex;
+  align-items: flex-start;
   width: 100%;
   transition: transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform;
@@ -185,6 +187,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dashboard-pager__viewport,
   .dashboard-pager__track {
     transition: none;
   }
@@ -198,11 +201,16 @@ body {
 
 .dashboard-page__card {
   width: 100%;
-  min-height: min(78vh, 980px);
+  min-height: 0;
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+/* Origin Ducks (page 1) fills the viewport; other tabs size to content. */
+.dashboard-page[data-page="0"] .dashboard-page__card {
+  min-height: min(78vh, 980px);
 }
 
 .dashboard-page__header {
@@ -269,8 +277,11 @@ body {
   }
 
   .dashboard-page__card {
-    min-height: min(76vh, 920px);
     padding: 22px;
+  }
+
+  .dashboard-page[data-page="0"] .dashboard-page__card {
+    min-height: min(76vh, 920px);
   }
 }
 
@@ -298,10 +309,13 @@ body {
   }
 
   .dashboard-page__card {
-    min-height: auto;
     padding: 18px;
     border-radius: 18px;
     gap: 16px;
+  }
+
+  .dashboard-page[data-page="0"] .dashboard-page__card {
+    min-height: auto;
   }
 
   .dashboard-page__title {

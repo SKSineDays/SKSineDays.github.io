@@ -51,6 +51,7 @@ let linkedIdentities = [];
 let dashboardPageIndex = 0;
 let dashboardPageCount = 4;
 let dashboardPagerBound = false;
+let dashboardPagerResizeObserver = null;
 let deferredInstallPrompt = null;
 let installPromptAvailable = false;
 
@@ -460,6 +461,21 @@ function clampDashboardPage(index) {
   return Math.max(0, Math.min(index, dashboardPageCount - 1));
 }
 
+function syncDashboardPagerHeight() {
+  const viewport = document.querySelector(".dashboard-pager__viewport");
+  const pages = getDashboardPages();
+  const activePage = pages[dashboardPageIndex];
+
+  if (!viewport || !activePage) return;
+
+  const card = activePage.querySelector(".dashboard-page__card");
+  const height = Math.ceil((card || activePage).getBoundingClientRect().height);
+
+  if (height > 0) {
+    viewport.style.height = `${height}px`;
+  }
+}
+
 function updateDashboardPagerUI() {
   const track = document.getElementById("dashboard-page-track");
   const pages = getDashboardPages();
@@ -482,6 +498,10 @@ function updateDashboardPagerUI() {
     const isActive = index === dashboardPageIndex;
     tab.classList.toggle("is-active", isActive);
     tab.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  requestAnimationFrame(() => {
+    syncDashboardPagerHeight();
   });
 }
 
@@ -620,6 +640,29 @@ function bindDashboardPager() {
       setDashboardPage(dashboardPageIndex + 1);
     }
   });
+
+  if (typeof ResizeObserver !== "undefined") {
+    let resizeFrame = null;
+    dashboardPagerResizeObserver = new ResizeObserver(() => {
+      if (resizeFrame) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        syncDashboardPagerHeight();
+      });
+    });
+
+    getDashboardPages().forEach((page) => {
+      const card = page.querySelector(".dashboard-page__card");
+      if (card) dashboardPagerResizeObserver.observe(card);
+    });
+  }
+
+  window.addEventListener(
+    "resize",
+    () => {
+      syncDashboardPagerHeight();
+    },
+    { passive: true }
+  );
 
   dashboardPagerBound = true;
   updateDashboardPagerUI();
