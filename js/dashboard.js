@@ -452,8 +452,8 @@ function getDashboardPages() {
   return Array.from(document.querySelectorAll(".dashboard-page"));
 }
 
-function getDashboardPageDots() {
-  return Array.from(document.querySelectorAll(".dashboard-page-nav__dot"));
+function getDashboardPageTabs() {
+  return Array.from(document.querySelectorAll(".dashboard-tab"));
 }
 
 function clampDashboardPage(index) {
@@ -462,10 +462,8 @@ function clampDashboardPage(index) {
 
 function updateDashboardPagerUI() {
   const track = document.getElementById("dashboard-page-track");
-  const prev = document.getElementById("dashboard-page-prev");
-  const next = document.getElementById("dashboard-page-next");
   const pages = getDashboardPages();
-  const dots = getDashboardPageDots();
+  const tabs = getDashboardPageTabs();
 
   if (!track || !pages.length) return;
 
@@ -480,14 +478,11 @@ function updateDashboardPagerUI() {
     page.setAttribute("aria-hidden", isActive ? "false" : "true");
   });
 
-  dots.forEach((dot, index) => {
+  tabs.forEach((tab, index) => {
     const isActive = index === dashboardPageIndex;
-    dot.classList.toggle("is-active", isActive);
-    dot.setAttribute("aria-pressed", isActive ? "true" : "false");
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
-
-  if (prev) prev.disabled = dashboardPageIndex === 0;
-  if (next) next.disabled = dashboardPageIndex === dashboardPageCount - 1;
 }
 
 function setDashboardPage(index) {
@@ -535,6 +530,8 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".journal-frame__nav",
       ".journal-frame__view-toggle",
       ".wcal-frame__header",
+      ".dashboard-tabs",
+      ".dashboard-tab",
       ".duck-ring",
       ".duck-ring__scene",
       ".duck-stack",
@@ -546,18 +543,13 @@ function bindDashboardPager() {
   if (dashboardPagerBound) return;
 
   const viewport = document.querySelector(".dashboard-pager__viewport");
-  const prev = document.getElementById("dashboard-page-prev");
-  const next = document.getElementById("dashboard-page-next");
-  const dots = getDashboardPageDots();
+  const tabs = getDashboardPageTabs();
 
   if (!viewport) return;
 
-  prev?.addEventListener("click", () => setDashboardPage(dashboardPageIndex - 1));
-  next?.addEventListener("click", () => setDashboardPage(dashboardPageIndex + 1));
-
-  dots.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      const index = Number(dot.dataset.pageTarget || "0");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const index = Number(tab.dataset.pageTarget || "0");
       setDashboardPage(index);
     });
   });
@@ -728,6 +720,17 @@ function renderProfiles() {
 }
 
 
+
+function getDashboardLocale() {
+  return `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+}
+
+function syncJournalRangeLabel() {
+  const label = document.querySelector("[data-journal-range]");
+  if (!label || !journalUI) return;
+  label.textContent = journalUI.getDateLabel(getDashboardLocale());
+}
+
 function getTodayYmdForProfile(profile) {
   const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -801,9 +804,11 @@ function renderTodayWaveSection() {
     setDashboardPage(1);
     if (journalUI) {
       await journalUI.setDate(todayYmd);
+      syncJournalRangeLabel();
     } else {
       await mountJournalSection();
       await journalUI?.setDate?.(todayYmd);
+      syncJournalRangeLabel();
     }
   });
 }
@@ -826,7 +831,7 @@ async function mountJournalSection() {
     return;
   }
 
-  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const locale = getDashboardLocale();
   const weekStart = resolveWeekStart(userSettings);
   const client = await getSupabaseClient();
 
@@ -852,6 +857,7 @@ async function mountJournalSection() {
 
   const rangeLabel = document.createElement("div");
   rangeLabel.className = "journal-frame__range";
+  rangeLabel.dataset.journalRange = "true";
 
   const btnNext = document.createElement("button");
   btnNext.className = "journal-frame__navbtn";
@@ -900,7 +906,8 @@ async function mountJournalSection() {
 }
 
 /**
- * Mount Journal History section (owner-profile anchored)
+ * Mount Journal History section (owner-profile anchored).
+ * Function name is kept for compatibility with the existing dashboard page mount flow.
  */
 async function mountWaveCalendarSection() {
   const section = document.getElementById("wave-calendar-section");
@@ -917,7 +924,7 @@ async function mountWaveCalendarSection() {
     return;
   }
 
-  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const locale = getDashboardLocale();
   const weekStart = resolveWeekStart(userSettings);
   const client = await getSupabaseClient();
 
@@ -981,9 +988,11 @@ async function mountWaveCalendarSection() {
       setDashboardPage(1);
       if (journalUI) {
         await journalUI.setDate(dateYmd);
+        syncJournalRangeLabel();
       } else {
         await mountJournalSection();
         await journalUI?.setDate?.(dateYmd);
+        syncJournalRangeLabel();
       }
     },
   });
@@ -1057,7 +1066,7 @@ async function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div id="calendar-app"></div>
         <p class="text-muted" style="margin-top:12px;">
-          Tip: Premium printables are being reframed as journal pages and reflection sheets.
+          Tip: Premium printables are journal-first pages for reflection, memory, and rhythm review.
         </p>
       `;
 
@@ -1095,7 +1104,7 @@ async function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div class="locked-section">
           <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access printable journal pages, monthly reflection sheets, and memory-book exports.</p>
+          <p class="text-muted">Upgrade to Premium to access printable journal pages, monthly rhythm maps, and weekly reflection sheets.</p>
         </div>
       `;
     }
@@ -1292,6 +1301,7 @@ function setupLanguageRegionUI() {
     calendarsUI?.setSettings({ locale, weekStart });
     journalUI?.setSettings({ locale, weekStart });
     journalHistoryUI?.setSettings({ locale, weekStart });
+    syncJournalRangeLabel();
   };
 
   langSel.addEventListener("change", applyAndSave);

@@ -225,14 +225,48 @@
 
       <!-- Dashboard Pager -->
       <div class="dashboard-pager" aria-label="Dashboard pages">
-        <button
-          id="dashboard-page-prev"
-          class="dashboard-pager__arrow dashboard-pager__arrow--prev"
-          type="button"
-          aria-label="Previous dashboard page"
-        >
-          ‹
-        </button>
+        <nav class="dashboard-tabs" aria-label="Dashboard page navigation">
+          <button
+            class="dashboard-tab is-active"
+            type="button"
+            data-page-target="0"
+            aria-label="Your Origin Ducks"
+            aria-pressed="true"
+          >
+            <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck1@3x.png" alt="" aria-hidden="true">
+            <span class="dashboard-tab__label">Origin Ducks</span>
+          </button>
+          <button
+            class="dashboard-tab"
+            type="button"
+            data-page-target="1"
+            aria-label="Cloud Journal"
+            aria-pressed="false"
+          >
+            <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck9@3x.png" alt="" aria-hidden="true">
+            <span class="dashboard-tab__label">Journal</span>
+          </button>
+          <button
+            class="dashboard-tab"
+            type="button"
+            data-page-target="2"
+            aria-label="Journal History"
+            aria-pressed="false"
+          >
+            <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck14@3x.png" alt="" aria-hidden="true">
+            <span class="dashboard-tab__label">History</span>
+          </button>
+          <button
+            class="dashboard-tab"
+            type="button"
+            data-page-target="3"
+            aria-label="Journal Printables"
+            aria-pressed="false"
+          >
+            <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck6@3x.png" alt="" aria-hidden="true">
+            <span class="dashboard-tab__label">Printables</span>
+          </button>
+        </nav>
 
         <div class="dashboard-pager__viewport">
           <div id="dashboard-page-track" class="dashboard-pager__track">
@@ -250,7 +284,7 @@
                     <p class="dashboard-page__eyebrow">Page 1</p>
                     <h2 class="dashboard-page__title">Your Origin Ducks</h2>
                     <p class="dashboard-page__subtitle">
-                      View your profile carousel and manage the ducks that anchor your SineDay rhythm.
+                      Your origin ducks, today’s wave, and the profiles that anchor your SineDay rhythm.
                     </p>
                   </div>
                 </div>
@@ -265,6 +299,8 @@
                     </div>
                   </div>
                 </div>
+
+                <div id="today-wave-section"></div>
 
                 <div id="profile-limit-message">
                   <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
@@ -346,12 +382,11 @@
                     <p class="dashboard-page__eyebrow">Page 2</p>
                     <h2 class="dashboard-page__title">Cloud Journal</h2>
                     <p class="dashboard-page__subtitle">
-                      Today’s Wave, today’s Duck, and the thoughts you want to remember.
+                      Write what happened, which duck the day felt like, and the thoughts you want to remember.
                     </p>
                   </div>
                 </div>
 
-                <div id="today-wave-section"></div>
                 <div id="journal-section"></div>
               </div>
             </section>
@@ -404,22 +439,6 @@
 
           </div>
         </div>
-
-        <button
-          id="dashboard-page-next"
-          class="dashboard-pager__arrow dashboard-pager__arrow--next"
-          type="button"
-          aria-label="Next dashboard page"
-        >
-          ›
-        </button>
-      </div>
-
-      <div class="dashboard-page-nav" aria-label="Dashboard page navigation">
-        <button class="dashboard-page-nav__dot is-active" type="button" data-page-target="0" aria-label="Go to Your Origin Ducks" aria-pressed="true"></button>
-        <button class="dashboard-page-nav__dot" type="button" data-page-target="1" aria-label="Go to Cloud Journal" aria-pressed="false"></button>
-        <button class="dashboard-page-nav__dot" type="button" data-page-target="2" aria-label="Go to Journal History" aria-pressed="false"></button>
-        <button class="dashboard-page-nav__dot" type="button" data-page-target="3" aria-label="Go to Journal Printables" aria-pressed="false"></button>
       </div>
     </section>
     </div>
