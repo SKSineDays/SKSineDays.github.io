@@ -42,6 +42,7 @@ export class CalendarsPdfUI {
     this.profileFilter = null;
 
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12));
+    this.dayDateUTC = todayUTC;
     this.weekStartDateUTC = startOfWeekUTC(todayUTC, this.weekStart);
 
     this.currentPdfUrl = null;
@@ -94,6 +95,7 @@ export class CalendarsPdfUI {
       this.view = "month";
       this.btnMonth.classList.add("is-active");
       this.btnWeek.classList.remove("is-active");
+      this.btnDay.classList.remove("is-active");
       this.render();
     });
 
@@ -104,11 +106,23 @@ export class CalendarsPdfUI {
       this.view = "week";
       this.btnWeek.classList.add("is-active");
       this.btnMonth.classList.remove("is-active");
+      this.btnDay.classList.remove("is-active");
+      this.render();
+    });
+
+    this.btnDay = el("button", "sdcal__tab");
+    this.btnDay.type = "button";
+    this.btnDay.textContent = "Day";
+    this.btnDay.addEventListener("click", () => {
+      this.view = "day";
+      this.btnDay.classList.add("is-active");
+      this.btnMonth.classList.remove("is-active");
+      this.btnWeek.classList.remove("is-active");
       this.render();
     });
 
     const tabs = el("div", "sdcal__tabs");
-    tabs.append(this.btnMonth, this.btnWeek);
+    tabs.append(this.btnMonth, this.btnWeek, this.btnDay);
 
     this.filterWrap = el("div", "sdcal__filter");
     const filterLabel = el("label", "sdcal__label");
@@ -180,6 +194,8 @@ export class CalendarsPdfUI {
         }
       } else if (this.view === "week") {
         this.weekStartDateUTC = addDaysUTC(this.weekStartDateUTC, -7);
+      } else if (this.view === "day") {
+        this.dayDateUTC = addDaysUTC(this.dayDateUTC, -1);
       }
       this.render();
     });
@@ -193,6 +209,8 @@ export class CalendarsPdfUI {
         }
       } else if (this.view === "week") {
         this.weekStartDateUTC = addDaysUTC(this.weekStartDateUTC, 7);
+      } else if (this.view === "day") {
+        this.dayDateUTC = addDaysUTC(this.dayDateUTC, 1);
       }
       this.render();
     });
@@ -237,7 +255,11 @@ export class CalendarsPdfUI {
       return `month:${profileId}:${this.year}:${this.monthIndex}:${this.locale}:${this.weekStart}`;
     }
 
-    return `week:${profileId}:${this._ymdUTC(this.weekStartDateUTC)}:${this.locale}:${this.weekStart}`;
+    if (this.view === "week") {
+      return `week:${profileId}:${this._ymdUTC(this.weekStartDateUTC)}:${this.locale}:${this.weekStart}`;
+    }
+
+    return `day:${profileId}:${this._ymdUTC(this.dayDateUTC)}:${this.locale}`;
   }
 
   _isVisibleInPager() {
@@ -255,7 +277,9 @@ export class CalendarsPdfUI {
     const year =
       this.view === "month"
         ? this.year
-        : this.weekStartDateUTC.getUTCFullYear();
+        : this.view === "week"
+          ? this.weekStartDateUTC.getUTCFullYear()
+          : this.dayDateUTC.getUTCFullYear();
     if (this.copyrightFooter) {
       this.copyrightFooter.textContent = getSineDayCopyrightText(year);
     }
@@ -269,7 +293,7 @@ export class CalendarsPdfUI {
       this.title.textContent = dtf.format(
         new Date(Date.UTC(this.year, this.monthIndex, 1, 12))
       );
-    } else {
+    } else if (this.view === "week") {
       const end = addDaysUTC(this.weekStartDateUTC, 6);
       const dtf = new Intl.DateTimeFormat(this.locale, {
         month: "short",
@@ -278,6 +302,15 @@ export class CalendarsPdfUI {
         timeZone: "UTC"
       });
       this.title.textContent = `${dtf.format(this.weekStartDateUTC)} – ${dtf.format(end)}`;
+    } else {
+      const dtf = new Intl.DateTimeFormat(this.locale, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "UTC"
+      });
+      this.title.textContent = dtf.format(this.dayDateUTC);
     }
 
     this.content.innerHTML = "";
@@ -331,7 +364,12 @@ export class CalendarsPdfUI {
       const profileId = active[0]?.id;
       if (!profileId) throw new Error("No profile selected");
 
-      const endpoint = this.view === "month" ? "/api/print-monthly" : "/api/print-weekly";
+      const endpoint =
+        this.view === "month"
+          ? "/api/print-monthly"
+          : this.view === "week"
+            ? "/api/print-weekly"
+            : "/api/print-daily";
 
       const payload =
         this.view === "month"
@@ -342,12 +380,18 @@ export class CalendarsPdfUI {
               locale: this.locale,
               weekStart: this.weekStart
             }
-          : {
-              profileId,
-              locale: this.locale,
-              weekStart: this.weekStart,
-              anchorYmd: this._ymdUTC(this.weekStartDateUTC)
-            };
+          : this.view === "week"
+            ? {
+                profileId,
+                locale: this.locale,
+                weekStart: this.weekStart,
+                anchorYmd: this._ymdUTC(this.weekStartDateUTC)
+              }
+            : {
+                profileId,
+                locale: this.locale,
+                dateYmd: this._ymdUTC(this.dayDateUTC)
+              };
 
       const r = await fetch(endpoint, {
         method: "POST",
@@ -371,13 +415,13 @@ export class CalendarsPdfUI {
 
       this.iframe.src = iframeUrl.toString();
       this.btnDownload.disabled = false;
+      this.loadingOverlay.style.display = "none";
     } catch (e) {
       if (requestGen !== this._previewRequestGen) return;
+      this.currentPdfUrl = null;
+      this.btnDownload.disabled = true;
+      this.loadingOverlay.style.display = "flex";
       this.loadingOverlay.textContent = e?.message || "Unable to load PDF";
-    } finally {
-      if (requestGen === this._previewRequestGen) {
-        this.loadingOverlay.style.display = "none";
-      }
     }
   }
 

@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
+import { calculateSineDayForYmd, DAY_DATA } from "../../js/sineday-engine.js";
 import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
 import { isRtlLocale } from "../../shared/i18n.js";
 
@@ -151,7 +151,7 @@ export async function renderMonthPdf({
   const cellW = (gridW - gap * (cols - 1)) / cols;
   const cellH = (gridH - gap * (rows - 1)) / rows;
 
-  const borderColor = rgb(0.8, 0.8, 0.8);
+  const borderColor = rgb(0.68, 0.68, 0.68);
   const outFill = rgb(0.97, 0.97, 0.97);
 
   for (let c = 0; c < 7; c++) {
@@ -311,7 +311,7 @@ export async function renderWeekPdf({
         width: W - margin * 2,
         height: rowH,
         borderWidth: 1.25,
-        borderColor: rgb(0.8, 0.8, 0.8),
+        borderColor: rgb(0.68, 0.68, 0.68),
         color: rgb(1, 1, 1)
       });
 
@@ -362,12 +362,223 @@ export async function renderWeekPdf({
         page.drawLine({
           start: { x: linesLeft, y },
           end: { x: linesRight, y },
-          thickness: 0.5,
-          color: rgb(0.85, 0.85, 0.85)
+          thickness: 0.65,
+          color: rgb(0.74, 0.74, 0.74)
         });
       }
     }
   }
+
+  return await pdf.save();
+}
+
+function drawScaledImage(page, img, centerX, y, targetH) {
+  const scale = targetH / img.height;
+  const width = img.width * scale;
+  page.drawImage(img, {
+    x: centerX - width / 2,
+    y,
+    width,
+    height: targetH
+  });
+}
+
+function drawWritingLines(page, { x1, x2, startY, count, step }) {
+  for (let i = 0; i < count; i++) {
+    const y = startY - i * step;
+    page.drawLine({
+      start: { x: x1, y },
+      end: { x: x2, y },
+      thickness: 0.55,
+      color: rgb(0.82, 0.82, 0.82)
+    });
+  }
+}
+
+export async function renderDayPdf({
+  dateYmd,
+  locale = "en-US",
+  profiles = [],
+  titleSuffix = "",
+  userMark = "",
+  origin
+}) {
+  const W = 612;
+  const H = 792;
+  const margin = 36;
+  const black = rgb(0, 0, 0);
+  const lightBorder = rgb(0.78, 0.78, 0.78);
+  const softFill = rgb(0.985, 0.985, 0.985);
+
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([W, H]);
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
+
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const duckCache = await buildDuckCache(pdf, origin);
+
+  const [yy, mm, dd] = String(dateYmd).split("-").map(Number);
+  const date = new Date(Date.UTC(yy, (mm || 1) - 1, dd || 1, 12));
+
+  const profile = profiles[0] || null;
+  const result = profile?.birthdate ? calculateSineDayForYmd(profile.birthdate, dateYmd) : null;
+  const dayNumber = result?.day || null;
+  const dayInfo = dayNumber ? DAY_DATA.find((d) => d.day === dayNumber) : null;
+
+  const dateText = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(date);
+
+  drawFooter(page, font, W, yy || new Date().getUTCFullYear());
+
+  const prompt = "How do you feel today? Circle a duck.";
+  page.drawText(prompt, {
+    x: margin,
+    y: H - margin - 4,
+    size: 12,
+    font: bold,
+    color: black
+  });
+
+  const cardGap = 4;
+  const cardW = (W - margin * 2 - cardGap * 8) / 9;
+  const cardH = 58;
+  const topCardY = H - margin - 72;
+  const bottomCardY = margin + 28;
+
+  function drawMoodDuck(day, rowY, col) {
+    const x = margin + col * (cardW + cardGap);
+
+    page.drawRectangle({
+      x,
+      y: rowY,
+      width: cardW,
+      height: cardH,
+      borderWidth: 0.9,
+      borderColor: lightBorder,
+      color: softFill
+    });
+
+    const img = duckCache.get(day);
+    if (img) drawScaledImage(page, img, x + cardW / 2, rowY + 17, 32);
+
+    const label = String(day);
+    const labelW = bold.widthOfTextAtSize(label, 8);
+    page.drawText(label, {
+      x: x + cardW / 2 - labelW / 2,
+      y: rowY + 7,
+      size: 8,
+      font: bold,
+      color: black
+    });
+  }
+
+  for (let day = 1; day <= 9; day++) drawMoodDuck(day, topCardY, day - 1);
+
+  const bottomPrompt = "Choose the duck that matches the moment.";
+  page.drawText(bottomPrompt, {
+    x: margin,
+    y: bottomCardY + cardH + 10,
+    size: 10,
+    font,
+    color: black
+  });
+
+  for (let day = 10; day <= 18; day++) drawMoodDuck(day, bottomCardY, day - 10);
+
+  const middleTop = topCardY - 28;
+  const middleBottom = bottomCardY + cardH + 34;
+  const middleX = margin;
+  const middleW = W - margin * 2;
+  const centerX = W / 2;
+
+  page.drawRectangle({
+    x: middleX,
+    y: middleBottom,
+    width: middleW,
+    height: middleTop - middleBottom,
+    borderWidth: 1.25,
+    borderColor: rgb(0.72, 0.72, 0.72),
+    color: rgb(1, 1, 1)
+  });
+
+  const dateW = bold.widthOfTextAtSize(dateText, 18);
+  page.drawText(dateText, {
+    x: centerX - dateW / 2,
+    y: middleTop - 34,
+    size: 18,
+    font: bold,
+    color: black
+  });
+
+  const profileText = titleSuffix ? `Journal page for ${titleSuffix}` : "Daily SineDay journal page";
+  const profileW = font.widthOfTextAtSize(profileText, 10);
+  page.drawText(profileText, {
+    x: centerX - profileW / 2,
+    y: middleTop - 52,
+    size: 10,
+    font,
+    color: black
+  });
+
+  if (dayNumber) {
+    const todayDuck = duckCache.get(dayNumber);
+    if (todayDuck) drawScaledImage(page, todayDuck, centerX, middleTop - 142, 78);
+
+    const dayTitle = `Today's SineDuck: Day ${dayNumber}`;
+    const dayTitleW = bold.widthOfTextAtSize(dayTitle, 14);
+    page.drawText(dayTitle, {
+      x: centerX - dayTitleW / 2,
+      y: middleTop - 162,
+      size: 14,
+      font: bold,
+      color: black
+    });
+
+    if (dayInfo?.phase) {
+      const phase = String(dayInfo.phase).replace(/\s*•\s*/g, " - ");
+      const phaseW = font.widthOfTextAtSize(phase, 9);
+      page.drawText(phase, {
+        x: centerX - phaseW / 2,
+        y: middleTop - 178,
+        size: 9,
+        font,
+        color: black
+      });
+    }
+
+    if (dayInfo?.description) {
+      const descW = font.widthOfTextAtSize(dayInfo.description, 10);
+      page.drawText(dayInfo.description, {
+        x: centerX - descW / 2,
+        y: middleTop - 196,
+        size: 10,
+        font,
+        color: black
+      });
+    }
+  }
+
+  page.drawText("Today's thoughts", {
+    x: middleX + 16,
+    y: middleTop - 232,
+    size: 13,
+    font: bold,
+    color: black
+  });
+
+  drawWritingLines(page, {
+    x1: middleX + 16,
+    x2: middleX + middleW - 16,
+    startY: middleTop - 260,
+    count: 11,
+    step: 18
+  });
 
   return await pdf.save();
 }
