@@ -18,9 +18,9 @@ import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
-import { PlannerUI } from "./planner-ui.js";
-import { WaveCalendarUI } from "./wave-calendar-ui.js";
-import { SocialPlannerUI } from "./social-planner-ui.js";
+import { JournalUI } from "./journal-ui.js";
+import { JournalHistoryUI } from "./journal-history-ui.js";
+import { calculateSineDayForTimezone } from "./sineday-engine.js";
 import {
   loadUserSettings,
   saveUserSettings,
@@ -43,14 +43,13 @@ let dailyEmailState = {
 let duckCarousel = null;
 let addProfileUI = null;
 let calendarsUI = null;
-let plannerUI = null;
-let waveCalendarUI = null;
-let socialPlannerUI = null;
+let journalUI = null;
+let journalHistoryUI = null;
 let userSettings = null;
 let linkedIdentities = [];
 
 let dashboardPageIndex = 0;
-let dashboardPageCount = 5;
+let dashboardPageCount = 4;
 let dashboardPagerBound = false;
 let deferredInstallPrompt = null;
 let installPromptAvailable = false;
@@ -59,7 +58,6 @@ let installPromptAvailable = false;
  * Initialize dashboard on page load
  */
 async function init() {
-  console.log('Initializing dashboard...');
 
   // ✅ Always attach UI handlers first
   setupEventListeners();
@@ -101,7 +99,6 @@ async function init() {
 
     // Listen to auth changes
     onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event);
       if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
 
@@ -120,17 +117,13 @@ async function init() {
           duckCarousel.destroy();
           duckCarousel = null;
         }
-        if (plannerUI) {
-          plannerUI.destroy();
-          plannerUI = null;
+        if (journalUI) {
+          journalUI.destroy();
+          journalUI = null;
         }
-        if (waveCalendarUI) {
-          waveCalendarUI.destroy();
-          waveCalendarUI = null;
-        }
-        if (socialPlannerUI) {
-          socialPlannerUI.destroy();
-          socialPlannerUI = null;
+        if (journalHistoryUI) {
+          journalHistoryUI.destroy();
+          journalHistoryUI = null;
         }
         window.location.href = '/login.html';
       }
@@ -150,7 +143,7 @@ async function init() {
 
 /**
  * Load user data (profiles and subscription)
- * Ordered: profiles first so mountPlannerSection() has owner profile when loadSubscription runs.
+ * Ordered: profiles first so journal sections have owner profile when loadSubscription runs.
  */
 async function loadUserData() {
   await loadProfiles();
@@ -455,285 +448,6 @@ function setupInstallPromptUI() {
   renderInstallButton();
 }
 
-async function loadNotificationsBadge() {
-  const badge = document.getElementById("notifications-badge");
-  const toggle = document.getElementById("notifications-toggle");
-  if (!badge || !toggle || !currentUser?.id) return;
-
-  try {
-    const client = await getSupabaseClient();
-    const { count, error } = await client
-      .from("social_notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", currentUser.id)
-      .eq("is_read", false);
-
-    if (error) throw error;
-
-    const unread = count || 0;
-    badge.hidden = unread === 0;
-    badge.textContent = unread > 99 ? "99+" : String(unread);
-    toggle.classList.toggle("is-unread", unread > 0);
-  } catch (err) {
-    console.error("Failed to load notifications badge:", err);
-    badge.hidden = true;
-    toggle.classList.remove("is-unread");
-  }
-}
-
-async function fetchNotifications(limit = 20) {
-  if (!currentUser?.id) return [];
-  const client = await getSupabaseClient();
-  const { data, error } = await client
-    .from("social_notifications")
-    .select("id, type, title, body, payload, is_read, created_at")
-    .eq("user_id", currentUser.id)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data || [];
-}
-
-async function markNotificationsRead(ids) {
-  if (!ids?.length || !currentUser?.id) return;
-  const client = await getSupabaseClient();
-  const { error } = await client
-    .from("social_notifications")
-    .update({
-      is_read: true,
-      read_at: new Date().toISOString()
-    })
-    .in("id", ids)
-    .eq("user_id", currentUser.id);
-
-  if (error) throw error;
-}
-
-async function clearNotificationsList() {
-  const accessToken = await getAccessToken();
-  const response = await fetch("/api/social/clear-notifications", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) {
-    throw new Error(data?.error || "Failed to clear notifications");
-  }
-
-  return data;
-}
-
-function closeNotificationsSheet() {
-  const toggle = document.getElementById("notifications-toggle");
-  const sheet = document.getElementById("notifications-sheet");
-  const backdrop = document.getElementById("notifications-backdrop");
-  if (!toggle || !sheet || !backdrop) return;
-
-  toggle.setAttribute("aria-expanded", "false");
-  sheet.classList.remove("is-open");
-  backdrop.classList.remove("is-open");
-
-  setTimeout(() => {
-    sheet.hidden = true;
-    backdrop.hidden = true;
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-  }, 220);
-}
-
-function renderNotificationsList(items) {
-  const list = document.getElementById("notifications-list");
-  if (!list) return;
-
-  if (!items.length) {
-    list.innerHTML = `<p class="text-muted">No notifications yet.</p>`;
-    return;
-  }
-
-  list.innerHTML = items.map((item) => {
-    const payload = item.payload || {};
-    const created = item.created_at
-      ? new Date(item.created_at).toLocaleString()
-      : "";
-    const isFriendRequest = item.type === "friend_request" && payload.request_id;
-
-    return `
-      <article class="notification-item ${item.is_read ? "" : "is-unread"}" data-id="${item.id}">
-        <div class="notification-item__body">
-          <div class="notification-item__title">${escapeHtml(item.title || "Notification")}</div>
-          ${item.body ? `<p class="notification-item__copy">${escapeHtml(item.body)}</p>` : ""}
-          <div class="notification-item__meta">${escapeHtml(created)}</div>
-        </div>
-
-        <div class="notification-item__actions">
-          ${isFriendRequest ? `
-            <button
-              class="btn btn-primary btn-sm"
-              type="button"
-              data-notification-action="accept-request"
-              data-request-id="${escapeHtml(String(payload.request_id))}"
-            >
-              Accept
-            </button>
-            <button
-              class="btn btn-ghost btn-sm"
-              type="button"
-              data-notification-action="decline-request"
-              data-request-id="${escapeHtml(String(payload.request_id))}"
-            >
-              Decline
-            </button>
-          ` : ""}
-
-          ${payload.target_date ? `
-            <button
-              class="btn btn-ghost btn-sm"
-              type="button"
-              data-notification-action="open-social"
-              data-target-date="${escapeHtml(String(payload.target_date))}"
-              data-planner-id="${escapeHtml(String(payload.planner_id || ""))}"
-            >
-              Open
-            </button>
-          ` : ""}
-        </div>
-      </article>
-    `;
-  }).join("");
-}
-
-async function respondToFriendRequest(requestId, decision) {
-  const accessToken = await getAccessToken();
-  const response = await fetch("/api/social/respond-friend-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({ requestId, decision })
-  });
-
-  const data = await response.json();
-  if (!response.ok || !data.ok) {
-    throw new Error(data?.error || "Failed to respond to request");
-  }
-  return data;
-}
-
-async function openNotificationsSheet() {
-  const toggle = document.getElementById("notifications-toggle");
-  const sheet = document.getElementById("notifications-sheet");
-  const backdrop = document.getElementById("notifications-backdrop");
-  if (!toggle || !sheet || !backdrop || !currentUser?.id) return;
-
-  try {
-    const items = await fetchNotifications(20);
-    renderNotificationsList(items);
-
-    toggle.setAttribute("aria-expanded", "true");
-    sheet.hidden = false;
-    backdrop.hidden = false;
-
-    requestAnimationFrame(() => {
-      sheet.classList.add("is-open");
-      backdrop.classList.add("is-open");
-    });
-
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    const unreadIds = items.filter((item) => !item.is_read).map((item) => item.id);
-    if (unreadIds.length) {
-      await markNotificationsRead(unreadIds);
-      await loadNotificationsBadge();
-    }
-  } catch (err) {
-    console.error("Failed to open notifications sheet:", err);
-    showError(err.message || "Failed to load notifications.");
-  }
-}
-
-function setupNotificationsSheet() {
-  const toggle = document.getElementById("notifications-toggle");
-  const backdrop = document.getElementById("notifications-backdrop");
-  const sheet = document.getElementById("notifications-sheet");
-  const markAll = document.getElementById("notifications-mark-all");
-
-  if (!toggle || !backdrop || !sheet) return;
-
-  toggle.addEventListener("click", () => {
-    const expanded = toggle.getAttribute("aria-expanded") === "true";
-    if (expanded) {
-      closeNotificationsSheet();
-    } else {
-      openNotificationsSheet();
-    }
-  });
-
-  backdrop.addEventListener("click", closeNotificationsSheet);
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
-      closeNotificationsSheet();
-    }
-  });
-
-  markAll?.addEventListener("click", async () => {
-    try {
-      await clearNotificationsList();
-      renderNotificationsList([]);
-      await loadNotificationsBadge();
-      showSuccess("Notifications cleared.");
-    } catch (err) {
-      console.error("Failed to clear notifications:", err);
-      showError(err.message || "Failed to clear notifications.");
-    }
-  });
-
-  sheet.addEventListener("click", async (e) => {
-    const btn = e.target.closest("[data-notification-action]");
-    if (!btn) return;
-
-    const action = btn.dataset.notificationAction;
-
-    try {
-      if (action === "accept-request" || action === "decline-request") {
-        const requestId = btn.dataset.requestId;
-        await respondToFriendRequest(
-          requestId,
-          action === "accept-request" ? "accepted" : "declined"
-        );
-        showSuccess(action === "accept-request" ? "Friend request accepted." : "Friend request declined.");
-        await loadNotificationsBadge();
-        await openNotificationsSheet();
-        if (isPaid()) {
-          await mountSocialPlannerSection();
-        }
-        return;
-      }
-
-      if (action === "open-social") {
-        const targetDate = btn.dataset.targetDate;
-        const plannerId = btn.dataset.plannerId || null;
-        closeNotificationsSheet();
-        setDashboardPage(4);
-
-        await mountSocialPlannerSection();
-        if (!isPaid()) return;
-        await socialPlannerUI?.openDaySheet?.(targetDate, plannerId || undefined);
-      }
-    } catch (err) {
-      console.error("Notification action failed:", err);
-      showError(err.message || "Notification action failed.");
-    }
-  });
-}
-
 function getDashboardPages() {
   return Array.from(document.querySelectorAll(".dashboard-page"));
 }
@@ -817,17 +531,10 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".sheet",
       ".sheet-backdrop",
       ".add-profile-sheet",
-      ".planner-frame__header",
-      ".planner-frame__nav",
-      ".planner-frame__view-toggle",
+      ".journal-frame__header",
+      ".journal-frame__nav",
+      ".journal-frame__view-toggle",
       ".wcal-frame__header",
-      ".social-frame__header",
-      ".social-frame__actions",
-      ".social-frame__nav",
-      ".social-day-sheet",
-      ".social-friends-sheet",
-      ".social-add-sheet",
-      ".notifications-sheet",
       ".duck-ring",
       ".duck-ring__scene",
       ".duck-stack",
@@ -908,15 +615,12 @@ function bindDashboardPager() {
     const onboarding = document.getElementById("owner-onboarding");
 
     const accountOpen = accountSheet && !accountSheet.hidden;
-    const notifToggle = document.getElementById("notifications-toggle");
-    const notificationsOpen =
-      notifToggle?.getAttribute("aria-expanded") === "true";
     const addProfileOpen =
       addProfileSheet && addProfileSheet.getAttribute("aria-hidden") === "false";
     const onboardingOpen =
       onboarding && onboarding.getAttribute("aria-hidden") === "false";
 
-    if (accountOpen || notificationsOpen || addProfileOpen || onboardingOpen) return;
+    if (accountOpen || addProfileOpen || onboardingOpen) return;
 
     if (e.key === "ArrowLeft") {
       setDashboardPage(dashboardPageIndex - 1);
@@ -1004,48 +708,116 @@ function renderProfiles() {
   if (duckCarousel) duckCarousel.setProfiles(profiles);
   calendarsUI?.setProfiles?.(profiles);
   calendarsUI?.setOwnerProfile?.(getOwnerProfile());
-  plannerUI?.setOwnerProfile?.(getOwnerProfile());
-  waveCalendarUI?.setOwnerProfile?.(getOwnerProfile());
-  socialPlannerUI?.setOwnerProfile?.(getOwnerProfile());
+  journalUI?.setOwnerProfile?.(getOwnerProfile());
+  journalHistoryUI?.setOwnerProfile?.(getOwnerProfile());
+  renderTodayWaveSection();
 
-  // Safety remount if planner wasn't mounted (e.g. owner created during onboarding)
-  if (isPaid() && !plannerUI && getOwnerProfile()) {
-    mountPlannerSection().catch(err => {
-      console.error("Failed to mount planner after profiles render:", err);
+  // Safety remount if journal surfaces were not mounted (e.g. owner created during onboarding)
+  if (!journalUI && getOwnerProfile()) {
+    mountJournalSection().catch(err => {
+      console.error("Failed to mount journal after profiles render:", err);
     });
   }
-  if (isPaid() && !waveCalendarUI && getOwnerProfile()) {
+  if (!journalHistoryUI && getOwnerProfile()) {
     mountWaveCalendarSection().catch(err => {
-      console.error("Failed to mount wave calendar after profiles render:", err);
-    });
-  }
-
-  if (isPaid() && getOwnerProfile() && !socialPlannerUI) {
-    mountSocialPlannerSection().catch(err => {
-      console.error("Failed to mount social planner after profiles render:", err);
+      console.error("Failed to mount journal history after profiles render:", err);
     });
   }
 
   updateDashboardPagerUI();
 }
 
-/**
- * Mount standalone Planner section (owner-only, premium-gated)
- */
-async function mountPlannerSection() {
-  const section = document.getElementById("planner-section");
+
+function getTodayYmdForProfile(profile) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: profile?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function renderTodayWaveSection() {
+  const section = document.getElementById("today-wave-section");
   if (!section) return;
 
-  // Destroy previous instance
-  if (plannerUI) {
-    plannerUI.destroy();
-    plannerUI = null;
+  const ownerProfile = getOwnerProfile();
+  if (!ownerProfile) {
+    section.innerHTML = `
+      <div class="today-wave-card">
+        <p class="text-muted">Create your owner profile to see Today’s Wave.</p>
+      </div>
+    `;
+    return;
   }
 
-  // Gate: must be premium + have owner profile
-  if (!isPaid()) {
-    section.innerHTML = "";
+  const todayYmd = getTodayYmdForProfile(ownerProfile);
+  const result = calculateSineDayForTimezone(ownerProfile.birthdate, ownerProfile.timezone);
+  if (!result || result.error) {
+    section.innerHTML = `
+      <div class="today-wave-card">
+        <p class="text-muted">Today’s Wave could not be calculated yet.</p>
+      </div>
+    `;
     return;
+  }
+
+  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
+  const date = new Date(`${todayYmd}T12:00:00Z`);
+  const dateLabel = new Intl.DateTimeFormat(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+
+  section.innerHTML = `
+    <article class="today-wave-card">
+      <div class="today-wave-card__copy">
+        <p class="today-wave-card__eyebrow">Today’s Wave</p>
+        <h3 class="today-wave-card__title">${escapeHtml(dateLabel)}</h3>
+        <p class="today-wave-card__day">SineDay ${escapeHtml(String(result.day))}</p>
+        <p class="today-wave-card__phase">${escapeHtml(result.phase || "")}</p>
+        <p class="today-wave-card__description">${escapeHtml(result.description || "")}</p>
+        <div class="today-wave-card__actions">
+          <button id="write-today-journal" class="btn btn-primary btn-sm" type="button">
+            Write today’s journal
+          </button>
+        </div>
+      </div>
+      <div class="today-wave-card__duck">
+        <img src="${duckUrlFromSinedayNumber(result.day)}" alt="Today’s SineDuck Day ${escapeHtml(String(result.day))}">
+      </div>
+    </article>
+  `;
+
+  document.getElementById("write-today-journal")?.addEventListener("click", async () => {
+    setDashboardPage(1);
+    if (journalUI) {
+      await journalUI.setDate(todayYmd);
+    } else {
+      await mountJournalSection();
+      await journalUI?.setDate?.(todayYmd);
+    }
+  });
+}
+
+/**
+ * Mount standalone Journal section (owner-profile anchored)
+ */
+async function mountJournalSection() {
+  const section = document.getElementById("journal-section");
+  if (!section) return;
+
+  if (journalUI) {
+    journalUI.destroy();
+    journalUI = null;
   }
 
   const ownerProfile = getOwnerProfile();
@@ -1058,145 +830,85 @@ async function mountPlannerSection() {
   const weekStart = resolveWeekStart(userSettings);
   const client = await getSupabaseClient();
 
-  // Build the frame chrome
   const frame = document.createElement("div");
-  frame.className = "planner-frame";
+  frame.className = "journal-frame is-day-view";
+  frame.dataset.view = "journal";
 
-  // Header row: title + nav
   const header = document.createElement("div");
-  header.className = "planner-frame__header";
+  header.className = "journal-frame__header";
 
   const title = document.createElement("div");
-  title.className = "planner-frame__title";
-  title.textContent = "Weekly Planner";
-
-  const viewToggle = document.createElement("div");
-  viewToggle.className = "planner-frame__view-toggle";
-
-  const btnViewWeek = document.createElement("button");
-  btnViewWeek.type = "button";
-  btnViewWeek.className = "planner-frame__viewbtn is-active";
-  btnViewWeek.textContent = "Week";
-  btnViewWeek.setAttribute("aria-pressed", "true");
-
-  const btnViewDay = document.createElement("button");
-  btnViewDay.type = "button";
-  btnViewDay.className = "planner-frame__viewbtn";
-  btnViewDay.textContent = "Day";
-  btnViewDay.setAttribute("aria-pressed", "false");
-
-  viewToggle.append(btnViewWeek, btnViewDay);
+  title.className = "journal-frame__title";
+  title.textContent = "Journal";
 
   const nav = document.createElement("div");
-  nav.className = "planner-frame__nav";
+  nav.className = "journal-frame__nav";
 
   const btnPrev = document.createElement("button");
-  btnPrev.className = "planner-frame__navbtn";
+  btnPrev.className = "journal-frame__navbtn";
   btnPrev.type = "button";
   btnPrev.textContent = "←";
-  btnPrev.setAttribute("aria-label", "Previous week");
+  btnPrev.setAttribute("aria-label", "Previous day");
 
   const rangeLabel = document.createElement("div");
-  rangeLabel.className = "planner-frame__range";
+  rangeLabel.className = "journal-frame__range";
 
   const btnNext = document.createElement("button");
-  btnNext.className = "planner-frame__navbtn";
+  btnNext.className = "journal-frame__navbtn";
   btnNext.type = "button";
   btnNext.textContent = "→";
-  btnNext.setAttribute("aria-label", "Next week");
+  btnNext.setAttribute("aria-label", "Next day");
 
   nav.append(btnPrev, rangeLabel, btnNext);
-  header.append(title, viewToggle, nav);
+  header.append(title, nav);
 
   const mount = document.createElement("div");
-  mount.className = "planner-mount";
+  mount.className = "journal-mount";
 
   frame.append(header, mount);
-
   section.innerHTML = "";
   section.append(frame);
 
-  // Instantiate PlannerUI
-  plannerUI = new PlannerUI(mount, {
+  journalUI = new JournalUI(mount, {
     locale,
     weekStart,
     ownerProfile,
     supabaseClient: client,
     userId: currentUser.id,
+    onEntrySaved: () => {
+      journalHistoryUI?.refreshVisibleMonth?.();
+    },
   });
 
-  // Initial render (constructor does not auto-render)
-  await plannerUI.render();
+  await journalUI.render();
 
-  // Helper to update the range label
   function updateRangeLabel() {
-    rangeLabel.textContent = plannerUI.getDateLabel(locale);
+    rangeLabel.textContent = journalUI.getDateLabel(locale);
   }
 
-  function syncViewToggle(view) {
-    const isWeek = view === "week";
-    btnViewWeek.classList.toggle("is-active", isWeek);
-    btnViewDay.classList.toggle("is-active", !isWeek);
-    btnViewWeek.setAttribute("aria-pressed", String(isWeek));
-    btnViewDay.setAttribute("aria-pressed", String(!isWeek));
-    title.textContent = isWeek ? "Weekly Planner" : "Daily Planner";
-    btnPrev.setAttribute("aria-label", isWeek ? "Previous week" : "Previous day");
-    btnNext.setAttribute("aria-label", isWeek ? "Next week" : "Next day");
-
-    frame.classList.toggle("is-week-view", isWeek);
-    frame.classList.toggle("is-day-view", !isWeek);
-    frame.dataset.view = view;
-  }
-
-  syncViewToggle(plannerUI.view);
   updateRangeLabel();
 
-  btnViewWeek.addEventListener("click", () => {
-    plannerUI.setView("week");
-    syncViewToggle("week");
+  btnPrev.addEventListener("click", async () => {
+    await journalUI.navigateDay(-1);
     updateRangeLabel();
   });
 
-  btnViewDay.addEventListener("click", () => {
-    plannerUI.setView("day");
-    syncViewToggle("day");
-    updateRangeLabel();
-  });
-
-  btnPrev.addEventListener("click", () => {
-    if (plannerUI.view === "week") {
-      plannerUI.navigateWeek(-1);
-    } else {
-      plannerUI.navigateDay(-1);
-    }
-    updateRangeLabel();
-  });
-
-  btnNext.addEventListener("click", () => {
-    if (plannerUI.view === "week") {
-      plannerUI.navigateWeek(1);
-    } else {
-      plannerUI.navigateDay(1);
-    }
+  btnNext.addEventListener("click", async () => {
+    await journalUI.navigateDay(1);
     updateRangeLabel();
   });
 }
 
 /**
- * Mount standalone Wave Calendar section (owner-only, premium-gated)
+ * Mount Journal History section (owner-profile anchored)
  */
 async function mountWaveCalendarSection() {
   const section = document.getElementById("wave-calendar-section");
   if (!section) return;
 
-  if (waveCalendarUI) {
-    waveCalendarUI.destroy();
-    waveCalendarUI = null;
-  }
-
-  if (!isPaid()) {
-    section.innerHTML = "";
-    return;
+  if (journalHistoryUI) {
+    journalHistoryUI.destroy();
+    journalHistoryUI = null;
   }
 
   const ownerProfile = getOwnerProfile();
@@ -1210,7 +922,7 @@ async function mountWaveCalendarSection() {
   const client = await getSupabaseClient();
 
   const frame = document.createElement("div");
-  frame.className = "wcal-frame";
+  frame.className = "wcal-frame journal-history-frame";
 
   const header = document.createElement("div");
   header.className = "wcal-frame__header";
@@ -1220,34 +932,31 @@ async function mountWaveCalendarSection() {
 
   const title = document.createElement("div");
   title.className = "wcal-frame__title";
-  title.textContent = "Wave Calendar";
+  title.textContent = "Journal History";
 
-  const gearBtn = document.createElement("button");
-  gearBtn.className = "wcal-frame__gear";
-  gearBtn.type = "button";
-  gearBtn.textContent = "⚙";
-  gearBtn.setAttribute("aria-label", "Customize tag colors");
-  gearBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    waveCalendarUI.openPaletteConfig(gearBtn);
-  });
+  const btnToday = document.createElement("button");
+  btnToday.className = "journal-frame__navbtn journal-frame__navbtn--text";
+  btnToday.type = "button";
+  btnToday.textContent = "This month";
+  btnToday.setAttribute("aria-label", "Jump to current month");
+  btnToday.hidden = true;
 
-  titleRow.append(title, gearBtn);
+  titleRow.append(title, btnToday);
 
   const nav = document.createElement("div");
-  nav.className = "planner-frame__nav";
+  nav.className = "journal-frame__nav";
 
   const btnPrev = document.createElement("button");
-  btnPrev.className = "planner-frame__navbtn";
+  btnPrev.className = "journal-frame__navbtn";
   btnPrev.type = "button";
   btnPrev.textContent = "←";
   btnPrev.setAttribute("aria-label", "Previous month");
 
   const rangeLabel = document.createElement("div");
-  rangeLabel.className = "planner-frame__range";
+  rangeLabel.className = "journal-frame__range";
 
   const btnNext = document.createElement("button");
-  btnNext.className = "planner-frame__navbtn";
+  btnNext.className = "journal-frame__navbtn";
   btnNext.type = "button";
   btnNext.textContent = "→";
   btnNext.setAttribute("aria-label", "Next month");
@@ -1256,80 +965,57 @@ async function mountWaveCalendarSection() {
   header.append(titleRow, nav);
 
   const mount = document.createElement("div");
-  mount.className = "wcal-mount";
+  mount.className = "wcal-mount journal-history-mount";
 
   frame.append(header, mount);
-
   section.innerHTML = "";
   section.append(frame);
 
-  waveCalendarUI = new WaveCalendarUI(mount, {
+  journalHistoryUI = new JournalHistoryUI(mount, {
     locale,
     weekStart,
     ownerProfile,
     supabaseClient: client,
     userId: currentUser.id,
+    onSelectDate: async (dateYmd) => {
+      setDashboardPage(1);
+      if (journalUI) {
+        await journalUI.setDate(dateYmd);
+      } else {
+        await mountJournalSection();
+        await journalUI?.setDate?.(dateYmd);
+      }
+    },
   });
 
-  await waveCalendarUI.render();
+  await journalHistoryUI.render();
+  rangeLabel.textContent = journalHistoryUI.getMonthLabel();
 
-  rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+  function syncHistoryTodayButton() {
+    const viewingCurrent = journalHistoryUI.isViewingCurrentMonth();
+    btnToday.hidden = viewingCurrent;
+    btnToday.disabled = viewingCurrent;
+  }
+
+  syncHistoryTodayButton();
+
+  btnToday.addEventListener("click", () => {
+    journalHistoryUI.jumpToCurrentMonth();
+    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
+    syncHistoryTodayButton();
+  });
 
   btnPrev.addEventListener("click", () => {
-    waveCalendarUI.navigateMonth(-1);
-    rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+    journalHistoryUI.navigateMonth(-1);
+    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
+    syncHistoryTodayButton();
   });
 
   btnNext.addEventListener("click", () => {
-    waveCalendarUI.navigateMonth(1);
-    rangeLabel.textContent = waveCalendarUI.getMonthLabel();
+    journalHistoryUI.navigateMonth(1);
+    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
+    syncHistoryTodayButton();
   });
-}
-
-function renderSocialPlannerLocked(section) {
-  if (!section) return;
-  section.innerHTML = `
-    <div class="locked-section">
-      <p>🔒 Premium Feature Locked</p>
-      <p class="text-muted">Upgrade to Premium to unlock Social Planner with shared calendars, friend connections, and collaborative day cards.</p>
-    </div>
-  `;
-}
-
-async function mountSocialPlannerSection() {
-  const section = document.getElementById("social-planner-section");
-  if (!section || !currentUser?.id) return;
-
-  if (socialPlannerUI) {
-    socialPlannerUI.destroy();
-    socialPlannerUI = null;
-  }
-
-  if (!isPaid()) {
-    renderSocialPlannerLocked(section);
-    return;
-  }
-
-  const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
-  const weekStart = resolveWeekStart(userSettings);
-  const client = await getSupabaseClient();
-
-  socialPlannerUI = new SocialPlannerUI(section, {
-    locale,
-    weekStart,
-    ownerProfile: getOwnerProfile(),
-    supabaseClient: client,
-    userId: currentUser.id,
-    canHost: isPaid(),
-    getAccessToken,
-    onSuccess: showSuccess,
-    onError: showError,
-    onChange: async () => {
-      await loadNotificationsBadge();
-    }
-  });
-
-  await socialPlannerUI.render();
 }
 
 /**
@@ -1371,7 +1057,7 @@ async function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div id="calendar-app"></div>
         <p class="text-muted" style="margin-top:12px;">
-          Tip: Use "Download PDF" to save clean monthly & weekly pages.
+          Tip: Premium printables are being reframed as journal pages and reflection sheets.
         </p>
       `;
 
@@ -1393,11 +1079,9 @@ async function renderSubscriptionStatus() {
       });
     }
 
-    // Mount standalone planner
-    await mountPlannerSection();
-    // Mount wave calendar
+    // Mount core journal surfaces for all authenticated users.
+    await mountJournalSection();
     await mountWaveCalendarSection();
-    await mountSocialPlannerSection();
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -1411,48 +1095,14 @@ async function renderSubscriptionStatus() {
       calendarsSection.innerHTML = `
         <div class="locked-section">
           <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access printable monthly calendars and weekly planner pages.</p>
+          <p class="text-muted">Upgrade to Premium to access printable journal pages, monthly reflection sheets, and memory-book exports.</p>
         </div>
       `;
     }
 
-    // Show locked state for planner (free users)
-    const plannerSection = document.getElementById("planner-section");
-    if (plannerSection) {
-      plannerSection.innerHTML = `
-        <div class="locked-section">
-          <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to unlock your cloud-synced journal, weekly planner, and recurring task tools.</p>
-        </div>
-      `;
-    }
-    if (plannerUI) { plannerUI.destroy(); plannerUI = null; }
-
-    // Show locked state for wave calendar (free users)
-    const waveCalSection = document.getElementById("wave-calendar-section");
-    if (waveCalSection) {
-      waveCalSection.innerHTML = `
-        <div class="locked-section">
-          <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to unlock your interactive monthly Wave Calendar and rhythm-based planning view.</p>
-        </div>
-      `;
-    }
-    if (waveCalendarUI) { waveCalendarUI.destroy(); waveCalendarUI = null; }
-
-    if (socialPlannerUI) {
-      socialPlannerUI.destroy();
-      socialPlannerUI = null;
-    }
-    const socialPlannerSection = document.getElementById("social-planner-section");
-    if (socialPlannerSection) {
-      renderSocialPlannerLocked(socialPlannerSection);
-    }
+    await mountJournalSection();
+    await mountWaveCalendarSection();
   }
-
-  loadNotificationsBadge().catch((err) => {
-    console.error("Failed to refresh notification badge:", err);
-  });
 
   updateDashboardPagerUI();
 }
@@ -1640,9 +1290,8 @@ function setupLanguageRegionUI() {
     const weekStart = resolveWeekStart(userSettings);
 
     calendarsUI?.setSettings({ locale, weekStart });
-    plannerUI?.setSettings({ locale, weekStart });
-    waveCalendarUI?.setSettings({ locale, weekStart });
-    socialPlannerUI?.setSettings({ locale, weekStart });
+    journalUI?.setSettings({ locale, weekStart });
+    journalHistoryUI?.setSettings({ locale, weekStart });
   };
 
   langSel.addEventListener("change", applyAndSave);
@@ -1702,7 +1351,6 @@ function setupAddProfileCollapse() {
  */
 function setupEventListeners() {
   setupAccountSheet();
-  setupNotificationsSheet();
   addProfileUI = setupAddProfileCollapse();
 
   // Sign out button
@@ -2096,9 +1744,7 @@ function showAuthenticatedView() {
     emailEl.textContent = currentUser.email;
   }
 
-  loadNotificationsBadge().catch((err) => {
-    console.error("Failed to load notification badge:", err);
-  });
+  renderTodayWaveSection();
 
   // Init duck carousel once dashboard is visible (so sizing works)
   ensureDuckCarousel();
