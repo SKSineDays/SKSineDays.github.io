@@ -118,23 +118,6 @@
 
           <div class="dash-head__actions">
             <button
-              id="notifications-toggle"
-              class="dash-head__icon-btn dash-head__icon-btn--bell"
-              type="button"
-              aria-expanded="false"
-              aria-controls="notifications-sheet"
-              aria-label="Notifications"
-            >
-              <svg class="dash-head__icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-4H5a1 1 0 0 1-.8-1.6c.92-1.23 1.8-2.62 1.8-6.15 0-3.52 2.03-6.09 5-6.77V3a1 1 0 1 1 2 0v.48c2.97.68 5 3.25 5 6.77 0 3.53.88 4.92 1.8 6.15A1 1 0 0 1 19 18Z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span id="notifications-badge" class="dash-head__icon-badge" hidden></span>
-            </button>
-
-            <button
               id="install-app-btn"
               class="dash-head__icon-btn dash-head__icon-btn--install"
               type="button"
@@ -237,34 +220,6 @@
           </div>
 
           <a class="dash-home" href="/">← Home</a>
-        </div>
-      </section>
-
-      <div id="notifications-backdrop" class="sheet-backdrop" hidden></div>
-
-      <section
-        id="notifications-sheet"
-        class="sheet notifications-sheet"
-        hidden
-        role="dialog"
-        aria-modal="true"
-        aria-label="Notifications"
-      >
-        <div class="sheet__handle" aria-hidden="true"></div>
-        <div class="sheet__content">
-          <div class="notifications-sheet__header">
-            <div>
-              <div class="muted">Dashboard Inbox</div>
-              <h3 class="notifications-sheet__title">Notifications</h3>
-            </div>
-            <button id="notifications-mark-all" class="btn btn-ghost btn-sm" type="button">
-              Clear list
-            </button>
-          </div>
-
-          <div id="notifications-list" class="notifications-list">
-            <p class="text-muted">No notifications yet.</p>
-          </div>
         </div>
       </section>
 
@@ -391,12 +346,13 @@
                     <p class="dashboard-page__eyebrow">Page 2</p>
                     <h2 class="dashboard-page__title">Cloud Journal</h2>
                     <p class="dashboard-page__subtitle">
-                      Your cloud-synced writing and task planning space, always visible as a dashboard page.
+                      Today’s Wave, today’s Duck, and the thoughts you want to remember.
                     </p>
                   </div>
                 </div>
 
-                <div id="planner-section"></div>
+                <div id="today-wave-section"></div>
+                <div id="journal-section"></div>
               </div>
             </section>
 
@@ -404,17 +360,17 @@
             <section
               class="dashboard-page"
               data-page="2"
-              data-page-name="Wave Calendar"
-              aria-label="Wave Calendar"
+              data-page-name="Journal History"
+              aria-label="Journal History"
               aria-hidden="true"
             >
               <div class="container dashboard-page__card">
                 <div class="dashboard-page__header">
                   <div>
                     <p class="dashboard-page__eyebrow">Page 3</p>
-                    <h2 class="dashboard-page__title">Wave Calendar</h2>
+                    <h2 class="dashboard-page__title">Journal History</h2>
                     <p class="dashboard-page__subtitle">
-                      See your month as a living rhythm map and interact with the flow of your SineDay cycle.
+                      See the month as a readable memory map of actual SineDays, saved thoughts, and felt ducks.
                     </p>
                   </div>
                 </div>
@@ -427,17 +383,17 @@
             <section
               class="dashboard-page"
               data-page="3"
-              data-page-name="Printables"
-              aria-label="Printables"
+              data-page-name="Journal Printables"
+              aria-label="Journal Printables"
               aria-hidden="true"
             >
               <div class="container dashboard-page__card">
                 <div class="dashboard-page__header">
                   <div>
                     <p class="dashboard-page__eyebrow">Page 4</p>
-                    <h2 class="dashboard-page__title">Printables</h2>
+                    <h2 class="dashboard-page__title">Journal Printables</h2>
                     <p class="dashboard-page__subtitle">
-                      Generate premium printable planner and calendar pages designed to match your rhythm.
+                      Download monthly rhythm maps and weekly reflection pages for your journal binder.
                     </p>
                   </div>
                 </div>
@@ -446,28 +402,6 @@
               </div>
             </section>
 
-            <!-- Page 5 -->
-            <section
-              class="dashboard-page"
-              data-page="4"
-              data-page-name="Social Planner"
-              aria-label="Social Planner"
-              aria-hidden="true"
-            >
-              <div class="container dashboard-page__card">
-                <div class="dashboard-page__header">
-                  <div>
-                    <p class="dashboard-page__eyebrow">Page 5</p>
-                    <h2 class="dashboard-page__title">Social Planner</h2>
-                    <p class="dashboard-page__subtitle">
-                      Shared monthly planning with friend requests, approvals, member ducks, and collaborative day cards.
-                    </p>
-                  </div>
-                </div>
-
-                <div id="social-planner-section"></div>
-              </div>
-            </section>
           </div>
         </div>
 
@@ -484,15 +418,8 @@
       <div class="dashboard-page-nav" aria-label="Dashboard page navigation">
         <button class="dashboard-page-nav__dot is-active" type="button" data-page-target="0" aria-label="Go to Your Origin Ducks" aria-pressed="true"></button>
         <button class="dashboard-page-nav__dot" type="button" data-page-target="1" aria-label="Go to Cloud Journal" aria-pressed="false"></button>
-        <button class="dashboard-page-nav__dot" type="button" data-page-target="2" aria-label="Go to Wave Calendar" aria-pressed="false"></button>
-        <button class="dashboard-page-nav__dot" type="button" data-page-target="3" aria-label="Go to Printables" aria-pressed="false"></button>
-        <button
-          class="dashboard-page-nav__dot"
-          type="button"
-          data-page-target="4"
-          aria-label="Go to Social Planner"
-          aria-pressed="false"
-        ></button>
+        <button class="dashboard-page-nav__dot" type="button" data-page-target="2" aria-label="Go to Journal History" aria-pressed="false"></button>
+        <button class="dashboard-page-nav__dot" type="button" data-page-target="3" aria-label="Go to Journal Printables" aria-pressed="false"></button>
       </div>
     </section>
     </div>
@@ -506,7 +433,7 @@
           Operated by RaLux LLC DBA SineDay
         </p>
         <p class="site-footer__meta">
-          Digital rhythm-based planning, printable calendars, and premium subscription tools.
+          Digital journaling, SineDuck reflections, printable rhythm pages, and premium subscription tools.
         </p>
       </div>
 
