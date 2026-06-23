@@ -433,26 +433,36 @@ export async function renderDayPdf({
 
   drawFooter(page, font, W, yy || new Date().getUTCFullYear());
 
-  const moodDuckH = 34;
-  const duckGap = 6;
+  const moodDuckH = 30;
+  const duckGap = 8;
   const duckSlotW = (W - margin * 2 - duckGap * 8) / 9;
   const moodLabelSize = 7;
   const moodLabelGap = 5;
+  const moodArcAmplitude = 16;
 
-  function drawMoodDuckRow(rowBottomY, startDay) {
-    for (let col = 0; col < 9; col++) {
+  function moodDuckArcOffset(col, cols, inverted = false) {
+    if (cols <= 1 || moodArcAmplitude <= 0) return 0;
+    const sign = inverted ? -1 : 1;
+    return sign * moodArcAmplitude * Math.sin((col / (cols - 1)) * Math.PI);
+  }
+
+  function drawMoodDuckRow(baseRowBottomY, startDay, { invertedArc = false } = {}) {
+    const cols = 9;
+
+    for (let col = 0; col < cols; col++) {
       const day = startDay + col;
       const slotX = margin + col * (duckSlotW + duckGap);
       const centerX = slotX + duckSlotW / 2;
+      const duckBottomY = baseRowBottomY + moodDuckArcOffset(col, cols, invertedArc);
 
       const img = duckCache.get(day);
-      if (img) drawScaledImage(page, img, centerX, rowBottomY, moodDuckH);
+      if (img) drawScaledImage(page, img, centerX, duckBottomY, moodDuckH);
 
       const label = String(day);
       const labelW = bold.widthOfTextAtSize(label, moodLabelSize);
       page.drawText(label, {
         x: centerX - labelW / 2,
-        y: rowBottomY - moodLabelSize - moodLabelGap,
+        y: duckBottomY - moodLabelSize - moodLabelGap,
         size: moodLabelSize,
         font: bold,
         color: black
@@ -472,10 +482,10 @@ export async function renderDayPdf({
   });
 
   const topDuckBottomY = headerY - moodDuckH - 28;
-  drawMoodDuckRow(topDuckBottomY, 1);
+  drawMoodDuckRow(topDuckBottomY, 1, { invertedArc: false });
 
   const bottomDuckBottomY = margin + 52;
-  drawMoodDuckRow(bottomDuckBottomY, 10);
+  drawMoodDuckRow(bottomDuckBottomY, 10, { invertedArc: true });
 
   page.drawText("Choose the duck that matches the moment.", {
     x: margin,
