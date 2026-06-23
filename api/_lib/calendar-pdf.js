@@ -436,6 +436,8 @@ export async function renderDayPdf({
   const moodDuckH = 34;
   const duckGap = 6;
   const duckSlotW = (W - margin * 2 - duckGap * 8) / 9;
+  const moodLabelSize = 7;
+  const moodLabelGap = 5;
 
   function drawMoodDuckRow(rowBottomY, startDay) {
     for (let col = 0; col < 9; col++) {
@@ -447,26 +449,29 @@ export async function renderDayPdf({
       if (img) drawScaledImage(page, img, centerX, rowBottomY, moodDuckH);
 
       const label = String(day);
-      const labelW = bold.widthOfTextAtSize(label, 7);
+      const labelW = bold.widthOfTextAtSize(label, moodLabelSize);
       page.drawText(label, {
         x: centerX - labelW / 2,
-        y: rowBottomY - moodDuckH - 9,
-        size: 7,
+        y: rowBottomY - moodLabelSize - moodLabelGap,
+        size: moodLabelSize,
         font: bold,
         color: black
       });
     }
   }
 
-  page.drawText("How do you feel today? Circle a duck.", {
+  const headerText = "How did the day's wave feel? Circle a duck.";
+  const headerY = H - margin - 18;
+
+  page.drawText(headerText, {
     x: margin,
-    y: H - margin - 6,
+    y: headerY,
     size: 12,
     font: bold,
     color: black
   });
 
-  const topDuckBottomY = H - margin - 28;
+  const topDuckBottomY = headerY - moodDuckH - 28;
   drawMoodDuckRow(topDuckBottomY, 1);
 
   const bottomDuckBottomY = margin + 52;
@@ -481,7 +486,7 @@ export async function renderDayPdf({
   });
 
   const centerX = W / 2;
-  const infoTop = topDuckBottomY - moodDuckH - 24;
+  const infoTop = topDuckBottomY - 40;
   const infoDuckH = 42;
   const infoBottom = infoTop - 84;
 
