@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { calculateSineDayForYmd, DAY_DATA } from "../../js/sineday-engine.js";
+import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
 import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
 import { isRtlLocale } from "../../shared/i18n.js";
 
@@ -407,8 +407,6 @@ export async function renderDayPdf({
   const H = 792;
   const margin = 36;
   const black = rgb(0, 0, 0);
-  const lightBorder = rgb(0.78, 0.78, 0.78);
-  const softFill = rgb(0.985, 0.985, 0.985);
 
   const pdf = await PDFDocument.create();
   const page = pdf.addPage([W, H]);
@@ -424,7 +422,6 @@ export async function renderDayPdf({
   const profile = profiles[0] || null;
   const result = profile?.birthdate ? calculateSineDayForYmd(profile.birthdate, dateYmd) : null;
   const dayNumber = result?.day || null;
-  const dayInfo = dayNumber ? DAY_DATA.find((d) => d.day === dayNumber) : null;
 
   const dateText = new Intl.DateTimeFormat(locale, {
     weekday: "long",
@@ -436,148 +433,116 @@ export async function renderDayPdf({
 
   drawFooter(page, font, W, yy || new Date().getUTCFullYear());
 
-  const prompt = "How do you feel today? Circle a duck.";
-  page.drawText(prompt, {
+  const moodDuckH = 34;
+  const duckGap = 6;
+  const duckSlotW = (W - margin * 2 - duckGap * 8) / 9;
+
+  function drawMoodDuckRow(rowBottomY, startDay) {
+    for (let col = 0; col < 9; col++) {
+      const day = startDay + col;
+      const slotX = margin + col * (duckSlotW + duckGap);
+      const centerX = slotX + duckSlotW / 2;
+
+      const img = duckCache.get(day);
+      if (img) drawScaledImage(page, img, centerX, rowBottomY, moodDuckH);
+
+      const label = String(day);
+      const labelW = bold.widthOfTextAtSize(label, 7);
+      page.drawText(label, {
+        x: centerX - labelW / 2,
+        y: rowBottomY - moodDuckH - 9,
+        size: 7,
+        font: bold,
+        color: black
+      });
+    }
+  }
+
+  page.drawText("How do you feel today? Circle a duck.", {
     x: margin,
-    y: H - margin - 4,
+    y: H - margin - 6,
     size: 12,
     font: bold,
     color: black
   });
 
-  const cardGap = 4;
-  const cardW = (W - margin * 2 - cardGap * 8) / 9;
-  const cardH = 58;
-  const topCardY = H - margin - 72;
-  const bottomCardY = margin + 28;
+  const topDuckBottomY = H - margin - 28;
+  drawMoodDuckRow(topDuckBottomY, 1);
 
-  function drawMoodDuck(day, rowY, col) {
-    const x = margin + col * (cardW + cardGap);
+  const bottomDuckBottomY = margin + 52;
+  drawMoodDuckRow(bottomDuckBottomY, 10);
 
-    page.drawRectangle({
-      x,
-      y: rowY,
-      width: cardW,
-      height: cardH,
-      borderWidth: 0.9,
-      borderColor: lightBorder,
-      color: softFill
-    });
-
-    const img = duckCache.get(day);
-    if (img) drawScaledImage(page, img, x + cardW / 2, rowY + 17, 32);
-
-    const label = String(day);
-    const labelW = bold.widthOfTextAtSize(label, 8);
-    page.drawText(label, {
-      x: x + cardW / 2 - labelW / 2,
-      y: rowY + 7,
-      size: 8,
-      font: bold,
-      color: black
-    });
-  }
-
-  for (let day = 1; day <= 9; day++) drawMoodDuck(day, topCardY, day - 1);
-
-  const bottomPrompt = "Choose the duck that matches the moment.";
-  page.drawText(bottomPrompt, {
+  page.drawText("Choose the duck that matches the moment.", {
     x: margin,
-    y: bottomCardY + cardH + 10,
+    y: bottomDuckBottomY + moodDuckH + 14,
     size: 10,
     font,
     color: black
   });
 
-  for (let day = 10; day <= 18; day++) drawMoodDuck(day, bottomCardY, day - 10);
-
-  const middleTop = topCardY - 28;
-  const middleBottom = bottomCardY + cardH + 34;
-  const middleX = margin;
-  const middleW = W - margin * 2;
   const centerX = W / 2;
+  const infoTop = topDuckBottomY - moodDuckH - 24;
+  const infoDuckH = 42;
+  const infoBottom = infoTop - 84;
 
-  page.drawRectangle({
-    x: middleX,
-    y: middleBottom,
-    width: middleW,
-    height: middleTop - middleBottom,
-    borderWidth: 1.25,
-    borderColor: rgb(0.72, 0.72, 0.72),
-    color: rgb(1, 1, 1)
-  });
-
-  const dateW = bold.widthOfTextAtSize(dateText, 18);
+  const dateW = bold.widthOfTextAtSize(dateText, 14);
   page.drawText(dateText, {
     x: centerX - dateW / 2,
-    y: middleTop - 34,
-    size: 18,
+    y: infoTop - 14,
+    size: 14,
     font: bold,
     color: black
   });
 
   const profileText = titleSuffix ? `Journal page for ${titleSuffix}` : "Daily SineDay journal page";
-  const profileW = font.widthOfTextAtSize(profileText, 10);
+  const profileW = font.widthOfTextAtSize(profileText, 9);
   page.drawText(profileText, {
     x: centerX - profileW / 2,
-    y: middleTop - 52,
-    size: 10,
+    y: infoTop - 28,
+    size: 9,
     font,
     color: black
   });
 
   if (dayNumber) {
     const todayDuck = duckCache.get(dayNumber);
-    if (todayDuck) drawScaledImage(page, todayDuck, centerX, middleTop - 142, 78);
-
-    const dayTitle = `Today's SineDuck: Day ${dayNumber}`;
-    const dayTitleW = bold.widthOfTextAtSize(dayTitle, 14);
-    page.drawText(dayTitle, {
-      x: centerX - dayTitleW / 2,
-      y: middleTop - 162,
-      size: 14,
-      font: bold,
-      color: black
-    });
-
-    if (dayInfo?.phase) {
-      const phase = String(dayInfo.phase).replace(/\s*•\s*/g, " - ");
-      const phaseW = font.widthOfTextAtSize(phase, 9);
-      page.drawText(phase, {
-        x: centerX - phaseW / 2,
-        y: middleTop - 178,
-        size: 9,
-        font,
-        color: black
-      });
-    }
-
-    if (dayInfo?.description) {
-      const descW = font.widthOfTextAtSize(dayInfo.description, 10);
-      page.drawText(dayInfo.description, {
-        x: centerX - descW / 2,
-        y: middleTop - 196,
-        size: 10,
-        font,
-        color: black
-      });
-    }
+    if (todayDuck) drawScaledImage(page, todayDuck, centerX, infoBottom + 4, infoDuckH);
   }
 
+  const writeTop = infoBottom - 8;
+  const writeBottom = bottomDuckBottomY + moodDuckH + 36;
+  const writeX = margin;
+  const writeW = W - margin * 2;
+
+  page.drawRectangle({
+    x: writeX,
+    y: writeBottom,
+    width: writeW,
+    height: writeTop - writeBottom,
+    borderWidth: 1.25,
+    borderColor: rgb(0.72, 0.72, 0.72),
+    color: rgb(1, 1, 1)
+  });
+
   page.drawText("Today's thoughts", {
-    x: middleX + 16,
-    y: middleTop - 232,
-    size: 13,
+    x: writeX + 14,
+    y: writeTop - 22,
+    size: 12,
     font: bold,
     color: black
   });
 
+  const lineStep = 16;
+  const firstLineY = writeTop - 40;
+  const lastLineY = writeBottom + 14;
+  const lineCount = Math.max(12, Math.floor((firstLineY - lastLineY) / lineStep));
+
   drawWritingLines(page, {
-    x1: middleX + 16,
-    x2: middleX + middleW - 16,
-    startY: middleTop - 260,
-    count: 11,
-    step: 18
+    x1: writeX + 14,
+    x2: writeX + writeW - 14,
+    startY: firstLineY,
+    count: lineCount,
+    step: lineStep
   });
 
   return await pdf.save();
