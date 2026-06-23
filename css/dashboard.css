@@ -1091,7 +1091,7 @@ option {
 }
 
 .account-actions--secondary .btn-ghost:hover {
-  background: rgba(122, 167, 255, 0.1);
+  background: rgba(122, 167, 255, 0.14);
   border-color: rgba(122, 167, 255, 0.36);
 }
 
@@ -3585,7 +3585,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 /* ===========================
-   Social Planner + notifications
+   Legacy shared calendar styles + notifications
    =========================== */
 
 .social-day-sheet,
@@ -4834,8 +4834,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .journal-history__loading {
   padding: 18px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(245, 247, 255, 0.62);
+  background: #F8FAFC;
+  color: #344054;
   font-size: 0.9rem;
   font-weight: 800;
   text-align: center;
@@ -4849,8 +4849,41 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   color: rgba(245, 247, 255, 0.75);
 }
 
+.journal-history__empty {
+  background: #F8FAFC;
+  color: #344054;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 .journal-history-frame {
   gap: 16px;
+}
+
+/* Journal History sits on a white calendar card. Force dark, readable text
+   so it does not inherit the dashboard's glass/white text palette. */
+.journal-history-frame,
+.journal-history-frame button,
+.journal-history-frame input,
+.journal-history-frame .journal-frame__range,
+.journal-history-frame .wcal-frame__title {
+  color: #1A1A1A;
+}
+
+.journal-history-frame .journal-frame__range {
+  color: #1A1A1A;
+  font-weight: 900;
+}
+
+.journal-history-frame .journal-frame__navbtn {
+  color: #1A1A1A;
+  background: rgba(0, 0, 0, 0.035);
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.journal-history-frame .journal-frame__navbtn:hover,
+.journal-history-frame .journal-frame__navbtn:focus-visible {
+  background: rgba(122, 167, 255, 0.12);
+  border-color: rgba(122, 167, 255, 0.48);
 }
 
 .journal-history__grid {
@@ -4860,7 +4893,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal-history__weekday {
-  color: rgba(245, 247, 255, 0.58);
+  color: #5B6370;
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -4870,16 +4903,16 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .journal-history__cell {
   position: relative;
-  min-height: 104px;
+  min-height: 112px;
   display: grid;
   align-content: start;
   justify-items: center;
   gap: 4px;
   padding: 8px 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.045);
-  color: #F5F7FF;
+  background: #FFFFFF;
+  color: #1A1A1A;
   cursor: pointer;
   overflow: hidden;
 }
@@ -4894,13 +4927,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal-history__cell--has-entry {
-  background: rgba(122, 167, 255, 0.1);
+  background: rgba(122, 167, 255, 0.14);
 }
 
 .journal-history__day-num {
   justify-self: start;
-  color: rgba(245, 247, 255, 0.82);
-  font-size: 0.76rem;
+  color: #111827;
+  font-size: 0.82rem;
   font-weight: 900;
 }
 
@@ -4911,14 +4944,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal-history__felt {
-  display: inline-grid;
-  grid-auto-flow: column;
+  display: inline-flex;
   align-items: center;
   gap: 3px;
   padding: 2px 5px 2px 3px;
   border-radius: 999px;
-  background: rgba(5, 6, 10, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(245, 247, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .journal-history__felt img {
@@ -4928,8 +4960,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal-history__felt-label {
-  color: rgba(245, 247, 255, 0.68);
-  font-size: 0.58rem;
+  color: #344054;
+  font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -4938,8 +4970,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   position: absolute;
   right: 8px;
   bottom: 5px;
-  color: #AFC6FF;
-  font-size: 1.1rem;
+  color: #4F7DE8;
+  font-size: 1.18rem;
   line-height: 1;
 }
 
