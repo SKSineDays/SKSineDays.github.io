@@ -192,20 +192,22 @@ export class JournalUI {
 
     const actualWrap = el("div", "journal__actual-duck");
     if (actual?.day) {
+      const imgWrap = el("div", "journal-actual-duck-image duck-image-on-white");
       const img = document.createElement("img");
       img.src = duckUrlFromSinedayNumber(actual.day);
       img.alt = `Actual SineDuck Day ${actual.day}`;
       img.loading = "lazy";
+      imgWrap.append(img);
       const label = el("div", "journal__actual-label");
       label.textContent = `Actual SineDay ${actual.day}`;
       const phase = el("div", "journal__actual-phase");
       phase.textContent = actual.phase || "";
-      actualWrap.append(img, label, phase);
+      actualWrap.append(imgWrap, label, phase);
     }
     hero.append(heroText, actualWrap);
 
     const textarea = document.createElement("textarea");
-    textarea.className = "journal__textarea";
+    textarea.className = "journal__textarea journal-entry-field-light";
     textarea.placeholder = isToday
       ? "What do you want to remember from today?"
       : "What do you want to remember from this day?";
@@ -249,14 +251,16 @@ export class JournalUI {
       btn.setAttribute("aria-label", `Felt SineDay ${day}`);
       if (entry.felt_sineday === day) btn.classList.add("is-selected");
 
+      const imgWrap = el("span", "felt-duck-image duck-image-on-white");
       const img = document.createElement("img");
       img.src = duckUrlFromSinedayNumber(day);
       img.alt = "";
       img.loading = "lazy";
       img.setAttribute("aria-hidden", "true");
+      imgWrap.append(img);
       const label = el("span", "journal__duck-choice-label");
       label.textContent = `Day ${day}`;
-      btn.append(img, label);
+      btn.append(imgWrap, label);
 
       btn.addEventListener("click", () => {
         const current = entry.felt_sineday === day ? null : day;

@@ -248,7 +248,9 @@ export class JournalHistoryUI {
       grid.append(cell);
     }
 
-    this.mountEl.append(grid);
+    const scroll = el("div", "journal-history-scroll");
+    scroll.append(grid);
+    this.mountEl.append(scroll);
   }
 
   async _loadEntries(profileId, startYmd, endYmd) {
