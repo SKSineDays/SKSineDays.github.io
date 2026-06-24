@@ -153,8 +153,41 @@ body {
   transition: transform 0.2s ease;
 }
 
+.duck-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+  overflow: hidden;
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.duck-icon-badge img,
+.duck-icon-badge .dashboard-tab__icon {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  display: block;
+  filter: none;
+}
+
 .dashboard-tab.is-active .dashboard-tab__icon {
   transform: scale(1.08);
+}
+
+.dashboard-tab.is-active .duck-icon-badge {
+  transform: scale(1.08);
+}
+
+.dashboard-tab.is-active .duck-icon-badge .dashboard-tab__icon {
+  transform: none;
 }
 
 .dashboard-tab__label {
@@ -268,6 +301,18 @@ body {
     height: 30px;
   }
 
+  .duck-icon-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  .duck-icon-badge img,
+  .duck-icon-badge .dashboard-tab__icon {
+    width: 82%;
+    height: 82%;
+  }
+
   .dashboard-tab__label {
     font-size: 10px;
   }
@@ -301,6 +346,12 @@ body {
   .dashboard-tab__icon {
     width: 28px;
     height: 28px;
+  }
+
+  .duck-icon-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
   }
 
   .dashboard-tab__label {
@@ -4697,11 +4748,60 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.today-wave-card__duck img {
-  width: 88%;
-  height: 88%;
+.sineduck-art-badge {
+  width: min(190px, 52vw);
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline: auto;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+  overflow: hidden;
+  border: none;
+}
+
+.sineduck-art-badge img,
+.sineduck-art-badge .today-day-details-card__image {
+  width: 84%;
+  height: 84%;
   object-fit: contain;
-  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.28));
+  display: block;
+  filter: none;
+}
+
+.sineduck-art-badge.is-small {
+  width: 118px;
+  border-radius: 22px;
+}
+
+.sineduck-art-badge.is-tiny {
+  width: 58px;
+  border-radius: 14px;
+}
+
+.today-wave-card__duck.sineduck-art-badge {
+  width: min(190px, 52vw);
+  background: #ffffff;
+  border: none;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.36),
+    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+}
+
+.today-wave-card__duck.sineduck-art-badge.is-small {
+  width: 118px;
+  border-radius: 22px;
+}
+
+.today-wave-card__duck img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: none;
 }
 
 .journal-frame {
@@ -4759,6 +4859,37 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   text-align: center;
 }
 
+.duck-image-on-white {
+  background: #ffffff;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+}
+
+.duck-image-on-white img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  display: block;
+}
+
+.journal-actual-duck-image {
+  width: 124px;
+  height: 124px;
+  margin: 0 auto 14px;
+}
+
+.felt-duck-image {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
+}
+
 .journal__actual-duck img {
   width: 86px;
   height: 86px;
@@ -4792,6 +4923,40 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   line-height: 1.65;
   outline: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.journal-entry-card-light,
+.journal-entry-field-light {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  min-height: 340px;
+  border-radius: 28px;
+  padding: 24px;
+  font-size: 1.1rem;
+  line-height: 1.55;
+}
+
+.journal-entry-card-light textarea,
+textarea.journal-entry-field-light {
+  background: #ffffff;
+  color: #111827;
+  caret-color: #111827;
+}
+
+.journal-entry-card-light textarea::placeholder,
+textarea.journal-entry-field-light::placeholder {
+  color: rgba(17, 24, 39, 0.52);
+}
+
+textarea.journal-entry-field-light:focus {
+  border-color: rgba(122, 167, 255, 0.62);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    0 0 0 4px rgba(122, 167, 255, 0.14);
 }
 
 .journal__textarea:focus {
@@ -4857,6 +5022,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   width: 48px;
   height: 48px;
   object-fit: contain;
+}
+
+.journal__duck-choice .felt-duck-image img {
+  width: 84%;
+  height: 84%;
 }
 
 .journal__duck-choice-label {
@@ -5015,10 +5185,34 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-color: rgba(122, 167, 255, 0.48);
 }
 
+.journal-history-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 12px;
+}
+
+.journal-history-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.journal-history-scroll::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.08);
+  border-radius: 999px;
+}
+
+.journal-history-scroll::-webkit-scrollbar-thumb {
+  background: rgba(122, 167, 255, 0.55);
+  border-radius: 999px;
+}
+
 .journal-history__grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(7, 72px);
+  gap: 14px;
+  width: max-content;
+  min-width: max-content;
 }
 
 .journal-history__weekday {
@@ -5032,7 +5226,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .journal-history__cell {
   position: relative;
-  min-height: 132px;
+  width: 72px;
+  min-width: 72px;
+  height: 164px;
+  min-height: 164px;
+  flex-shrink: 0;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -5104,6 +5302,37 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   line-height: 1;
 }
 
+@media (min-width: 760px) {
+  .journal-history-scroll {
+    overflow-x: visible;
+  }
+
+  .journal-history__grid {
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .journal-history-scroll {
+    overflow-x: auto;
+  }
+
+  .journal-history__grid {
+    grid-template-columns: repeat(7, 72px);
+    min-width: calc((72px * 7) + (14px * 6));
+  }
+
+  .journal-actual-duck-image {
+    width: 112px;
+    height: 112px;
+  }
+
+  .felt-duck-image {
+    width: 64px;
+    height: 64px;
+  }
+}
+
 @media (max-width: 720px) {
   .today-wave-card,
   .journal__hero {
@@ -5117,30 +5346,6 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
   .journal__duck-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .journal-history__grid {
-    gap: 6px;
-  }
-
-  .journal-history__cell {
-    min-height: 112px;
-    padding: 7px 4px 9px;
-    border-radius: 14px;
-  }
-
-  .journal-history__duck {
-    width: 48px;
-    height: 48px;
-  }
-
-  .journal-history__felt img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .journal-history__felt-label {
-    font-size: 0.66rem;
   }
 }
 

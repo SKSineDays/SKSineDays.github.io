@@ -828,7 +828,7 @@ function renderTodayDayDetailsSection(result) {
       ${
         imageUrl
           ? `
-        <div class="today-day-details-card__media">
+        <div class="today-day-details-card__media sineduck-art-badge">
           <img
             class="today-day-details-card__image"
             src="${escapeHtml(imageUrl)}"
@@ -903,7 +903,7 @@ function renderTodayWaveSection() {
           </button>
         </div>
       </div>
-      <div class="today-wave-card__duck">
+      <div class="today-wave-card__duck sineduck-art-badge is-small">
         <img src="${duckUrlFromSinedayNumber(result.day)}" alt="Today’s SineDuck Day ${escapeHtml(String(result.day))}">
       </div>
     </article>
