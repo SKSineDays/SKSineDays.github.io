@@ -184,11 +184,7 @@ export class JournalUI {
     eyebrow.textContent = isToday ? "Today’s Thoughts" : "Your Thoughts";
     const title = el("h3", "journal__title");
     title.textContent = this.getDateLabel(this.locale);
-    const copy = el("p", "journal__copy");
-    copy.textContent = isToday
-      ? "Write what happened, what it meant, and which duck the day felt like. There is no wrong choice."
-      : "Return to this day whenever you want. Capture what you lived and which duck it felt like.";
-    heroText.append(eyebrow, title, copy);
+    heroText.append(eyebrow, title);
 
     const actualWrap = el("div", "journal__actual-duck");
     if (actual?.day) {

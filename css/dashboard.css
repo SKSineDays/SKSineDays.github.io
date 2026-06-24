@@ -1897,10 +1897,18 @@ option {
 }
 
 /* Month */
+.sdcal__month {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 10px;
+  scrollbar-gutter: stable;
+}
 .sdcal__weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(96px, 1fr));
   gap: 8px;
+  min-width: 720px;
 }
 
 .sdcal__weekday {
@@ -1911,18 +1919,32 @@ option {
 
 .sdcal__grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(96px, 1fr));
   gap: 8px;
+  min-width: 720px;
 }
 
 .sdcal__cell {
-  min-height: 90px;
+  min-height: 76px;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: #fff;
-  padding: 10px;
+  padding: 9px 10px;
   display: grid;
-  gap: 6px;
+  gap: 4px;
+  align-content: start;
+}
+
+.sdcal__month::-webkit-scrollbar {
+  height: 10px;
+}
+.sdcal__month::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sdcal__month::-webkit-scrollbar-thumb {
+  background: rgba(122, 167, 255, 0.28);
+  border-radius: 999px;
+  border: 2px solid #fff;
 }
 
 .sdcal__cell.is-out {
