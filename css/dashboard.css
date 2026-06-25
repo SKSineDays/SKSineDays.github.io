@@ -1154,11 +1154,16 @@ option {
 
 .account-actions--secondary {
   margin-top: 10px;
+  justify-content: center;
 }
 
 .account-actions--secondary .btn-ghost {
   width: 100%;
   min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   border-radius: 14px;
   border: 1px solid rgba(122, 167, 255, 0.24);
   background: rgba(122, 167, 255, 0.06);
@@ -4878,8 +4883,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal__actual-duck {
-  width: 118px;
-  min-height: 146px;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  justify-self: center;
   display: grid;
   justify-items: center;
   gap: 6px;
@@ -4910,21 +4917,15 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal-actual-duck-image {
-  width: 124px;
-  height: 124px;
-  margin: 0 auto 14px;
+  width: 96px;
+  height: 96px;
+  margin: 0;
 }
 
 .felt-duck-image {
   width: 72px;
   height: 72px;
   margin: 0 auto 10px;
-}
-
-.journal__actual-duck img {
-  width: 86px;
-  height: 86px;
-  object-fit: contain;
 }
 
 .journal__actual-label {
@@ -5259,14 +5260,14 @@ textarea.journal-entry-field-light:focus {
   position: relative;
   width: 72px;
   min-width: 72px;
-  height: 164px;
-  min-height: 164px;
+  height: 108px;
+  min-height: 108px;
   flex-shrink: 0;
   display: grid;
   align-content: start;
   justify-items: center;
-  gap: 6px;
-  padding: 8px 6px 10px;
+  gap: 4px;
+  padding: 8px 6px 8px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 16px;
   background: #FFFFFF;
@@ -5354,8 +5355,8 @@ textarea.journal-entry-field-light:focus {
   }
 
   .journal-actual-duck-image {
-    width: 112px;
-    height: 112px;
+    width: 88px;
+    height: 88px;
   }
 
   .felt-duck-image {
