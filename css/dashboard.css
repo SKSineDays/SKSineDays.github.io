@@ -5241,7 +5241,7 @@ textarea.journal-entry-field-light:focus {
 
 .journal-history__grid {
   display: grid;
-  grid-template-columns: repeat(7, 72px);
+  grid-template-columns: repeat(7, 96px);
   gap: 14px;
   width: max-content;
   min-width: max-content;
@@ -5258,16 +5258,16 @@ textarea.journal-entry-field-light:focus {
 
 .journal-history__cell {
   position: relative;
-  width: 72px;
-  min-width: 72px;
-  height: 108px;
-  min-height: 108px;
+  width: 96px;
+  min-width: 96px;
+  height: 112px;
+  min-height: 112px;
   flex-shrink: 0;
   display: grid;
   align-content: start;
   justify-items: center;
-  gap: 4px;
-  padding: 8px 6px 8px;
+  gap: 3px;
+  padding: 6px 6px 8px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 16px;
   background: #FFFFFF;
@@ -5297,24 +5297,24 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-history__duck {
-  width: 58px;
-  height: 58px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
 .journal-history__felt {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px 3px 4px;
+  gap: 4px;
+  padding: 2px 7px 2px 3px;
   border-radius: 999px;
   background: rgba(245, 247, 255, 0.96);
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .journal-history__felt img {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
 }
 
@@ -5350,8 +5350,8 @@ textarea.journal-entry-field-light:focus {
   }
 
   .journal-history__grid {
-    grid-template-columns: repeat(7, 72px);
-    min-width: calc((72px * 7) + (14px * 6));
+    grid-template-columns: repeat(7, 96px);
+    min-width: calc((96px * 7) + (14px * 6));
   }
 
   .journal-actual-duck-image {
