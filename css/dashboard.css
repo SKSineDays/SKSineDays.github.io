@@ -137,12 +137,22 @@ body {
 }
 
 .dashboard-tab.is-active {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
   color: #f5f7ff;
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.18);
-  transform: translateY(2px);
+  transform: translateY(1px);
   z-index: 3;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.04);
+  }
 }
 
 .dashboard-tab__icon {
@@ -203,7 +213,7 @@ body {
 .dashboard-pager__viewport {
   overflow: hidden;
   min-width: 0;
-  border-radius: 0 22px 22px 22px;
+  border-radius: 0 0 22px 22px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: none;
   background: rgba(255, 255, 255, 0.02);
@@ -239,6 +249,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  border-radius: 0 0 20px 20px;
+  border-top: none;
+
+  &:hover {
+    transform: none;
+  }
 }
 
 /* Origin Ducks (page 1) fills the viewport; other tabs size to content. */
@@ -318,7 +334,7 @@ body {
   }
 
   .dashboard-pager__viewport {
-    border-radius: 0 18px 18px 18px;
+    border-radius: 0 0 18px 18px;
   }
 
   .dashboard-page__card {
@@ -361,7 +377,7 @@ body {
 
   .dashboard-page__card {
     padding: 18px;
-    border-radius: 18px;
+    border-radius: 0 0 18px 18px;
     gap: 16px;
   }
 
