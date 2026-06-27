@@ -237,13 +237,6 @@ export class JournalHistoryUI {
         cell.append(felt);
       }
 
-      if (hasSignal) {
-        const marker = el("span", "journal-history__entry-dot");
-        marker.setAttribute("aria-hidden", "true");
-        marker.textContent = entry.image_path ? "✦" : "•";
-        cell.append(marker);
-      }
-
       cell.addEventListener("click", () => this.onSelectDate?.(dateYmd));
       grid.append(cell);
     }
