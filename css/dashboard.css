@@ -101,7 +101,7 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  padding: 0 6px;
+  padding: 0;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -348,7 +348,6 @@ body {
 
 @media (max-width: 640px) {
   .dashboard-tabs {
-    padding: 0 2px;
     gap: 3px;
   }
 
@@ -5339,15 +5338,6 @@ textarea.journal-entry-field-light:focus {
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
-}
-
-.journal-history__entry-dot {
-  position: absolute;
-  right: 8px;
-  bottom: 5px;
-  color: #4F7DE8;
-  font-size: 1.18rem;
-  line-height: 1;
 }
 
 @media (min-width: 760px) {
