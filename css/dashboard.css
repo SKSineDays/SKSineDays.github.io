@@ -4938,9 +4938,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .felt-duck-image {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 10px;
+  width: min(100%, 72px);
+  aspect-ratio: 1;
+  height: auto;
+  margin: 0;
 }
 
 .journal__actual-label {
@@ -5021,6 +5022,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.045);
+  min-width: 0;
 }
 
 .journal__section-heading {
@@ -5034,12 +5036,16 @@ textarea.journal-entry-field-light:focus {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-top: 14px;
+  width: 100%;
+  min-width: 0;
 }
 
 .journal__duck-choice {
   display: grid;
   justify-items: center;
   gap: 5px;
+  width: 100%;
+  min-width: 0;
   padding: 9px 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
@@ -5366,8 +5372,7 @@ textarea.journal-entry-field-light:focus {
   }
 
   .felt-duck-image {
-    width: 64px;
-    height: 64px;
+    width: min(100%, 64px);
   }
 }
 
@@ -5384,6 +5389,11 @@ textarea.journal-entry-field-light:focus {
 
   .journal__duck-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .journal__duck-choice {
+    padding: 8px 4px;
   }
 }
 
