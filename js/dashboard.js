@@ -215,6 +215,59 @@ function isPaid() {
           currentSubscription.status === 'trialing');
 }
 
+function getPremiumLockCopy(featureKey) {
+  const copy = {
+    journal: {
+      eyebrow: "Premium Journal",
+      title: "Unlock Cloud Journal",
+      body: "Save your daily thoughts, felt ducks, and reflections across your SineDay wave.",
+      cta: "Upgrade to Premium"
+    },
+    history: {
+      eyebrow: "Premium History",
+      title: "Unlock Journal History",
+      body: "See your month as a memory map of SineDays, saved thoughts, and the ducks each day felt like.",
+      cta: "Upgrade to Premium"
+    },
+    printables: {
+      eyebrow: "Premium Printables",
+      title: "Unlock Journal Printables",
+      body: "Download daily, weekly, and monthly reflection pages for your journal binder.",
+      cta: "Upgrade to Premium"
+    }
+  };
+  return copy[featureKey] || copy.journal;
+}
+
+function renderPremiumLock(sectionId, featureKey) {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+
+  const copy = getPremiumLockCopy(featureKey);
+
+  section.innerHTML = `
+    <section class="premium-lock-card" aria-label="${escapeHtml(copy.title)}">
+      <div class="premium-lock-card__icon" aria-hidden="true">🔒</div>
+      <p class="premium-lock-card__eyebrow">${escapeHtml(copy.eyebrow)}</p>
+      <h3 class="premium-lock-card__title">${escapeHtml(copy.title)}</h3>
+      <p class="premium-lock-card__body">${escapeHtml(copy.body)}</p>
+      <button class="btn btn-primary btn-sm premium-lock-card__button" type="button" data-premium-upgrade>
+        ${escapeHtml(copy.cta)}
+      </button>
+    </section>
+  `;
+
+  section.querySelector("[data-premium-upgrade]")?.addEventListener("click", () => {
+    document.getElementById("upgrade-btn")?.click();
+  });
+}
+
+function setPremiumPreviewVisibility(featureKey, visible) {
+  const preview = document.querySelector(`[data-premium-preview="${featureKey}"]`);
+  if (!preview) return;
+  preview.hidden = !visible;
+}
+
 /**
  * Check if user has an owner profile
  */
@@ -748,15 +801,17 @@ function renderProfiles() {
   renderTodayWaveSection();
 
   // Safety remount if journal surfaces were not mounted (e.g. owner created during onboarding)
-  if (!journalUI && getOwnerProfile()) {
-    mountJournalSection().catch(err => {
-      console.error("Failed to mount journal after profiles render:", err);
-    });
-  }
-  if (!journalHistoryUI && getOwnerProfile()) {
-    mountWaveCalendarSection().catch(err => {
-      console.error("Failed to mount journal history after profiles render:", err);
-    });
+  if (isPaid()) {
+    if (!journalUI && getOwnerProfile()) {
+      mountJournalSection().catch(err => {
+        console.error("Failed to mount journal after profiles render:", err);
+      });
+    }
+    if (!journalHistoryUI && getOwnerProfile()) {
+      mountWaveCalendarSection().catch(err => {
+        console.error("Failed to mount journal history after profiles render:", err);
+      });
+    }
   }
 
   updateDashboardPagerUI();
@@ -911,6 +966,9 @@ function renderTodayWaveSection() {
 
   document.getElementById("write-today-journal")?.addEventListener("click", async () => {
     setDashboardPage(1);
+    if (!isPaid()) {
+      return;
+    }
     if (journalUI) {
       await journalUI.setDate(todayYmd);
       syncJournalRangeLabel();
@@ -1199,9 +1257,12 @@ async function renderSubscriptionStatus() {
       });
     }
 
-    // Mount core journal surfaces for all authenticated users.
     await mountJournalSection();
     await mountWaveCalendarSection();
+
+    setPremiumPreviewVisibility("journal", false);
+    setPremiumPreviewVisibility("history", false);
+    setPremiumPreviewVisibility("printables", false);
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -1211,17 +1272,20 @@ async function renderSubscriptionStatus() {
     if (syncPremiumBtn) syncPremiumBtn.style.display = '';
     if (syncPremiumNote) syncPremiumNote.style.display = '';
 
-    if (calendarsSection) {
-      calendarsSection.innerHTML = `
-        <div class="locked-section">
-          <p>🔒 Premium Feature Locked</p>
-          <p class="text-muted">Upgrade to Premium to access printable journal pages, monthly rhythm maps, and weekly reflection sheets.</p>
-        </div>
-      `;
-    }
+    calendarsUI?.destroy?.();
+    calendarsUI = null;
+    journalUI?.destroy?.();
+    journalUI = null;
+    journalHistoryUI?.destroy?.();
+    journalHistoryUI = null;
 
-    await mountJournalSection();
-    await mountWaveCalendarSection();
+    renderPremiumLock("journal-section", "journal");
+    renderPremiumLock("wave-calendar-section", "history");
+    renderPremiumLock("calendars-section", "printables");
+
+    setPremiumPreviewVisibility("journal", true);
+    setPremiumPreviewVisibility("history", true);
+    setPremiumPreviewVisibility("printables", true);
   }
 
   updateDashboardPagerUI();
