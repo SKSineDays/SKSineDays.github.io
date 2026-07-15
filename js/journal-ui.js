@@ -74,6 +74,28 @@ function entryHasPersistableContent(entry) {
   return false;
 }
 
+function trapFocusWithin(container, event) {
+  if (event.key !== "Tab" || !container) return;
+  const focusable = Array.from(
+    container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((element) => element.getClientRects().length > 0);
+  if (!focusable.length) {
+    event.preventDefault();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 export class JournalUI {
   constructor(mountEl, opts = {}) {
     this.mountEl = mountEl;
@@ -92,6 +114,7 @@ export class JournalUI {
     this.entryCache = new Map();
     this.saveTimers = new Map();
     this._saveInFlight = new Map();
+    this._saveQueued = new Set();
     this._renderGen = 0;
     this._activeIndicator = null;
     this._activeSheetKeydown = null;
@@ -102,6 +125,7 @@ export class JournalUI {
       document.removeEventListener("keydown", this._activeSheetKeydown, true);
       this._activeSheetKeydown = null;
     }
+    document.body.classList.remove("modal-open");
     const pending = Array.from(this.saveTimers.keys());
     for (const key of pending) {
       clearTimeout(this.saveTimers.get(key));
@@ -126,6 +150,7 @@ export class JournalUI {
   }
 
   setSettings({ locale, weekStart }) {
+    this._flushCurrentEntrySync();
     if (locale) this.locale = locale;
     if (weekStart === 0 || weekStart === 1) this.weekStart = weekStart;
     this.render();
@@ -164,6 +189,7 @@ export class JournalUI {
       document.removeEventListener("keydown", this._activeSheetKeydown, true);
       this._activeSheetKeydown = null;
     }
+    document.body.classList.remove("modal-open");
     this.mountEl.innerHTML = "";
 
     if (!this.ownerProfile) {
@@ -424,6 +450,10 @@ export class JournalUI {
       ) {
         event.preventDefault();
         closeFeelingSheet();
+        return;
+      }
+      if (feelingSheet.getAttribute("aria-hidden") === "false") {
+        trapFocusWithin(feelingPanel, event);
       }
     };
     document.addEventListener("keydown", this._activeSheetKeydown, true);
@@ -571,21 +601,33 @@ export class JournalUI {
   async _removeImage(entry, indicator, previewEl, actionsEl, sectionEl) {
     if (!entry.image_path || !this.supabaseClient) return;
 
-    const path = entry.image_path;
+    const previous = {
+      image_path: entry.image_path,
+      image_mime_type: entry.image_mime_type,
+      image_size: entry.image_size,
+    };
+    const path = previous.image_path;
     this._setIndicator(indicator, "Removing image…");
 
     try {
-      await this.supabaseClient.storage.from(IMAGE_BUCKET).remove([path]);
       entry.image_path = null;
       entry.image_mime_type = null;
       entry.image_size = null;
       this._cacheEntry(entry);
       await this._saveEntry(entry);
+      const { error: removeError } = await this.supabaseClient.storage
+        .from(IMAGE_BUCKET)
+        .remove([path]);
+      if (removeError) {
+        console.warn("[Journal] Removed photo from entry but storage cleanup failed:", removeError);
+      }
       await this._renderImagePreview(previewEl, entry);
       this._syncImageActions(actionsEl, entry, indicator, previewEl);
       this._syncImagePresentation(entry, sectionEl);
       this._setIndicator(indicator, "Photo removed");
     } catch (err) {
+      Object.assign(entry, previous);
+      this._cacheEntry(entry);
       console.error("[Journal] Image remove failed:", err);
       this._setIndicator(indicator, "Could not remove image.", true);
     }
@@ -634,6 +676,14 @@ export class JournalUI {
 
   async _loadEntry(profileId, ymd) {
     if (!this.supabaseClient) return;
+    const key = entryKey(profileId, ymd);
+    if (
+      this.saveTimers.has(key) ||
+      this._saveInFlight.has(key) ||
+      this._saveQueued.has(key)
+    ) {
+      return;
+    }
     try {
       const { data, error } = await this.supabaseClient
         .from("journal_entries")
@@ -718,7 +768,17 @@ export class JournalUI {
 
     const key = entryKey(entry.profile_id, entry.entry_date);
     if (this._saveInFlight.has(key)) {
-      return this._saveInFlight.get(key);
+      this._saveQueued.add(key);
+      try {
+        await this._saveInFlight.get(key);
+      } catch (error) {
+        this._saveQueued.delete(key);
+        throw error;
+      }
+      if (this._saveQueued.delete(key)) {
+        return this._saveEntry(entry);
+      }
+      return;
     }
 
     const payload = {
@@ -744,7 +804,15 @@ export class JournalUI {
         .single();
       if (error) throw error;
       if (data) {
-        this._cacheEntry(data);
+        const hasNewerPending =
+          this._saveQueued.has(key) || this.saveTimers.has(key);
+        if (hasNewerPending) {
+          entry.id = data.id;
+          entry.created_at = data.created_at;
+          this._cacheEntry(entry);
+        } else {
+          this._cacheEntry(data);
+        }
         this.onEntrySaved?.(data);
       }
     })();

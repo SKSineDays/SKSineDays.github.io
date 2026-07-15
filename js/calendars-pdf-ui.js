@@ -23,6 +23,20 @@ function startOfWeekUTC(date, weekStart) {
   return addDaysUTC(date, -delta);
 }
 
+function civilDateUTCForTimeZone(timeZone) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = formatter.formatToParts(new Date());
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  const day = Number(parts.find((part) => part.type === "day")?.value);
+  return new Date(Date.UTC(year, month - 1, day, 12));
+}
+
 function el(tag, className) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -36,18 +50,19 @@ export class CalendarsPdfUI {
     this.weekStart = opts.weekStart ?? 0;
     this.profiles = opts.profiles || [];
 
-    const now = new Date();
-    this.year = now.getFullYear();
-    this.monthIndex = now.getMonth();
+    const initialProfile = this.profiles[0] || opts.ownerProfile || null;
+    const todayUTC = civilDateUTCForTimeZone(initialProfile?.timezone);
+    this.year = todayUTC.getUTCFullYear();
+    this.monthIndex = todayUTC.getUTCMonth();
 
     this.view = "month";
     this.profileFilter = null;
 
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12));
     this.dayDateUTC = todayUTC;
     this.weekStartDateUTC = startOfWeekUTC(todayUTC, this.weekStart);
 
     this.currentPdfUrl = null;
+    this.currentPdfExpiresAt = 0;
     this._previewRequestGen = 0;
     this._activePreviewKey = "";
     this._previewInFlight = false;
@@ -63,6 +78,7 @@ export class CalendarsPdfUI {
     this._previewInFlight = false;
     this.mountEl.innerHTML = "";
     this.currentPdfUrl = null;
+    this.currentPdfExpiresAt = 0;
   }
 
   setProfiles(profiles) {
@@ -73,8 +89,11 @@ export class CalendarsPdfUI {
 
   setSettings({ locale, weekStart }) {
     if (locale) this.locale = locale;
-    if (weekStart === 0 || weekStart === 1) this.weekStart = weekStart;
-    this.weekStartDateUTC = startOfWeekUTC(this.weekStartDateUTC, this.weekStart);
+    if ((weekStart === 0 || weekStart === 1) && weekStart !== this.weekStart) {
+      const representativeDay = addDaysUTC(this.weekStartDateUTC, 3);
+      this.weekStart = weekStart;
+      this.weekStartDateUTC = startOfWeekUTC(representativeDay, this.weekStart);
+    }
     this.render();
   }
 
@@ -84,6 +103,10 @@ export class CalendarsPdfUI {
   }
 
   setOwnerProfile(profile) {
+    if ((this.ownerProfile?.id || null) === (profile?.id || null)) {
+      this.ownerProfile = profile || null;
+      return;
+    }
     this.ownerProfile = profile || null;
     this.render();
   }
@@ -335,6 +358,7 @@ export class CalendarsPdfUI {
     if (!this._isVisibleInPager()) return;
     if (!this.profiles.length) {
       this.currentPdfUrl = null;
+      this.currentPdfExpiresAt = 0;
       this.btnDownload.disabled = true;
       this.openPreviewLink.hidden = true;
       this._setPreviewState("empty");
@@ -456,6 +480,7 @@ export class CalendarsPdfUI {
       this.content.append(empty);
       this.previewStage.hidden = true;
       this.currentPdfUrl = null;
+      this.currentPdfExpiresAt = 0;
       this.btnDownload.disabled = true;
       this.openPreviewLink.hidden = true;
       this._setPreviewState("empty");
@@ -466,6 +491,7 @@ export class CalendarsPdfUI {
     if (!this._isVisibleInPager()) {
       this.iframe.src = "";
       this.currentPdfUrl = null;
+      this.currentPdfExpiresAt = 0;
       this.btnDownload.disabled = true;
       this.openPreviewLink.hidden = true;
       this._setPreviewState("deferred");
@@ -491,6 +517,7 @@ export class CalendarsPdfUI {
     this._setPreviewState("loading");
     this.iframe.src = "";
     this.currentPdfUrl = null;
+    this.currentPdfExpiresAt = 0;
     this.btnDownload.disabled = true;
     this.openPreviewLink.hidden = true;
     this._activePreviewKey = previewKey;
@@ -558,6 +585,8 @@ export class CalendarsPdfUI {
       if (previewKey !== this._activePreviewKey) return;
 
       this.currentPdfUrl = j.url;
+      const expiresInSeconds = Math.max(0, Number(j.expiresIn) || 600);
+      this.currentPdfExpiresAt = Date.now() + expiresInSeconds * 1000;
 
       const iframeUrl = new URL(j.url, window.location.origin);
       iframeUrl.searchParams.set("_preview", String(Date.now()));
@@ -570,6 +599,7 @@ export class CalendarsPdfUI {
     } catch (e) {
       if (requestGen !== this._previewRequestGen) return;
       this.currentPdfUrl = null;
+      this.currentPdfExpiresAt = 0;
       this.btnDownload.disabled = true;
       this.openPreviewLink.hidden = true;
       this._setPreviewState(
@@ -587,7 +617,12 @@ export class CalendarsPdfUI {
     if (this._previewInFlight) return;
     const previewKey = this._getPreviewKey();
 
-    if (this.currentPdfUrl && this._activePreviewKey === previewKey) {
+    const urlIsFresh = this.currentPdfExpiresAt > Date.now() + 15000;
+    if (
+      this.currentPdfUrl &&
+      this._activePreviewKey === previewKey &&
+      urlIsFresh
+    ) {
       window.location.href = this.currentPdfUrl;
       return;
     }

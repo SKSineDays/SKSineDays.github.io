@@ -55,6 +55,7 @@ let dashboardPagerBound = false;
 let dashboardPagerResizeObserver = null;
 let deferredInstallPrompt = null;
 let installPromptAvailable = false;
+let subscriptionRenderGen = 0;
 
 /**
  * Initialize dashboard on page load
@@ -248,7 +249,11 @@ function renderPremiumLock(sectionId, featureKey) {
 
   section.innerHTML = `
     <section class="premium-lock-card" aria-label="${escapeHtml(copy.title)}">
-      <div class="premium-lock-card__icon" aria-hidden="true">🔒</div>
+      <div class="premium-lock-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M7.5 10V7.75a4.5 4.5 0 0 1 9 0V10m-10 0h11a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5v-7A1.5 1.5 0 0 1 6.5 10Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
       <p class="premium-lock-card__eyebrow">${escapeHtml(copy.eyebrow)}</p>
       <h3 class="premium-lock-card__title">${escapeHtml(copy.title)}</h3>
       <p class="premium-lock-card__body">${escapeHtml(copy.body)}</p>
@@ -605,6 +610,7 @@ function updateDashboardPagerUI({ syncActiveTabVisibility = false } = {}) {
     const isActive = index === dashboardPageIndex;
     page.classList.toggle("is-active", isActive);
     page.setAttribute("aria-hidden", isActive ? "false" : "true");
+    page.toggleAttribute("inert", !isActive);
   });
 
   tabs.forEach((tab, index) => {
@@ -622,6 +628,28 @@ function updateDashboardPagerUI({ syncActiveTabVisibility = false } = {}) {
   requestAnimationFrame(() => {
     syncDashboardPagerHeight();
   });
+}
+
+function trapFocusWithin(container, event) {
+  if (event.key !== "Tab" || !container) return;
+  const focusable = Array.from(
+    container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((element) => element.getClientRects().length > 0);
+  if (!focusable.length) {
+    event.preventDefault();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 }
 
 function setDashboardPage(index) {
@@ -664,10 +692,6 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".journal-feeling-sheet",
       ".journal-history-scroll",
       ".sdcal__viewer",
-      ".journal-frame__header",
-      ".journal-frame__nav",
-      ".journal-frame__view-toggle",
-      ".wcal-frame__header",
       ".dashboard-tabs",
       ".dashboard-tab",
       ".duck-ring",
@@ -740,17 +764,13 @@ function bindDashboardPager() {
   );
 
   window.addEventListener("keydown", (e) => {
-    const accountSheet = document.getElementById("account-sheet");
-    const addProfileSheet = document.getElementById("add-profile-sheet");
-    const onboarding = document.getElementById("owner-onboarding");
+    const modalOpen =
+      document.body.classList.contains("modal-open") ||
+      document.querySelector("#account-sheet:not([hidden])") ||
+      document.querySelector('.add-profile-sheet[aria-hidden="false"]') ||
+      document.querySelector('#owner-onboarding[aria-hidden="false"]');
 
-    const accountOpen = accountSheet && !accountSheet.hidden;
-    const addProfileOpen =
-      addProfileSheet && addProfileSheet.getAttribute("aria-hidden") === "false";
-    const onboardingOpen =
-      onboarding && onboarding.getAttribute("aria-hidden") === "false";
-
-    if (accountOpen || addProfileOpen || onboardingOpen) return;
+    if (modalOpen) return;
 
     const target = e.target;
     if (
@@ -1004,8 +1024,9 @@ function renderTodayWaveSection() {
   const ownerProfile = getOwnerProfile();
   if (!ownerProfile) {
     section.innerHTML = `
-      <div class="today-wave-card">
-        <p class="text-muted">Create your owner profile to see Today’s Wave.</p>
+      <div class="feature-empty-state">
+        <p class="feature-empty-state__title">Today’s Wave is waiting</p>
+        <p>Create your owner profile to begin.</p>
       </div>
     `;
     clearTodayDayDetailsSection();
@@ -1016,8 +1037,9 @@ function renderTodayWaveSection() {
   const result = calculateSineDayForTimezone(ownerProfile.birthdate, ownerProfile.timezone);
   if (!result || result.error) {
     section.innerHTML = `
-      <div class="today-wave-card">
-        <p class="text-muted">Today’s Wave could not be calculated yet.</p>
+      <div class="feature-empty-state">
+        <p class="feature-empty-state__title">Today’s Wave is still forming</p>
+        <p>It could not be calculated yet. Try again in a moment.</p>
       </div>
     `;
     clearTodayDayDetailsSection();
@@ -1111,7 +1133,13 @@ function renderTodayWaveSection() {
 /**
  * Mount standalone Journal section (owner-profile anchored)
  */
-async function mountJournalSection() {
+async function mountJournalSection(expectedSubscriptionGen = null) {
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen
+  ) {
+    return;
+  }
   const section = document.getElementById("journal-section");
   if (!section) return;
 
@@ -1129,6 +1157,12 @@ async function mountJournalSection() {
   const locale = getDashboardLocale();
   const weekStart = resolveWeekStart(userSettings);
   const client = await getSupabaseClient();
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen
+  ) {
+    return;
+  }
 
   const frame = document.createElement("div");
   frame.className = "journal-frame is-day-view";
@@ -1141,7 +1175,7 @@ async function mountJournalSection() {
   section.innerHTML = "";
   section.append(frame);
 
-  journalUI = new JournalUI(mount, {
+  const instance = new JournalUI(mount, {
     locale,
     weekStart,
     ownerProfile,
@@ -1151,15 +1185,30 @@ async function mountJournalSection() {
       journalHistoryUI?.refreshVisibleMonth?.();
     },
   });
+  journalUI = instance;
 
-  await journalUI.render();
+  await instance.render();
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen &&
+    journalUI === instance
+  ) {
+    instance.destroy();
+    journalUI = null;
+  }
 }
 
 /**
  * Mount Journal History section (owner-profile anchored).
  * Function name is kept for compatibility with the existing dashboard page mount flow.
  */
-async function mountWaveCalendarSection() {
+async function mountWaveCalendarSection(expectedSubscriptionGen = null) {
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen
+  ) {
+    return;
+  }
   const section = document.getElementById("wave-calendar-section");
   if (!section) return;
 
@@ -1177,6 +1226,12 @@ async function mountWaveCalendarSection() {
   const locale = getDashboardLocale();
   const weekStart = resolveWeekStart(userSettings);
   const client = await getSupabaseClient();
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen
+  ) {
+    return;
+  }
 
   const frame = document.createElement("div");
   frame.className = "wcal-frame journal-history-frame";
@@ -1188,7 +1243,7 @@ async function mountWaveCalendarSection() {
   section.innerHTML = "";
   section.append(frame);
 
-  journalHistoryUI = new JournalHistoryUI(mount, {
+  const instance = new JournalHistoryUI(mount, {
     locale,
     weekStart,
     ownerProfile,
@@ -1206,14 +1261,25 @@ async function mountWaveCalendarSection() {
       }
     },
   });
+  journalHistoryUI = instance;
 
-  await journalHistoryUI.render();
+  await instance.render();
+  if (
+    expectedSubscriptionGen !== null &&
+    expectedSubscriptionGen !== subscriptionRenderGen &&
+    journalHistoryUI === instance
+  ) {
+    instance.destroy();
+    journalHistoryUI = null;
+  }
 }
 
 /**
  * Render subscription status (single source: plan pill + renewal in drawer)
  */
 async function renderSubscriptionStatus() {
+  const renderGen = ++subscriptionRenderGen;
+  const paid = !!isPaid();
   const pill = document.getElementById('plan-pill');
   const renewalEl = document.getElementById('renewal-date');
   const upgradeBtn = document.getElementById('upgrade-btn');
@@ -1224,7 +1290,7 @@ async function renderSubscriptionStatus() {
   const calendarsSection = document.getElementById('calendars-section');
 
   if (pill) {
-    if (isPaid()) {
+    if (paid) {
       pill.className = 'pill pill--ok';
       pill.innerHTML = '<span class="pill-dot"></span>Premium';
     } else {
@@ -1233,7 +1299,7 @@ async function renderSubscriptionStatus() {
     }
   }
 
-  if (isPaid()) {
+  if (paid) {
     const renewalDate = currentSubscription?.current_period_end
       ? new Date(currentSubscription.current_period_end).toLocaleDateString()
       : '—';
@@ -1254,6 +1320,7 @@ async function renderSubscriptionStatus() {
       const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
       const weekStart = resolveWeekStart(userSettings);
       const client = await getSupabaseClient();
+      if (renderGen !== subscriptionRenderGen) return;
       const ownerProfile = getOwnerProfile();
 
       // (Re)mount calendars (PDF-first preview)
@@ -1268,8 +1335,10 @@ async function renderSubscriptionStatus() {
       });
     }
 
-    await mountJournalSection();
-    await mountWaveCalendarSection();
+    await mountJournalSection(renderGen);
+    if (renderGen !== subscriptionRenderGen) return;
+    await mountWaveCalendarSection(renderGen);
+    if (renderGen !== subscriptionRenderGen) return;
 
     setPremiumPreviewVisibility("journal", false);
     setPremiumPreviewVisibility("history", false);
@@ -1337,6 +1406,7 @@ function setupAccountSheet() {
       backdrop.hidden = true;
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
+      toggle.focus();
     }, 220);
   };
 
@@ -1348,7 +1418,9 @@ function setupAccountSheet() {
   backdrop.addEventListener('click', close);
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') close();
+    if (toggle.getAttribute('aria-expanded') !== 'true') return;
+    if (e.key === 'Escape') close();
+    trapFocusWithin(sheet, e);
   });
 }
 
@@ -1544,6 +1616,7 @@ function setupAddProfileCollapse() {
 
   panel.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
+    trapFocusWithin(panel, e);
   });
 
   return { close, open };
@@ -1583,6 +1656,7 @@ function setupManageProfilesSheet() {
   backdrop?.addEventListener("click", close);
   panel.addEventListener("keydown", (event) => {
     if (event.key === "Escape") close();
+    trapFocusWithin(panel, event);
   });
 
   return { close, open };

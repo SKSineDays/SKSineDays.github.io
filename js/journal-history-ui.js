@@ -69,12 +69,15 @@ export class JournalHistoryUI {
   }
 
   destroy() {
+    this._renderGen++;
     this.mountEl.innerHTML = "";
     this.entriesCache.clear();
   }
 
   setOwnerProfile(profile) {
+    const previousId = this.ownerProfile?.id || null;
     this.ownerProfile = profile || null;
+    if ((this.ownerProfile?.id || null) === previousId) return;
     this.entriesCache.clear();
     const anchor = profile
       ? monthAnchorFromYmd(todayYmdForTimeZone(profile.timezone))
@@ -163,13 +166,13 @@ export class JournalHistoryUI {
     const startYmd = ymdFromUTCDate(firstDay);
     const endYmd = ymdFromUTCDate(new Date(Date.UTC(this.year, this.month, daysInMonth, 12)));
 
-    const loaded = await this._loadEntries(this.ownerProfile.id, startYmd, endYmd);
+    const loadedEntries = await this._loadEntries(this.ownerProfile.id, startYmd, endYmd);
     if (gen !== this._renderGen) return;
 
     this.mountEl.innerHTML = "";
     this._loading = false;
 
-    if (!loaded) {
+    if (!loadedEntries) {
       const error = el("div", "feature-empty-state journal-history__error");
       const title = el("p", "feature-empty-state__title");
       title.textContent = "This month could not be gathered";
@@ -183,6 +186,7 @@ export class JournalHistoryUI {
       this.mountEl.append(error);
       return;
     }
+    this.entriesCache = loadedEntries;
 
     const root = el("div", "journal-history");
     const header = el("header", "history-month-header");
@@ -250,6 +254,8 @@ export class JournalHistoryUI {
     grid.setAttribute("role", "grid");
     grid.setAttribute("aria-label", `${this.getMonthLabel()} journal history`);
 
+    const headerRow = el("div", "journal-history__row");
+    headerRow.setAttribute("role", "row");
     for (let i = 0; i < 7; i++) {
       const refDate = new Date(Date.UTC(2024, 0, 7 + ((this.weekStart + i) % 7), 12));
       const hdr = el("div", "journal-history__weekday");
@@ -258,11 +264,26 @@ export class JournalHistoryUI {
         weekday: "narrow",
         timeZone: "UTC",
       }).format(refDate);
-      grid.append(hdr);
+      headerRow.append(hdr);
     }
+    grid.append(headerRow);
 
+    let cellIndex = 0;
+    let weekRow = null;
+    const appendCell = (cell) => {
+      if (cellIndex % 7 === 0) {
+        weekRow = el("div", "journal-history__row");
+        weekRow.setAttribute("role", "row");
+        grid.append(weekRow);
+      }
+      weekRow.append(cell);
+      cellIndex++;
+    };
     for (let i = 0; i < offset; i++) {
-      grid.append(el("div", "journal-history__cell journal-history__cell--empty"));
+      const emptyCell = el("div", "journal-history__cell journal-history__cell--empty");
+      emptyCell.setAttribute("role", "gridcell");
+      emptyCell.setAttribute("aria-hidden", "true");
+      appendCell(emptyCell);
     }
 
     const profileToday = todayYmdForTimeZone(this.ownerProfile.timezone);
@@ -337,7 +358,7 @@ export class JournalHistoryUI {
       }
 
       cell.addEventListener("click", () => this.onSelectDate?.(dateYmd));
-      grid.append(cell);
+      appendCell(cell);
     }
 
     const scroll = el("div", "journal-history-scroll");
@@ -366,8 +387,8 @@ export class JournalHistoryUI {
   }
 
   async _loadEntries(profileId, startYmd, endYmd) {
-    this.entriesCache.clear();
-    if (!this.supabaseClient) return true;
+    const entries = new Map();
+    if (!this.supabaseClient) return entries;
     try {
       const { data, error } = await this.supabaseClient
         .from("journal_entries")
@@ -377,9 +398,9 @@ export class JournalHistoryUI {
         .lte("entry_date", endYmd);
       if (error) throw error;
       for (const row of data || []) {
-        this.entriesCache.set(row.entry_date, row);
+        entries.set(row.entry_date, row);
       }
-      return true;
+      return entries;
     } catch (err) {
       console.error("[JournalHistory] Load entries failed:", err);
       return false;
