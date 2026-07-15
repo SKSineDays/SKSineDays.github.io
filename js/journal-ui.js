@@ -118,14 +118,21 @@ export class JournalUI {
     this._renderGen = 0;
     this._activeIndicator = null;
     this._activeSheetKeydown = null;
+    this._feelingSheet = null;
   }
 
-  destroy() {
+  _removeFeelingSheet() {
     if (this._activeSheetKeydown) {
       document.removeEventListener("keydown", this._activeSheetKeydown, true);
       this._activeSheetKeydown = null;
     }
+    this._feelingSheet?.remove();
+    this._feelingSheet = null;
     document.body.classList.remove("modal-open");
+  }
+
+  destroy() {
+    this._removeFeelingSheet();
     const pending = Array.from(this.saveTimers.keys());
     for (const key of pending) {
       clearTimeout(this.saveTimers.get(key));
@@ -185,11 +192,7 @@ export class JournalUI {
 
   async render() {
     const gen = ++this._renderGen;
-    if (this._activeSheetKeydown) {
-      document.removeEventListener("keydown", this._activeSheetKeydown, true);
-      this._activeSheetKeydown = null;
-    }
-    document.body.classList.remove("modal-open");
+    this._removeFeelingSheet();
     this.mountEl.innerHTML = "";
 
     if (!this.ownerProfile) {
@@ -385,21 +388,33 @@ export class JournalUI {
     duckGrid.setAttribute("role", "group");
     duckGrid.setAttribute("aria-label", "Felt SineDuck selector");
 
-    const closeFeelingSheet = () => {
+    const closeFeelingSheet = ({ restoreFocus = true } = {}) => {
       feelingSheet.classList.remove("is-open");
       feelingSheet.setAttribute("aria-hidden", "true");
       feltTool.setAttribute("aria-expanded", "false");
       document.body.classList.remove("modal-open");
-      feltTool.focus();
+      if (restoreFocus && feltTool.isConnected) {
+        feltTool.focus({ preventScroll: true });
+      }
     };
 
     const openFeelingSheet = () => {
+      if (!feelingSheet.isConnected) {
+        document.body.append(feelingSheet);
+        this._feelingSheet = feelingSheet;
+      }
       feelingSheet.setAttribute("aria-hidden", "false");
       feltTool.setAttribute("aria-expanded", "true");
-      requestAnimationFrame(() => feelingSheet.classList.add("is-open"));
       document.body.classList.add("modal-open");
-      const selected = duckGrid.querySelector(".journal__duck-choice.is-selected");
-      (selected || closeFeeling).focus();
+      requestAnimationFrame(() => {
+        feelingSheet.classList.add("is-open");
+        requestAnimationFrame(() => {
+          const selected = duckGrid.querySelector(
+            ".journal__duck-choice.is-selected"
+          );
+          (selected || closeFeeling).focus({ preventScroll: true });
+        });
+      });
     };
 
     for (let day = 1; day <= 18; day++) {
@@ -440,6 +455,8 @@ export class JournalUI {
     feelingInner.append(handle, sheetHeader, feltHelp, duckGrid);
     feelingPanel.append(feelingInner);
     feelingSheet.append(feelingBackdrop, feelingPanel);
+    this._feelingSheet = feelingSheet;
+    document.body.append(feelingSheet);
     feltTool.addEventListener("click", openFeelingSheet);
     closeFeeling.addEventListener("click", closeFeelingSheet);
     feelingBackdrop.addEventListener("click", closeFeelingSheet);
@@ -464,8 +481,7 @@ export class JournalUI {
       writing,
       tools,
       imageParts.input,
-      imageParts.section,
-      feelingSheet
+      imageParts.section
     );
     this.mountEl.append(frame);
   }
