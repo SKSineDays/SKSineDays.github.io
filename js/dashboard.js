@@ -1181,50 +1181,10 @@ async function mountWaveCalendarSection() {
   const frame = document.createElement("div");
   frame.className = "wcal-frame journal-history-frame";
 
-  const header = document.createElement("div");
-  header.className = "wcal-frame__header";
-
-  const titleRow = document.createElement("div");
-  titleRow.className = "wcal-frame__title-row";
-
-  const title = document.createElement("div");
-  title.className = "wcal-frame__title";
-  title.textContent = "Journal History";
-
-  const btnToday = document.createElement("button");
-  btnToday.className = "journal-frame__navbtn journal-frame__navbtn--text";
-  btnToday.type = "button";
-  btnToday.textContent = "This month";
-  btnToday.setAttribute("aria-label", "Jump to current month");
-  btnToday.hidden = true;
-
-  titleRow.append(title, btnToday);
-
-  const nav = document.createElement("div");
-  nav.className = "journal-frame__nav";
-
-  const btnPrev = document.createElement("button");
-  btnPrev.className = "journal-frame__navbtn";
-  btnPrev.type = "button";
-  btnPrev.textContent = "←";
-  btnPrev.setAttribute("aria-label", "Previous month");
-
-  const rangeLabel = document.createElement("div");
-  rangeLabel.className = "journal-frame__range";
-
-  const btnNext = document.createElement("button");
-  btnNext.className = "journal-frame__navbtn";
-  btnNext.type = "button";
-  btnNext.textContent = "→";
-  btnNext.setAttribute("aria-label", "Next month");
-
-  nav.append(btnPrev, rangeLabel, btnNext);
-  header.append(titleRow, nav);
-
   const mount = document.createElement("div");
   mount.className = "wcal-mount journal-history-mount";
 
-  frame.append(header, mount);
+  frame.append(mount);
   section.innerHTML = "";
   section.append(frame);
 
@@ -1248,33 +1208,6 @@ async function mountWaveCalendarSection() {
   });
 
   await journalHistoryUI.render();
-  rangeLabel.textContent = journalHistoryUI.getMonthLabel();
-
-  function syncHistoryTodayButton() {
-    const viewingCurrent = journalHistoryUI.isViewingCurrentMonth();
-    btnToday.hidden = viewingCurrent;
-    btnToday.disabled = viewingCurrent;
-  }
-
-  syncHistoryTodayButton();
-
-  btnToday.addEventListener("click", () => {
-    journalHistoryUI.jumpToCurrentMonth();
-    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
-    syncHistoryTodayButton();
-  });
-
-  btnPrev.addEventListener("click", () => {
-    journalHistoryUI.navigateMonth(-1);
-    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
-    syncHistoryTodayButton();
-  });
-
-  btnNext.addEventListener("click", () => {
-    journalHistoryUI.navigateMonth(1);
-    rangeLabel.textContent = journalHistoryUI.getMonthLabel();
-    syncHistoryTodayButton();
-  });
 }
 
 /**
