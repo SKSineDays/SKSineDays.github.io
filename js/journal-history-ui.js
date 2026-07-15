@@ -349,13 +349,20 @@ export class JournalHistoryUI {
     scrollHint.setAttribute("aria-hidden", "true");
     scrollHint.textContent = "Swipe to explore";
     const dismissHint = () => {
+      if (Math.abs(scroll.scrollLeft) < 12) return;
       stage.classList.add("is-scrolled");
       scrollHint.hidden = true;
+      scroll.removeEventListener("scroll", dismissHint);
     };
-    scroll.addEventListener("scroll", dismissHint, { once: true, passive: true });
+    scroll.addEventListener("scroll", dismissHint, { passive: true });
     stage.append(scroll, scrollHint);
     root.append(stage);
     this.mountEl.append(root);
+    requestAnimationFrame(() => {
+      scroll.scrollLeft = 0;
+      scrollHint.hidden = false;
+      stage.classList.remove("is-scrolled");
+    });
   }
 
   async _loadEntries(profileId, startYmd, endYmd) {
