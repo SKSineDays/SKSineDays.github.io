@@ -243,7 +243,7 @@
               class="dashboard-tab"
               type="button"
               data-page-target="1"
-              aria-label="Cloud Journal"
+              aria-label="Journal"
               aria-pressed="false"
             >
               <span class="dashboard-tab-icon duck-icon-badge">
@@ -280,61 +280,16 @@
 
         <div class="dashboard-pager__viewport">
           <div id="dashboard-page-track" class="dashboard-pager__track">
-            <!-- Page 1 -->
+            <!-- Origin -->
             <section
-              class="dashboard-page is-active"
+              class="dashboard-page feature-screen feature-screen--origin is-active"
               data-page="0"
-              data-page-name="Your Origin Ducks"
-              aria-label="Your Origin Ducks"
+              data-page-name="Origin"
+              aria-label="Origin"
               aria-hidden="false"
             >
-              <div class="container dashboard-page__card">
-                <div class="dashboard-page__header">
-                  <div>
-                    <p class="dashboard-page__eyebrow">Page 1</p>
-                    <h2 class="dashboard-page__title">Your Origin Ducks</h2>
-                    <p class="dashboard-page__subtitle">
-                      Your origin ducks, today’s wave, and the profiles that anchor your SineDay rhythm.
-                    </p>
-                  </div>
-                </div>
-
-                <div id="duck-carousel-wrap" class="duck-carousel-wrap">
-                  <div class="duck-carousel-header">
-                    <div>
-                      <h3 class="duck-carousel-title">Origin Duck Carousel</h3>
-                      <p class="text-muted duck-carousel-subtitle">
-                        Each profile's origin duck and current SineDay wave position.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
+              <div class="container dashboard-page__card feature-screen__content">
                 <div id="today-wave-section"></div>
-
-                <div id="profile-limit-message">
-                  <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
-                </div>
-
-                <div class="profiles-controls" role="group" aria-label="Profile controls">
-                  <button
-                    id="add-profile-toggle"
-                    class="btn btn-primary btn-sm"
-                    type="button"
-                    aria-expanded="false"
-                    aria-controls="add-profile-panel"
-                  >
-                    + Add Profile
-                  </button>
-
-                  <details class="profiles-details profiles-details--inline">
-                    <summary>Manage profiles (list)</summary>
-                    <p class="text-muted" style="margin: 10px 0 0;">
-                      Manage up to 10 profiles for yourself or others.
-                    </p>
-                    <div id="profiles-list"></div>
-                  </details>
-                </div>
 
                 <div
                   id="today-day-details-section"
@@ -343,10 +298,48 @@
                   hidden
                 ></div>
 
+                <section class="origin-identity" aria-labelledby="origin-identity-title">
+                  <div id="duck-carousel-wrap" class="duck-carousel-wrap">
+                    <div class="duck-carousel-header">
+                      <div>
+                        <p class="feature-hero__eyebrow">Personal rhythm</p>
+                        <h2 id="origin-identity-title" class="duck-carousel-title">Your Origin</h2>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <div id="profile-limit-message">
+                  <strong>Profile limit reached!</strong> You can have a maximum of 10 profiles.
+                </div>
+
+                <div class="origin-profile-actions" role="group" aria-label="Profile controls">
+                  <button
+                    id="add-profile-toggle"
+                    class="feature-floating-action origin-profile-actions__primary"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="add-profile-panel"
+                  >
+                    <span aria-hidden="true">＋</span>
+                    Add person
+                  </button>
+                  <button
+                    id="manage-profiles-toggle"
+                    class="feature-icon-button origin-profile-actions__secondary"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="manage-profiles-panel"
+                  >
+                    Manage
+                  </button>
+                </div>
+
                 <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
                   <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
                   <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
                     <div class="add-profile-sheet__inner">
+                      <div class="feature-sheet__handle" aria-hidden="true"></div>
                       <h3 id="add-profile-title">Add New Profile</h3>
                       <form id="add-profile-form">
                         <div class="form-group">
@@ -382,112 +375,132 @@
                     </div>
                   </div>
                 </div>
+
+                <div id="manage-profiles-sheet" class="add-profile-sheet origin-manage-sheet" aria-hidden="true">
+                  <div class="add-profile-sheet__backdrop" data-close="manage-profiles-sheet"></div>
+                  <div
+                    id="manage-profiles-panel"
+                    class="add-profile-sheet__panel"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="manage-profiles-title"
+                  >
+                    <div class="add-profile-sheet__inner">
+                      <div class="feature-sheet__handle" aria-hidden="true"></div>
+                      <div class="origin-manage-sheet__header">
+                        <div>
+                          <p class="feature-hero__eyebrow">Origin Circle</p>
+                          <h3 id="manage-profiles-title">Manage people</h3>
+                        </div>
+                        <button
+                          id="manage-profiles-close"
+                          class="feature-icon-button"
+                          type="button"
+                          aria-label="Close profile management"
+                        >×</button>
+                      </div>
+                      <p class="origin-manage-sheet__intro">
+                        Your owner profile anchors Today’s Wave. Other saved people can be removed at any time.
+                      </p>
+                      <div id="profiles-list"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
 
-            <!-- Page 2 -->
+            <!-- Journal -->
             <section
-              class="dashboard-page"
+              class="dashboard-page feature-screen feature-screen--journal"
               data-page="1"
-              data-page-name="Cloud Journal"
-              aria-label="Cloud Journal"
+              data-page-name="Journal"
+              aria-label="Journal"
               aria-hidden="true"
+              inert
             >
-              <div class="container dashboard-page__card">
-                <div class="dashboard-page__header">
-                  <div>
-                    <p class="dashboard-page__eyebrow">Page 2</p>
-                    <h2 class="dashboard-page__title">Cloud Journal</h2>
-                    <p class="dashboard-page__subtitle">
-                      Write what happened, which duck the day felt like, and the thoughts you want to remember.
-                    </p>
-                  </div>
-                </div>
-
+              <div class="container dashboard-page__card feature-screen__content">
+                <h2 class="sr-only">Journal</h2>
                 <div id="journal-section"></div>
                 <div
                   class="premium-lock-preview"
                   data-premium-preview="journal"
                   hidden
                 >
-                  <div class="premium-lock-preview__media">
-                    <img
-                      src="/assets/premium-previews/cloud-journal.gif"
-                      alt="Cloud Journal preview"
-                      loading="lazy"
-                    >
+                  <div
+                    class="premium-lock-preview__media premium-lock-preview__media--journal"
+                    role="img"
+                    aria-label="Preview of the Journal writing canvas"
+                  >
+                    <div class="premium-preview-journal__context">
+                      <span class="duck-icon-badge"><img src="/assets/sineducks/SineDuck9@3x.png" alt=""></span>
+                      <span>Today’s Thoughts</span>
+                    </div>
+                    <div class="premium-preview-journal__paper">
+                      <i></i><i></i><i></i><i></i>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- Page 3 -->
+            <!-- History -->
             <section
-              class="dashboard-page"
+              class="dashboard-page feature-screen feature-screen--history"
               data-page="2"
               data-page-name="Journal History"
               aria-label="Journal History"
               aria-hidden="true"
+              inert
             >
-              <div class="container dashboard-page__card">
-                <div class="dashboard-page__header">
-                  <div>
-                    <p class="dashboard-page__eyebrow">Page 3</p>
-                    <h2 class="dashboard-page__title">Journal History</h2>
-                    <p class="dashboard-page__subtitle">
-                      See the month as a readable memory map of actual SineDays, saved thoughts, and felt ducks.
-                    </p>
-                  </div>
-                </div>
-
+              <div class="container dashboard-page__card feature-screen__content">
+                <h2 class="sr-only">Journal History</h2>
                 <div id="wave-calendar-section"></div>
                 <div
                   class="premium-lock-preview"
                   data-premium-preview="history"
                   hidden
                 >
-                  <div class="premium-lock-preview__media">
-                    <img
-                      src="/assets/premium-previews/journal-history.gif"
-                      alt="Journal History preview"
-                      loading="lazy"
-                    >
+                  <div
+                    class="premium-lock-preview__media premium-lock-preview__media--history"
+                    role="img"
+                    aria-label="Preview of the Journal History memory map"
+                  >
+                    <div class="premium-preview-history__heading">Remember your days differently</div>
+                    <div class="premium-preview-history__grid" aria-hidden="true">
+                      <span></span><span></span><span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            <!-- Page 4 -->
+            <!-- Print -->
             <section
-              class="dashboard-page"
+              class="dashboard-page feature-screen feature-screen--print"
               data-page="3"
-              data-page-name="Journal Printables"
-              aria-label="Journal Printables"
+              data-page-name="Print"
+              aria-label="Print"
               aria-hidden="true"
+              inert
             >
-              <div class="container dashboard-page__card">
-                <div class="dashboard-page__header">
-                  <div>
-                    <p class="dashboard-page__eyebrow">Page 4</p>
-                    <h2 class="dashboard-page__title">Journal Printables</h2>
-                    <p class="dashboard-page__subtitle">
-                      Download daily, weekly, and monthly reflection pages for your journal binder.
-                    </p>
-                  </div>
-                </div>
-
+              <div class="container dashboard-page__card feature-screen__content">
+                <h2 class="sr-only">Print</h2>
                 <div id="calendars-section"></div>
                 <div
                   class="premium-lock-preview"
                   data-premium-preview="printables"
                   hidden
                 >
-                  <div class="premium-lock-preview__media">
-                    <img
-                      src="/assets/premium-previews/journal-printables.gif"
-                      alt="Journal Printables preview"
-                      loading="lazy"
-                    >
+                  <div
+                    class="premium-lock-preview__media premium-lock-preview__media--print"
+                    role="img"
+                    aria-label="Preview of a SineDay printable journal page"
+                  >
+                    <div class="premium-preview-print__page">
+                      <span>JULY</span>
+                      <i></i><i></i><i></i><i></i>
+                    </div>
                   </div>
                 </div>
               </div>

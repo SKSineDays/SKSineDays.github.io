@@ -27,6 +27,7 @@ export class DuckCarousel {
     this.emptyEl = null;
     this.prevBtn = null;
     this.nextBtn = null;
+    this.counterEl = null;
 
     this.profiles = [];
     this.cards = [];
@@ -64,7 +65,7 @@ export class DuckCarousel {
 
     this.rootEl = _el("div", "duck-ring");
     this.rootEl.setAttribute("role", "region");
-    this.rootEl.setAttribute("aria-label", "Origin ducks carousel");
+    this.rootEl.setAttribute("aria-label", "Your Origin profiles");
 
     this.sceneEl = _el("div", "duck-ring__scene");
 
@@ -104,6 +105,10 @@ export class DuckCarousel {
     this.rootEl.appendChild(this.prevBtn);
     this.rootEl.appendChild(this.nextBtn);
 
+    this.counterEl = _el("div", "duck-ring__counter");
+    this.counterEl.setAttribute("aria-hidden", "true");
+    this.rootEl.appendChild(this.counterEl);
+
     this.wrapEl.appendChild(this.rootEl);
   }
 
@@ -136,13 +141,13 @@ export class DuckCarousel {
       : `<span aria-hidden="true">&nbsp;</span>`;
 
     const energyMeta = _el("div", "duck-stack__meta duck-stack__meta--energy");
-    energyMeta.textContent = `Today's Duck${energyDay ? ` • ${energyDay}` : ""}`;
+    energyMeta.textContent = energyDay ? `Today’s Wave · Day ${energyDay}` : "Today’s Wave";
 
     const energyLine = _el("div", "duck-stack__subline");
     energyLine.textContent = energyDescription;
 
     const originMeta = _el("div", "duck-stack__meta duck-stack__meta--origin");
-    originMeta.textContent = `Origin Duck ${originDay ?? "?"}`;
+    originMeta.textContent = `Origin Day ${originDay ?? "?"}`;
 
     const label = _el("div", "duck-stack__label");
     label.textContent = name;
@@ -213,6 +218,9 @@ export class DuckCarousel {
       card.el.classList.toggle("is-far", abs >= 2);
       card.el.tabIndex = i === this.currentIndex ? 0 : -1;
     });
+    if (this.counterEl) {
+      this.counterEl.textContent = `${this.currentIndex + 1} / ${this.cards.length}`;
+    }
   }
 
   _updateNavState() {
@@ -328,6 +336,7 @@ export class DuckCarousel {
     if (!hasProfiles) {
       this.prevBtn.style.display = "none";
       this.nextBtn.style.display = "none";
+      if (this.counterEl) this.counterEl.textContent = "";
       return;
     }
 
