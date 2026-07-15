@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="SineDay member dashboard.">
   <link rel="canonical" href="https://sineday.app/dashboard.html">
@@ -225,56 +225,58 @@
 
       <!-- Dashboard Pager -->
       <div class="dashboard-pager" aria-label="Dashboard pages">
-        <nav class="dashboard-tabs" aria-label="Dashboard page navigation">
-          <button
-            class="dashboard-tab is-active"
-            type="button"
-            data-page-target="0"
-            aria-label="Your Origin Ducks"
-            aria-pressed="true"
-          >
-            <span class="dashboard-tab-icon duck-icon-badge">
-              <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck1@3x.png" alt="" aria-hidden="true">
-            </span>
-            <span class="dashboard-tab__label">Origin Ducks</span>
-          </button>
-          <button
-            class="dashboard-tab"
-            type="button"
-            data-page-target="1"
-            aria-label="Cloud Journal"
-            aria-pressed="false"
-          >
-            <span class="dashboard-tab-icon duck-icon-badge">
-              <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck9@3x.png" alt="" aria-hidden="true">
-            </span>
-            <span class="dashboard-tab__label">Journal <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
-          </button>
-          <button
-            class="dashboard-tab"
-            type="button"
-            data-page-target="2"
-            aria-label="Journal History"
-            aria-pressed="false"
-          >
-            <span class="dashboard-tab-icon duck-icon-badge">
-              <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck14@3x.png" alt="" aria-hidden="true">
-            </span>
-            <span class="dashboard-tab__label">History <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
-          </button>
-          <button
-            class="dashboard-tab"
-            type="button"
-            data-page-target="3"
-            aria-label="Journal Printables"
-            aria-pressed="false"
-          >
-            <span class="dashboard-tab-icon duck-icon-badge">
-              <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck6@3x.png" alt="" aria-hidden="true">
-            </span>
-            <span class="dashboard-tab__label">Printables <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
-          </button>
-        </nav>
+        <div class="dashboard-app-nav-wrap">
+          <nav class="dashboard-tabs dashboard-app-nav" aria-label="Dashboard page navigation">
+            <button
+              class="dashboard-tab is-active"
+              type="button"
+              data-page-target="0"
+              aria-label="Your Origin Ducks"
+              aria-pressed="true"
+            >
+              <span class="dashboard-tab-icon duck-icon-badge">
+                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck1@3x.png" alt="" aria-hidden="true">
+              </span>
+              <span class="dashboard-tab__label">Origin</span>
+            </button>
+            <button
+              class="dashboard-tab"
+              type="button"
+              data-page-target="1"
+              aria-label="Cloud Journal"
+              aria-pressed="false"
+            >
+              <span class="dashboard-tab-icon duck-icon-badge">
+                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck9@3x.png" alt="" aria-hidden="true">
+              </span>
+              <span class="dashboard-tab__label">Journal <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
+            </button>
+            <button
+              class="dashboard-tab"
+              type="button"
+              data-page-target="2"
+              aria-label="Journal History"
+              aria-pressed="false"
+            >
+              <span class="dashboard-tab-icon duck-icon-badge">
+                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck14@3x.png" alt="" aria-hidden="true">
+              </span>
+              <span class="dashboard-tab__label">History <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
+            </button>
+            <button
+              class="dashboard-tab"
+              type="button"
+              data-page-target="3"
+              aria-label="Journal Printables"
+              aria-pressed="false"
+            >
+              <span class="dashboard-tab-icon duck-icon-badge">
+                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck6@3x.png" alt="" aria-hidden="true">
+              </span>
+              <span class="dashboard-tab__label">Print <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
+            </button>
+          </nav>
+        </div>
 
         <div class="dashboard-pager__viewport">
           <div id="dashboard-page-track" class="dashboard-pager__track">
