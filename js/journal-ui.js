@@ -94,9 +94,14 @@ export class JournalUI {
     this._saveInFlight = new Map();
     this._renderGen = 0;
     this._activeIndicator = null;
+    this._activeSheetKeydown = null;
   }
 
   destroy() {
+    if (this._activeSheetKeydown) {
+      document.removeEventListener("keydown", this._activeSheetKeydown, true);
+      this._activeSheetKeydown = null;
+    }
     const pending = Array.from(this.saveTimers.keys());
     for (const key of pending) {
       clearTimeout(this.saveTimers.get(key));
@@ -155,6 +160,10 @@ export class JournalUI {
 
   async render() {
     const gen = ++this._renderGen;
+    if (this._activeSheetKeydown) {
+      document.removeEventListener("keydown", this._activeSheetKeydown, true);
+      this._activeSheetKeydown = null;
+    }
     this.mountEl.innerHTML = "";
 
     if (!this.ownerProfile) {
@@ -408,9 +417,16 @@ export class JournalUI {
     feltTool.addEventListener("click", openFeelingSheet);
     closeFeeling.addEventListener("click", closeFeelingSheet);
     feelingBackdrop.addEventListener("click", closeFeelingSheet);
-    feelingPanel.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeFeelingSheet();
-    });
+    this._activeSheetKeydown = (event) => {
+      if (
+        event.key === "Escape" &&
+        feelingSheet.getAttribute("aria-hidden") === "false"
+      ) {
+        event.preventDefault();
+        closeFeelingSheet();
+      }
+    };
+    document.addEventListener("keydown", this._activeSheetKeydown, true);
 
     frame.append(
       dateBar,
