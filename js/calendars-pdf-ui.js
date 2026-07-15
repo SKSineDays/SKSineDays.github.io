@@ -211,9 +211,13 @@ export class CalendarsPdfUI {
 
     this.copyrightFooter = el("div", "sineday-copyright-footer");
     this.copyrightFooter.id = "sineday-copyright-footer";
-    this.viewerWrap.append(this.copyrightFooter);
 
-    this.previewStage.append(previewHeader, this.viewerWrap, this.loadingOverlay);
+    this.previewStage.append(
+      previewHeader,
+      this.viewerWrap,
+      this.copyrightFooter,
+      this.loadingOverlay
+    );
     this.content.append(this.previewStage);
 
     const downloadBar = el("div", "print-download-bar");
@@ -329,6 +333,13 @@ export class CalendarsPdfUI {
 
   async refreshWhenVisible() {
     if (!this._isVisibleInPager()) return;
+    if (!this.profiles.length) {
+      this.currentPdfUrl = null;
+      this.btnDownload.disabled = true;
+      this.openPreviewLink.hidden = true;
+      this._setPreviewState("empty");
+      return;
+    }
     await this.refreshPdfPreview();
   }
 
@@ -465,6 +476,14 @@ export class CalendarsPdfUI {
   }
 
   async refreshPdfPreview() {
+    if (!this._activeProfiles().length) {
+      this.currentPdfUrl = null;
+      this.btnDownload.disabled = true;
+      this.openPreviewLink.hidden = true;
+      this._setPreviewState("empty");
+      return;
+    }
+
     const requestGen = ++this._previewRequestGen;
     const previewKey = this._getPreviewKey();
 

@@ -7614,10 +7614,12 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--print .sineday-copyright-footer {
-  left: 12px;
-  bottom: 8px;
-  color: rgba(17, 19, 26, 0.52);
+  position: static;
+  padding: 0 var(--feature-space-1);
+  color: rgba(245, 247, 255, 0.42);
   font-size: 10px;
+  line-height: 1.4;
+  text-align: left;
 }
 
 .feature-screen--print .sdcal__loading {
