@@ -690,6 +690,7 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".sheet-backdrop",
       ".add-profile-sheet",
       ".journal-feeling-sheet",
+      ".journal-feeling-sheet__panel",
       ".journal-history-scroll",
       ".sdcal__viewer",
       ".dashboard-tabs",
