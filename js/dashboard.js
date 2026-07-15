@@ -1248,9 +1248,6 @@ async function renderSubscriptionStatus() {
     if (calendarsSection) {
       calendarsSection.innerHTML = `
         <div id="calendar-app"></div>
-        <p class="text-muted" style="margin-top:12px;">
-          Tip: Premium printables are journal-first pages for reflection, memory, and rhythm review.
-        </p>
       `;
 
       const mount = document.getElementById("calendar-app");

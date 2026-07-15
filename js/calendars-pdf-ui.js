@@ -4,6 +4,8 @@
  */
 
 import { getSineDayCopyrightText } from "../shared/footer-text.js";
+import { getOriginTypeForDob } from "../shared/origin-wave.js";
+import { duckUrlFromSinedayNumber } from "./sineducks.js";
 
 const MS_PER_DAY = 86400000;
 
@@ -48,6 +50,7 @@ export class CalendarsPdfUI {
     this.currentPdfUrl = null;
     this._previewRequestGen = 0;
     this._activePreviewKey = "";
+    this._previewInFlight = false;
     this.supabaseClient = opts.supabaseClient || null;
     this.userId = opts.userId || null;
     this.ownerProfile = opts.ownerProfile || null;
@@ -56,6 +59,8 @@ export class CalendarsPdfUI {
   }
 
   destroy() {
+    this._previewRequestGen++;
+    this._previewInFlight = false;
     this.mountEl.innerHTML = "";
     this.currentPdfUrl = null;
   }
@@ -86,101 +91,141 @@ export class CalendarsPdfUI {
   _build() {
     this.root = el("div", "sdcal");
 
-    const bar = el("div", "sdcal__bar");
+    const hero = el("header", "print-hero");
+    const heroEyebrow = el("p", "feature-hero__eyebrow");
+    heroEyebrow.textContent = "From memory to paper";
+    const heroTitle = el("h2", "print-hero__title");
+    heroTitle.textContent = "Print your journal";
+    const heroCopy = el("p", "print-hero__copy");
+    heroCopy.textContent = "Choose a shape for the days you want to hold onto.";
+    hero.append(heroEyebrow, heroTitle, heroCopy);
 
-    this.btnMonth = el("button", "sdcal__tab is-active");
-    this.btnMonth.type = "button";
-    this.btnMonth.textContent = "Month";
-    this.btnMonth.addEventListener("click", () => {
-      this.view = "month";
-      this.btnMonth.classList.add("is-active");
-      this.btnWeek.classList.remove("is-active");
-      this.btnDay.classList.remove("is-active");
-      this.render();
-    });
-
-    this.btnWeek = el("button", "sdcal__tab");
-    this.btnWeek.type = "button";
-    this.btnWeek.textContent = "Week";
-    this.btnWeek.addEventListener("click", () => {
-      this.view = "week";
-      this.btnWeek.classList.add("is-active");
-      this.btnMonth.classList.remove("is-active");
-      this.btnDay.classList.remove("is-active");
-      this.render();
-    });
-
-    this.btnDay = el("button", "sdcal__tab");
-    this.btnDay.type = "button";
-    this.btnDay.textContent = "Day";
-    this.btnDay.addEventListener("click", () => {
-      this.view = "day";
-      this.btnDay.classList.add("is-active");
-      this.btnMonth.classList.remove("is-active");
-      this.btnWeek.classList.remove("is-active");
-      this.render();
-    });
-
+    const formatHeading = el("h3", "print-format-heading");
+    formatHeading.textContent = "Choose a format";
     const tabs = el("div", "sdcal__tabs");
+    tabs.setAttribute("role", "group");
+    tabs.setAttribute("aria-label", "Journal page format");
+
+    const buildFormatButton = (view, name, purpose) => {
+      const button = el("button", `sdcal__tab sdcal__tab--${view}`);
+      button.type = "button";
+      button.dataset.view = view;
+      button.setAttribute("aria-pressed", String(this.view === view));
+      button.innerHTML = `
+        <span class="sdcal__format-page sdcal__format-page--${view}" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span class="sdcal__format-copy">
+          <strong>${name}</strong>
+          <small>${purpose}</small>
+        </span>
+        <span class="sdcal__format-check" aria-hidden="true">✓</span>
+      `;
+      button.addEventListener("click", () => {
+        if (this.view === view) return;
+        this.view = view;
+        this.render();
+      });
+      return button;
+    };
+
+    this.btnMonth = buildFormatButton("month", "Month", "See the whole wave");
+    this.btnWeek = buildFormatButton("week", "Week", "Reflect across a week");
+    this.btnDay = buildFormatButton("day", "Day", "One day, one page");
     tabs.append(this.btnMonth, this.btnWeek, this.btnDay);
 
     this.filterWrap = el("div", "sdcal__filter");
     const filterLabel = el("label", "sdcal__label");
-    filterLabel.textContent = "Profiles";
+    filterLabel.textContent = "Journal for";
     filterLabel.setAttribute("for", "sdcal-profile-pdf");
 
+    const profileField = el("div", "sdcal__profile-field");
+    this.profileAvatar = document.createElement("img");
+    this.profileAvatar.className = "sdcal__profile-avatar";
+    this.profileAvatar.alt = "";
+    this.profileAvatar.setAttribute("aria-hidden", "true");
     this.profileSelect = el("select", "sdcal__select");
     this.profileSelect.id = "sdcal-profile-pdf";
     this.profileSelect.addEventListener("change", () => {
       this.profileFilter = this.profileSelect.value;
+      this._syncProfileAvatar();
       this.render();
     });
-
-    this.filterWrap.append(filterLabel, this.profileSelect);
+    profileField.append(this.profileAvatar, this.profileSelect);
+    this.filterWrap.append(filterLabel, profileField);
 
     const nav = el("div", "sdcal__nav");
 
     this.btnPrev = el("button", "sdcal__navbtn");
     this.btnPrev.type = "button";
-    this.btnPrev.textContent = "←";
+    this.btnPrev.innerHTML = '<span aria-hidden="true">‹</span>';
     this.btnPrev.setAttribute("aria-label", "Previous");
 
     this.btnNext = el("button", "sdcal__navbtn");
     this.btnNext.type = "button";
-    this.btnNext.textContent = "→";
+    this.btnNext.innerHTML = '<span aria-hidden="true">›</span>';
     this.btnNext.setAttribute("aria-label", "Next");
 
     this.title = el("div", "sdcal__title");
 
     nav.append(this.btnPrev, this.title, this.btnNext);
 
-    const actions = el("div", "sdcal__actions");
+    const bar = el("div", "sdcal__bar");
+    bar.append(this.filterWrap, nav);
+
+    this.content = el("div", "sdcal__content");
+    this.previewStage = el("section", "sdcal__preview-stage");
+    this.previewStage.setAttribute("aria-label", "Journal PDF preview");
+    const previewHeader = el("div", "sdcal__preview-header");
+    const previewHeading = el("div", "");
+    const previewEyebrow = el("span", "sdcal__preview-eyebrow");
+    previewEyebrow.textContent = "Paper preview";
+    this.previewTitle = el("strong", "sdcal__preview-title");
+    previewHeading.append(previewEyebrow, this.previewTitle);
+    this.openPreviewLink = el("a", "sdcal__open-preview");
+    this.openPreviewLink.textContent = "Open preview";
+    this.openPreviewLink.target = "_blank";
+    this.openPreviewLink.rel = "noopener";
+    this.openPreviewLink.hidden = true;
+    previewHeader.append(previewHeading, this.openPreviewLink);
+
     this.btnDownload = el("button", "sdcal__action");
     this.btnDownload.type = "button";
     this.btnDownload.textContent = "Download PDF";
     this.btnDownload.addEventListener("click", () => this.downloadPdf());
 
-    actions.append(this.btnDownload);
-
-    bar.append(tabs, this.filterWrap, nav, actions);
-
-    this.content = el("div", "sdcal__content");
     this.viewerWrap = el("div", "sdcal__viewer");
     this.loadingOverlay = el("div", "sdcal__loading");
-    this.loadingOverlay.textContent = "Loading…";
+    this.loadingOverlay.setAttribute("role", "status");
     this.loadingOverlay.setAttribute("aria-live", "polite");
+    this.loadingOverlay.setAttribute("aria-atomic", "true");
+    this.loadingOverlay.innerHTML = `
+      <span class="sdcal__loading-mark" aria-hidden="true"></span>
+      <span data-preview-status>Preparing your journal page…</span>
+    `;
 
     this.iframe = document.createElement("iframe");
     this.iframe.className = "sdcal__pdf";
-    this.iframe.setAttribute("title", "Calendar PDF preview");
+    this.iframe.setAttribute("title", "SineDay journal PDF preview");
     this.viewerWrap.append(this.iframe);
 
     this.copyrightFooter = el("div", "sineday-copyright-footer");
     this.copyrightFooter.id = "sineday-copyright-footer";
     this.viewerWrap.append(this.copyrightFooter);
 
-    this.root.append(bar, this.content);
-    this.content.append(this.viewerWrap, this.loadingOverlay);
+    this.previewStage.append(previewHeader, this.viewerWrap, this.loadingOverlay);
+    this.content.append(this.previewStage);
+
+    const downloadBar = el("div", "print-download-bar");
+    const downloadCopy = el("div", "print-download-bar__copy");
+    this.downloadFormat = el("span", "print-download-bar__format");
+    this.downloadStatus = el("small", "print-download-bar__status");
+    this.downloadStatus.setAttribute("role", "status");
+    this.downloadStatus.setAttribute("aria-live", "polite");
+    downloadCopy.append(this.downloadFormat, this.downloadStatus);
+    downloadBar.append(downloadCopy, this.btnDownload);
+
+    this.root.append(hero, formatHeading, tabs, bar, this.content, downloadBar);
 
     this.mountEl.innerHTML = "";
     this.mountEl.append(this.root);
@@ -236,6 +281,20 @@ export class CalendarsPdfUI {
     const stillExists = prev && this.profiles.some((p) => p.id === prev);
     sel.value = stillExists ? prev : firstId || "";
     this.profileFilter = sel.value;
+    this._syncProfileAvatar();
+  }
+
+  _syncProfileAvatar() {
+    if (!this.profileAvatar) return;
+    const profile = this.profiles.find((item) => item.id === this.profileFilter);
+    const originDay = profile?.birthdate ? getOriginTypeForDob(profile.birthdate) : null;
+    if (!originDay) {
+      this.profileAvatar.removeAttribute("src");
+      this.profileAvatar.hidden = true;
+      return;
+    }
+    this.profileAvatar.src = `/${duckUrlFromSinedayNumber(originDay)}`;
+    this.profileAvatar.hidden = false;
   }
 
   _activeProfiles() {
@@ -273,6 +332,49 @@ export class CalendarsPdfUI {
     await this.refreshPdfPreview();
   }
 
+  _viewLabel() {
+    return this.view === "month"
+      ? "Monthly journal"
+      : this.view === "week"
+        ? "Weekly journal"
+        : "Daily journal";
+  }
+
+  _setPreviewState(state, message = "") {
+    this.root.dataset.previewState = state;
+    const statusText = this.loadingOverlay?.querySelector("[data-preview-status]");
+    const loading =
+      state === "loading" ||
+      state === "deferred" ||
+      state === "error";
+
+    this.loadingOverlay.style.display = loading ? "" : "none";
+    this.loadingOverlay.classList.toggle("is-error", state === "error");
+    if (statusText) {
+      statusText.textContent =
+        message ||
+        (state === "loading"
+          ? "Preparing your journal page…"
+          : state === "deferred"
+            ? "Open Print to prepare this preview."
+            : state === "error"
+              ? "Unable to prepare this preview."
+              : "");
+    }
+
+    if (state === "ready") {
+      this.downloadStatus.textContent = "Ready to download";
+    } else if (state === "loading") {
+      this.downloadStatus.textContent = "Preparing…";
+    } else if (state === "error") {
+      this.downloadStatus.textContent = "Unable to prepare";
+    } else if (state === "empty") {
+      this.downloadStatus.textContent = "Add a profile first";
+    } else {
+      this.downloadStatus.textContent = "Preview waits until opened";
+    }
+  }
+
   render() {
     const year =
       this.view === "month"
@@ -283,6 +385,12 @@ export class CalendarsPdfUI {
     if (this.copyrightFooter) {
       this.copyrightFooter.textContent = getSineDayCopyrightText(year);
     }
+
+    [this.btnMonth, this.btnWeek, this.btnDay].forEach((button) => {
+      const active = button.dataset.view === this.view;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
 
     if (this.view === "month") {
       const dtf = new Intl.DateTimeFormat(this.locale, {
@@ -313,25 +421,43 @@ export class CalendarsPdfUI {
       this.title.textContent = dtf.format(this.dayDateUTC);
     }
 
+    const viewLabel = this._viewLabel();
+    this.previewTitle.textContent = viewLabel;
+    this.downloadFormat.textContent = viewLabel;
+    this.iframe.setAttribute("title", `${viewLabel} PDF preview`);
+
     this.content.innerHTML = "";
-    this.content.append(this.viewerWrap, this.loadingOverlay);
+    this.content.append(this.previewStage);
 
     if (this.profiles.length === 0) {
-      const empty = el("div", "sdcal__empty");
-      empty.textContent = "Add at least one profile to generate calendars.";
+      const empty = el("div", "feature-empty-state sdcal__empty");
+      const emptyTitle = el("p", "feature-empty-state__title");
+      emptyTitle.textContent = "Add a profile before creating a journal page";
+      const emptyCopy = el("p", "");
+      emptyCopy.textContent = "Print uses an Origin profile to shape each page.";
+      const addProfile = el("button", "feature-floating-action");
+      addProfile.type = "button";
+      addProfile.textContent = "Add person";
+      const addProfileToggle = document.getElementById("add-profile-toggle");
+      addProfile.hidden = !addProfileToggle;
+      addProfile.addEventListener("click", () => addProfileToggle?.click());
+      empty.append(emptyTitle, emptyCopy, addProfile);
       this.content.append(empty);
-      this.viewerWrap.style.display = "none";
-      this.loadingOverlay.style.display = "none";
+      this.previewStage.hidden = true;
+      this.currentPdfUrl = null;
+      this.btnDownload.disabled = true;
+      this.openPreviewLink.hidden = true;
+      this._setPreviewState("empty");
       return;
     }
-    this.viewerWrap.style.display = "";
+    this.previewStage.hidden = false;
 
     if (!this._isVisibleInPager()) {
-      this.loadingOverlay.style.display = "";
-      this.loadingOverlay.textContent = "Open Printables to load preview…";
       this.iframe.src = "";
       this.currentPdfUrl = null;
       this.btnDownload.disabled = true;
+      this.openPreviewLink.hidden = true;
+      this._setPreviewState("deferred");
       return;
     }
 
@@ -342,16 +468,20 @@ export class CalendarsPdfUI {
     const requestGen = ++this._previewRequestGen;
     const previewKey = this._getPreviewKey();
 
-    this.loadingOverlay.style.display = "";
-    this.loadingOverlay.textContent = "Generating PDF…";
+    this._previewInFlight = true;
+    this._setPreviewState("loading");
     this.iframe.src = "";
     this.currentPdfUrl = null;
     this.btnDownload.disabled = true;
+    this.openPreviewLink.hidden = true;
     this._activePreviewKey = previewKey;
 
     try {
-      const { getSupabaseClient } = await import("./supabase-client.js");
-      const client = await getSupabaseClient();
+      let client = this.supabaseClient;
+      if (!client) {
+        const { getSupabaseClient } = await import("./supabase-client.js");
+        client = await getSupabaseClient();
+      }
 
       const {
         data: { session }
@@ -415,17 +545,27 @@ export class CalendarsPdfUI {
 
       this.iframe.src = iframeUrl.toString();
       this.btnDownload.disabled = false;
-      this.loadingOverlay.style.display = "none";
+      this.openPreviewLink.href = j.url;
+      this.openPreviewLink.hidden = false;
+      this._setPreviewState("ready");
     } catch (e) {
       if (requestGen !== this._previewRequestGen) return;
       this.currentPdfUrl = null;
       this.btnDownload.disabled = true;
-      this.loadingOverlay.style.display = "flex";
-      this.loadingOverlay.textContent = e?.message || "Unable to load PDF";
+      this.openPreviewLink.hidden = true;
+      this._setPreviewState(
+        "error",
+        e?.message ? `Unable to prepare: ${e.message}` : "Unable to prepare this preview."
+      );
+    } finally {
+      if (requestGen === this._previewRequestGen) {
+        this._previewInFlight = false;
+      }
     }
   }
 
   downloadPdf() {
+    if (this._previewInFlight) return;
     const previewKey = this._getPreviewKey();
 
     if (this.currentPdfUrl && this._activePreviewKey === previewKey) {
