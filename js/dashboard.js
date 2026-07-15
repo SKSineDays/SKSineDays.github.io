@@ -42,6 +42,7 @@ let dailyEmailState = {
 };
 let duckCarousel = null;
 let addProfileUI = null;
+let manageProfilesUI = null;
 let calendarsUI = null;
 let journalUI = null;
 let journalHistoryUI = null;
@@ -218,22 +219,22 @@ function isPaid() {
 function getPremiumLockCopy(featureKey) {
   const copy = {
     journal: {
-      eyebrow: "Premium Journal",
-      title: "Unlock Cloud Journal",
-      body: "Save your daily thoughts, felt ducks, and reflections across your SineDay wave.",
-      cta: "Upgrade to Premium"
+      eyebrow: "Today’s Thoughts",
+      title: "A private place to remember",
+      body: "Write the day in your own words, choose the duck that mirrored it, and keep one memory photo.",
+      cta: "Open Premium Journal"
     },
     history: {
-      eyebrow: "Premium History",
-      title: "Unlock Journal History",
-      body: "See your month as a memory map of SineDays, saved thoughts, and the ducks each day felt like.",
-      cta: "Upgrade to Premium"
+      eyebrow: "Remember your days differently",
+      title: "Your memories become a map",
+      body: "Revisit the actual wave, how each day felt, and the moments you chose to keep.",
+      cta: "Open Premium History"
     },
     printables: {
-      eyebrow: "Premium Printables",
-      title: "Unlock Journal Printables",
-      body: "Download daily, weekly, and monthly reflection pages for your journal binder.",
-      cta: "Upgrade to Premium"
+      eyebrow: "From screen to paper",
+      title: "Make your journal tangible",
+      body: "Choose a daily, weekly, or monthly format and download the finished page as a private PDF.",
+      cta: "Open Premium Print"
     }
   };
   return copy[featureKey] || copy.journal;
@@ -660,6 +661,9 @@ function shouldIgnoreDashboardSwipeStart(target) {
       ".sheet",
       ".sheet-backdrop",
       ".add-profile-sheet",
+      ".journal-feeling-sheet",
+      ".journal-history-scroll",
+      ".sdcal__viewer",
       ".journal-frame__header",
       ".journal-frame__nav",
       ".journal-frame__view-toggle",
@@ -818,30 +822,40 @@ function renderProfiles() {
   if (!container) return;
 
   if (profiles.length === 0) {
-    container.innerHTML = '<p class="text-muted">No profiles yet. Add your first profile below!</p>';
+    container.innerHTML = `
+      <div class="feature-empty-state">
+        <p class="feature-empty-state__title">No saved people yet</p>
+        <p>Your owner profile will appear here after setup.</p>
+      </div>
+    `;
   } else {
     container.innerHTML = profiles.map(profile => {
       const originDay = getOriginTypeForDob(profile.birthdate, ORIGIN_ANCHOR_DATE);
       const duckUrl = originDay ? duckUrlFromSinedayNumber(originDay) : "";
-      const originLabel = originDay ? `Origin: Day ${originDay}` : "Origin: N/A";
+      const originLabel = originDay ? `Origin Day ${originDay}` : "Origin unavailable";
+      const timezone = profile.timezone || "Local timezone";
 
       return `
-        <div class="profile-item" data-id="${profile.id}">
-          <div class="profile-info">
+        <div class="profile-item origin-profile-row" data-id="${profile.id}">
+          ${duckUrl ? `
+            <div class="duck-avatar origin-profile-row__duck">
+              <img
+                src="${duckUrl}"
+                alt="${escapeHtml(profile.display_name)}’s Origin Duck, Day ${originDay}"
+                width="44"
+                height="44"
+                loading="lazy"
+              >
+            </div>
+          ` : ""}
+          <div class="profile-info origin-profile-row__identity">
             <strong>${escapeHtml(profile.display_name)}</strong>
-            <span class="text-muted">
-              Born: ${profile.birthdate || "N/A"} | ${profile.timezone || "N/A"} | ${originLabel}
-            </span>
+            <span class="text-muted">${escapeHtml(originLabel)} · ${escapeHtml(timezone)}</span>
           </div>
-          <div class="profile-actions" style="display:flex; gap:10px; align-items:center;">
-            ${duckUrl ? `
-              <div class="duck-avatar" title="Origin Day ${originDay}">
-                <img src="${duckUrl}" alt="SineDuck origin day ${originDay}" width="34" height="34">
-              </div>
-            ` : ""}
+          <div class="profile-actions origin-profile-row__actions">
             ${profile.is_owner
               ? `<span class="owner-badge">Owner</span>`
-              : `<button class="btn btn-sm btn-danger delete-profile" data-id="${profile.id}">Delete</button>`
+              : `<button class="origin-profile-row__delete delete-profile" type="button" data-id="${profile.id}" aria-label="Delete ${escapeHtml(profile.display_name)}">Delete</button>`
             }
           </div>
         </div>
@@ -950,17 +964,18 @@ function renderTodayDayDetailsSection(result) {
         .join("")
     : "";
 
-  section.hidden = false;
+  section.hidden = true;
   section.innerHTML = `
-    <article class="today-day-details-card">
+    <article class="today-wave-details feature-surface">
       ${
         imageUrl
           ? `
-        <div class="today-day-details-card__media sineduck-art-badge">
+        <div class="today-wave-details__media">
           <img
-            class="today-day-details-card__image"
+            class="today-wave-details__image"
             src="${escapeHtml(imageUrl)}"
-            alt="Full image for SineDay ${escapeHtml(String(result.day))}"
+            alt="SineDay ${escapeHtml(String(result.day))} wave artwork"
+            loading="lazy"
           >
         </div>
       `
@@ -969,9 +984,11 @@ function renderTodayDayDetailsSection(result) {
       ${
         details
           ? `
-        <div class="today-day-details-card__copy">
-          ${details.paragraph ? `<p class="today-day-details-card__paragraph">${escapeHtml(details.paragraph)}</p>` : ""}
-          ${bulletsHtml ? `<ul class="today-day-details-card__bullets">${bulletsHtml}</ul>` : ""}
+        <div class="today-wave-details__copy">
+          <p class="feature-hero__eyebrow">A little deeper</p>
+          <h3 class="feature-section-heading">Explore today’s wave</h3>
+          ${details.paragraph ? `<p class="today-wave-details__paragraph">${escapeHtml(details.paragraph)}</p>` : ""}
+          ${bulletsHtml ? `<ul class="today-wave-details__bullets">${bulletsHtml}</ul>` : ""}
         </div>
       `
           : ""
@@ -1013,26 +1030,45 @@ function renderTodayWaveSection() {
     weekday: "long",
     month: "long",
     day: "numeric",
-    year: "numeric",
     timeZone: "UTC",
   }).format(date);
 
   section.innerHTML = `
-    <article class="today-wave-card">
-      <div class="today-wave-card__copy">
-        <p class="today-wave-card__eyebrow">Today’s Wave</p>
-        <h3 class="today-wave-card__title">${escapeHtml(dateLabel)}</h3>
-        <p class="today-wave-card__day">SineDay ${escapeHtml(String(result.day))}</p>
-        <p class="today-wave-card__phase">${escapeHtml(result.phase || "")}</p>
-        <p class="today-wave-card__description">${escapeHtml(result.description || "")}</p>
-        <div class="today-wave-card__actions">
-          <button id="write-today-journal" class="btn btn-primary btn-sm" type="button">
-            Write today’s journal
-          </button>
+    <article class="today-wave-hero feature-hero">
+      <div class="today-wave-hero__ambient" aria-hidden="true"></div>
+      <div class="today-wave-hero__top">
+        <div>
+          <p class="today-wave-hero__eyebrow feature-hero__eyebrow">Today’s Wave</p>
+          <p class="today-wave-hero__date">${escapeHtml(dateLabel)}</p>
+        </div>
+        <span class="today-wave-hero__day-pill">Day ${escapeHtml(String(result.day))}</span>
+      </div>
+      <div class="today-wave-hero__main">
+        <div class="today-wave-hero__copy">
+          <h2 class="today-wave-hero__title feature-hero__title">${escapeHtml(result.phase || "")}</h2>
+          <p class="today-wave-hero__description feature-hero__subtitle">${escapeHtml(result.description || "")}</p>
+        </div>
+        <div class="today-wave-hero__duck">
+          <img
+            src="/${duckUrlFromSinedayNumber(result.day)}"
+            alt="Today’s SineDuck, Day ${escapeHtml(String(result.day))}"
+            fetchpriority="high"
+          >
         </div>
       </div>
-      <div class="today-wave-card__duck sineduck-art-badge is-small">
-        <img src="${duckUrlFromSinedayNumber(result.day)}" alt="Today’s SineDuck Day ${escapeHtml(String(result.day))}">
+      <div class="today-wave-hero__actions">
+          <button id="write-today-journal" class="feature-floating-action" type="button">
+            Write today
+          </button>
+          <button
+            id="explore-today-wave"
+            class="feature-floating-action feature-floating-action--secondary"
+            type="button"
+            aria-expanded="false"
+            aria-controls="today-day-details-section"
+          >
+            Explore this wave
+          </button>
       </div>
     </article>
   `;
@@ -1053,6 +1089,23 @@ function renderTodayWaveSection() {
   });
 
   renderTodayDayDetailsSection(result);
+
+  document.getElementById("explore-today-wave")?.addEventListener("click", (event) => {
+    const detailsSection = document.getElementById("today-day-details-section");
+    if (!detailsSection) return;
+    const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+    detailsSection.hidden = expanded;
+    event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+    event.currentTarget.textContent = expanded ? "Explore this wave" : "Close reflection";
+    if (!expanded) {
+      requestAnimationFrame(() => {
+        detailsSection.scrollIntoView({
+          behavior: prefersReducedDashboardMotion() ? "auto" : "smooth",
+          block: "nearest",
+        });
+      });
+    }
+  });
 }
 
 /**
@@ -1575,6 +1628,7 @@ function setupAddProfileCollapse() {
     toggle.setAttribute("aria-expanded", "true");
     sheet.setAttribute("aria-hidden", "false");
     requestAnimationFrame(() => sheet.classList.add("is-open"));
+    document.body.classList.add("modal-open");
 
     const nameInput =
       panel.querySelector('input[name="name"]') ||
@@ -1589,6 +1643,10 @@ function setupAddProfileCollapse() {
     sheet.setAttribute("aria-hidden", "true");
     const form = document.getElementById("add-profile-form");
     form?.reset?.();
+    if (!document.querySelector(".add-profile-sheet.is-open")) {
+      document.body.classList.remove("modal-open");
+    }
+    toggle.focus();
   };
 
   toggle.addEventListener("click", () => {
@@ -1606,12 +1664,52 @@ function setupAddProfileCollapse() {
   return { close, open };
 }
 
+function setupManageProfilesSheet() {
+  const toggle = document.getElementById("manage-profiles-toggle");
+  const sheet = document.getElementById("manage-profiles-sheet");
+  const panel = document.getElementById("manage-profiles-panel");
+  const closeButton = document.getElementById("manage-profiles-close");
+  const backdrop = sheet?.querySelector("[data-close='manage-profiles-sheet']");
+
+  if (!toggle || !sheet || !panel) return null;
+
+  const open = () => {
+    toggle.setAttribute("aria-expanded", "true");
+    sheet.setAttribute("aria-hidden", "false");
+    requestAnimationFrame(() => sheet.classList.add("is-open"));
+    document.body.classList.add("modal-open");
+    closeButton?.focus();
+  };
+
+  const close = () => {
+    toggle.setAttribute("aria-expanded", "false");
+    sheet.classList.remove("is-open");
+    sheet.setAttribute("aria-hidden", "true");
+    if (!document.querySelector(".add-profile-sheet.is-open")) {
+      document.body.classList.remove("modal-open");
+    }
+    toggle.focus();
+  };
+
+  toggle.addEventListener("click", () => {
+    toggle.getAttribute("aria-expanded") === "true" ? close() : open();
+  });
+  closeButton?.addEventListener("click", close);
+  backdrop?.addEventListener("click", close);
+  panel.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") close();
+  });
+
+  return { close, open };
+}
+
 /**
  * Set up event listeners
  */
 function setupEventListeners() {
   setupAccountSheet();
   addProfileUI = setupAddProfileCollapse();
+  manageProfilesUI = setupManageProfilesSheet();
 
   // Sign out button
   const signOutBtn = document.getElementById('signout-btn');
