@@ -312,6 +312,10 @@ body {
   opacity: 0.78;
 }
 
+.dashboard-tab__lock[hidden] {
+  display: none;
+}
+
 .premium-lock-card {
   width: 100%;
   min-height: 260px;

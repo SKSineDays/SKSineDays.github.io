@@ -268,6 +268,12 @@ function setPremiumPreviewVisibility(featureKey, visible) {
   preview.hidden = !visible;
 }
 
+function setDashboardTabLocksVisible(visible) {
+  document.querySelectorAll(".dashboard-tab__lock").forEach((lock) => {
+    lock.hidden = !visible;
+  });
+}
+
 /**
  * Check if user has an owner profile
  */
@@ -1263,6 +1269,7 @@ async function renderSubscriptionStatus() {
     setPremiumPreviewVisibility("journal", false);
     setPremiumPreviewVisibility("history", false);
     setPremiumPreviewVisibility("printables", false);
+    setDashboardTabLocksVisible(false);
   } else {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
@@ -1286,6 +1293,7 @@ async function renderSubscriptionStatus() {
     setPremiumPreviewVisibility("journal", true);
     setPremiumPreviewVisibility("history", true);
     setPremiumPreviewVisibility("printables", true);
+    setDashboardTabLocksVisible(true);
   }
 
   updateDashboardPagerUI();
