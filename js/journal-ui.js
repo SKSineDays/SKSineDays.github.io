@@ -178,29 +178,62 @@ export class JournalUI {
 
     const frame = el("div", "journal");
 
-    const hero = el("section", "journal__hero");
-    const heroText = el("div", "journal__hero-text");
-    const eyebrow = el("p", "journal__eyebrow");
-    eyebrow.textContent = isToday ? "Today’s Thoughts" : "Your Thoughts";
-    const title = el("h3", "journal__title");
-    title.textContent = this.getDateLabel(this.locale);
-    heroText.append(eyebrow, title);
+    const dateBar = el("header", "journal-date-bar");
+    const prev = el("button", "feature-icon-button journal-date-bar__nav");
+    prev.type = "button";
+    prev.innerHTML = '<span aria-hidden="true">‹</span>';
+    prev.setAttribute("aria-label", "Previous day");
+    prev.addEventListener("click", async () => {
+      await this.navigateDay(-1);
+    });
 
-    const actualWrap = el("div", "journal__actual-duck");
+    const dateCopy = el("div", "journal-date-bar__copy");
+    const heading = el("h2", "journal-date-bar__heading");
+    heading.textContent = isToday ? "Today’s Thoughts" : "Thoughts from this day";
+    const dateLabel = el("p", "journal-date-bar__date");
+    dateLabel.textContent = this.getDateLabel(this.locale);
+    dateCopy.append(heading, dateLabel);
+
+    if (!isToday) {
+      const returnToday = el("button", "journal-date-bar__today");
+      returnToday.type = "button";
+      returnToday.textContent = "Return to today";
+      returnToday.addEventListener("click", async () => {
+        await this.setDate(profileToday);
+      });
+      dateCopy.append(returnToday);
+    } else {
+      const todayMarker = el("span", "journal-date-bar__today-marker");
+      todayMarker.textContent = "Today";
+      dateCopy.append(todayMarker);
+    }
+
+    const next = el("button", "feature-icon-button journal-date-bar__nav");
+    next.type = "button";
+    next.innerHTML = '<span aria-hidden="true">›</span>';
+    next.setAttribute("aria-label", "Next day");
+    next.addEventListener("click", async () => {
+      await this.navigateDay(1);
+    });
+    dateBar.append(prev, dateCopy, next);
+
+    const actualWrap = el("section", "journal-day-context");
+    actualWrap.setAttribute("aria-label", "Actual SineDay context");
     if (actual?.day) {
       const imgWrap = el("div", "journal-actual-duck-image duck-image-on-white");
       const img = document.createElement("img");
       img.src = duckUrlFromSinedayNumber(actual.day);
       img.alt = `Actual SineDuck Day ${actual.day}`;
-      img.loading = "lazy";
+      img.loading = "eager";
       imgWrap.append(img);
-      const label = el("div", "journal__actual-label");
+      const contextCopy = el("div", "journal-day-context__copy");
+      const label = el("span", "journal__actual-label");
       label.textContent = `Actual SineDay ${actual.day}`;
-      const phase = el("div", "journal__actual-phase");
+      const phase = el("strong", "journal__actual-phase");
       phase.textContent = actual.phase || "";
-      actualWrap.append(imgWrap, label, phase);
+      contextCopy.append(label, phase);
+      actualWrap.append(imgWrap, contextCopy);
     }
-    hero.append(heroText, actualWrap);
 
     const textarea = document.createElement("textarea");
     textarea.className = "journal__textarea journal-entry-field-light";
@@ -229,15 +262,110 @@ export class JournalUI {
       this._flushSave(entry, indicator);
     });
 
-    const feltSection = el("section", "journal__felt");
-    const feltHeading = el("div", "journal__section-heading");
-    feltHeading.textContent = "Which duck felt like the day?";
-    const feltHelp = el("p", "journal__section-help");
-    feltHelp.textContent =
-      "Tap the duck that mirrors the day you lived. It can match the actual SineDay or be completely different.";
+    const writing = el("section", "journal-writing");
+    writing.append(textarea, indicator);
+
+    const tools = el("div", "journal-tools");
+    tools.setAttribute("aria-label", "Reflection tools");
+
+    const feltTool = el("button", "journal-tool-button journal-tool-button--felt");
+    feltTool.type = "button";
+    feltTool.setAttribute("aria-haspopup", "dialog");
+    feltTool.setAttribute("aria-expanded", "false");
+
+    const syncFeltTool = () => {
+      feltTool.innerHTML = "";
+      const visual = el("span", "journal-tool-button__visual");
+      if (entry.felt_sineday) {
+        const selectedImg = document.createElement("img");
+        selectedImg.src = duckUrlFromSinedayNumber(entry.felt_sineday);
+        selectedImg.alt = "";
+        selectedImg.setAttribute("aria-hidden", "true");
+        visual.append(selectedImg);
+      } else {
+        visual.textContent = "∿";
+        visual.setAttribute("aria-hidden", "true");
+      }
+      const copy = el("span", "journal-tool-button__copy");
+      const title = el("strong", "");
+      title.textContent = entry.felt_sineday ? `Felt like Day ${entry.felt_sineday}` : "How did it feel?";
+      const helper = el("small", "");
+      helper.textContent = entry.felt_sineday ? "Tap to change or clear" : "Choose your mirror";
+      copy.append(title, helper);
+      feltTool.append(visual, copy);
+      feltTool.setAttribute(
+        "aria-label",
+        entry.felt_sineday
+          ? `Felt SineDuck Day ${entry.felt_sineday}. Change or clear selection.`
+          : "Choose how the day felt"
+      );
+    };
+    syncFeltTool();
+
+    const imageParts = this._buildImageSection(entry, indicator);
+    const photoTool = el("button", "journal-tool-button journal-tool-button--photo");
+    photoTool.type = "button";
+    photoTool.dataset.journalPhotoAction = "true";
+    photoTool.innerHTML = `
+      <span class="journal-tool-button__visual" aria-hidden="true">+</span>
+      <span class="journal-tool-button__copy">
+        <strong>${entry.image_path ? "Replace photo" : "Add memory photo"}</strong>
+        <small>${entry.image_path ? "One photo attached" : "Keep one image from the day"}</small>
+      </span>
+    `;
+    photoTool.setAttribute(
+      "aria-label",
+      entry.image_path ? "Replace memory photo" : "Add memory photo"
+    );
+    photoTool.addEventListener("click", () => imageParts.input.click());
+    tools.append(feltTool, photoTool);
+
+    const feelingSheet = el("div", "journal-feeling-sheet add-profile-sheet");
+    feelingSheet.setAttribute("aria-hidden", "true");
+    const feelingBackdrop = el("div", "add-profile-sheet__backdrop");
+    const feelingPanel = el("div", "add-profile-sheet__panel journal-feeling-sheet__panel");
+    feelingPanel.setAttribute("role", "dialog");
+    feelingPanel.setAttribute("aria-modal", "true");
+    const feelingTitleId = `journal-feeling-title-${ymd}`;
+    feelingPanel.setAttribute("aria-labelledby", feelingTitleId);
+    const feelingInner = el("div", "add-profile-sheet__inner journal-feeling-sheet__inner");
+    const handle = el("div", "feature-sheet__handle");
+    handle.setAttribute("aria-hidden", "true");
+    const sheetHeader = el("div", "journal-feeling-sheet__header");
+    const sheetHeadingWrap = el("div", "");
+    const sheetEyebrow = el("p", "feature-hero__eyebrow");
+    sheetEyebrow.textContent = "SineDuck is a mirror without words";
+    const sheetHeading = el("h3", "journal-feeling-sheet__title");
+    sheetHeading.id = feelingTitleId;
+    sheetHeading.textContent = "How did the day feel?";
+    sheetHeadingWrap.append(sheetEyebrow, sheetHeading);
+    const closeFeeling = el("button", "feature-icon-button");
+    closeFeeling.type = "button";
+    closeFeeling.textContent = "×";
+    closeFeeling.setAttribute("aria-label", "Close felt SineDuck selector");
+    sheetHeader.append(sheetHeadingWrap, closeFeeling);
+    const feltHelp = el("p", "journal-feeling-sheet__help");
+    feltHelp.textContent = "Choose the duck that mirrors the day you lived. Tap it again to clear.";
     const duckGrid = el("div", "journal__duck-grid");
     duckGrid.setAttribute("role", "group");
     duckGrid.setAttribute("aria-label", "Felt SineDuck selector");
+
+    const closeFeelingSheet = () => {
+      feelingSheet.classList.remove("is-open");
+      feelingSheet.setAttribute("aria-hidden", "true");
+      feltTool.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("modal-open");
+      feltTool.focus();
+    };
+
+    const openFeelingSheet = () => {
+      feelingSheet.setAttribute("aria-hidden", "false");
+      feltTool.setAttribute("aria-expanded", "true");
+      requestAnimationFrame(() => feelingSheet.classList.add("is-open"));
+      document.body.classList.add("modal-open");
+      const selected = duckGrid.querySelector(".journal__duck-choice.is-selected");
+      (selected || closeFeeling).focus();
+    };
 
     for (let day = 1; day <= 18; day++) {
       const btn = el("button", "journal__duck-choice");
@@ -258,7 +386,7 @@ export class JournalUI {
       label.textContent = `Day ${day}`;
       btn.append(imgWrap, label);
 
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const current = entry.felt_sineday === day ? null : day;
         entry.felt_sineday = current;
         this._cacheEntry(entry);
@@ -267,53 +395,46 @@ export class JournalUI {
           choice.classList.toggle("is-selected", selected);
           choice.setAttribute("aria-pressed", String(selected));
         });
-        this._flushSave(entry, indicator);
+        syncFeltTool();
+        await this._flushSave(entry, indicator);
+        closeFeelingSheet();
       });
 
       duckGrid.append(btn);
     }
-    feltSection.append(feltHeading, feltHelp, duckGrid);
-
-    const imageSection = this._buildImageSection(entry, indicator);
-
-    const nav = el("div", "journal__date-actions");
-    const prev = el("button", "journal__date-btn");
-    prev.type = "button";
-    prev.textContent = "← Previous day";
-    prev.addEventListener("click", () => {
-      this.navigateDay(-1);
+    feelingInner.append(handle, sheetHeader, feltHelp, duckGrid);
+    feelingPanel.append(feelingInner);
+    feelingSheet.append(feelingBackdrop, feelingPanel);
+    feltTool.addEventListener("click", openFeelingSheet);
+    closeFeeling.addEventListener("click", closeFeelingSheet);
+    feelingBackdrop.addEventListener("click", closeFeelingSheet);
+    feelingPanel.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeFeelingSheet();
     });
-    const todayBtn = el("button", "journal__date-btn journal__date-btn--primary");
-    todayBtn.type = "button";
-    todayBtn.textContent = "Today";
-    todayBtn.disabled = isToday;
-    todayBtn.setAttribute("aria-disabled", String(isToday));
-    todayBtn.addEventListener("click", () => {
-      this.setDate(profileToday);
-    });
-    const next = el("button", "journal__date-btn");
-    next.type = "button";
-    next.textContent = "Next day →";
-    next.addEventListener("click", () => {
-      this.navigateDay(1);
-    });
-    nav.append(prev, todayBtn, next);
 
-    frame.append(hero, textarea, feltSection, imageSection, indicator, nav);
+    frame.append(
+      dateBar,
+      actualWrap,
+      writing,
+      tools,
+      imageParts.input,
+      imageParts.section,
+      feelingSheet
+    );
     this.mountEl.append(frame);
   }
 
   _buildImageSection(entry, indicator) {
     const section = el("section", "journal__image");
-    const heading = el("div", "journal__section-heading");
-    heading.textContent = "Memory image";
-    const help = el("p", "journal__section-help");
-    help.textContent = "Attach a handwritten journal photo or one image from the day (8 MB max).";
+    section.hidden = !entry.image_path;
+    const heading = el("div", "journal__image-heading");
+    heading.textContent = "Memory photo";
 
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/jpeg,image/png,image/webp,image/gif";
-    input.className = "journal__image-input";
+    input.className = "journal__image-input sr-only";
+    input.tabIndex = -1;
     input.setAttribute("aria-label", "Upload journal image");
 
     const preview = el("div", "journal__image-preview");
@@ -324,13 +445,13 @@ export class JournalUI {
     input.addEventListener("change", async () => {
       const file = input.files?.[0];
       if (!file) return;
-      await this._uploadImage(entry, file, indicator, preview, actions);
+      await this._uploadImage(entry, file, indicator, preview, actions, section);
       input.value = "";
     });
 
-    section.append(heading, help, input, preview, actions);
+    section.append(heading, preview, actions);
     this._syncImageActions(actions, entry, indicator, preview);
-    return section;
+    return { section, input };
   }
 
   _syncImageActions(actionsEl, entry, indicator, previewEl) {
@@ -339,9 +460,16 @@ export class JournalUI {
 
     const removeBtn = el("button", "journal__image-remove");
     removeBtn.type = "button";
-    removeBtn.textContent = "Remove image";
+    removeBtn.textContent = "Remove photo";
+    removeBtn.setAttribute("aria-label", "Remove memory photo");
     removeBtn.addEventListener("click", () => {
-      this._removeImage(entry, indicator, previewEl, actionsEl);
+      this._removeImage(
+        entry,
+        indicator,
+        previewEl,
+        actionsEl,
+        actionsEl.closest(".journal__image")
+      );
     });
     actionsEl.append(removeBtn);
   }
@@ -374,7 +502,7 @@ export class JournalUI {
     }
   }
 
-  async _uploadImage(entry, file, indicator, previewEl, actionsEl) {
+  async _uploadImage(entry, file, indicator, previewEl, actionsEl, sectionEl) {
     if (!this.supabaseClient || !this.userId || !this.ownerProfile) return;
 
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
@@ -412,7 +540,8 @@ export class JournalUI {
 
       await this._renderImagePreview(previewEl, entry);
       this._syncImageActions(actionsEl, entry, indicator, previewEl);
-      this._setIndicator(indicator, "Image saved ✓");
+      this._syncImagePresentation(entry, sectionEl);
+      this._setIndicator(indicator, "Photo saved");
     } catch (err) {
       console.error("[Journal] Image upload failed:", err);
       this._setIndicator(
@@ -423,7 +552,7 @@ export class JournalUI {
     }
   }
 
-  async _removeImage(entry, indicator, previewEl, actionsEl) {
+  async _removeImage(entry, indicator, previewEl, actionsEl, sectionEl) {
     if (!entry.image_path || !this.supabaseClient) return;
 
     const path = entry.image_path;
@@ -438,11 +567,30 @@ export class JournalUI {
       await this._saveEntry(entry);
       await this._renderImagePreview(previewEl, entry);
       this._syncImageActions(actionsEl, entry, indicator, previewEl);
-      this._setIndicator(indicator, "Image removed ✓");
+      this._syncImagePresentation(entry, sectionEl);
+      this._setIndicator(indicator, "Photo removed");
     } catch (err) {
       console.error("[Journal] Image remove failed:", err);
       this._setIndicator(indicator, "Could not remove image.", true);
     }
+  }
+
+  _syncImagePresentation(entry, sectionEl) {
+    if (sectionEl) sectionEl.hidden = !entry.image_path;
+    const photoTool = this.mountEl.querySelector("[data-journal-photo-action]");
+    if (!photoTool) return;
+    const title = photoTool.querySelector("strong");
+    const helper = photoTool.querySelector("small");
+    if (title) title.textContent = entry.image_path ? "Replace photo" : "Add memory photo";
+    if (helper) {
+      helper.textContent = entry.image_path
+        ? "One photo attached"
+        : "Keep one image from the day";
+    }
+    photoTool.setAttribute(
+      "aria-label",
+      entry.image_path ? "Replace memory photo" : "Add memory photo"
+    );
   }
 
   _getEntry(profileId, ymd, actualSineday) {
@@ -489,7 +637,7 @@ export class JournalUI {
 
   _queueSave(entry, indicator) {
     const key = entryKey(entry.profile_id, entry.entry_date);
-    this._setIndicator(indicator, "Unsaved changes…");
+    this._setIndicator(indicator, "Saving…");
     if (this.saveTimers.has(key)) clearTimeout(this.saveTimers.get(key));
     const timerId = setTimeout(() => {
       this.saveTimers.delete(key);
@@ -512,7 +660,7 @@ export class JournalUI {
     this._setIndicator(indicator, "Saving…");
     try {
       await this._saveEntry(entry);
-      this._setIndicator(indicator, "Saved ✓");
+      this._setIndicator(indicator, "Saved");
     } catch (err) {
       console.error("[Journal] Save failed:", err);
       this._setIndicator(indicator, "Could not save.", true);
@@ -602,7 +750,10 @@ export class JournalUI {
     }
     indicatorEl.classList.add("is-visible");
     indicatorEl.classList.toggle("is-error", !!isError);
-    if (!isError && text.includes("✓")) {
+    const isSaving = /saving|uploading|removing/i.test(text);
+    const isSaved = !isError && /saved|removed/i.test(text);
+    indicatorEl.dataset.state = isError ? "error" : isSaving ? "saving" : isSaved ? "saved" : "info";
+    if (isSaved) {
       setTimeout(() => indicatorEl.classList.remove("is-visible"), 1800);
     }
   }

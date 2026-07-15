@@ -1134,39 +1134,10 @@ async function mountJournalSection() {
   frame.className = "journal-frame is-day-view";
   frame.dataset.view = "journal";
 
-  const header = document.createElement("div");
-  header.className = "journal-frame__header";
-
-  const title = document.createElement("div");
-  title.className = "journal-frame__title";
-  title.textContent = "Journal";
-
-  const nav = document.createElement("div");
-  nav.className = "journal-frame__nav";
-
-  const btnPrev = document.createElement("button");
-  btnPrev.className = "journal-frame__navbtn";
-  btnPrev.type = "button";
-  btnPrev.textContent = "←";
-  btnPrev.setAttribute("aria-label", "Previous day");
-
-  const rangeLabel = document.createElement("div");
-  rangeLabel.className = "journal-frame__range";
-  rangeLabel.dataset.journalRange = "true";
-
-  const btnNext = document.createElement("button");
-  btnNext.className = "journal-frame__navbtn";
-  btnNext.type = "button";
-  btnNext.textContent = "→";
-  btnNext.setAttribute("aria-label", "Next day");
-
-  nav.append(btnPrev, rangeLabel, btnNext);
-  header.append(title, nav);
-
   const mount = document.createElement("div");
   mount.className = "journal-mount";
 
-  frame.append(header, mount);
+  frame.append(mount);
   section.innerHTML = "";
   section.append(frame);
 
@@ -1182,22 +1153,6 @@ async function mountJournalSection() {
   });
 
   await journalUI.render();
-
-  function updateRangeLabel() {
-    rangeLabel.textContent = journalUI.getDateLabel(locale);
-  }
-
-  updateRangeLabel();
-
-  btnPrev.addEventListener("click", async () => {
-    await journalUI.navigateDay(-1);
-    updateRangeLabel();
-  });
-
-  btnNext.addEventListener("click", async () => {
-    await journalUI.navigateDay(1);
-    updateRangeLabel();
-  });
 }
 
 /**
