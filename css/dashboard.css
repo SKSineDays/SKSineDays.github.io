@@ -20,6 +20,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
 
@@ -93,18 +94,52 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  margin: 18px 0 24px;
+  gap: 14px;
+  margin: 12px 0 28px;
+  min-width: 0;
+}
+
+.dashboard-app-nav-wrap {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 4px 0;
+  pointer-events: none;
 }
 
 .dashboard-tabs {
-  display: flex;
-  align-items: flex-end;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(44px, 1fr));
+  align-items: stretch;
+  width: min(100%, 520px);
   gap: 4px;
-  padding: 0;
+  padding: 5px;
   overflow-x: auto;
+  overflow-y: visible;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(27, 30, 40, 0.86),
+      rgba(12, 14, 21, 0.78)
+    );
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.dashboard-app-nav {
+  pointer-events: auto;
 }
 
 .dashboard-tabs::-webkit-scrollbar {
@@ -113,61 +148,73 @@ body {
 
 .dashboard-tab {
   position: relative;
-  flex: 1 1 0;
-  min-width: 72px;
-  max-width: 180px;
+  min-width: 44px;
+  max-width: none;
+  min-height: 62px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 10px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: none;
-  border-radius: 14px 14px 0 0;
-  background: rgba(255, 255, 255, 0.04);
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 19px;
+  background: transparent;
   color: rgba(245, 247, 255, 0.62);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  z-index: 1;
-}
-
-.dashboard-tab:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(245, 247, 255, 0.88);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 140ms ease,
+    box-shadow 180ms ease;
 }
 
 .dashboard-tab.is-active {
-  background: rgba(255, 255, 255, 0.04);
-  color: #f5f7ff;
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.18);
-  transform: translateY(1px);
-  z-index: 3;
+  color: #F5F7FF;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.14),
+      rgba(255, 255, 255, 0.07)
+    );
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    0 0 0 1px rgba(122, 167, 255, 0.18);
+  transform: translateY(-1px);
+}
 
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.04);
+.dashboard-tab:active {
+  transform: scale(0.96);
+}
+
+.dashboard-tab:focus-visible {
+  outline: 2px solid #7AA7FF;
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-tab:not(.is-active):hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(245, 247, 255, 0.9);
   }
 }
 
 .dashboard-tab__icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
-  transition: transform 0.2s ease;
+  transition: transform 180ms ease;
 }
 
 .duck-icon-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  background: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: #FFFFFF;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -176,7 +223,7 @@ body {
     inset 0 0 0 1px rgba(5, 6, 10, 0.08);
   overflow: hidden;
   flex: 0 0 auto;
-  transition: transform 0.2s ease;
+  transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .duck-icon-badge img,
@@ -188,35 +235,48 @@ body {
   filter: none;
 }
 
-.dashboard-tab.is-active .dashboard-tab__icon {
-  transform: scale(1.08);
-}
-
 .dashboard-tab.is-active .duck-icon-badge {
-  transform: scale(1.08);
-}
-
-.dashboard-tab.is-active .duck-icon-badge .dashboard-tab__icon {
-  transform: none;
+  transform: scale(1.07);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(122, 167, 255, 0.26);
 }
 
 .dashboard-tab__label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.2;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
   text-align: center;
+  text-transform: none;
   white-space: nowrap;
+}
+
+.dashboard-tab__lock {
+  display: inline-block;
+  margin-left: 1px;
+  font-size: 8px;
+  vertical-align: 0.14em;
+  opacity: 0.72;
+}
+
+.dashboard-tab__lock[hidden] {
+  display: none;
 }
 
 .dashboard-pager__viewport {
   overflow: hidden;
   min-width: 0;
-  border-radius: 0 0 22px 22px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: none;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition: height 0.38s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -231,7 +291,10 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .dashboard-pager__viewport,
-  .dashboard-pager__track {
+  .dashboard-pager__track,
+  .dashboard-tab,
+  .dashboard-tab__icon,
+  .duck-icon-badge {
     transition: none;
   }
 }
@@ -249,11 +312,17 @@ body {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  border-radius: 0 0 20px 20px;
-  border-top: none;
+  border: 0;
+  border-radius: 23px;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 
   &:hover {
+    border-color: transparent;
     transform: none;
+    box-shadow: none;
   }
 }
 
@@ -304,16 +373,6 @@ body {
 
 .dashboard-page .locked-section {
   margin-top: 8px;
-}
-
-.dashboard-tab__lock {
-  font-size: 10px;
-  margin-left: 2px;
-  opacity: 0.78;
-}
-
-.dashboard-tab__lock[hidden] {
-  display: none;
 }
 
 .premium-lock-card {
@@ -422,37 +481,7 @@ body {
 }
 
 @media (max-width: 900px) {
-  .dashboard-tab {
-    min-width: 64px;
-    padding: 7px 8px 9px;
-  }
-
-  .dashboard-tab__icon {
-    width: 30px;
-    height: 30px;
-  }
-
-  .duck-icon-badge {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-  }
-
-  .duck-icon-badge img,
-  .duck-icon-badge .dashboard-tab__icon {
-    width: 82%;
-    height: 82%;
-  }
-
-  .dashboard-tab__label {
-    font-size: 10px;
-  }
-
-  .dashboard-pager__viewport {
-    border-radius: 0 0 18px 18px;
-  }
-
-  .dashboard-page__card {
+  .container.dashboard-page__card {
     padding: 22px;
   }
 
@@ -462,36 +491,9 @@ body {
 }
 
 @media (max-width: 640px) {
-  .dashboard-tabs {
-    gap: 3px;
-  }
-
-  .dashboard-tab {
-    min-width: 58px;
-    max-width: none;
-    padding: 6px 6px 8px;
-    border-radius: 12px 12px 0 0;
-  }
-
-  .dashboard-tab__icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .duck-icon-badge {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-  }
-
-  .dashboard-tab__label {
-    font-size: 9px;
-    letter-spacing: 0.02em;
-  }
-
-  .dashboard-page__card {
+  .container.dashboard-page__card {
     padding: 18px;
-    border-radius: 0 0 18px 18px;
+    border-radius: 23px;
     gap: 16px;
   }
 
@@ -505,6 +507,34 @@ body {
 
   .dashboard-page__subtitle {
     font-size: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  .dashboard-tabs {
+    width: 100%;
+    border-radius: 22px;
+  }
+
+  .dashboard-tab {
+    min-height: 58px;
+    padding-inline: 2px;
+    border-radius: 17px;
+  }
+
+  .duck-icon-badge {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dashboard-tab__label {
+    font-size: 9.5px;
+  }
+}
+
+@media (display-mode: standalone) {
+  .dashboard-app-nav-wrap {
+    top: calc(env(safe-area-inset-top, 0px) + 6px);
   }
 }
 
@@ -1789,6 +1819,16 @@ option {
     right: 16px;
     left: 16px;
     max-width: none;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 10px)
+      max(10px, env(safe-area-inset-right, 0px))
+      calc(env(safe-area-inset-bottom, 0px) + 18px)
+      max(10px, env(safe-area-inset-left, 0px));
   }
 }
 

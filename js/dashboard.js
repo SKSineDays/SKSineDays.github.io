@@ -520,6 +520,59 @@ function clampDashboardPage(index) {
   return Math.max(0, Math.min(index, dashboardPageCount - 1));
 }
 
+function prefersReducedDashboardMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function syncActiveDashboardTabVisibility() {
+  const tabs = getDashboardPageTabs();
+  const activeTab = tabs[dashboardPageIndex];
+  const tabsContainer = activeTab?.closest(".dashboard-tabs");
+
+  if (!activeTab || !tabsContainer) return;
+  if (tabsContainer.scrollWidth <= tabsContainer.clientWidth) return;
+
+  const containerRect = tabsContainer.getBoundingClientRect();
+  const activeRect = activeTab.getBoundingClientRect();
+  const isFullyVisible =
+    activeRect.left >= containerRect.left &&
+    activeRect.right <= containerRect.right;
+
+  if (isFullyVisible) return;
+
+  const delta =
+    activeRect.left +
+    activeRect.width / 2 -
+    (containerRect.left + containerRect.width / 2);
+
+  tabsContainer.scrollBy({
+    left: delta,
+    behavior: prefersReducedDashboardMotion() ? "auto" : "smooth"
+  });
+}
+
+function scrollDashboardShellIntoView() {
+  const pager = document.querySelector(".dashboard-pager");
+  if (!pager) return;
+
+  const navWrap = pager.querySelector(".dashboard-app-nav-wrap");
+  const stickyTop = navWrap
+    ? Number.parseFloat(window.getComputedStyle(navWrap).top) || 0
+    : 0;
+  const targetTop = Math.max(
+    0,
+    window.scrollY + pager.getBoundingClientRect().top - stickyTop
+  );
+
+  if (Math.abs(window.scrollY - targetTop) < 1) return;
+
+  window.scrollTo({
+    top: targetTop,
+    left: window.scrollX,
+    behavior: prefersReducedDashboardMotion() ? "auto" : "smooth"
+  });
+}
+
 function syncDashboardPagerHeight() {
   const viewport = document.querySelector(".dashboard-pager__viewport");
   const pages = getDashboardPages();
@@ -535,7 +588,7 @@ function syncDashboardPagerHeight() {
   }
 }
 
-function updateDashboardPagerUI() {
+function updateDashboardPagerUI({ syncActiveTabVisibility = false } = {}) {
   const track = document.getElementById("dashboard-page-track");
   const pages = getDashboardPages();
   const tabs = getDashboardPageTabs();
@@ -559,6 +612,12 @@ function updateDashboardPagerUI() {
     tab.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 
+  if (syncActiveTabVisibility) {
+    requestAnimationFrame(() => {
+      syncActiveDashboardTabVisibility();
+    });
+  }
+
   requestAnimationFrame(() => {
     syncDashboardPagerHeight();
   });
@@ -568,7 +627,7 @@ function setDashboardPage(index) {
   const nextIndex = clampDashboardPage(index);
   const changed = nextIndex !== dashboardPageIndex;
   dashboardPageIndex = nextIndex;
-  updateDashboardPagerUI();
+  updateDashboardPagerUI({ syncActiveTabVisibility: changed });
 
   if (dashboardPageIndex === 3 && calendarsUI?.refreshWhenVisible) {
     requestAnimationFrame(() => {
@@ -581,11 +640,7 @@ function setDashboardPage(index) {
   }
 
   if (changed) {
-    window.scrollTo({
-      top: 0,
-      left: window.scrollX,
-      behavior: "auto"
-    });
+    scrollDashboardShellIntoView();
   }
 }
 
@@ -692,6 +747,18 @@ function bindDashboardPager() {
       onboarding && onboarding.getAttribute("aria-hidden") === "false";
 
     if (accountOpen || addProfileOpen || onboardingOpen) return;
+
+    const target = e.target;
+    if (
+      e.defaultPrevented ||
+      e.altKey ||
+      e.ctrlKey ||
+      e.metaKey ||
+      (target instanceof Element &&
+        target.closest("input, select, textarea, [contenteditable='true'], [role='textbox']"))
+    ) {
+      return;
+    }
 
     if (e.key === "ArrowLeft") {
       setDashboardPage(dashboardPageIndex - 1);
