@@ -105,17 +105,6 @@
             </span>
           </div>
 
-          <div id="daily-email-box" class="daily-email-box" hidden>
-            <div class="daily-email-box__text">
-              <span class="daily-email-box__title">Daily Duck Email</span>
-              <span id="daily-email-meta" class="daily-email-box__meta">Owner origin will be used</span>
-            </div>
-            <button type="button" id="daily-email-optin" class="daily-email-pill" aria-pressed="false">
-              <span class="daily-email-pill__dot"></span>
-              <span class="daily-email-pill__label">On</span>
-            </button>
-          </div>
-
           <div class="dash-head__actions">
             <button
               id="install-app-btn"
@@ -129,6 +118,39 @@
                 <path
                   d="M12 3a1 1 0 0 1 1 1v8.59l2.3-2.29a1 1 0 1 1 1.4 1.41l-4 3.99a1 1 0 0 1-1.4 0l-4-3.99a1 1 0 1 1 1.4-1.41L11 12.59V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
                   fill="currentColor"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              id="daily-email-optin"
+              class="dash-head__icon-btn daily-email-icon-btn"
+              aria-pressed="false"
+              aria-label="Daily Duck email is off. Tap to turn it on."
+              title="Daily Duck email"
+              hidden
+            >
+              <svg
+                class="daily-email-icon-btn__svg"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M4.75 6.5h14.5A1.75 1.75 0 0 1 21 8.25v9.5a1.75 1.75 0 0 1-1.75 1.75H4.75A1.75 1.75 0 0 1 3 17.75v-9.5A1.75 1.75 0 0 1 4.75 6.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="m4 8 7.05 5.18a1.6 1.6 0 0 0 1.9 0L20 8"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
                 />
               </svg>
             </button>
