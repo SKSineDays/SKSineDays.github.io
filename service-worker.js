@@ -3,12 +3,14 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v9';
+const CACHE_NAME = 'sineday-v10';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/styles.css',
   '/assets/og-hero.png',
+  '/assets/brand/sineday-wordmark.svg',
+  '/assets/brand/sineday-wordmark-light.png',
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',

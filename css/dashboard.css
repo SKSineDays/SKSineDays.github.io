@@ -1027,15 +1027,39 @@ option {
   gap: 12px;
 }
 
-.dash-head__title {
+.dash-head__heading {
+  flex: 1 1 168px;
+  min-width: 110px;
+  max-width: 168px;
   margin: 0;
-  font-size: 34px;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  line-height: 0;
+}
+
+.dash-head__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dash-head__brand:focus-visible {
+  outline: 2px solid rgba(255, 239, 205, 0.92);
+  outline-offset: 3px;
+}
+
+.dash-head__wordmark {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 5px rgba(255, 239, 205, 0.24))
+    drop-shadow(0 0 14px rgba(247, 217, 152, 0.10));
 }
 
 .dash-head__icon-btn {
@@ -1058,30 +1082,13 @@ option {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Title row: title + pill baseline-aligned */
+/* Brand row: official wordmark + subscription status */
 .dash-head__title-row {
   display: flex;
-  align-items: baseline;
-  gap: 14px;
-  position: relative;
-}
-
-/* Subtle green glow under left of title (integrates Premium with typography) */
-.dash-head__title-row::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 180px;
-  height: 60px;
-  background: radial-gradient(
-    circle at left,
-    rgba(34, 197, 94, 0.15),
-    transparent 70%
-  );
-  filter: blur(20px);
-  pointer-events: none;
-  z-index: -1;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
 }
 
 /* Pill: status chip, not badge */
@@ -1097,7 +1104,7 @@ option {
   border: 1px solid transparent;
 }
 
-/* Premium active — refined emerald, integrated with title gradient */
+/* Premium active — refined emerald status */
 .pill--ok {
   padding: 4px 10px;
   font-size: 11px;
@@ -1679,8 +1686,9 @@ option {
     padding: 14px;
   }
 
-  .dash-head__title {
-    font-size: 28px;
+  .dash-head__heading {
+    flex-basis: 145px;
+    max-width: 145px;
   }
 
   .dash-title {
@@ -3259,25 +3267,56 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 @media (max-width: 390px) {
   .dash-head {
-    padding: 12px;
+    padding: 8px;
   }
 
   .dash-head__top {
-    gap: 8px;
+    gap: 6px;
   }
 
   .dash-head__title-row {
-    gap: 9px;
+    gap: 8px;
     min-width: 0;
   }
 
-  .dash-head__actions {
+  .dash-head__heading {
+    flex-basis: 118px;
+    max-width: 118px;
+  }
+
+  .dash-head__top .dash-head__actions {
     gap: 6px;
   }
 
   .pill--ok,
   .pill--neutral {
-    padding-inline: 8px;
+    padding-inline: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dash-head__top .dash-head__actions {
+    gap: 4px;
+  }
+
+  .pill--ok,
+  .pill--neutral {
+    padding-inline: 4px;
+  }
+}
+
+@media (max-width: 350px) {
+  .dash-head__top {
+    flex-wrap: wrap;
+  }
+
+  .dash-head__title-row {
+    flex-basis: 183px;
+    min-width: 183px;
+  }
+
+  .dash-head__actions {
+    margin-left: auto;
   }
 }
 
