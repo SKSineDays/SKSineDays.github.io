@@ -3267,11 +3267,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 @media (max-width: 390px) {
   .dash-head {
-    padding: 12px;
+    padding: 8px;
   }
 
   .dash-head__top {
-    gap: 8px;
+    gap: 6px;
   }
 
   .dash-head__title-row {
@@ -3284,28 +3284,24 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
     max-width: 118px;
   }
 
-  .dash-head__actions {
-    gap: 6px;
-  }
-
-  .pill--ok,
-  .pill--neutral {
-    padding-inline: 8px;
-  }
-}
-
-@media (max-width: 380px) {
-  .dash-head {
-    padding: 8px;
-  }
-
-  .dash-head__top {
+  .dash-head__top .dash-head__actions {
     gap: 6px;
   }
 
   .pill--ok,
   .pill--neutral {
     padding-inline: 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dash-head__top .dash-head__actions {
+    gap: 4px;
+  }
+
+  .pill--ok,
+  .pill--neutral {
+    padding-inline: 4px;
   }
 }
 
