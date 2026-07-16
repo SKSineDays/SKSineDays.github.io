@@ -73,10 +73,9 @@
     }
 
     .container {
-      flex: 1;
+      flex: 0 1 auto;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
@@ -88,21 +87,62 @@
       width: 100%;
     }
 
-    h1 {
-      margin-top: 0;
-      color: #F5F7FF;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      font-size: 2.5em;
-      background: linear-gradient(135deg, #F5F7FF 0%, #7AA7FF 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.3em;
+    .login-brand {
+      width: 100%;
+      margin-bottom: 26px;
+      text-align: center;
     }
 
-    .header {
-      margin-bottom: 32px;
+    .login-brand__heading {
+      margin: 0;
+      line-height: 0;
+    }
+
+    .login-brand__link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .login-brand__link:focus-visible {
+      outline: 2px solid rgba(255, 239, 205, 0.92);
+      outline-offset: 4px;
+    }
+
+    .login-brand__wordmark {
+      display: block;
+      width: clamp(220px, 64vw, 290px);
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter:
+        drop-shadow(0 0 5px rgba(255, 239, 205, 0.24))
+        drop-shadow(0 0 14px rgba(247, 217, 152, 0.10));
+    }
+
+    .login-brand__tagline {
+      margin: 6px 0 0;
+      color: rgba(248, 222, 170, 0.88);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.4;
+      letter-spacing: 0.28em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .login-brand__purpose {
+      max-width: 360px;
+      margin: 8px auto 0;
+      color: rgba(245, 247, 255, 0.68);
+      font-size: 14px;
+      line-height: 1.55;
+      text-align: center;
     }
 
     .back-link {
@@ -113,14 +153,19 @@
       border-radius: 8px;
       transition: all 0.3s ease;
       border: 1px solid transparent;
-      display: inline-block;
-      margin-top: 16px;
+      display: table;
+      margin: 20px auto 0;
     }
 
     .back-link:hover {
       background: rgba(122, 167, 255, 0.1);
       border-color: rgba(122, 167, 255, 0.3);
       text-decoration: none;
+    }
+
+    .back-link:focus-visible {
+      outline: 2px solid #A0C4FF;
+      outline-offset: 2px;
     }
 
     .btn {
@@ -277,12 +322,12 @@
     }
 
     .login-copy {
-      margin: 0 0 22px;
-      padding: 18px 18px;
+      margin: 0 0 18px;
+      padding: 16px 18px;
       border-radius: 18px;
       background:
-        linear-gradient(135deg, rgba(122, 167, 255, 0.14), rgba(255, 255, 255, 0.045));
-      border: 1px solid rgba(122, 167, 255, 0.22);
+        linear-gradient(135deg, rgba(255, 239, 205, 0.07), rgba(255, 255, 255, 0.035));
+      border: 1px solid rgba(255, 239, 205, 0.13);
       color: rgba(245, 247, 255, 0.84);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
@@ -384,17 +429,22 @@
       letter-spacing: 0.01em;
     }
 
-    .provider-soon-note {
-      margin: 16px 0 0;
-      text-align: center;
-      color: rgba(245, 247, 255, 0.58);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
     @media (max-width: 390px) {
       .container {
         padding: 26px 18px;
+      }
+
+      .login-brand {
+        margin-bottom: 22px;
+      }
+
+      .login-brand__wordmark {
+        width: clamp(215px, 64vw, 250px);
+      }
+
+      .login-brand__tagline {
+        font-size: 11px;
+        letter-spacing: 0.24em;
       }
 
       .provider-card {
@@ -415,14 +465,25 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>SineDay Dashboard</h1>
-      <a href="/" class="back-link">← Back to Home</a>
+    <div class="login-brand">
+      <h1 class="login-brand__heading">
+        <a class="login-brand__link" href="/" aria-label="SineDay home">
+          <img
+            class="login-brand__wordmark"
+            src="/assets/brand/sineday-wordmark.svg"
+            alt="SineDay"
+            width="700"
+            height="190"
+          >
+        </a>
+      </h1>
+      <p class="login-brand__tagline">Alignment Creates Lift</p>
+      <p class="login-brand__purpose">Your private space to reflect on today’s wave.</p>
     </div>
 
     <div class="login-copy">
-      <strong>Sign in to continue</strong>
-      <span>Microsoft is on the way.</span>
+      <strong>Welcome back</strong>
+      <span>Sign in to continue your SineDay journal.</span>
     </div>
 
     <div class="provider-grid" aria-label="Sign in options">
@@ -448,9 +509,9 @@
       </button>
     </div>
 
-    <p class="provider-soon-note">Microsoft is on the way.</p>
-
     <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
+
+    <a href="/" class="back-link">← Return home</a>
   </div>
 
   <footer class="site-footer site-footer--legal">
@@ -461,7 +522,7 @@
           Operated by RaLux LLC DBA SineDay
         </p>
         <p class="site-footer__meta">
-          Digital rhythm-based planning, printable calendars, and premium subscription tools.
+          A private rhythm journal for noticing and remembering your days.
         </p>
       </div>
 
