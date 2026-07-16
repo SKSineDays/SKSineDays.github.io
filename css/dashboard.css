@@ -3170,6 +3170,10 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 /* ── Daily Email Icon (dashboard header) ───────────────────────── */
 .daily-email-icon-btn {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   color: rgba(245, 247, 255, 0.56);
   background:
     linear-gradient(
@@ -3194,6 +3198,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   width: 21px;
   height: 21px;
   display: block;
+  flex-shrink: 0;
+  margin: 0;
 }
 
 .daily-email-icon-btn[aria-pressed="true"] {
@@ -3211,18 +3217,6 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 18px -5px rgba(34, 197, 94, 0.78),
     0 8px 22px rgba(0, 0, 0, 0.24);
-}
-
-.daily-email-icon-btn[aria-pressed="true"]::after {
-  content: "";
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: #4ade80;
-  box-shadow: 0 0 7px rgba(34, 197, 94, 0.95);
 }
 
 .daily-email-icon-btn:active:not(:disabled) {
