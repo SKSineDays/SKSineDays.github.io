@@ -310,30 +310,53 @@ function setDailyEmailStatus(message = '', tone = '') {
 }
 
 function renderDailyEmailBox() {
-  const box = document.getElementById('daily-email-box');
   const toggle = document.getElementById('daily-email-optin');
-  const meta = document.getElementById('daily-email-meta');
   const owner = getOwnerProfile();
 
-  if (!box || !toggle) return;
+  if (!toggle) return;
 
-  if (!owner?.birthdate || !currentUser?.email) {
-    box.hidden = true;
+  const canUseDailyEmail = !!owner?.birthdate && !!currentUser?.email;
+
+  toggle.hidden = !canUseDailyEmail;
+
+  if (!canUseDailyEmail) {
+    toggle.disabled = true;
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.removeAttribute('aria-busy');
+    toggle.setAttribute(
+      'aria-label',
+      'Daily Duck email is unavailable until the owner profile is complete.'
+    );
     return;
   }
 
-  const originDay = getOriginTypeForDob(owner.birthdate, ORIGIN_ANCHOR_DATE);
-  box.hidden = false;
-  toggle.setAttribute('aria-pressed', dailyEmailState.subscribed ? 'true' : 'false');
-  toggle.disabled = !!dailyEmailState.loading;
-  const label = toggle.querySelector('.daily-email-pill__label');
-  if (label) label.textContent = dailyEmailState.subscribed ? 'On' : 'Off';
+  const isSubscribed = dailyEmailState.subscribed;
+  const isLoading = dailyEmailState.loading;
 
-  if (meta) {
-    meta.textContent = originDay
-      ? `Sends to ${currentUser.email} · Origin Day ${originDay}`
-      : `Sends to ${currentUser.email}`;
+  toggle.disabled = isLoading;
+  toggle.setAttribute('aria-pressed', isSubscribed ? 'true' : 'false');
+
+  if (isLoading) {
+    toggle.setAttribute('aria-busy', 'true');
+    toggle.setAttribute(
+      'aria-label',
+      isSubscribed
+        ? 'Updating Daily Duck email subscription.'
+        : 'Enabling Daily Duck email.'
+    );
+  } else {
+    toggle.removeAttribute('aria-busy');
+    toggle.setAttribute(
+      'aria-label',
+      isSubscribed
+        ? 'Daily Duck email is on. Tap to turn it off.'
+        : 'Daily Duck email is off. Tap to turn it on.'
+    );
   }
+
+  toggle.title = isSubscribed
+    ? 'Daily Duck email: On'
+    : 'Daily Duck email: Off';
 }
 
 async function loadDailyEmailState() {
