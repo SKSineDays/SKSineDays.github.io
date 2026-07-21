@@ -179,11 +179,33 @@ body {
   pointer-events: auto;
 }
 
-.logo {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--color-text-primary);
+.top-bar-brand-heading {
+  margin: 0;
+  line-height: 0;
+}
+
+.top-bar-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: none;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-bar-wordmark {
+  display: block;
+  width: clamp(112px, 30vw, 150px);
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 239, 205, 0.18))
+    drop-shadow(0 0 10px rgba(247, 217, 152, 0.08));
+}
+
+.top-bar-brand:focus-visible {
+  outline: 2px solid rgba(255, 239, 205, 0.92);
+  outline-offset: 3px;
 }
 
 .top-bar-actions {
