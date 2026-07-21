@@ -45,13 +45,16 @@ export class SineDayUI {
       infoModalClose: document.getElementById('info-modal-close'),
       infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop'),
       scrollHint: document.getElementById('scroll-hint'),
-      mainContent: document.getElementById('main-content')
+      mainContent: document.getElementById('main-content'),
+      topBar: document.querySelector('.top-bar'),
+      topBarBrand: document.getElementById('top-bar-brand')
     };
 
     // State
     this.currentDay = null;
     this.waveRenderer = null;
     this.isCardVisible = false;
+    this.hasCalculatedResult = false;
 
     // Touch gesture state
     this.touchStartY = 0;
@@ -92,10 +95,10 @@ export class SineDayUI {
 
     // Add scroll listener to hide hint when user scrolls
     this._onScroll = () => {
-      // Hide the hint once the user starts exploring downward
       if (window.scrollY > 120) {
         this.hideScrollHint();
       }
+      this.updateTopBarBrandVisibility();
     };
     window.addEventListener('scroll', this._onScroll, { passive: true });
 
@@ -103,6 +106,7 @@ export class SineDayUI {
     this.loadSavedBirthdate();
 
     this.showInput();
+    this.updateTopBarBrandVisibility();
   }
 
   /**
@@ -217,6 +221,8 @@ export class SineDayUI {
    */
   displayResult(result) {
     this.currentDay = result;
+    this.hasCalculatedResult = true;
+    this.updateTopBarBrandVisibility();
 
     // Update wave marker position
     if (this.waveRenderer) {
@@ -770,6 +776,8 @@ export class SineDayUI {
 
     // Clear the current day state
     this.currentDay = null;
+    this.hasCalculatedResult = false;
+    this.updateTopBarBrandVisibility();
 
     // Clear the birthdate input field
     if (this.elements.birthdateInput) {
@@ -823,6 +831,27 @@ export class SineDayUI {
   showScrollHint() {
     if (!this.elements.scrollHint) return;
     this.elements.scrollHint.classList.remove('hidden');
+  }
+
+  /**
+   * Toggle top-bar wordmark visibility based on scroll and result state
+   */
+  updateTopBarBrandVisibility() {
+    const { topBar, topBarBrand } = this.elements;
+    if (!topBar || !topBarBrand) return;
+    const scrollThreshold = Math.min(
+      240,
+      Math.max(140, window.innerHeight * 0.22)
+    );
+    const shouldShow =
+      this.hasCalculatedResult ||
+      window.scrollY >= scrollThreshold;
+    topBar.classList.toggle('brand-visible', shouldShow);
+    topBarBrand.setAttribute(
+      'aria-hidden',
+      shouldShow ? 'false' : 'true'
+    );
+    topBarBrand.tabIndex = shouldShow ? 0 : -1;
   }
 
   /**
