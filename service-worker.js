@@ -14,13 +14,6 @@ const ASSETS_TO_CACHE = [
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',
-  '/js/affiliate-ui.js',
-  '/affiliate-terms.html',
-  '/assets/affiliate/assets.json',
-  '/assets/affiliate/sineday-affiliate-wordmark.svg',
-  '/assets/affiliate/sineday-affiliate-square.png',
-  '/assets/affiliate/sineday-affiliate-story.png',
-  '/assets/affiliate/sineday-affiliate-landscape.png',
   '/site.webmanifest?v=2',
   '/apple-touch-icon.png?v=2',
   '/assets/app-icon/apple-touch-icon-180.png?v=2',
@@ -55,6 +48,16 @@ const ASSETS_TO_CACHE = [
   '/Day18.jpeg'
 ];
 
+const OPTIONAL_ASSETS_TO_CACHE = [
+  '/js/affiliate-ui.js',
+  '/affiliate-terms.html',
+  '/assets/affiliate/assets.json',
+  '/assets/affiliate/sineday-affiliate-wordmark.svg',
+  '/assets/affiliate/sineday-affiliate-square.png',
+  '/assets/affiliate/sineday-affiliate-story.png',
+  '/assets/affiliate/sineday-affiliate-landscape.png'
+];
+
 /**
  * Install event - cache assets
  */
@@ -65,7 +68,10 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[SW] Caching assets');
-        return cache.addAll(ASSETS_TO_CACHE);
+        return cache.addAll(ASSETS_TO_CACHE)
+          .then(() => Promise.allSettled(
+            OPTIONAL_ASSETS_TO_CACHE.map((asset) => cache.add(asset))
+          ));
       })
       .then(() => {
         console.log('[SW] Assets cached successfully');
@@ -73,6 +79,7 @@ self.addEventListener('install', (event) => {
       })
       .catch((error) => {
         console.error('[SW] Cache failed:', error);
+        throw error;
       })
   );
 });

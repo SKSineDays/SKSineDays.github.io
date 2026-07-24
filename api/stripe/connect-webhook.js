@@ -15,6 +15,7 @@ import {
 
 const ACCOUNT_EVENT_TYPES = new Set([
   "v2.core.account.updated",
+  "v2.core.account.closed",
   "v2.core.account[configuration.recipient].updated",
   "v2.core.account[configuration.recipient].capability_status_updated",
   "v2.core.account[requirements].updated",
@@ -24,12 +25,15 @@ const ACCOUNT_EVENT_TYPES = new Set([
 ]);
 
 async function getAccountId(notification) {
-  if (notification.type !== "v2.core.account_link.returned") {
+  if (notification.type === "v2.core.account_link.returned") {
+    const event = await notification.fetchEvent();
+    return event?.data?.account_id || null;
+  }
+  if (notification.related_object?.id) {
     return notification.related_object?.id || null;
   }
-
-  const accountLink = await notification.fetchRelatedObject();
-  return accountLink?.account || null;
+  const event = await notification.fetchEvent();
+  return event?.related_object?.id || null;
 }
 
 async function synchronizeAffiliateAccount(supabaseAdmin, notification) {
@@ -44,6 +48,24 @@ async function synchronizeAffiliateAccount(supabaseAdmin, notification) {
     .maybeSingle();
   if (error) throw new Error("Failed to resolve affiliate account");
   if (!affiliate) return;
+
+  if (notification.type === "v2.core.account.closed") {
+    const { error: closeError } = await supabaseAdmin
+      .from("affiliates")
+      .update({
+        status: "closed",
+        stripe_transfers_status: "restricted",
+        recipient_payouts_status: "restricted",
+        requirements_status: "past_due",
+        details_submitted: false,
+        payouts_enabled: false,
+        tax_setup_status: "action_required",
+        stripe_status_updated_at: new Date().toISOString(),
+      })
+      .eq("id", affiliate.id);
+    if (closeError) throw new Error("Failed to close affiliate account state");
+    return;
+  }
 
   const account = await retrieveAffiliateAccount(accountId);
   const state = deriveAffiliateAccountState(account, affiliate.status);
@@ -78,6 +100,7 @@ export default async function handler(req, res) {
   let notification = null;
   let supabaseAdmin = null;
   let eventClaimed = false;
+  let eventClaimToken = null;
 
   try {
     const webhookSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
@@ -104,11 +127,13 @@ export default async function handler(req, res) {
     }
 
     supabaseAdmin = getAdminClient();
-    const claim = await claimWebhookEvent(supabaseAdmin, {
+    const claimResult = await claimWebhookEvent(supabaseAdmin, {
       eventId: notification.id,
       eventType: notification.type,
       source: "connect",
     });
+    const claim = claimResult?.action;
+    eventClaimToken = claimResult?.claim_token || null;
     eventClaimed = claim === "process";
     if (claim === "duplicate") {
       return res.status(200).json({ ok: true, received: true, duplicate: true });
@@ -118,11 +143,20 @@ export default async function handler(req, res) {
     }
 
     await synchronizeAffiliateAccount(supabaseAdmin, notification);
-    await completeWebhookEvent(supabaseAdmin, notification.id);
+    await completeWebhookEvent(
+      supabaseAdmin,
+      notification.id,
+      eventClaimToken,
+    );
     return res.status(200).json({ ok: true, received: true });
   } catch (error) {
     if (eventClaimed && supabaseAdmin && notification?.id) {
-      await failWebhookEvent(supabaseAdmin, notification.id, error);
+      await failWebhookEvent(
+        supabaseAdmin,
+        notification.id,
+        eventClaimToken,
+        error,
+      );
     }
     console.error("[Connect Webhook] Processing failed:", {
       eventId: notification?.id || null,

@@ -53,6 +53,15 @@ test("manual paused state is never undone by Stripe readiness", () => {
   assert.equal(state.stripeReady, true);
 });
 
+test("closed Stripe accounts are never payout-ready", () => {
+  const state = deriveAffiliateAccountState(
+    readyAccount({ closed: true }),
+    "active",
+  );
+  assert.equal(state.programStatus, "closed");
+  assert.equal(state.stripeReady, false);
+});
+
 test("past-due recipient payout requirements block activation", () => {
   const account = readyAccount({
     requirements: {
@@ -102,6 +111,10 @@ test("only positive paid Premium subscription invoices are eligible", () => {
     false,
   );
   assert.equal(isEligiblePremiumInvoice(invoice, "price_other"), false);
+  assert.equal(
+    isEligiblePremiumInvoice({ ...invoice, billing_reason: null }, "price_premium"),
+    false,
+  );
 });
 
 test("Stripe failures are sanitized for payout records", () => {

@@ -25,20 +25,22 @@ export async function claimWebhookEvent(
   return data;
 }
 
-export async function completeWebhookEvent(supabaseAdmin, eventId) {
-  const { error } = await supabaseAdmin.rpc("complete_stripe_webhook_event", {
+export async function completeWebhookEvent(supabaseAdmin, eventId, claimToken) {
+  const { data, error } = await supabaseAdmin.rpc("complete_stripe_webhook_event", {
     p_stripe_event_id: eventId,
+    p_claim_token: claimToken,
   });
-  if (error) throw new Error("Failed to complete webhook event");
+  if (error || data !== true) throw new Error("Failed to complete webhook event");
 }
 
-export async function failWebhookEvent(supabaseAdmin, eventId, error) {
+export async function failWebhookEvent(supabaseAdmin, eventId, claimToken, error) {
   const message =
     typeof error?.message === "string" ? error.message : "Processing failed";
   const { error: updateError } = await supabaseAdmin.rpc(
     "fail_stripe_webhook_event",
     {
       p_stripe_event_id: eventId,
+      p_claim_token: claimToken,
       p_last_error: message,
     },
   );

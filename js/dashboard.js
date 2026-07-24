@@ -60,6 +60,7 @@ let dashboardPagerResizeObserver = null;
 let deferredInstallPrompt = null;
 let installPromptAvailable = false;
 let subscriptionRenderGen = 0;
+let entitlementLoadGen = 0;
 
 /**
  * Initialize dashboard on page load
@@ -91,8 +92,16 @@ async function init() {
       await loadDailyEmailState();
 
       const affiliateParam = new URLSearchParams(window.location.search).get("affiliate");
+      const affiliateRequested =
+        publicConfig?.affiliateProgramEnabled === true &&
+        ["open", "refresh", "return"].includes(affiliateParam);
+      if (affiliateParam !== null) {
+        const cleanedUrl = new URL(window.location.href);
+        cleanedUrl.searchParams.delete("affiliate");
+        window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}`);
+      }
       // Gate: require owner profile before showing dashboard
-      if (!hasOwnerProfile() && !affiliateParam) {
+      if (!hasOwnerProfile() && !affiliateRequested) {
         hideLoading();
         await showOwnerOnboarding();
         // After onboarding completes, profiles array is updated
@@ -102,7 +111,7 @@ async function init() {
       showAuthenticatedView();
       mountAffiliateUI();
 
-      if (affiliateParam && publicConfig?.affiliateProgramEnabled) {
+      if (affiliateRequested) {
         await affiliateUI?.open();
       }
     } else {
@@ -198,6 +207,7 @@ async function loadProfiles() {
  * Load subscription status
  */
 async function loadSubscription() {
+  const loadGen = ++entitlementLoadGen;
   try {
     const accessToken = await getAccessToken();
     const response = await fetch('/api/account-entitlements', {
@@ -209,6 +219,7 @@ async function loadSubscription() {
     if (!response.ok || !data.ok) {
       throw new Error(data.error || 'Failed to load account entitlement');
     }
+    if (loadGen !== entitlementLoadGen) return;
     currentEntitlement = {
       premium: data.premium === true,
       source: data.source || 'none',
@@ -220,8 +231,20 @@ async function loadSubscription() {
     await renderSubscriptionStatus();
     affiliateUI?.setEntitlement(currentEntitlement);
   } catch (error) {
+    if (loadGen !== entitlementLoadGen) return;
     console.error('Error loading subscription:', error);
-    currentEntitlement = null;
+    if (!currentEntitlement) {
+      currentEntitlement = {
+        premium: false,
+        source: 'unknown',
+        subscriptionStatus: null,
+        currentPeriodEnd: null,
+        affiliateStatus: null
+      };
+    } else {
+      showInfo('Account access could not be refreshed. Keeping your current dashboard state.');
+      return;
+    }
     await renderSubscriptionStatus();
     affiliateUI?.setEntitlement(currentEntitlement);
   }
@@ -232,6 +255,10 @@ async function loadSubscription() {
  */
 function isPaid() {
   return currentEntitlement?.premium === true;
+}
+
+function isStripePaid() {
+  return ['active', 'trialing'].includes(currentEntitlement?.subscriptionStatus);
 }
 
 function getPremiumLockCopy(featureKey) {
@@ -808,6 +835,7 @@ function bindDashboardPager() {
     const modalOpen =
       document.body.classList.contains("modal-open") ||
       document.querySelector("#account-sheet:not([hidden])") ||
+      document.querySelector("#affiliate-sheet:not([hidden])") ||
       document.querySelector('.add-profile-sheet[aria-hidden="false"]') ||
       document.querySelector('#owner-onboarding[aria-hidden="false"]');
 
@@ -1331,9 +1359,14 @@ async function renderSubscriptionStatus() {
   const affiliatePremiumNote = document.getElementById('affiliate-premium-note');
   const calendarsSection = document.getElementById('calendars-section');
   const affiliateGift = currentEntitlement?.source === 'affiliate_gift';
+  const affiliateActive = currentEntitlement?.affiliateStatus === 'active';
+  const entitlementUnknown = currentEntitlement?.source === 'unknown';
 
   if (pill) {
-    if (paid) {
+    if (entitlementUnknown) {
+      pill.className = 'pill pill--neutral';
+      pill.innerHTML = 'Status unavailable';
+    } else if (paid) {
       pill.className = 'pill pill--ok';
       pill.innerHTML = affiliateGift
         ? '<span class="pill-dot"></span>Affiliate Premium'
@@ -1355,7 +1388,12 @@ async function renderSubscriptionStatus() {
     if (billingBtn) billingBtn.style.display = affiliateGift ? 'none' : 'inline-block';
     if (syncPremiumBtn) syncPremiumBtn.style.display = 'none';
     if (syncPremiumNote) syncPremiumNote.style.display = 'none';
-    if (affiliatePremiumNote) affiliatePremiumNote.style.display = affiliateGift ? '' : 'none';
+    if (affiliatePremiumNote) {
+      affiliatePremiumNote.style.display = affiliateActive ? '' : 'none';
+      affiliatePremiumNote.textContent = affiliateGift
+        ? 'Premium is our gift while your SineDay Affiliate account remains active.'
+        : 'Your Affiliate Premium gift is active. Your paid subscription remains active until you change it in Manage Billing.';
+    }
 
     if (calendarsSection) {
       calendarsSection.innerHTML = `
@@ -1394,10 +1432,10 @@ async function renderSubscriptionStatus() {
     if (renewalEl) renewalEl.textContent = '—';
     if (subscriptionMini) subscriptionMini.style.display = 'none';
 
-    if (upgradeBtn) upgradeBtn.style.display = 'inline-block';
+    if (upgradeBtn) upgradeBtn.style.display = entitlementUnknown ? 'none' : 'inline-block';
     if (billingBtn) billingBtn.style.display = 'none';
-    if (syncPremiumBtn) syncPremiumBtn.style.display = '';
-    if (syncPremiumNote) syncPremiumNote.style.display = '';
+    if (syncPremiumBtn) syncPremiumBtn.style.display = entitlementUnknown ? 'none' : '';
+    if (syncPremiumNote) syncPremiumNote.style.display = entitlementUnknown ? 'none' : '';
     if (affiliatePremiumNote) affiliatePremiumNote.style.display = 'none';
 
     calendarsUI?.destroy?.();
@@ -1499,6 +1537,11 @@ function mountAffiliateUI() {
     termsVersion: publicConfig.affiliateTermsVersion,
     onEntitlementChanged: async () => {
       await loadSubscription();
+    },
+    onClose: () => {
+      if (!hasOwnerProfile()) {
+        showOwnerOnboarding().catch(() => {});
+      }
     },
     showSuccess,
     showError,
@@ -1967,7 +2010,7 @@ async function syncPremiumStatus({ silent = false } = {}) {
 
   await loadSubscription();
 
-  if (isPaid()) {
+  if (isStripePaid()) {
     pendingCheckoutSessionId = null;
     if (!silent) {
       showSuccess('Premium synced successfully. Your access is now active.');
@@ -2007,7 +2050,7 @@ async function handleSyncPremium() {
 async function attemptAutoPremiumSyncAfterCheckout() {
   if (hasAttemptedAutoPremiumSync) return;
   if (!pendingCheckoutSessionId) return;
-  if (isPaid()) return;
+  if (isStripePaid()) return;
 
   hasAttemptedAutoPremiumSync = true;
 
@@ -2073,33 +2116,26 @@ async function checkCheckoutSuccess() {
   if (checkoutStatus === 'success') {
     showSuccess('Payment successful! Your subscription is being activated...');
 
-    // Poll subscription status a few times
-    let attempts = 0;
     const maxAttempts = 5;
-
-    const pollInterval = setInterval(async () => {
-      attempts++;
-
+    for (let attempts = 1; attempts <= maxAttempts; attempts += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
       await loadSubscription();
+      if (isStripePaid()) break;
+    }
 
-      if (isPaid() || attempts >= maxAttempts) {
-        clearInterval(pollInterval);
+    if (!isStripePaid() && pendingCheckoutSessionId) {
+      await attemptAutoPremiumSyncAfterCheckout();
+    }
 
-        if (!isPaid() && checkoutStatus === 'success' && pendingCheckoutSessionId) {
-          await attemptAutoPremiumSyncAfterCheckout();
-        }
-
-        if (isPaid()) {
-          showSuccess('Premium activated! You now have access to all features.');
-          pendingCheckoutSessionId = null;
-          hasAttemptedAutoPremiumSync = false;
-          await affiliateUI?.refresh?.();
-          window.history.replaceState({}, '', '/dashboard.html');
-        } else {
-          showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');
-        }
-      }
-    }, 2000);
+    if (isStripePaid()) {
+      showSuccess('Premium activated! You now have access to all features.');
+      pendingCheckoutSessionId = null;
+      hasAttemptedAutoPremiumSync = false;
+      await affiliateUI?.refresh?.();
+      window.history.replaceState({}, '', '/dashboard.html');
+    } else {
+      showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');
+    }
   } else if (checkoutStatus === 'cancel') {
     showInfo('Checkout cancelled. You can upgrade anytime.');
     pendingCheckoutSessionId = null;

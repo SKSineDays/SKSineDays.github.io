@@ -114,7 +114,9 @@ export function deriveAffiliateAccountState(account, currentProgramStatus = "onb
   }
 
   let programStatus = currentProgramStatus;
-  if (!["paused", "closed"].includes(currentProgramStatus)) {
+  if (closed) {
+    programStatus = "closed";
+  } else if (!["paused", "closed"].includes(currentProgramStatus)) {
     programStatus = stripeReady ? "active" : "onboarding";
   }
 
@@ -143,12 +145,7 @@ export function isEligiblePremiumInvoice(invoice, premiumPriceId) {
   if (!subscriptionId) return false;
 
   const billingReason = invoice.billing_reason;
-  if (
-    billingReason &&
-    !["subscription_create", "subscription_cycle"].includes(
-      billingReason,
-    )
-  ) {
+  if (!["subscription_create", "subscription_cycle"].includes(billingReason)) {
     return false;
   }
 

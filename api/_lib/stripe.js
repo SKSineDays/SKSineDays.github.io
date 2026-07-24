@@ -132,8 +132,30 @@ export async function createAffiliateTransfer({
       amount,
       currency: "usd",
       destination,
+      transfer_group: `sineday-affiliate-payout-${metadata.sineday_payout_id}`,
       metadata,
     },
     { idempotencyKey },
   );
+}
+
+export async function findAffiliateTransfers(payoutId) {
+  const stripe = getStripeClient({ connect: true });
+  const transferGroup = `sineday-affiliate-payout-${payoutId}`;
+  const matches = [];
+  let startingAfter;
+
+  for (let page = 0; page < 10; page += 1) {
+    const transfers = await stripe.transfers.list({
+      transfer_group: transferGroup,
+      limit: 100,
+      ...(startingAfter ? { starting_after: startingAfter } : {}),
+    });
+    matches.push(...transfers.data);
+    if (!transfers.has_more) return matches;
+    startingAfter = transfers.data.at(-1)?.id;
+    if (!startingAfter) break;
+  }
+
+  throw new Error("Affiliate transfer reconciliation exceeded the safe page limit");
 }

@@ -230,15 +230,11 @@ async function handleChargeRefunded(supabase, stripe, event) {
 
   const refunds = charge.refunds?.data || [];
   const refund = refunds[refunds.length - 1] || null;
-  const reason =
-    Number(charge.amount_refunded) < Number(charge.amount)
-      ? "partial_refund"
-      : "refund";
-  const { error } = await supabase.rpc("reverse_affiliate_commission", {
+  const { error } = await supabase.rpc("record_affiliate_invoice_event", {
     p_stripe_invoice_id: invoiceId,
-    p_reason: reason,
-    p_stripe_refund_id: refund?.id || null,
-    p_stripe_dispute_id: null,
+    p_event_kind: "refund",
+    p_stripe_object_id: refund?.id || event.id,
+    p_dispute_status: null,
   });
   if (error) throw new Error("Failed to reverse refunded affiliate commission");
 }
@@ -248,11 +244,11 @@ async function handleCreditNoteCreated(supabase, event) {
   const invoiceId = getStripeObjectId(creditNote.invoice);
   if (!invoiceId || Number(creditNote.amount) <= 0) return;
 
-  const { error } = await supabase.rpc("reverse_affiliate_commission", {
+  const { error } = await supabase.rpc("record_affiliate_invoice_event", {
     p_stripe_invoice_id: invoiceId,
-    p_reason: "partial_refund",
-    p_stripe_refund_id: getStripeObjectId(creditNote.refund),
-    p_stripe_dispute_id: null,
+    p_event_kind: "credit_note",
+    p_stripe_object_id: creditNote.id,
+    p_dispute_status: null,
   });
   if (error) throw new Error("Failed to reverse credited affiliate commission");
 }
@@ -268,13 +264,12 @@ async function handleDisputeCreated(supabase, stripe, event) {
     : null;
   if (!invoiceId) return;
 
-  const { error } = await supabase.rpc(
-    "hold_affiliate_commission_for_dispute",
-    {
-      p_stripe_invoice_id: invoiceId,
-      p_stripe_dispute_id: dispute.id,
-    },
-  );
+  const { error } = await supabase.rpc("record_affiliate_invoice_event", {
+    p_stripe_invoice_id: invoiceId,
+    p_event_kind: "dispute",
+    p_stripe_object_id: dispute.id,
+    p_dispute_status: "open",
+  });
   if (error) throw new Error("Failed to hold disputed affiliate commission");
 }
 
@@ -289,14 +284,13 @@ async function handleDisputeClosed(supabase, stripe, event) {
     : null;
   if (!invoiceId) return;
 
-  const { error } = await supabase.rpc(
-    "resolve_affiliate_commission_dispute",
-    {
-      p_stripe_invoice_id: invoiceId,
-      p_stripe_dispute_id: dispute.id,
-      p_won: dispute.status === "won",
-    },
-  );
+  const restored = ["won", "warning_closed"].includes(dispute.status);
+  const { error } = await supabase.rpc("record_affiliate_invoice_event", {
+    p_stripe_invoice_id: invoiceId,
+    p_event_kind: "dispute",
+    p_stripe_object_id: dispute.id,
+    p_dispute_status: restored ? "won" : "lost",
+  });
   if (error) throw new Error("Failed to resolve affiliate commission dispute");
 }
 
@@ -315,6 +309,7 @@ export default async function handler(req, res) {
   let event = null;
   let supabase = null;
   let eventClaimed = false;
+  let eventClaimToken = null;
 
   try {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -357,11 +352,13 @@ export default async function handler(req, res) {
 
     let claim;
     try {
-      claim = await claimWebhookEvent(supabase, {
+      const claimResult = await claimWebhookEvent(supabase, {
         eventId: event.id,
         eventType: event.type,
         source: "billing",
       });
+      claim = claimResult?.action;
+      eventClaimToken = claimResult?.claim_token || null;
       eventClaimed = claim === "process";
     } catch (claimError) {
       if (isAffiliateProgramEnabled()) throw claimError;
@@ -414,7 +411,7 @@ export default async function handler(req, res) {
     }
 
     if (eventClaimed) {
-      await completeWebhookEvent(supabase, event.id);
+      await completeWebhookEvent(supabase, event.id, eventClaimToken);
     }
 
     return res.status(200).json({
@@ -424,7 +421,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     if (eventClaimed && supabase && event?.id) {
-      await failWebhookEvent(supabase, event.id, error);
+      await failWebhookEvent(supabase, event.id, eventClaimToken, error);
     }
     console.error('Webhook handler error:', {
       eventId: event?.id || null,

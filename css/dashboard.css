@@ -6226,12 +6226,31 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-sheet__content {
+  position: relative;
   max-height: calc(92dvh - 28px);
   padding: 6px clamp(18px, 4vw, 34px) calc(26px + env(safe-area-inset-bottom));
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-padding-bottom: 180px;
   -webkit-overflow-scrolling: touch;
+}
+
+.affiliate-sheet__close {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin: 0 0 -44px auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(5, 6, 10, 0.9);
+  color: #F5F7FF;
+  font: inherit;
+  font-size: 1.4rem;
+  cursor: pointer;
 }
 
 .affiliate-sheet__content h2,
@@ -6608,6 +6627,20 @@ textarea.journal-entry-field-light:focus {
   }
 }
 
+@media (max-width: 430px) {
+  .dash-head__top {
+    flex-wrap: wrap;
+  }
+
+  .dash-head__title-row {
+    flex-basis: 100%;
+  }
+
+  .dash-head__actions {
+    width: 100%;
+  }
+}
+
 @media (max-width: 360px) {
   .affiliate-benefit-grid,
   .affiliate-stat-grid,
@@ -6629,6 +6662,22 @@ textarea.journal-entry-field-light:focus {
   .affiliate-sheet,
   .affiliate-chart__bar {
     transition: none !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .affiliate-sheet {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, calc(-50% + 40px));
+  }
+
+  .affiliate-sheet.is-open {
+    transform: translate(-50%, -50%);
+  }
+
+  .affiliate-sheet__content {
+    max-height: calc(min(82vh, 900px) - 28px);
   }
 }
 

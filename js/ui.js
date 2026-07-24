@@ -14,12 +14,24 @@ import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
 
 function capturePendingAffiliateCode() {
-  const rawCode = new URLSearchParams(window.location.search).get("ref");
-  if (!rawCode) return;
-  const code = rawCode.trim().toUpperCase();
-  if (!/^[A-Z0-9-]{4,20}$/.test(code)) return;
   try {
+    const savedAt = Number(
+      localStorage.getItem("sineday_pending_affiliate_code_saved_at"),
+    );
+    if (savedAt && Date.now() - savedAt > 30 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem("sineday_pending_affiliate_code");
+      localStorage.removeItem("sineday_pending_affiliate_code_saved_at");
+    }
+
+    const rawCode = new URLSearchParams(window.location.search).get("ref");
+    if (!rawCode) return;
+    const code = rawCode.trim().toUpperCase();
+    if (!/^[A-Z0-9-]{4,20}$/.test(code)) return;
     localStorage.setItem("sineday_pending_affiliate_code", code);
+    localStorage.setItem(
+      "sineday_pending_affiliate_code_saved_at",
+      String(Date.now()),
+    );
   } catch {
     // Storage can be unavailable in strict privacy modes; attribution remains opt-in.
   }

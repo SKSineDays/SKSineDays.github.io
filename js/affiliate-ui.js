@@ -2,6 +2,9 @@ const MONEY = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
+const PENDING_CODE_KEY = "sineday_pending_affiliate_code";
+const PENDING_CODE_SAVED_AT_KEY = "sineday_pending_affiliate_code_saved_at";
+const PENDING_CODE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -14,6 +17,30 @@ function escapeHtml(value) {
 
 function formatMoney(cents) {
   return MONEY.format(Number(cents || 0) / 100);
+}
+
+function getPendingAffiliateCode() {
+  try {
+    const savedAt = Number(localStorage.getItem(PENDING_CODE_SAVED_AT_KEY));
+    if (!savedAt || Date.now() - savedAt > PENDING_CODE_TTL_MS) {
+      localStorage.removeItem(PENDING_CODE_KEY);
+      localStorage.removeItem(PENDING_CODE_SAVED_AT_KEY);
+      return "";
+    }
+    const code = localStorage.getItem(PENDING_CODE_KEY) || "";
+    return /^[A-Z0-9-]{4,20}$/.test(code) ? code : "";
+  } catch {
+    return "";
+  }
+}
+
+function clearPendingAffiliateCode() {
+  try {
+    localStorage.removeItem(PENDING_CODE_KEY);
+    localStorage.removeItem(PENDING_CODE_SAVED_AT_KEY);
+  } catch {
+    // Storage can be unavailable in strict privacy modes.
+  }
 }
 
 function focusableElements(root) {
@@ -34,6 +61,7 @@ export class AffiliateUI {
     entitlement,
     termsVersion,
     onEntitlementChanged,
+    onClose,
     showSuccess,
     showError,
   }) {
@@ -45,6 +73,7 @@ export class AffiliateUI {
     this.entitlement = entitlement;
     this.termsVersion = termsVersion;
     this.onEntitlementChanged = onEntitlementChanged;
+    this.onClose = onClose;
     this.showSuccess = showSuccess;
     this.showError = showError;
     this.status = null;
@@ -54,6 +83,11 @@ export class AffiliateUI {
     this.loading = false;
     this.abortController = new AbortController();
     this.previousOverflow = { html: "", body: "" };
+    this.inertElements = [];
+    this.closeTimer = null;
+    this.openFrame = null;
+    this.requestGeneration = 0;
+    this.destroyed = false;
     this.bind();
   }
 
@@ -65,9 +99,16 @@ export class AffiliateUI {
     }, { signal });
     this.backdrop.addEventListener("click", () => this.close(), { signal });
     this.sheet.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+      const currentTab = event.target.closest?.("[data-affiliate-tab]");
+      if (currentTab && ["ArrowLeft", "ArrowRight"].includes(event.key)) {
         event.preventDefault();
-        this.close();
+        const tabs = [
+          ...this.sheet.querySelectorAll("[data-affiliate-tab]"),
+        ];
+        const direction = event.key === "ArrowRight" ? 1 : -1;
+        const index = tabs.indexOf(currentTab);
+        const next = tabs[(index + direction + tabs.length) % tabs.length];
+        next?.click();
         return;
       }
       if (event.key !== "Tab") return;
@@ -92,6 +133,17 @@ export class AffiliateUI {
     this.mount.addEventListener("submit", (event) => this.handleSubmit(event), {
       signal,
     });
+    this.sheet.querySelector("[data-affiliate-close]")?.addEventListener(
+      "click",
+      () => this.close(),
+      { signal },
+    );
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && this.isOpen()) {
+        event.preventDefault();
+        this.close();
+      }
+    }, { signal });
   }
 
   isOpen() {
@@ -109,10 +161,21 @@ export class AffiliateUI {
     };
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
-    requestAnimationFrame(() => {
+    this.inertElements = [
+      ...this.sheet.parentElement.children,
+      ...[...document.body.children].filter(
+        (element) => !element.contains(this.sheet),
+      ),
+    ]
+      .filter((element) => element !== this.sheet && element !== this.backdrop)
+      .map((element) => ({ element, inert: element.inert }));
+    this.inertElements.forEach(({ element }) => {
+      element.inert = true;
+    });
+    this.sheet.querySelector("[data-affiliate-close]")?.focus();
+    this.openFrame = requestAnimationFrame(() => {
       this.sheet.classList.add("is-open");
       this.backdrop.classList.add("is-open");
-      focusableElements(this.sheet)[0]?.focus();
     });
     await this.refresh();
   }
@@ -122,13 +185,20 @@ export class AffiliateUI {
     this.toggle.setAttribute("aria-expanded", "false");
     this.sheet.classList.remove("is-open");
     this.backdrop.classList.remove("is-open");
-    window.setTimeout(() => {
+    if (this.openFrame) cancelAnimationFrame(this.openFrame);
+    clearTimeout(this.closeTimer);
+    this.closeTimer = window.setTimeout(() => {
       if (this.isOpen()) return;
       this.sheet.hidden = true;
       this.backdrop.hidden = true;
       document.documentElement.style.overflow = this.previousOverflow.html;
       document.body.style.overflow = this.previousOverflow.body;
+      this.inertElements.forEach(({ element, inert }) => {
+        element.inert = inert;
+      });
+      this.inertElements = [];
       if (restoreFocus) this.toggle.focus();
+      this.onClose?.();
     }, 220);
   }
 
@@ -142,6 +212,7 @@ export class AffiliateUI {
         "Content-Type": "application/json",
         ...(options.headers || {}),
       },
+      signal: this.abortController.signal,
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) {
@@ -152,11 +223,13 @@ export class AffiliateUI {
 
   async refresh() {
     if (this.loading) return;
+    const generation = ++this.requestGeneration;
     this.loading = true;
     this.mount.setAttribute("aria-busy", "true");
     if (!this.status) this.renderLoading();
     try {
       this.status = await this.request("/api/affiliate/status");
+      if (this.destroyed || generation !== this.requestGeneration) return;
       if (
         this.status.affiliate?.status &&
         this.status.affiliate.status !== this.entitlement?.affiliateStatus
@@ -166,18 +239,27 @@ export class AffiliateUI {
       if (this.status.affiliate?.status === "active") {
         const [summary, assets] = await Promise.all([
           this.request("/api/affiliate/summary"),
-          fetch("/assets/affiliate/assets.json", { cache: "no-store" })
+          fetch("/assets/affiliate/assets.json", {
+            cache: "no-store",
+            signal: this.abortController.signal,
+          })
             .then((response) => (response.ok ? response.json() : []))
             .catch(() => []),
         ]);
         this.summary = summary;
-        this.assets = Array.isArray(assets) ? assets : [];
+        this.assets = Array.isArray(assets)
+          ? assets.filter((asset) =>
+              /^\/assets\/affiliate\/[A-Za-z0-9._-]+$/.test(asset?.path || ""),
+            )
+          : [];
       } else {
         this.summary = null;
       }
-      this.render();
+      if (!this.destroyed && generation === this.requestGeneration) this.render();
     } catch (error) {
-      this.renderError(error.message);
+      if (error?.name !== "AbortError" && !this.destroyed) {
+        this.renderError(error.message);
+      }
     } finally {
       this.loading = false;
       this.mount.removeAttribute("aria-busy");
@@ -245,7 +327,7 @@ export class AffiliateUI {
       return `<section class="affiliate-support-card"><p>${escapeHtml(copy)}</p></section>`;
     }
 
-    const pendingCode = localStorage.getItem("sineday_pending_affiliate_code") || "";
+    const pendingCode = getPendingAffiliateCode();
     return `
       <section class="affiliate-support-card">
         <p class="affiliate-sheet__eyebrow">Support an Affiliate</p>
@@ -343,12 +425,6 @@ export class AffiliateUI {
   }
 
   renderActive(affiliate) {
-    const tabContent =
-      this.activeTab === "share"
-        ? this.renderShare(affiliate)
-        : this.activeTab === "payouts"
-          ? this.renderPayouts(affiliate)
-          : this.renderOverview();
     this.mount.innerHTML = `
       <header class="affiliate-active-head">
         <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
@@ -369,14 +445,19 @@ export class AffiliateUI {
                 class="affiliate-sheet__tab ${this.activeTab === tab ? "is-active" : ""}"
                 type="button"
                 role="tab"
+                id="affiliate-tab-${tab}"
+                aria-controls="affiliate-panel-${tab}"
                 aria-selected="${this.activeTab === tab}"
+                tabindex="${this.activeTab === tab ? "0" : "-1"}"
                 data-affiliate-tab="${tab}"
               >${tab[0].toUpperCase()}${tab.slice(1)}</button>
             `,
           )
           .join("")}
       </div>
-      <div class="affiliate-sheet__tab-content">${tabContent}</div>
+      <div id="affiliate-panel-overview" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-overview" ${this.activeTab === "overview" ? "" : "hidden"}>${this.renderOverview()}</div>
+      <div id="affiliate-panel-share" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-share" ${this.activeTab === "share" ? "" : "hidden"}>${this.renderShare(affiliate)}</div>
+      <div id="affiliate-panel-payouts" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-payouts" ${this.activeTab === "payouts" ? "" : "hidden"}>${this.renderPayouts(affiliate)}</div>
       <p class="affiliate-copy-status" role="status" aria-live="polite"></p>
     `;
   }
@@ -502,6 +583,10 @@ export class AffiliateUI {
   }
 
   async handleClick(event) {
+    if (event.target.closest("[data-affiliate-close]")) {
+      this.close();
+      return;
+    }
     const tab = event.target.closest("[data-affiliate-tab]")?.dataset.affiliateTab;
     if (tab) {
       this.activeTab = tab;
@@ -606,14 +691,14 @@ export class AffiliateUI {
           body: JSON.stringify({ code, confirmed: false }),
         });
         const confirmed = window.confirm(
-          `Connect your Premium membership to ${preview.affiliateDisplayName}? This choice is permanent unless SineDay Support corrects it.`,
+          `Connect your Premium membership to ${preview.affiliateDisplayName} using code ${preview.affiliateCode}? This choice is permanent unless SineDay Support corrects it.`,
         );
         if (!confirmed) return;
         const result = await this.request("/api/affiliate/support", {
           method: "POST",
           body: JSON.stringify({ code, confirmed: true }),
         });
-        localStorage.removeItem("sineday_pending_affiliate_code");
+        clearPendingAffiliateCode();
         this.showSuccess?.(result.message);
         await this.refresh();
       }
@@ -625,8 +710,22 @@ export class AffiliateUI {
   }
 
   destroy() {
+    this.destroyed = true;
+    this.requestGeneration += 1;
     this.abortController.abort();
-    this.close({ restoreFocus: false });
+    if (this.openFrame) cancelAnimationFrame(this.openFrame);
+    clearTimeout(this.closeTimer);
+    this.toggle.setAttribute("aria-expanded", "false");
+    this.sheet.classList.remove("is-open");
+    this.backdrop.classList.remove("is-open");
+    this.sheet.hidden = true;
+    this.backdrop.hidden = true;
+    document.documentElement.style.overflow = this.previousOverflow.html;
+    document.body.style.overflow = this.previousOverflow.body;
+    this.inertElements.forEach(({ element, inert }) => {
+      element.inert = inert;
+    });
+    this.inertElements = [];
     this.mount.innerHTML = "";
   }
 }
