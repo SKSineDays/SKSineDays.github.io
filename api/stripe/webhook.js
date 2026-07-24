@@ -17,8 +17,19 @@
 
 export const runtime = "nodejs";
 
-import { createClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
+import { getAdminClient } from "../_lib/auth.js";
+import {
+  getStripeObjectId,
+  isAffiliateProgramEnabled,
+  isEligiblePremiumInvoice,
+  unixSecondsToIso,
+} from "../_lib/affiliate.js";
+import { getStripeClient } from "../_lib/stripe.js";
+import {
+  claimWebhookEvent,
+  completeWebhookEvent,
+  failWebhookEvent,
+} from "../_lib/webhook.js";
 
 /**
  * Read raw body as text from request stream
@@ -89,7 +100,7 @@ async function handleCheckoutCompleted(supabase, event) {
   console.log('Checkout completed for user:', userId);
 
   // Update subscriptions table
-  await supabase
+  const { error } = await supabase
     .from('subscriptions')
     .upsert({
       user_id: userId,
@@ -100,6 +111,7 @@ async function handleCheckoutCompleted(supabase, event) {
     }, {
       onConflict: 'user_id'
     });
+  if (error) throw new Error('Failed to synchronize checkout subscription');
 }
 
 /**
@@ -149,18 +161,150 @@ async function handleSubscriptionEvent(supabase, event) {
     updateData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
   }
 
-  await supabase
+  const { error } = await supabase
     .from('subscriptions')
     .upsert(updateData, {
       onConflict: 'user_id'
     });
+  if (error) throw new Error('Failed to synchronize subscription');
+}
+
+async function findUserForInvoice(supabase, invoice) {
+  const customerId = getStripeObjectId(invoice.customer);
+  const subscriptionId = getStripeObjectId(invoice.subscription);
+
+  let query = supabase
+    .from("subscriptions")
+    .select("user_id");
+  if (subscriptionId) {
+    query = query.eq("stripe_subscription_id", subscriptionId);
+  } else if (customerId) {
+    query = query.eq("stripe_customer_id", customerId);
+  } else {
+    return null;
+  }
+
+  const { data, error } = await query.maybeSingle();
+  if (error) throw new Error("Failed to resolve invoice owner");
+  return data?.user_id || null;
+}
+
+async function handleInvoicePaid(supabase, event) {
+  const invoice = event.data.object;
+  const premiumPriceId = process.env.STRIPE_PRICE_ID;
+  if (!premiumPriceId) throw new Error("Missing Premium price configuration");
+  if (!isEligiblePremiumInvoice(invoice, premiumPriceId)) return;
+
+  const userId = await findUserForInvoice(supabase, invoice);
+  const subscriptionId = getStripeObjectId(invoice.subscription);
+  if (!userId || !subscriptionId) return;
+
+  const paidAt = invoice.status_transitions?.paid_at || event.created;
+  const { error } = await supabase.rpc("record_affiliate_commission", {
+    p_subscriber_user_id: userId,
+    p_stripe_invoice_id: invoice.id,
+    p_stripe_subscription_id: subscriptionId,
+    p_stripe_event_id: event.id,
+    p_paid_at: unixSecondsToIso(paidAt),
+    p_billing_period_start: unixSecondsToIso(invoice.period_start),
+    p_billing_period_end: unixSecondsToIso(invoice.period_end),
+  });
+  if (error) throw new Error("Failed to record affiliate commission");
+}
+
+async function resolveInvoiceIdFromCharge(stripe, charge) {
+  const directInvoiceId = getStripeObjectId(charge.invoice);
+  if (directInvoiceId) return directInvoiceId;
+
+  const paymentIntentId = getStripeObjectId(charge.payment_intent);
+  if (!paymentIntentId) return null;
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  return getStripeObjectId(paymentIntent.invoice);
+}
+
+async function handleChargeRefunded(supabase, stripe, event) {
+  const charge = event.data.object;
+  if (Number(charge.amount_refunded) <= 0) return;
+  const invoiceId = await resolveInvoiceIdFromCharge(stripe, charge);
+  if (!invoiceId) return;
+
+  const refunds = charge.refunds?.data || [];
+  const refund = refunds[refunds.length - 1] || null;
+  const reason =
+    Number(charge.amount_refunded) < Number(charge.amount)
+      ? "partial_refund"
+      : "refund";
+  const { error } = await supabase.rpc("reverse_affiliate_commission", {
+    p_stripe_invoice_id: invoiceId,
+    p_reason: reason,
+    p_stripe_refund_id: refund?.id || null,
+    p_stripe_dispute_id: null,
+  });
+  if (error) throw new Error("Failed to reverse refunded affiliate commission");
+}
+
+async function handleCreditNoteCreated(supabase, event) {
+  const creditNote = event.data.object;
+  const invoiceId = getStripeObjectId(creditNote.invoice);
+  if (!invoiceId || Number(creditNote.amount) <= 0) return;
+
+  const { error } = await supabase.rpc("reverse_affiliate_commission", {
+    p_stripe_invoice_id: invoiceId,
+    p_reason: "partial_refund",
+    p_stripe_refund_id: getStripeObjectId(creditNote.refund),
+    p_stripe_dispute_id: null,
+  });
+  if (error) throw new Error("Failed to reverse credited affiliate commission");
+}
+
+async function handleDisputeCreated(supabase, stripe, event) {
+  const dispute = event.data.object;
+  const charge =
+    typeof dispute.charge === "string"
+      ? await stripe.charges.retrieve(dispute.charge)
+      : dispute.charge;
+  const invoiceId = charge
+    ? await resolveInvoiceIdFromCharge(stripe, charge)
+    : null;
+  if (!invoiceId) return;
+
+  const { error } = await supabase.rpc(
+    "hold_affiliate_commission_for_dispute",
+    {
+      p_stripe_invoice_id: invoiceId,
+      p_stripe_dispute_id: dispute.id,
+    },
+  );
+  if (error) throw new Error("Failed to hold disputed affiliate commission");
+}
+
+async function handleDisputeClosed(supabase, stripe, event) {
+  const dispute = event.data.object;
+  const charge =
+    typeof dispute.charge === "string"
+      ? await stripe.charges.retrieve(dispute.charge)
+      : dispute.charge;
+  const invoiceId = charge
+    ? await resolveInvoiceIdFromCharge(stripe, charge)
+    : null;
+  if (!invoiceId) return;
+
+  const { error } = await supabase.rpc(
+    "resolve_affiliate_commission_dispute",
+    {
+      p_stripe_invoice_id: invoiceId,
+      p_stripe_dispute_id: dispute.id,
+      p_won: dispute.status === "won",
+    },
+  );
+  if (error) throw new Error("Failed to resolve affiliate commission dispute");
 }
 
 /**
  * Main handler
  */
 export default async function handler(req, res) {
-  // Only allow POST
+  res.setHeader("Cache-Control", "no-store");
   if (req.method !== 'POST') {
     return res.status(405).json({
       ok: false,
@@ -168,12 +312,13 @@ export default async function handler(req, res) {
     });
   }
 
-  try {
-    // Initialize Stripe
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let event = null;
+  let supabase = null;
+  let eventClaimed = false;
 
-    if (!stripeSecretKey || !webhookSecret) {
+  try {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
       console.error('Missing Stripe configuration');
       return res.status(500).json({
         ok: false,
@@ -181,9 +326,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia'
-    });
+    const stripe = getStripeClient();
 
     // Get raw body as text for signature verification
     // Stripe requires the raw body string for signature verification
@@ -199,7 +342,6 @@ export default async function handler(req, res) {
     }
 
     // Verify webhook signature
-    let event;
     try {
       event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
     } catch (err) {
@@ -210,28 +352,32 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('Received webhook event:', event.type, 'id:', event.id);
+    console.log('Received billing webhook:', event.type, 'id:', event.id);
+    supabase = getAdminClient();
 
-    // Initialize Supabase admin client
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase configuration');
-      return res.status(500).json({
-        ok: false,
-        error: 'Server configuration error'
+    let claim;
+    try {
+      claim = await claimWebhookEvent(supabase, {
+        eventId: event.id,
+        eventType: event.type,
+        source: "billing",
       });
+      eventClaimed = claim === "process";
+    } catch (claimError) {
+      if (isAffiliateProgramEnabled()) throw claimError;
+      console.warn(
+        "[Stripe Webhook] Idempotency table unavailable while Affiliate is disabled",
+      );
+      claim = "process";
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    if (claim === "duplicate") {
+      return res.status(200).json({ ok: true, received: true, duplicate: true });
+    }
+    if (claim === "busy") {
+      return res.status(503).json({ ok: false, error: "Event is processing" });
+    }
 
-    // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutCompleted(supabase, event);
@@ -243,18 +389,48 @@ export default async function handler(req, res) {
         await handleSubscriptionEvent(supabase, event);
         break;
 
+      case "invoice.paid":
+        await handleInvoicePaid(supabase, event);
+        break;
+
+      case "charge.refunded":
+        await handleChargeRefunded(supabase, stripe, event);
+        break;
+
+      case "credit_note.created":
+        await handleCreditNoteCreated(supabase, event);
+        break;
+
+      case "charge.dispute.created":
+        await handleDisputeCreated(supabase, stripe, event);
+        break;
+
+      case "charge.dispute.closed":
+        await handleDisputeClosed(supabase, stripe, event);
+        break;
+
       default:
         console.log('Unhandled event type:', event.type);
     }
 
-    // Return 200 to acknowledge receipt - no redirects
+    if (eventClaimed) {
+      await completeWebhookEvent(supabase, event.id);
+    }
+
     return res.status(200).json({
       ok: true,
       received: true
     });
 
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    if (eventClaimed && supabase && event?.id) {
+      await failWebhookEvent(supabase, event.id, error);
+    }
+    console.error('Webhook handler error:', {
+      eventId: event?.id || null,
+      eventType: event?.type || null,
+      message: error?.message || "Unknown error",
+    });
     return res.status(500).json({
       ok: false,
       error: 'Webhook handler failed'

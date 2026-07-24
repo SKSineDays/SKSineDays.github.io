@@ -56,6 +56,8 @@ export default async function handler(req, res) {
     ok: true,
     supabaseUrl: supabaseUrl,
     supabaseAnonKey: supabaseAnonKey,
-    appUrl: process.env.APP_URL || 'https://sineday.app'
+    appUrl: process.env.APP_URL || 'https://sineday.app',
+    affiliateProgramEnabled: process.env.AFFILIATE_PROGRAM_ENABLED === 'true',
+    affiliateTermsVersion: process.env.AFFILIATE_TERMS_VERSION || '2026-07-24'
   });
 }

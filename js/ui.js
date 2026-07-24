@@ -13,6 +13,20 @@ import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js'
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
 
+function capturePendingAffiliateCode() {
+  const rawCode = new URLSearchParams(window.location.search).get("ref");
+  if (!rawCode) return;
+  const code = rawCode.trim().toUpperCase();
+  if (!/^[A-Z0-9-]{4,20}$/.test(code)) return;
+  try {
+    localStorage.setItem("sineday_pending_affiliate_code", code);
+  } catch {
+    // Storage can be unavailable in strict privacy modes; attribution remains opt-in.
+  }
+}
+
+capturePendingAffiliateCode();
+
 export class SineDayUI {
   constructor() {
     // DOM elements

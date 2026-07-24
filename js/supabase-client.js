@@ -11,7 +11,7 @@ let configCache = null;
 /**
  * Fetch public configuration from server
  */
-async function fetchConfig() {
+export async function fetchConfig() {
   if (configCache) {
     return configCache;
   }
@@ -32,7 +32,9 @@ async function fetchConfig() {
     configCache = {
       supabaseUrl: data.supabaseUrl,
       supabaseAnonKey: data.supabaseAnonKey,
-      appUrl: data.appUrl
+      appUrl: data.appUrl,
+      affiliateProgramEnabled: data.affiliateProgramEnabled === true,
+      affiliateTermsVersion: data.affiliateTermsVersion || '2026-07-24'
     };
 
     console.log('[Config Debug] Fetched config:', configCache);

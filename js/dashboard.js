@@ -6,6 +6,7 @@
 
 import {
   getSupabaseClient,
+  fetchConfig,
   getCurrentSession,
   getCurrentUser,
   getAccessToken,
@@ -14,6 +15,7 @@ import {
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
+import { AffiliateUI } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
@@ -32,7 +34,7 @@ import { dirFromLocale } from "../shared/i18n.js";
 
 // State
 let currentUser = null;
-let currentSubscription = null;
+let currentEntitlement = null;
 let profiles = [];
 let pendingCheckoutSessionId = null;
 let hasAttemptedAutoPremiumSync = false;
@@ -46,8 +48,10 @@ let manageProfilesUI = null;
 let calendarsUI = null;
 let journalUI = null;
 let journalHistoryUI = null;
+let affiliateUI = null;
 let userSettings = null;
 let linkedIdentities = [];
+let publicConfig = null;
 
 let dashboardPageIndex = 0;
 let dashboardPageCount = 4;
@@ -76,6 +80,7 @@ async function init() {
 
     if (session) {
       currentUser = session.user;
+      publicConfig = await fetchConfig();
 
       // Load per-account settings (locale/weekstart)
       userSettings = await loadUserSettings(currentUser.id);
@@ -85,8 +90,9 @@ async function init() {
       await loadUserData();
       await loadDailyEmailState();
 
+      const affiliateParam = new URLSearchParams(window.location.search).get("affiliate");
       // Gate: require owner profile before showing dashboard
-      if (!hasOwnerProfile()) {
+      if (!hasOwnerProfile() && !affiliateParam) {
         hideLoading();
         await showOwnerOnboarding();
         // After onboarding completes, profiles array is updated
@@ -94,6 +100,11 @@ async function init() {
 
       renderDailyEmailBox();
       showAuthenticatedView();
+      mountAffiliateUI();
+
+      if (affiliateParam && publicConfig?.affiliateProgramEnabled) {
+        await affiliateUI?.open();
+      }
     } else {
       // Redirect to login page if not authenticated
       window.location.href = '/login.html';
@@ -114,7 +125,7 @@ async function init() {
         showAuthenticatedView();
       } else if (event === 'SIGNED_OUT') {
         currentUser = null;
-        currentSubscription = null;
+        currentEntitlement = null;
         profiles = [];
         if (duckCarousel) {
           duckCarousel.destroy();
@@ -128,6 +139,8 @@ async function init() {
           journalHistoryUI.destroy();
           journalHistoryUI = null;
         }
+        affiliateUI?.destroy?.();
+        affiliateUI = null;
         window.location.href = '/login.html';
       }
     });
@@ -186,25 +199,31 @@ async function loadProfiles() {
  */
 async function loadSubscription() {
   try {
-    const client = await getSupabaseClient();
-    const { data, error } = await client
-      .from('subscriptions')
-      .select('status, current_period_end')
-      .eq('user_id', currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error loading subscription:', error);
-      currentSubscription = null;
-    } else {
-      currentSubscription = data;
+    const accessToken = await getAccessToken();
+    const response = await fetch('/api/account-entitlements', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || 'Failed to load account entitlement');
     }
+    currentEntitlement = {
+      premium: data.premium === true,
+      source: data.source || 'none',
+      subscriptionStatus: data.subscriptionStatus || null,
+      currentPeriodEnd: data.currentPeriodEnd || null,
+      affiliateStatus: data.affiliateStatus || null
+    };
 
     await renderSubscriptionStatus();
+    affiliateUI?.setEntitlement(currentEntitlement);
   } catch (error) {
     console.error('Error loading subscription:', error);
-    currentSubscription = null;
+    currentEntitlement = null;
     await renderSubscriptionStatus();
+    affiliateUI?.setEntitlement(currentEntitlement);
   }
 }
 
@@ -212,9 +231,7 @@ async function loadSubscription() {
  * Check if user is paid
  */
 function isPaid() {
-  return currentSubscription &&
-         (currentSubscription.status === 'active' ||
-          currentSubscription.status === 'trialing');
+  return currentEntitlement?.premium === true;
 }
 
 function getPremiumLockCopy(featureKey) {
@@ -1311,12 +1328,16 @@ async function renderSubscriptionStatus() {
   const subscriptionMini = document.getElementById('subscription-mini');
   const syncPremiumBtn = document.getElementById('sync-premium-btn');
   const syncPremiumNote = document.getElementById('sync-premium-note');
+  const affiliatePremiumNote = document.getElementById('affiliate-premium-note');
   const calendarsSection = document.getElementById('calendars-section');
+  const affiliateGift = currentEntitlement?.source === 'affiliate_gift';
 
   if (pill) {
     if (paid) {
       pill.className = 'pill pill--ok';
-      pill.innerHTML = '<span class="pill-dot"></span>Premium';
+      pill.innerHTML = affiliateGift
+        ? '<span class="pill-dot"></span>Affiliate Premium'
+        : '<span class="pill-dot"></span>Premium';
     } else {
       pill.className = 'pill pill--neutral';
       pill.innerHTML = 'Free';
@@ -1324,16 +1345,17 @@ async function renderSubscriptionStatus() {
   }
 
   if (paid) {
-    const renewalDate = currentSubscription?.current_period_end
-      ? new Date(currentSubscription.current_period_end).toLocaleDateString()
+    const renewalDate = currentEntitlement?.currentPeriodEnd
+      ? new Date(currentEntitlement.currentPeriodEnd).toLocaleDateString()
       : '—';
     if (renewalEl) renewalEl.textContent = renewalDate;
-    if (subscriptionMini) subscriptionMini.style.display = '';
+    if (subscriptionMini) subscriptionMini.style.display = affiliateGift ? 'none' : '';
 
     if (upgradeBtn) upgradeBtn.style.display = 'none';
-    if (billingBtn) billingBtn.style.display = 'inline-block';
+    if (billingBtn) billingBtn.style.display = affiliateGift ? 'none' : 'inline-block';
     if (syncPremiumBtn) syncPremiumBtn.style.display = 'none';
     if (syncPremiumNote) syncPremiumNote.style.display = 'none';
+    if (affiliatePremiumNote) affiliatePremiumNote.style.display = affiliateGift ? '' : 'none';
 
     if (calendarsSection) {
       calendarsSection.innerHTML = `
@@ -1376,6 +1398,7 @@ async function renderSubscriptionStatus() {
     if (billingBtn) billingBtn.style.display = 'none';
     if (syncPremiumBtn) syncPremiumBtn.style.display = '';
     if (syncPremiumNote) syncPremiumNote.style.display = '';
+    if (affiliatePremiumNote) affiliatePremiumNote.style.display = 'none';
 
     calendarsUI?.destroy?.();
     calendarsUI = null;
@@ -1445,6 +1468,40 @@ function setupAccountSheet() {
     if (toggle.getAttribute('aria-expanded') !== 'true') return;
     if (e.key === 'Escape') close();
     trapFocusWithin(sheet, e);
+  });
+}
+
+function mountAffiliateUI() {
+  affiliateUI?.destroy?.();
+  affiliateUI = null;
+
+  const toggle = document.getElementById("affiliate-toggle");
+  const sheet = document.getElementById("affiliate-sheet");
+  const backdrop = document.getElementById("affiliate-backdrop");
+  const mount = document.getElementById("affiliate-ui-mount");
+  const enabled = publicConfig?.affiliateProgramEnabled === true;
+
+  if (!toggle || !sheet || !backdrop || !mount) return;
+  toggle.hidden = !enabled;
+  if (!enabled) {
+    sheet.hidden = true;
+    backdrop.hidden = true;
+    return;
+  }
+
+  affiliateUI = new AffiliateUI({
+    mount,
+    toggle,
+    sheet,
+    backdrop,
+    getAccessToken,
+    entitlement: currentEntitlement,
+    termsVersion: publicConfig.affiliateTermsVersion,
+    onEntitlementChanged: async () => {
+      await loadSubscription();
+    },
+    showSuccess,
+    showError,
   });
 }
 
@@ -2036,6 +2093,7 @@ async function checkCheckoutSuccess() {
           showSuccess('Premium activated! You now have access to all features.');
           pendingCheckoutSessionId = null;
           hasAttemptedAutoPremiumSync = false;
+          await affiliateUI?.refresh?.();
           window.history.replaceState({}, '', '/dashboard.html');
         } else {
           showInfo('Subscription is still processing. If Premium does not appear in a moment, tap Sync Premium in your account drawer.');

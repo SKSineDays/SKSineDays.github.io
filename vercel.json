@@ -2,6 +2,9 @@
   "functions": {
     "api/stripe/webhook.js": {
       "maxDuration": 10
+    },
+    "api/stripe/connect-webhook.js": {
+      "maxDuration": 10
     }
   }
 }
