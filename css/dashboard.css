@@ -6243,7 +6243,7 @@ textarea.journal-entry-field-light:focus {
   height: 44px;
   display: grid;
   place-items: center;
-  margin: 0 0 -44px auto;
+  margin: 0 0 8px auto;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   background: rgba(5, 6, 10, 0.9);
