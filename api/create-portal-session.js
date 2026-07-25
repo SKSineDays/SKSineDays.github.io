@@ -13,7 +13,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
+import { getStripeClient } from './_lib/stripe.js';
 
 /**
  * Authenticate user from Authorization header
@@ -118,10 +118,9 @@ export default async function handler(req, res) {
     }
 
     // Initialize Stripe
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const appUrl = process.env.APP_URL || 'https://sineday.app';
 
-    if (!stripeSecretKey) {
+    if (!process.env.STRIPE_SECRET_KEY) {
       console.error('Missing Stripe configuration');
       return res.status(500).json({
         ok: false,
@@ -129,9 +128,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia'
-    });
+    const stripe = getStripeClient();
 
     // Create Billing Portal Session
     const session = await stripe.billingPortal.sessions.create({

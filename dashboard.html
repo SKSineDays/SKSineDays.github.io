@@ -170,6 +170,22 @@
             </button>
 
             <button
+              id="affiliate-toggle"
+              class="dash-head__icon-btn affiliate-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="affiliate-sheet"
+              aria-label="Affiliate program"
+              title="Affiliate"
+              hidden
+            >
+              <svg class="dash-head__icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M15.75 7.25c-.82-.93-2.13-1.5-3.75-1.5-2.2 0-3.75 1.08-3.75 2.7 0 1.66 1.3 2.3 3.75 2.82 2.45.52 3.75 1.15 3.75 2.82 0 1.62-1.55 2.66-3.75 2.66-1.78 0-3.2-.65-4.05-1.72M12 3.5v17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              <span class="affiliate-toggle__label">Affiliate</span>
+            </button>
+
+            <button
               id="account-toggle"
               class="dash-head__icon-btn"
               type="button"
@@ -217,6 +233,10 @@
             Connect Apple so this same SineDay account can be opened with Apple or Google.
           </p>
 
+          <p id="affiliate-premium-note" class="account-sync-note" style="display:none;">
+            Premium is our gift while your SineDay Affiliate account remains active.
+          </p>
+
           <p class="checkout-disclosure">
             SineDay Premium is a recurring subscription. By upgrading, you agree to the
             <a href="/terms.html">Terms of Service</a>,
@@ -256,6 +276,24 @@
           </div>
 
           <a class="dash-home" href="/">← Home</a>
+        </div>
+      </section>
+
+      <!-- Affiliate Program bottom sheet -->
+      <div id="affiliate-backdrop" class="sheet-backdrop affiliate-backdrop" hidden></div>
+      <section
+        id="affiliate-sheet"
+        class="sheet affiliate-sheet"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="affiliate-sheet-title"
+      >
+        <div class="sheet__handle" aria-hidden="true"></div>
+        <div class="sheet__content affiliate-sheet__content">
+          <h2 id="affiliate-sheet-title" class="sr-only">Affiliate program</h2>
+          <button class="affiliate-sheet__close" type="button" data-affiliate-close aria-label="Close Affiliate program">×</button>
+          <div id="affiliate-ui-mount"></div>
         </div>
       </section>
 
@@ -564,6 +602,7 @@
       <nav class="site-footer__nav" aria-label="Footer navigation">
         <a href="/accessibility.html">Accessibility</a>
         <a href="/terms.html">Terms</a>
+        <a href="/affiliate-terms.html">Affiliate Terms</a>
         <a href="/refunds.html">Refunds &amp; Disputes</a>
         <a href="/privacy.html">Privacy</a>
         <a href="/contact.html">Contact</a>

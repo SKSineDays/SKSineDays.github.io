@@ -1,5 +1,5 @@
-import Stripe from 'stripe';
 import { authenticateUser, getAdminClient } from './_lib/auth.js';
+import { getStripeClient } from './_lib/stripe.js';
 
 function normalizeStripeStatus(status) {
   if (status === 'past_due') return 'active';
@@ -73,9 +73,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia'
-    });
+    const stripe = getStripeClient();
 
     const admin = getAdminClient();
 

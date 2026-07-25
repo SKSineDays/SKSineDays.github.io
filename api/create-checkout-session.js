@@ -14,7 +14,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
+import { getStripeClient } from './_lib/stripe.js';
 
 /**
  * Authenticate user from Authorization header
@@ -83,7 +83,7 @@ async function getOrCreateStripeCustomer(stripe, supabaseAdmin, user) {
   });
 
   // Save customer ID to subscriptions table
-  await supabaseAdmin
+  const { error: saveError } = await supabaseAdmin
     .from('subscriptions')
     .upsert({
       user_id: user.id,
@@ -93,6 +93,9 @@ async function getOrCreateStripeCustomer(stripe, supabaseAdmin, user) {
     }, {
       onConflict: 'user_id'
     });
+  if (saveError) {
+    throw new Error('Failed to save Stripe customer');
+  }
 
   console.log('Created Stripe customer:', customer.id);
   return customer.id;
@@ -126,11 +129,10 @@ export default async function handler(req, res) {
     console.log('Authenticated user:', user.id, user.email);
 
     // Initialize Stripe
-    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const stripePriceId = process.env.STRIPE_PRICE_ID;
     const appUrl = process.env.APP_URL || 'https://sineday.app';
 
-    if (!stripeSecretKey || !stripePriceId) {
+    if (!process.env.STRIPE_SECRET_KEY || !stripePriceId) {
       console.error('Missing Stripe configuration');
       return res.status(500).json({
         ok: false,
@@ -138,9 +140,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia'
-    });
+    const stripe = getStripeClient();
 
     // Initialize Supabase admin client for writing to subscriptions
     const supabaseUrl = process.env.SUPABASE_URL;
