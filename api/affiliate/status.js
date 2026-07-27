@@ -3,6 +3,8 @@ import {
   handleOptions,
   requireAffiliateContext,
   setPrivateApiHeaders,
+  shouldRefreshAffiliateFromStripe,
+  syncAffiliateAccountState,
 } from "../_lib/affiliate-server.js";
 
 function toSafeAffiliate(affiliate) {
@@ -31,27 +33,53 @@ export default async function handler(req, res) {
 
   try {
     const { user, supabaseAdmin } = await requireAffiliateContext(req);
-    const [affiliateResult, attributionResult] = await Promise.all([
-      supabaseAdmin
-        .from("affiliates")
-        .select(
-          "status, code, display_name, payouts_enabled, details_submitted, tax_setup_status, stripe_transfers_status, recipient_payouts_status, requirements_status",
-        )
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabaseAdmin
-        .from("affiliate_attributions")
-        .select("affiliate_id, source_code, attributed_at, status")
-        .eq("subscriber_user_id", user.id)
-        .maybeSingle(),
-    ]);
 
-    if (affiliateResult.error || attributionResult.error) {
+    const { data: storedAffiliate, error: affiliateError } = await supabaseAdmin
+      .from("affiliates")
+      .select(
+        [
+          "id",
+          "user_id",
+          "status",
+          "code",
+          "display_name",
+          "stripe_connect_account_id",
+          "details_submitted",
+          "payouts_enabled",
+          "tax_setup_status",
+          "stripe_transfers_status",
+          "recipient_payouts_status",
+          "requirements_status",
+          "activated_at",
+          "updated_at",
+        ].join(", "),
+      )
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (affiliateError) {
+      throw new Error("Failed to load affiliate status");
+    }
+
+    let affiliate = storedAffiliate;
+    if (affiliate && shouldRefreshAffiliateFromStripe(affiliate)) {
+      affiliate = await syncAffiliateAccountState({
+        affiliate,
+        supabaseAdmin,
+      });
+    }
+
+    const { data: attribution, error: attributionError } = await supabaseAdmin
+      .from("affiliate_attributions")
+      .select("affiliate_id, source_code, attributed_at, status")
+      .eq("subscriber_user_id", user.id)
+      .maybeSingle();
+
+    if (attributionError) {
       throw new Error("Failed to load affiliate status");
     }
 
     let support = null;
-    const attribution = attributionResult.data;
     if (attribution?.status === "active") {
       const { data: supportedAffiliate, error } = await supabaseAdmin
         .from("affiliates")
@@ -70,7 +98,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      affiliate: toSafeAffiliate(affiliateResult.data),
+      affiliate: toSafeAffiliate(affiliate),
       support,
     });
   } catch (error) {
