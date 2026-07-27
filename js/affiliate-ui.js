@@ -98,6 +98,7 @@ export class AffiliateUI {
     this.openFrame = null;
     this.requestGeneration = 0;
     this.destroyed = false;
+    this.stripeReturnReconciled = false;
     this.bind();
   }
 
@@ -187,6 +188,7 @@ export class AffiliateUI {
       this.sheet.classList.add("is-open");
       this.backdrop.classList.add("is-open");
     });
+    await this.reconcileStripeReturn();
     await this.refresh();
   }
 
@@ -231,6 +233,74 @@ export class AffiliateUI {
     return data;
   }
 
+  async reconcileStripeReturn() {
+    if (this.stripeReturnReconciled) return;
+    const params = new URLSearchParams(window.location.search);
+    const affiliateReturn = params.get("affiliate");
+    if (!["return", "refresh"].includes(affiliateReturn)) {
+      return;
+    }
+    this.stripeReturnReconciled = true;
+    try {
+      await this.request("/api/affiliate/refresh-status", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+    } catch {
+      // Status load will still attempt reconciliation through /api/affiliate/status.
+    }
+    params.delete("affiliate");
+    const query = params.toString();
+    const nextUrl =
+      `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", nextUrl);
+  }
+
+  async loadStatus() {
+    this.status = await this.request("/api/affiliate/status");
+    if (
+      this.status.affiliate?.status &&
+      this.status.affiliate.status !== this.entitlement?.affiliateStatus
+    ) {
+      await this.onEntitlementChanged?.();
+    }
+    if (this.status.affiliate?.status === "active") {
+      const [summary, assets] = await Promise.all([
+        this.request("/api/affiliate/summary"),
+        fetch("/assets/affiliate/assets.json", {
+          cache: "no-store",
+          signal: this.abortController.signal,
+        })
+          .then((response) => (response.ok ? response.json() : []))
+          .catch(() => []),
+      ]);
+      this.summary = summary;
+      this.assets = Array.isArray(assets)
+        ? assets.filter((asset) =>
+            /^\/assets\/affiliate\/[A-Za-z0-9._-]+$/.test(asset?.path || ""),
+          )
+        : [];
+    } else {
+      this.summary = null;
+    }
+  }
+
+  async refreshStatus() {
+    try {
+      await this.request("/api/affiliate/refresh-status", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      await this.loadStatus();
+      this.render();
+      this.showSuccess?.("Stripe setup status refreshed.");
+    } catch (error) {
+      this.showError?.(
+        error?.message || "Unable to refresh Stripe setup status.",
+      );
+    }
+  }
+
   async refresh() {
     if (this.loading) return;
     const generation = ++this.requestGeneration;
@@ -238,33 +308,8 @@ export class AffiliateUI {
     this.mount.setAttribute("aria-busy", "true");
     if (!this.status) this.renderLoading();
     try {
-      this.status = await this.request("/api/affiliate/status");
+      await this.loadStatus();
       if (this.destroyed || generation !== this.requestGeneration) return;
-      if (
-        this.status.affiliate?.status &&
-        this.status.affiliate.status !== this.entitlement?.affiliateStatus
-      ) {
-        await this.onEntitlementChanged?.();
-      }
-      if (this.status.affiliate?.status === "active") {
-        const [summary, assets] = await Promise.all([
-          this.request("/api/affiliate/summary"),
-          fetch("/assets/affiliate/assets.json", {
-            cache: "no-store",
-            signal: this.abortController.signal,
-          })
-            .then((response) => (response.ok ? response.json() : []))
-            .catch(() => []),
-        ]);
-        this.summary = summary;
-        this.assets = Array.isArray(assets)
-          ? assets.filter((asset) =>
-              /^\/assets\/affiliate\/[A-Za-z0-9._-]+$/.test(asset?.path || ""),
-            )
-          : [];
-      } else {
-        this.summary = null;
-      }
       if (!this.destroyed && generation === this.requestGeneration) this.render();
     } catch (error) {
       if (error?.name !== "AbortError" && !this.destroyed) {
@@ -634,7 +679,7 @@ export class AffiliateUI {
       .affiliateAction;
     if (!action) return;
     if (action === "refresh") {
-      await this.refresh();
+      await this.refreshStatus();
     } else if (action === "onboarding") {
       await this.openStripeRoute("/api/affiliate/onboarding-link");
     } else if (action === "login") {

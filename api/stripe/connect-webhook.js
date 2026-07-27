@@ -1,11 +1,8 @@
 export const runtime = "nodejs";
 
 import { getAdminClient } from "../_lib/auth.js";
-import { deriveAffiliateAccountState } from "../_lib/affiliate.js";
-import {
-  getStripeClient,
-  retrieveAffiliateAccount,
-} from "../_lib/stripe.js";
+import { syncAffiliateAccountState } from "../_lib/affiliate-server.js";
+import { getStripeClient } from "../_lib/stripe.js";
 import {
   claimWebhookEvent,
   completeWebhookEvent,
@@ -43,52 +40,30 @@ async function synchronizeAffiliateAccount(supabaseAdmin, notification) {
 
   const { data: affiliate, error } = await supabaseAdmin
     .from("affiliates")
-    .select("id, status, activated_at")
+    .select(
+      [
+        "id",
+        "user_id",
+        "code",
+        "display_name",
+        "status",
+        "stripe_connect_account_id",
+        "details_submitted",
+        "payouts_enabled",
+        "tax_setup_status",
+        "stripe_transfers_status",
+        "recipient_payouts_status",
+        "requirements_status",
+        "activated_at",
+        "updated_at",
+      ].join(", "),
+    )
     .eq("stripe_connect_account_id", accountId)
     .maybeSingle();
   if (error) throw new Error("Failed to resolve affiliate account");
   if (!affiliate) return;
 
-  if (notification.type === "v2.core.account.closed") {
-    const { error: closeError } = await supabaseAdmin
-      .from("affiliates")
-      .update({
-        status: "closed",
-        stripe_transfers_status: "restricted",
-        recipient_payouts_status: "restricted",
-        requirements_status: "past_due",
-        details_submitted: false,
-        payouts_enabled: false,
-        tax_setup_status: "action_required",
-        stripe_status_updated_at: new Date().toISOString(),
-      })
-      .eq("id", affiliate.id);
-    if (closeError) throw new Error("Failed to close affiliate account state");
-    return;
-  }
-
-  const account = await retrieveAffiliateAccount(accountId);
-  const state = deriveAffiliateAccountState(account, affiliate.status);
-  const now = new Date().toISOString();
-  const update = {
-    status: state.programStatus,
-    stripe_transfers_status: state.stripeTransfersStatus,
-    recipient_payouts_status: state.recipientPayoutsStatus,
-    requirements_status: state.requirementsStatus,
-    details_submitted: state.detailsSubmitted,
-    payouts_enabled: state.payoutsEnabled,
-    tax_setup_status: state.taxSetupStatus,
-    stripe_status_updated_at: now,
-  };
-  if (state.programStatus === "active" && !affiliate.activated_at) {
-    update.activated_at = now;
-  }
-
-  const { error: updateError } = await supabaseAdmin
-    .from("affiliates")
-    .update(update)
-    .eq("id", affiliate.id);
-  if (updateError) throw new Error("Failed to synchronize affiliate account");
+  await syncAffiliateAccountState({ affiliate, supabaseAdmin });
 }
 
 export default async function handler(req, res) {

@@ -1,6 +1,23 @@
 import { authenticateUser, getAdminClient } from "./auth.js";
-import { isAffiliateProgramEnabled } from "./affiliate.js";
-import { createAffiliateRecipientAccount } from "./stripe.js";
+import { deriveAffiliateAccountState, isAffiliateProgramEnabled } from "./affiliate.js";
+import { createAffiliateRecipientAccount, retrieveAffiliateAccount } from "./stripe.js";
+
+const AFFILIATE_SYNC_SELECT = [
+  "id",
+  "user_id",
+  "code",
+  "display_name",
+  "status",
+  "stripe_connect_account_id",
+  "details_submitted",
+  "payouts_enabled",
+  "tax_setup_status",
+  "stripe_transfers_status",
+  "recipient_payouts_status",
+  "requirements_status",
+  "activated_at",
+  "updated_at",
+].join(", ");
 
 export function setPrivateApiHeaders(res, methods = "GET, POST, OPTIONS") {
   res.setHeader("Access-Control-Allow-Origin", process.env.APP_URL || "https://sineday.app");
@@ -67,6 +84,56 @@ export async function getAffiliateForUser(supabaseAdmin, userId) {
     .maybeSingle();
 
   if (error) throw new Error("Failed to load affiliate account");
+  return data;
+}
+
+export function shouldRefreshAffiliateFromStripe(affiliate) {
+  if (!affiliate?.stripe_connect_account_id) return false;
+  if (affiliate.status === "onboarding") return true;
+  if (affiliate.tax_setup_status === "action_required") return true;
+  const updatedAt = Date.parse(affiliate.updated_at || "");
+  if (!Number.isFinite(updatedAt)) return true;
+  return Date.now() - updatedAt > 5 * 60 * 1000;
+}
+
+export async function syncAffiliateAccountState({
+  affiliate,
+  supabaseAdmin,
+  retrieveAccount = retrieveAffiliateAccount,
+  now = () => new Date().toISOString(),
+}) {
+  if (!affiliate?.id || !affiliate?.stripe_connect_account_id) {
+    return affiliate;
+  }
+
+  const stripeAccount = await retrieveAccount(affiliate.stripe_connect_account_id);
+  const state = deriveAffiliateAccountState(stripeAccount, affiliate.status);
+  const update = {
+    status: state.programStatus,
+    details_submitted: state.detailsSubmitted,
+    payouts_enabled: state.payoutsEnabled,
+    tax_setup_status: state.taxSetupStatus,
+    stripe_transfers_status: state.stripeTransfersStatus,
+    recipient_payouts_status: state.recipientPayoutsStatus,
+    requirements_status: state.requirementsStatus,
+    updated_at: now(),
+  };
+
+  if (state.programStatus === "active" && !affiliate.activated_at) {
+    update.activated_at = now();
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("affiliates")
+    .update(update)
+    .eq("id", affiliate.id)
+    .select(AFFILIATE_SYNC_SELECT)
+    .single();
+
+  if (error) {
+    throw new Error("Failed to synchronize affiliate Stripe status");
+  }
+
   return data;
 }
 
