@@ -1,5 +1,6 @@
 import {
   affiliateApiError,
+  ensureAffiliateRecipientAccount,
   getAffiliateForUser,
   getAffiliateReturnUrls,
   handleOptions,
@@ -18,18 +19,24 @@ export default async function handler(req, res) {
   try {
     const { user, supabaseAdmin } = await requireAffiliateContext(req);
     const affiliate = await getAffiliateForUser(supabaseAdmin, user.id);
-    if (!affiliate?.stripe_connect_account_id || affiliate.status === "closed") {
+    if (!affiliate || affiliate.status === "closed") {
       return res.status(409).json({
         ok: false,
         error: "Affiliate payout setup is not available.",
       });
     }
 
+    const accountId = await ensureAffiliateRecipientAccount({
+      affiliate,
+      user,
+      supabaseAdmin,
+    });
+
     const { refreshUrl, returnUrl } = getAffiliateReturnUrls();
-    const accountLink = await createAffiliateAccountLink(
-      affiliate.stripe_connect_account_id,
-      { refreshUrl, returnUrl },
-    );
+    const accountLink = await createAffiliateAccountLink(accountId, {
+      refreshUrl,
+      returnUrl,
+    });
     return res.status(200).json({ ok: true, url: accountLink.url });
   } catch (error) {
     return affiliateApiError(res, error, "onboarding link failed");

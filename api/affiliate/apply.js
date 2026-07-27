@@ -5,16 +5,14 @@ import {
 } from "../_lib/affiliate.js";
 import {
   affiliateApiError,
+  ensureAffiliateRecipientAccount,
   getAffiliateForUser,
   getAffiliateReturnUrls,
   handleOptions,
   requireAffiliateContext,
   setPrivateApiHeaders,
 } from "../_lib/affiliate-server.js";
-import {
-  createAffiliateAccountLink,
-  createAffiliateRecipientAccount,
-} from "../_lib/stripe.js";
+import { createAffiliateAccountLink } from "../_lib/stripe.js";
 
 function validationError(res, message) {
   return res.status(400).json({ ok: false, error: message });
@@ -83,27 +81,11 @@ export default async function handler(req, res) {
       affiliate = data;
     }
 
-    let accountId = affiliate.stripe_connect_account_id;
-    if (!accountId) {
-      const account = await createAffiliateRecipientAccount({
-        contactEmail: user.email,
-        displayName: affiliate.display_name,
-        userId: user.id,
-        affiliateId: affiliate.id,
-        idempotencyKey: `sineday-affiliate-account-${affiliate.id}`,
-      });
-      accountId = account.id;
-
-      const { error } = await supabaseAdmin
-        .from("affiliates")
-        .update({
-          stripe_connect_account_id: accountId,
-          stripe_status_updated_at: new Date().toISOString(),
-        })
-        .eq("id", affiliate.id)
-        .is("stripe_connect_account_id", null);
-      if (error) throw new Error("Failed to save affiliate account");
-    }
+    const accountId = await ensureAffiliateRecipientAccount({
+      affiliate,
+      user,
+      supabaseAdmin,
+    });
 
     const { refreshUrl, returnUrl } = getAffiliateReturnUrls();
     const accountLink = await createAffiliateAccountLink(accountId, {
