@@ -1,3 +1,4 @@
+import { validateAffiliateCountry } from "../_lib/affiliate.js";
 import {
   affiliateApiError,
   ensureAffiliateRecipientAccount,
@@ -8,6 +9,10 @@ import {
   setPrivateApiHeaders,
 } from "../_lib/affiliate-server.js";
 import { createAffiliateAccountLink } from "../_lib/stripe.js";
+
+function validationError(res, message) {
+  return res.status(400).json({ ok: false, error: message });
+}
 
 export default async function handler(req, res) {
   setPrivateApiHeaders(res, "POST, OPTIONS");
@@ -26,9 +31,19 @@ export default async function handler(req, res) {
       });
     }
 
+    const needsCountry = !affiliate.stripe_connect_account_id;
+    const countryResult = needsCountry
+      ? validateAffiliateCountry(req.body?.country)
+      : { ok: true, country: null, error: null };
+
+    if (!countryResult.ok) {
+      return validationError(res, countryResult.error);
+    }
+
     const accountId = await ensureAffiliateRecipientAccount({
       affiliate,
       user,
+      country: countryResult.country,
       supabaseAdmin,
     });
 

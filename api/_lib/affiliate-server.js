@@ -81,6 +81,7 @@ export function getAffiliateReturnUrls() {
 export async function ensureAffiliateRecipientAccount({
   affiliate,
   user,
+  country,
   supabaseAdmin,
   createAccount = createAffiliateRecipientAccount,
   now = () => new Date().toISOString(),
@@ -92,6 +93,7 @@ export async function ensureAffiliateRecipientAccount({
   const account = await createAccount({
     contactEmail: user.email,
     displayName: affiliate.display_name,
+    country,
     userId: user.id,
     affiliateId: affiliate.id,
     idempotencyKey: `sineday-affiliate-account-${affiliate.id}`,

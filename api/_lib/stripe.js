@@ -35,16 +35,21 @@ export function getStripeClient({ connect = false } = {}) {
 export async function createAffiliateRecipientAccount({
   contactEmail,
   displayName,
+  country,
   userId,
   affiliateId,
   idempotencyKey,
+  stripe: stripeOverride,
 }) {
-  const stripe = getStripeClient({ connect: true });
+  const stripe = stripeOverride || getStripeClient({ connect: true });
   return stripe.v2.core.accounts.create(
     {
       contact_email: contactEmail,
       display_name: displayName,
       dashboard: "express",
+      identity: {
+        country: country.toLowerCase(),
+      },
       defaults: {
         responsibilities: {
           fees_collector: "application",

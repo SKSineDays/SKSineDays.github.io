@@ -4,8 +4,10 @@ import {
   deriveAffiliateAccountState,
   isEligiblePremiumInvoice,
   normalizeAffiliateCode,
+  normalizeAffiliateCountry,
   sanitizeStripeFailure,
   validateAffiliateCode,
+  validateAffiliateCountry,
 } from "../api/_lib/affiliate.js";
 
 function readyAccount(overrides = {}) {
@@ -36,6 +38,25 @@ test("affiliate codes normalize and enforce reserved values", () => {
   });
   assert.equal(validateAffiliateCode("admin").ok, false);
   assert.equal(validateAffiliateCode("x").ok, false);
+});
+
+test("affiliate payout country accepts US only", () => {
+  assert.equal(normalizeAffiliateCountry(" us "), "US");
+  assert.deepEqual(validateAffiliateCountry("US"), {
+    ok: true,
+    country: "US",
+    error: null,
+  });
+  assert.deepEqual(validateAffiliateCountry(""), {
+    ok: false,
+    country: "",
+    error: "Payout country is required.",
+  });
+  assert.deepEqual(validateAffiliateCountry("CA"), {
+    ok: false,
+    country: "CA",
+    error: "Affiliate payouts are currently available in the United States only.",
+  });
 });
 
 test("Accounts v2 readiness activates an onboarding affiliate", () => {

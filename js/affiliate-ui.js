@@ -43,6 +43,16 @@ function clearPendingAffiliateCode() {
   }
 }
 
+function payoutCountrySelect(id) {
+  return `
+    <label for="${id}">Payout country</label>
+    <select id="${id}" name="country" required>
+      <option value="">Select country</option>
+      <option value="US">United States</option>
+    </select>
+  `;
+}
+
 function focusableElements(root) {
   return [
     ...root.querySelectorAll(
@@ -371,6 +381,7 @@ export class AffiliateUI {
         <input id="affiliate-display-name" name="displayName" type="text" minlength="2" maxlength="80" required>
         <label for="affiliate-requested-code">Requested Affiliate Code</label>
         <input id="affiliate-requested-code" name="requestedCode" type="text" minlength="4" maxlength="20" pattern="[A-Za-z0-9-]{4,20}" autocapitalize="characters" required>
+        ${payoutCountrySelect("affiliate-payout-country-apply")}
         <label class="affiliate-terms-check">
           <input name="acceptedTerms" type="checkbox" required>
           <span>I accept the <a href="/affiliate-terms.html" target="_blank" rel="noopener">Affiliate Terms</a> and acknowledge the <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>
@@ -400,14 +411,17 @@ export class AffiliateUI {
         <li class="${complete(affiliate.recipientPayoutsStatus === "active")}">Payout details complete</li>
         <li class="${complete(affiliate.payoutsEnabled)}">Account ready</li>
       </ol>
-      <div class="affiliate-sheet__actions">
-        <button class="btn btn-primary" type="button" data-affiliate-action="onboarding">
-          Continue Secure Setup
-        </button>
-        <button class="btn btn-ghost" type="button" data-affiliate-action="refresh">
-          Refresh status
-        </button>
-      </div>
+      <form class="affiliate-onboarding-form" data-affiliate-form="onboarding">
+        ${payoutCountrySelect("affiliate-payout-country-onboarding")}
+        <div class="affiliate-sheet__actions">
+          <button class="btn btn-primary" type="submit">
+            Continue Secure Setup
+          </button>
+          <button class="btn btn-ghost" type="button" data-affiliate-action="refresh">
+            Refresh status
+          </button>
+        </div>
+      </form>
       <p class="affiliate-disclosure">Stripe securely manages payout information. SineDay does not store your bank account or tax identification number.</p>
     `;
   }
@@ -630,11 +644,11 @@ export class AffiliateUI {
     }
   }
 
-  async openStripeRoute(path) {
+  async openStripeRoute(path, body = {}) {
     try {
       const data = await this.request(path, {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify(body),
       });
       window.location.assign(data.url);
     } catch (error) {
@@ -680,7 +694,17 @@ export class AffiliateUI {
           body: JSON.stringify({
             displayName: form.get("displayName"),
             requestedCode: form.get("requestedCode"),
+            country: form.get("country"),
             acceptedTermsVersion: this.termsVersion,
+          }),
+        });
+        window.location.assign(data.url);
+      } else if (formType === "onboarding") {
+        const form = new FormData(event.target);
+        const data = await this.request("/api/affiliate/onboarding-link", {
+          method: "POST",
+          body: JSON.stringify({
+            country: form.get("country"),
           }),
         });
         window.location.assign(data.url);
