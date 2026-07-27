@@ -1,6 +1,7 @@
 import {
   getAffiliateTermsVersion,
   validateAffiliateCode,
+  validateAffiliateCountry,
   validateAffiliateDisplayName,
 } from "../_lib/affiliate.js";
 import {
@@ -43,6 +44,15 @@ export default async function handler(req, res) {
     }
 
     let affiliate = await getAffiliateForUser(supabaseAdmin, user.id);
+    const needsCountry = !affiliate?.stripe_connect_account_id;
+    const countryResult = needsCountry
+      ? validateAffiliateCountry(body.country)
+      : { ok: true, country: null, error: null };
+
+    if (!countryResult.ok) {
+      return validationError(res, countryResult.error);
+    }
+
     if (affiliate) {
       const matchesApplication =
         affiliate.status === "onboarding" &&
@@ -84,6 +94,7 @@ export default async function handler(req, res) {
     const accountId = await ensureAffiliateRecipientAccount({
       affiliate,
       user,
+      country: countryResult.country,
       supabaseAdmin,
     });
 

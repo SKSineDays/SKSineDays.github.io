@@ -141,6 +141,7 @@ test("ensureAffiliateRecipientAccount creates, persists, and returns a connected
   const accountId = await ensureAffiliateRecipientAccount({
     affiliate: affiliateBase,
     user: userBase,
+    country: "US",
     supabaseAdmin,
     createAccount: async (args) => {
       createArgs = args;
@@ -153,6 +154,7 @@ test("ensureAffiliateRecipientAccount creates, persists, and returns a connected
   assert.deepEqual(createArgs, {
     contactEmail: userBase.email,
     displayName: affiliateBase.display_name,
+    country: "US",
     userId: userBase.id,
     affiliateId: affiliateBase.id,
     idempotencyKey: "sineday-affiliate-account-aff_ra420",
@@ -171,6 +173,7 @@ test("ensureAffiliateRecipientAccount reloads after a concurrent database write 
   const accountId = await ensureAffiliateRecipientAccount({
     affiliate: affiliateBase,
     user: userBase,
+    country: "US",
     supabaseAdmin,
     createAccount: async () => ({ id: "acct_new" }),
   });
@@ -191,6 +194,7 @@ test("ensureAffiliateRecipientAccount propagates Stripe failures without mutatin
       ensureAffiliateRecipientAccount({
         affiliate: affiliateBase,
         user: userBase,
+        country: "US",
         supabaseAdmin,
         createAccount: async () => {
           throw stripeError;

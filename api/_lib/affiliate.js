@@ -43,6 +43,31 @@ export function validateAffiliateDisplayName(value) {
   return { ok: true, displayName, error: null };
 }
 
+export const SUPPORTED_AFFILIATE_COUNTRIES = new Set(["US"]);
+
+export function normalizeAffiliateCountry(value) {
+  return typeof value === "string" ? value.trim().toUpperCase() : "";
+}
+
+export function validateAffiliateCountry(value) {
+  const country = normalizeAffiliateCountry(value);
+  if (!country) {
+    return {
+      ok: false,
+      country,
+      error: "Payout country is required.",
+    };
+  }
+  if (!SUPPORTED_AFFILIATE_COUNTRIES.has(country)) {
+    return {
+      ok: false,
+      country,
+      error: "Affiliate payouts are currently available in the United States only.",
+    };
+  }
+  return { ok: true, country, error: null };
+}
+
 function requirementRestrictsRecipientPayouts(entry) {
   const restricted = entry?.impact?.restricts_capabilities || [];
   return restricted.some(
