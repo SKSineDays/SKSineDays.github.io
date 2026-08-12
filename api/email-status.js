@@ -2,9 +2,13 @@
  * GET  /api/email-status  — returns subscriber active status for the authed user
  * PATCH /api/email-status  — sets status to 'unsubscribed' for the authed user
  * Headers: Authorization: Bearer <access_token>
+ *
+ * GET never returns raw birthdate, auth metadata, or subscriber UUIDs.
+ * Unsubscribing does not delete subscriber_profile or the locked email rhythm.
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { buildEmailStatusPayload } from './_lib/email-rhythm.js';
 
 async function getAuthedEmail(req, serviceClient) {
   const authHeader = req.headers.authorization;
@@ -43,18 +47,27 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { data, error } = await serviceClient
+      const { data: subscriber, error } = await serviceClient
         .from('subscribers')
-        .select('status')
+        .select('id, status')
         .eq('email', email)
         .maybeSingle();
 
       if (error) throw error;
 
-      return res.status(200).json({
-        ok: true,
-        subscribed: !!data && data.status === 'active'
-      });
+      if (!subscriber) {
+        return res.status(200).json(buildEmailStatusPayload(null, null));
+      }
+
+      const { data: profile, error: profileError } = await serviceClient
+        .from('subscriber_profile')
+        .select('birth_day_of_year, origin_day')
+        .eq('subscriber_id', subscriber.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      return res.status(200).json(buildEmailStatusPayload(subscriber, profile));
     }
 
     if (req.method === 'PATCH') {

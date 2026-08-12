@@ -147,11 +147,14 @@ export class JournalUI {
 
   setOwnerProfile(profile) {
     const previousId = this.ownerProfile?.id || null;
+    const previousTz = this.ownerProfile?.timezone || null;
     this._flushCurrentEntrySync();
     this.ownerProfile = profile || null;
-    if (this.ownerProfile && this.ownerProfile.id !== previousId) {
+    if (this.ownerProfile && (this.ownerProfile.id !== previousId || this.ownerProfile.timezone !== previousTz)) {
       this.currentYmd = todayYmdForTimeZone(this.ownerProfile.timezone);
-      this.entryCache.clear();
+      if (this.ownerProfile.id !== previousId) {
+        this.entryCache.clear();
+      }
     }
     this.render();
   }

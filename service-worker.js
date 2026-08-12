@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v11';
+const CACHE_NAME = 'sineday-v12';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

@@ -31,65 +31,6 @@
 
   <main id="main-content">
     <div id="app">
-    <!-- Owner Onboarding Modal -->
-    <div id="owner-onboarding" class="onboarding" aria-hidden="true">
-      <div class="onboarding__backdrop"></div>
-      <div class="onboarding__card" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-
-        <!-- Phase 1: Input -->
-        <div id="onboarding-input" class="onboarding__phase">
-          <h2 id="onboarding-title" class="onboarding__title">Welcome to SineDay</h2>
-          <p class="onboarding__desc">
-            Set up your personal profile to unlock your Origin Duck and daily energy cycle.
-            This will be your permanent owner profile — the anchor for your SineDay experience.
-          </p>
-
-          <div class="form-group">
-            <label for="owner-name">Your Name</label>
-            <input type="text" id="owner-name" placeholder="Your name" required autocomplete="name">
-          </div>
-
-          <div class="form-group">
-            <label for="owner-birthdate">Your Birthdate</label>
-            <input type="date" id="owner-birthdate" required>
-          </div>
-
-          <button id="onboarding-next-btn" class="btn btn-primary" type="button" disabled>
-            Continue
-          </button>
-        </div>
-
-        <!-- Phase 2: Confirm -->
-        <div id="onboarding-confirm" class="onboarding__phase" style="display:none;">
-          <h2 class="onboarding__title">Confirm Your Profile</h2>
-          <p class="onboarding__desc">
-            This is your permanent owner profile and can't be changed after setup.
-            Please make sure everything looks right.
-          </p>
-
-          <div class="onboarding__summary">
-            <div class="onboarding__summary-row">
-              <span class="onboarding__summary-label">Name</span>
-              <span id="confirm-name" class="onboarding__summary-value"></span>
-            </div>
-            <div class="onboarding__summary-row">
-              <span class="onboarding__summary-label">Birthdate</span>
-              <span id="confirm-birthdate" class="onboarding__summary-value"></span>
-            </div>
-          </div>
-
-          <div class="onboarding__actions">
-            <button id="onboarding-back-btn" class="btn btn-ghost" type="button">
-              Go Back
-            </button>
-            <button id="onboarding-accept-btn" class="btn btn-primary" type="button">
-              Accept & Create Profile
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
     <div id="loading" class="loading" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
       Loading...
     </div>
@@ -141,6 +82,8 @@
               id="daily-email-optin"
               class="dash-head__icon-btn daily-email-icon-btn"
               aria-pressed="false"
+              aria-expanded="false"
+              aria-controls="daily-email-setup-sheet"
               aria-label="Daily Duck email is off. Tap to turn it on."
               title="Daily Duck email"
               hidden
@@ -276,6 +219,54 @@
           </div>
 
           <a class="dash-home" href="/">← Home</a>
+        </div>
+      </section>
+
+      <!-- Daily Duck email setup (iOS-style sheet; never shown on login) -->
+      <div id="daily-email-setup-backdrop" class="sheet-backdrop" hidden></div>
+      <section
+        id="daily-email-setup-sheet"
+        class="sheet daily-email-setup-sheet"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="daily-email-setup-title"
+      >
+        <div class="sheet__handle" aria-hidden="true"></div>
+        <div class="sheet__content">
+          <h2 id="daily-email-setup-title">Your Daily Duck</h2>
+          <p class="daily-email-setup-sheet__body">
+            Choose the birthdate your Daily Duck email should follow.
+          </p>
+          <p class="daily-email-setup-sheet__helper">
+            This is separate from the profiles in your dashboard. Once your email rhythm is set, changing a saved profile will not change your Daily Duck emails.
+          </p>
+          <p class="daily-email-setup-sheet__privacy">
+            SineDay uses this date to create your email rhythm profile. Your full birthdate is not stored in the email subscriber profile.
+          </p>
+
+          <form id="daily-email-setup-form">
+            <div class="form-group">
+              <label for="daily-email-birthdate">Birthdate</label>
+              <input type="date" id="daily-email-birthdate" required>
+            </div>
+
+            <p
+              id="daily-email-setup-status"
+              class="daily-email-setup-sheet__status"
+              role="status"
+              aria-live="polite"
+            ></p>
+
+            <div class="daily-email-setup-sheet__actions">
+              <button id="daily-email-setup-cancel" class="btn btn-ghost" type="button">
+                Cancel
+              </button>
+              <button id="daily-email-setup-submit" class="btn btn-primary" type="submit">
+                Turn On Daily Duck
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -474,7 +465,7 @@
                         >×</button>
                       </div>
                       <p class="origin-manage-sheet__intro">
-                        Your owner profile anchors Today’s Wave. Other saved people can be removed at any time.
+                        Your owner profile anchors Today’s Wave. You can update your saved profiles here; the owner profile cannot be deleted.
                       </p>
                       <div id="profiles-list"></div>
                     </div>

@@ -103,10 +103,6 @@ export class CalendarsPdfUI {
   }
 
   setOwnerProfile(profile) {
-    if ((this.ownerProfile?.id || null) === (profile?.id || null)) {
-      this.ownerProfile = profile || null;
-      return;
-    }
     this.ownerProfile = profile || null;
     this.render();
   }

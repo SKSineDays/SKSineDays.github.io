@@ -2,7 +2,13 @@
  * Vercel serverless function for email subscription signup
  *
  * POST /api/subscribe
- * Body: { email, consent, timezone, birth_day_of_year, sineday_index, origin_day, source }
+ * Body: { email, consent, timezone, birthdate, birth_day_of_year, sineday_index, origin_day, source }
+ *
+ * Authenticated Daily Duck setup may send:
+ *   { birthdate: "YYYY-MM-DD", consent: true, timezone, source: "dashboard-daily-duck" }
+ *
+ * The full birthdate is used only to derive email-safe values, then discarded.
+ * It is never stored, logged, returned, or sent to Resend.
  *
  * IMPORTANT: Uses SUPABASE_SERVICE_ROLE_KEY - NEVER expose this in the browser.
  * All writes to Supabase happen server-side via this API route.
@@ -10,6 +16,11 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import {
+  deriveEmailRhythmFromBirthdate,
+  isEmailRhythmLocked,
+  resolveEmailRhythmWrite
+} from './_lib/email-rhythm.js';
 
 /**
  * Email validation regex
@@ -44,6 +55,10 @@ async function getAuthedEmail(req, serviceClient) {
   return user.email?.toLowerCase().trim() ?? null;
 }
 
+function hasOwnRhythmValue(value) {
+  return value !== null && value !== undefined;
+}
+
 /**
  * Main handler
  */
@@ -74,6 +89,7 @@ export default async function handler(req, res) {
       origin_day,
       source
     } = body;
+    const birthdate = body.birthdate;
 
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -132,35 +148,6 @@ export default async function handler(req, res) {
 
     // Validate timezone if provided
     const validTimezone = timezone || 'America/Chicago';
-
-    // Validate birth_day_of_year if provided
-    if (birth_day_of_year !== null && birth_day_of_year !== undefined) {
-      if (birth_day_of_year < 1 || birth_day_of_year > 366) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Invalid birth_day_of_year (must be 1-366)'
-        });
-      }
-    }
-
-    // Validate sineday_index if provided
-    if (sineday_index !== null && sineday_index !== undefined) {
-      if (sineday_index < 0 || sineday_index > 17) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Invalid sineday_index (must be 0-17)'
-        });
-      }
-    }
-
-    if (origin_day !== null && origin_day !== undefined) {
-      if (!Number.isInteger(origin_day) || origin_day < 1 || origin_day > 18) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Invalid origin_day (must be integer 1-18)'
-        });
-      }
-    }
 
     // Check if subscriber already exists BEFORE upserting
     const { data: existingSubscriber } = await supabase
@@ -233,27 +220,93 @@ export default async function handler(req, res) {
       // Don't fail the whole request, just log it
     }
 
-    // 3. Upsert profile (if we have birth_day_of_year, sineday_index, or origin_day)
-    const hasBirthDayOfYear = birth_day_of_year !== null && birth_day_of_year !== undefined;
-    const hasSinedayIndex = sineday_index !== null && sineday_index !== undefined;
-    const hasOriginDay = origin_day !== null && origin_day !== undefined;
+    // 3. Load existing email rhythm and lock it once both derived values exist.
+    const { data: existingProfile, error: existingProfileError } = await supabase
+      .from('subscriber_profile')
+      .select('birth_day_of_year, sineday_index, origin_day')
+      .eq('subscriber_id', subscriber.id)
+      .maybeSingle();
 
-    if (hasBirthDayOfYear || hasSinedayIndex || hasOriginDay) {
+    if (existingProfileError) {
+      console.error('Profile lookup error:', existingProfileError);
+    }
+
+    const rhythmLocked = isEmailRhythmLocked(existingProfile);
+    let derived = null;
+    let clientProvided = null;
+
+    if (!rhythmLocked && authEmail && typeof birthdate === 'string' && birthdate.length > 0) {
+      const derivedResult = deriveEmailRhythmFromBirthdate(birthdate, {
+        timezone: validTimezone
+      });
+      if (!derivedResult.ok) {
+        return res.status(400).json({
+          ok: false,
+          error: derivedResult.error
+        });
+      }
+      derived = derivedResult;
+    } else if (!rhythmLocked) {
+      if (hasOwnRhythmValue(birth_day_of_year)) {
+        if (birth_day_of_year < 1 || birth_day_of_year > 366) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Invalid birth_day_of_year (must be 1-366)'
+          });
+        }
+      }
+
+      if (hasOwnRhythmValue(sineday_index)) {
+        if (sineday_index < 0 || sineday_index > 17) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Invalid sineday_index (must be 0-17)'
+          });
+        }
+      }
+
+      if (hasOwnRhythmValue(origin_day)) {
+        if (!Number.isInteger(origin_day) || origin_day < 1 || origin_day > 18) {
+          return res.status(400).json({
+            ok: false,
+            error: 'Invalid origin_day (must be integer 1-18)'
+          });
+        }
+      }
+
+      if (
+        hasOwnRhythmValue(birth_day_of_year) ||
+        hasOwnRhythmValue(sineday_index) ||
+        hasOwnRhythmValue(origin_day)
+      ) {
+        clientProvided = {
+          birth_day_of_year,
+          sineday_index,
+          origin_day
+        };
+      }
+    }
+
+    const decision = resolveEmailRhythmWrite({
+      existingProfile,
+      derived,
+      clientProvided
+    });
+
+    if (decision.write) {
       const profileData = {
         subscriber_id: subscriber.id,
         updated_at: new Date().toISOString()
       };
 
-      if (hasBirthDayOfYear) {
-        profileData.birth_day_of_year = birth_day_of_year;
+      if (decision.write.birth_day_of_year != null) {
+        profileData.birth_day_of_year = decision.write.birth_day_of_year;
       }
-
-      if (hasSinedayIndex) {
-        profileData.sineday_index = sineday_index;
+      if (decision.write.sineday_index != null) {
+        profileData.sineday_index = decision.write.sineday_index;
       }
-
-      if (hasOriginDay) {
-        profileData.origin_day = origin_day;
+      if (decision.write.origin_day != null) {
+        profileData.origin_day = decision.write.origin_day;
       }
 
       const { error: profileError } = await supabase
@@ -297,18 +350,18 @@ export default async function handler(req, res) {
             to: [normalizedEmail],
             template_id: 'welcome-temp'
           };
-          
+
           // Only add subject if template doesn't define it
           // (Some templates have subject defined, some don't)
           emailPayload.subject = 'Welcome to Your SineDay 🌊';
-          
+
           console.log('[EMAIL] Sending with payload:', {
             from: emailPayload.from,
             to: emailPayload.to,
             template_id: emailPayload.template_id,
             subject: emailPayload.subject
           });
-          
+
           const response = await resend.emails.send(emailPayload);
 
           console.log(`[EMAIL] ✓ Welcome email sent successfully`);
@@ -342,10 +395,12 @@ export default async function handler(req, res) {
       console.log(`[EMAIL] Subscriber was created at: ${existingSubscriber?.created_at || 'unknown'}`);
     }
 
-    // Success response
     return res.status(200).json({
       ok: true,
-      message: 'Successfully subscribed'
+      message: 'Successfully subscribed',
+      profileConfigured: decision.configured,
+      profileLocked: decision.configured,
+      originDay: decision.configured ? decision.originDay : null
     });
 
   } catch (error) {

@@ -40,7 +40,9 @@ let pendingCheckoutSessionId = null;
 let hasAttemptedAutoPremiumSync = false;
 let dailyEmailState = {
   subscribed: false,
-  loading: false
+  loading: false,
+  profileConfigured: false,
+  originDay: null
 };
 let duckCarousel = null;
 let addProfileUI = null;
@@ -52,6 +54,8 @@ let affiliateUI = null;
 let userSettings = null;
 let linkedIdentities = [];
 let publicConfig = null;
+let profileFormMode = "add";
+let editingProfileId = null;
 
 let dashboardPageIndex = 0;
 let dashboardPageCount = 4;
@@ -70,6 +74,7 @@ async function init() {
   // ✅ Always attach UI handlers first
   setupEventListeners();
   bindDailyEmailEvents();
+  setupDailyEmailSetupSheet();
   setupInstallPromptUI();
 
   // Show loading (optional)
@@ -99,12 +104,6 @@ async function init() {
         const cleanedUrl = new URL(window.location.href);
         cleanedUrl.searchParams.delete("affiliate");
         window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}`);
-      }
-      // Gate: require owner profile before showing dashboard
-      if (!hasOwnerProfile() && !affiliateRequested) {
-        hideLoading();
-        await showOwnerOnboarding();
-        // After onboarding completes, profiles array is updated
       }
 
       renderDailyEmailBox();
@@ -136,6 +135,12 @@ async function init() {
         currentUser = null;
         currentEntitlement = null;
         profiles = [];
+        dailyEmailState = {
+          subscribed: false,
+          loading: false,
+          profileConfigured: false,
+          originDay: null
+        };
         if (duckCarousel) {
           duckCarousel.destroy();
           duckCarousel = null;
@@ -340,108 +345,172 @@ function getOwnerProfile() {
 
 // ── Daily Email Helpers ──────────────────────────────────────────
 
-function calculateDayOfYear(dateString) {
-  const date = new Date(`${dateString}T12:00:00`);
-  const start = new Date(date.getFullYear(), 0, 0);
-  return Math.floor((date - start) / 86400000);
+const DAILY_EMAIL_SOURCE = "dashboard-daily-duck";
+
+function getClientTimezone() {
+  return Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || "America/Chicago";
 }
 
-function setDailyEmailStatus(message = '', tone = '') {
-  const el = document.getElementById('daily-email-status');
+function resetDailyEmailState() {
+  dailyEmailState.subscribed = false;
+  dailyEmailState.loading = false;
+  dailyEmailState.profileConfigured = false;
+  dailyEmailState.originDay = null;
+}
+
+function applyDailyEmailResponse(data = {}) {
+  if (data.subscribed != null) {
+    dailyEmailState.subscribed = !!data.subscribed;
+  }
+  if (data.profileConfigured != null) {
+    dailyEmailState.profileConfigured = !!data.profileConfigured;
+  }
+  if (Object.prototype.hasOwnProperty.call(data, "originDay")) {
+    dailyEmailState.originDay = Number.isInteger(data.originDay) ? data.originDay : null;
+  }
+}
+
+function setDailyEmailStatus(message = "", tone = "") {
+  const el = document.getElementById("daily-email-setup-status");
   if (!el) return;
   el.textContent = message;
   el.dataset.tone = tone;
 }
 
-function renderDailyEmailBox() {
-  const toggle = document.getElementById('daily-email-optin');
-  const owner = getOwnerProfile();
+function needsDailyEmailSetup() {
+  return !dailyEmailState.profileConfigured;
+}
 
+function renderDailyEmailBox() {
+  const toggle = document.getElementById("daily-email-optin");
   if (!toggle) return;
 
-  const canUseDailyEmail = !!owner?.birthdate && !!currentUser?.email;
-
+  const canUseDailyEmail = !!currentUser?.email;
   toggle.hidden = !canUseDailyEmail;
 
   if (!canUseDailyEmail) {
     toggle.disabled = true;
-    toggle.setAttribute('aria-pressed', 'false');
-    toggle.removeAttribute('aria-busy');
-    toggle.setAttribute(
-      'aria-label',
-      'Daily Duck email is unavailable until the owner profile is complete.'
-    );
+    toggle.setAttribute("aria-pressed", "false");
+    toggle.removeAttribute("aria-busy");
+    toggle.classList.remove("daily-email-icon-btn--needs-setup");
+    toggle.setAttribute("aria-label", "Daily Duck email is unavailable until you are signed in.");
     return;
   }
 
   const isSubscribed = dailyEmailState.subscribed;
   const isLoading = dailyEmailState.loading;
+  const needsSetup = needsDailyEmailSetup();
 
   toggle.disabled = isLoading;
-  toggle.setAttribute('aria-pressed', isSubscribed ? 'true' : 'false');
+  toggle.setAttribute("aria-pressed", isSubscribed && !needsSetup ? "true" : "false");
+  toggle.classList.toggle("daily-email-icon-btn--needs-setup", needsSetup);
 
   if (isLoading) {
-    toggle.setAttribute('aria-busy', 'true');
+    toggle.setAttribute("aria-busy", "true");
     toggle.setAttribute(
-      'aria-label',
+      "aria-label",
       isSubscribed
-        ? 'Updating Daily Duck email subscription.'
-        : 'Enabling Daily Duck email.'
+        ? "Updating Daily Duck email subscription."
+        : "Enabling Daily Duck email."
     );
   } else {
-    toggle.removeAttribute('aria-busy');
-    toggle.setAttribute(
-      'aria-label',
-      isSubscribed
-        ? 'Daily Duck email is on. Tap to turn it off.'
-        : 'Daily Duck email is off. Tap to turn it on.'
-    );
+    toggle.removeAttribute("aria-busy");
+    if (needsSetup) {
+      toggle.setAttribute("aria-label", "Daily Duck email needs your birthdate setup.");
+    } else if (isSubscribed) {
+      toggle.setAttribute("aria-label", "Daily Duck email is on. Tap to turn it off.");
+    } else {
+      toggle.setAttribute("aria-label", "Daily Duck email is off. Tap to turn it on.");
+    }
   }
 
-  toggle.title = isSubscribed
-    ? 'Daily Duck email: On'
-    : 'Daily Duck email: Off';
+  if (needsSetup) {
+    toggle.title = "Daily Duck email: Needs setup";
+  } else if (isSubscribed) {
+    toggle.title = "Daily Duck email: On";
+  } else {
+    toggle.title = "Daily Duck email: Off";
+  }
 }
 
 async function loadDailyEmailState() {
-  if (!currentUser?.email) return;
+  if (!currentUser?.email) {
+    resetDailyEmailState();
+    renderDailyEmailBox();
+    return;
+  }
 
   try {
     const accessToken = await getAccessToken();
-    const response = await fetch('/api/email-status', {
+    const response = await fetch("/api/email-status", {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     const data = await response.json();
-    dailyEmailState.subscribed = !!data.ok && !!data.subscribed;
+    if (!data?.ok) {
+      resetDailyEmailState();
+    } else {
+      dailyEmailState.subscribed = !!data.subscribed;
+      dailyEmailState.profileConfigured = !!data.profileConfigured;
+      dailyEmailState.originDay = Number.isInteger(data.originDay) ? data.originDay : null;
+    }
   } catch (err) {
-    console.error('Failed to load daily email state:', err);
-    dailyEmailState.subscribed = false;
+    console.error("Failed to load daily email state:", err);
+    resetDailyEmailState();
   }
 
   renderDailyEmailBox();
 }
 
-async function enableDailyEmailFromOwnerProfile() {
-  const owner = getOwnerProfile();
+function openDailyEmailSetup() {
+  const sheet = document.getElementById("daily-email-setup-sheet");
+  const backdrop = document.getElementById("daily-email-setup-backdrop");
+  const birthdateInput = document.getElementById("daily-email-birthdate");
+  const toggle = document.getElementById("daily-email-optin");
+  if (!sheet || !backdrop) return;
 
-  if (!owner?.birthdate || !currentUser?.email) {
-    showError('Owner profile is required before enabling daily email.');
+  toggle?.setAttribute("aria-expanded", "true");
+  sheet.hidden = false;
+  backdrop.hidden = false;
+  setDailyEmailStatus("");
+  if (birthdateInput) birthdateInput.value = "";
+
+  requestAnimationFrame(() => {
+    sheet.classList.add("is-open");
+    backdrop.classList.add("is-open");
+    birthdateInput?.focus();
+  });
+
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+}
+
+function closeDailyEmailSetup() {
+  const sheet = document.getElementById("daily-email-setup-sheet");
+  const backdrop = document.getElementById("daily-email-setup-backdrop");
+  const toggle = document.getElementById("daily-email-optin");
+  const form = document.getElementById("daily-email-setup-form");
+  if (!sheet || !backdrop) return;
+
+  toggle?.setAttribute("aria-expanded", "false");
+  sheet.classList.remove("is-open");
+  backdrop.classList.remove("is-open");
+  form?.reset?.();
+  setDailyEmailStatus("");
+
+  setTimeout(() => {
+    sheet.hidden = true;
+    backdrop.hidden = true;
+    document.documentElement.style.overflow = "";
+    document.body.style.overflow = "";
+    toggle?.focus();
+  }, prefersReducedDashboardMotion() ? 0 : 220);
+}
+
+async function enableDailyEmail({ birthdate } = {}) {
+  if (!currentUser?.email) {
+    showError("Sign in to enable Daily Duck email.");
     renderDailyEmailBox();
-    return;
-  }
-
-  const timezone =
-    owner.timezone ||
-    Intl.DateTimeFormat?.().resolvedOptions?.().timeZone ||
-    'America/Chicago';
-
-  const originDay = getOriginTypeForDob(owner.birthdate, ORIGIN_ANCHOR_DATE);
-  const birthDayOfYear = calculateDayOfYear(owner.birthdate);
-
-  if (!originDay) {
-    showError('Could not determine Origin Day from owner profile.');
-    renderDailyEmailBox();
-    return;
+    return false;
   }
 
   dailyEmailState.loading = true;
@@ -449,41 +518,83 @@ async function enableDailyEmailFromOwnerProfile() {
 
   try {
     const accessToken = await getAccessToken();
-    const headers = { 'Content-Type': 'application/json' };
-    // Bearer: server uses JWT email so the row matches GET /api/email-status.
+    const headers = { "Content-Type": "application/json" };
     if (accessToken) {
       headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    const response = await fetch('/api/subscribe', {
-      method: 'POST',
+    const payload = {
+      email: currentUser.email.toLowerCase().trim(),
+      consent: true,
+      timezone: getClientTimezone(),
+      source: DAILY_EMAIL_SOURCE
+    };
+    if (birthdate) {
+      payload.birthdate = birthdate;
+    }
+
+    const response = await fetch("/api/subscribe", {
+      method: "POST",
       headers,
-      body: JSON.stringify({
-        email: currentUser.email.toLowerCase().trim(),
-        consent: true,
-        timezone,
-        birth_day_of_year: birthDayOfYear,
-        origin_day: originDay,
-        source: 'dashboard-owner'
-      })
+      body: JSON.stringify(payload)
     });
 
     const data = await response.json();
-
     if (!response.ok || !data.ok) {
-      throw new Error(data?.error || 'Failed to enable daily email');
+      throw new Error(data?.error || "Failed to enable daily email");
     }
 
     dailyEmailState.subscribed = true;
-    showSuccess(`Daily Duck email enabled for Origin Day ${originDay}.`);
+    applyDailyEmailResponse(data);
+    if (birthdate && dailyEmailState.originDay) {
+      showSuccess(`Daily Duck email enabled for Origin Day ${dailyEmailState.originDay}.`);
+    } else {
+      showSuccess("Daily Duck email enabled.");
+    }
+    return true;
   } catch (err) {
-    console.error('Enable daily email failed:', err);
-    dailyEmailState.subscribed = false;
-    showError(err.message || 'Failed to enable daily email.');
+    console.error("Enable daily email failed:", err);
+    showError(err.message || "Failed to enable daily email.");
+    return false;
   } finally {
     dailyEmailState.loading = false;
     renderDailyEmailBox();
   }
+}
+
+async function submitDailyEmailSetup(event) {
+  event?.preventDefault?.();
+  if (dailyEmailState.loading) return;
+
+  const birthdateInput = document.getElementById("daily-email-birthdate");
+  const submitBtn = document.getElementById("daily-email-setup-submit");
+  const birthdate = birthdateInput?.value || "";
+
+  if (!birthdate) {
+    setDailyEmailStatus("Enter the birthdate Daily Duck email should follow.", "error");
+    birthdateInput?.focus();
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Turning on…";
+  }
+  setDailyEmailStatus("Saving your Daily Duck email rhythm…");
+
+  const ok = await enableDailyEmail({ birthdate });
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Turn On Daily Duck";
+  }
+
+  if (!ok) {
+    setDailyEmailStatus("Could not enable Daily Duck email. Please try again.", "error");
+    return;
+  }
+
+  if (birthdateInput) birthdateInput.value = "";
+  closeDailyEmailSetup();
 }
 
 async function disableDailyEmail() {
@@ -494,37 +605,83 @@ async function disableDailyEmail() {
 
   try {
     const accessToken = await getAccessToken();
-    const response = await fetch('/api/email-status', {
-      method: 'PATCH',
+    const response = await fetch("/api/email-status", {
+      method: "PATCH",
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     const data = await response.json();
-    if (!response.ok || !data.ok) throw new Error(data.error || 'Failed to disable');
+    if (!response.ok || !data.ok) throw new Error(data.error || "Failed to disable");
 
     dailyEmailState.subscribed = false;
-    showSuccess('Daily Duck email disabled.');
+    showSuccess("Daily Duck email disabled.");
   } catch (err) {
-    console.error('Disable daily email failed:', err);
-    showError(err.message || 'Failed to disable daily email.');
+    console.error("Disable daily email failed:", err);
+    showError(err.message || "Failed to disable daily email.");
   } finally {
     dailyEmailState.loading = false;
     renderDailyEmailBox();
   }
 }
 
+function setupDailyEmailSetupSheet() {
+  const sheet = document.getElementById("daily-email-setup-sheet");
+  const backdrop = document.getElementById("daily-email-setup-backdrop");
+  const form = document.getElementById("daily-email-setup-form");
+  const cancel = document.getElementById("daily-email-setup-cancel");
+  const birthdateInput = document.getElementById("daily-email-birthdate");
+
+  if (!sheet || !backdrop) return;
+
+  backdrop.addEventListener("click", () => {
+    if (dailyEmailState.loading) return;
+    closeDailyEmailSetup();
+  });
+  cancel?.addEventListener("click", () => {
+    if (dailyEmailState.loading) return;
+    closeDailyEmailSetup();
+  });
+  form?.addEventListener("submit", submitDailyEmailSetup);
+
+  birthdateInput?.addEventListener("focus", () => {
+    requestAnimationFrame(() => {
+      birthdateInput.scrollIntoView({
+        block: "center",
+        behavior: prefersReducedDashboardMotion() ? "auto" : "smooth"
+      });
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (sheet.hidden) return;
+    if (event.key === "Escape") {
+      if (dailyEmailState.loading) return;
+      event.preventDefault();
+      closeDailyEmailSetup();
+      return;
+    }
+    trapFocusWithin(sheet, event);
+  });
+}
+
 function bindDailyEmailEvents() {
-  const toggle = document.getElementById('daily-email-optin');
+  const toggle = document.getElementById("daily-email-optin");
   if (!toggle) return;
 
-  toggle.addEventListener('click', async () => {
+  toggle.addEventListener("click", async () => {
     if (dailyEmailState.loading) return;
+    if (!currentUser?.email) return;
+
+    if (needsDailyEmailSetup()) {
+      openDailyEmailSetup();
+      return;
+    }
 
     if (dailyEmailState.subscribed) {
       await disableDailyEmail();
       return;
     }
 
-    await enableDailyEmailFromOwnerProfile();
+    await enableDailyEmail();
   });
 }
 
@@ -836,8 +993,8 @@ function bindDashboardPager() {
       document.body.classList.contains("modal-open") ||
       document.querySelector("#account-sheet:not([hidden])") ||
       document.querySelector("#affiliate-sheet:not([hidden])") ||
-      document.querySelector('.add-profile-sheet[aria-hidden="false"]') ||
-      document.querySelector('#owner-onboarding[aria-hidden="false"]');
+      document.querySelector("#daily-email-setup-sheet:not([hidden])") ||
+      document.querySelector('.add-profile-sheet[aria-hidden="false"]');
 
     if (modalOpen) return;
 
@@ -913,8 +1070,8 @@ function renderProfiles() {
   if (profiles.length === 0) {
     container.innerHTML = `
       <div class="feature-empty-state">
-        <p class="feature-empty-state__title">No saved people yet</p>
-        <p>Your owner profile will appear here after setup.</p>
+        <p class="feature-empty-state__title">Your Origin Circle is empty</p>
+        <p>Add your first profile to begin Today’s Wave.</p>
       </div>
     `;
   } else {
@@ -942,6 +1099,7 @@ function renderProfiles() {
             <span class="text-muted">${escapeHtml(originLabel)} · ${escapeHtml(timezone)}</span>
           </div>
           <div class="profile-actions origin-profile-row__actions">
+            <button class="origin-profile-row__edit edit-profile" type="button" data-id="${profile.id}" aria-label="Edit ${escapeHtml(profile.display_name)}">Edit</button>
             ${profile.is_owner
               ? `<span class="owner-badge">Owner</span>`
               : `<button class="origin-profile-row__delete delete-profile" type="button" data-id="${profile.id}" aria-label="Delete ${escapeHtml(profile.display_name)}">Delete</button>`
@@ -976,7 +1134,7 @@ function renderProfiles() {
   journalHistoryUI?.setOwnerProfile?.(getOwnerProfile());
   renderTodayWaveSection();
 
-  // Safety remount if journal surfaces were not mounted (e.g. owner created during onboarding)
+  // Safety remount if journal surfaces were not mounted (e.g. first owner profile created later)
   if (isPaid()) {
     if (!journalUI && getOwnerProfile()) {
       mountJournalSection().catch(err => {
@@ -1095,7 +1253,7 @@ function renderTodayWaveSection() {
     section.innerHTML = `
       <div class="feature-empty-state">
         <p class="feature-empty-state__title">Today’s Wave is waiting</p>
-        <p>Create your owner profile to begin.</p>
+        <p>Add your first profile to begin.</p>
       </div>
     `;
     clearTodayDayDetailsSection();
@@ -1199,6 +1357,19 @@ function renderTodayWaveSection() {
   });
 }
 
+function renderOwnerRequiredEmptyState(section, { title, body }) {
+  if (!section) return;
+  section.innerHTML = `
+    <div class="feature-empty-state">
+      <p class="feature-empty-state__title">${escapeHtml(title)}</p>
+      <p>${escapeHtml(body)}</p>
+      <button class="btn btn-primary" type="button" data-open-add-profile>
+        Add profile
+      </button>
+    </div>
+  `;
+}
+
 /**
  * Mount standalone Journal section (owner-profile anchored)
  */
@@ -1219,7 +1390,10 @@ async function mountJournalSection(expectedSubscriptionGen = null) {
 
   const ownerProfile = getOwnerProfile();
   if (!ownerProfile) {
-    section.innerHTML = "";
+    renderOwnerRequiredEmptyState(section, {
+      title: "Journal is waiting",
+      body: "Add your first profile to begin your SineDay journal."
+    });
     return;
   }
 
@@ -1288,7 +1462,10 @@ async function mountWaveCalendarSection(expectedSubscriptionGen = null) {
 
   const ownerProfile = getOwnerProfile();
   if (!ownerProfile) {
-    section.innerHTML = "";
+    renderOwnerRequiredEmptyState(section, {
+      title: "History is waiting",
+      body: "Add your first profile to begin your SineDay journal."
+    });
     return;
   }
 
@@ -1538,11 +1715,6 @@ function mountAffiliateUI() {
     onEntitlementChanged: async () => {
       await loadSubscription();
     },
-    onClose: () => {
-      if (!hasOwnerProfile()) {
-        showOwnerOnboarding().catch(() => {});
-      }
-    },
     showSuccess,
     showError,
   });
@@ -1693,6 +1865,34 @@ function setupLanguageRegionUI() {
   weekSel.addEventListener("change", applyAndSave);
 }
 
+function resetProfileFormCopy() {
+  const title = document.getElementById("add-profile-title");
+  const submit = document.getElementById("add-profile-btn");
+  if (title) title.textContent = "Add New Profile";
+  if (submit) submit.textContent = "Save Profile";
+}
+
+function ensureTimezoneOption(select, timezone) {
+  if (!select || !timezone) return;
+  const exists = Array.from(select.options).some((option) => option.value === timezone);
+  if (!exists) {
+    const option = document.createElement("option");
+    option.value = timezone;
+    option.textContent = timezone;
+    select.append(option);
+  }
+  select.value = timezone;
+}
+
+function fillProfileForm(profile) {
+  const nameInput = document.getElementById("profile-name");
+  const birthdateInput = document.getElementById("profile-birthdate");
+  const timezoneSelect = document.getElementById("profile-timezone");
+  if (nameInput) nameInput.value = profile?.display_name || "";
+  if (birthdateInput) birthdateInput.value = profile?.birthdate || "";
+  ensureTimezoneOption(timezoneSelect, profile?.timezone || getClientTimezone());
+}
+
 /**
  * Set up Add Profile bottom sheet (iOS-style)
  */
@@ -1705,8 +1905,27 @@ function setupAddProfileCollapse() {
 
   if (!toggle || !sheet || !panel) return null;
 
-  const open = () => {
-    toggle.setAttribute("aria-expanded", "true");
+  const open = (options = {}) => {
+    const profile = options.profile || null;
+    profileFormMode = profile ? "edit" : "add";
+    editingProfileId = profile?.id || null;
+
+    const title = document.getElementById("add-profile-title");
+    const submit = document.getElementById("add-profile-btn");
+    if (profile) {
+      if (title) title.textContent = "Edit profile";
+      if (submit) submit.textContent = "Save changes";
+      fillProfileForm(profile);
+    } else {
+      resetProfileFormCopy();
+      document.getElementById("add-profile-form")?.reset?.();
+      ensureTimezoneOption(
+        document.getElementById("profile-timezone"),
+        getClientTimezone()
+      );
+    }
+
+    toggle.setAttribute("aria-expanded", profile ? "false" : "true");
     sheet.setAttribute("aria-hidden", "false");
     requestAnimationFrame(() => sheet.classList.add("is-open"));
     document.body.classList.add("modal-open");
@@ -1724,10 +1943,14 @@ function setupAddProfileCollapse() {
     sheet.setAttribute("aria-hidden", "true");
     const form = document.getElementById("add-profile-form");
     form?.reset?.();
+    profileFormMode = "add";
+    editingProfileId = null;
+    resetProfileFormCopy();
     if (!document.querySelector(".add-profile-sheet.is-open")) {
       document.body.classList.remove("modal-open");
     }
-    toggle.focus();
+    const manageOpen = document.getElementById("manage-profiles-sheet")?.classList.contains("is-open");
+    (manageOpen ? document.getElementById("manage-profiles-toggle") : toggle)?.focus();
   };
 
   toggle.addEventListener("click", () => {
@@ -1829,8 +2052,22 @@ function setupEventListeners() {
     connectAppleBtn.addEventListener('click', handleConnectAppleIdentity);
   }
 
-  // Delete profile buttons (delegated)
+  // Profile row actions (delegated)
   document.addEventListener('click', (e) => {
+    const openAdd = e.target.closest?.("[data-open-add-profile]");
+    if (openAdd) {
+      addProfileUI?.open?.();
+      return;
+    }
+
+    const editBtn = e.target.closest?.(".edit-profile");
+    if (editBtn) {
+      const profileId = editBtn.dataset.id;
+      const profile = profiles.find((item) => item.id === profileId);
+      if (profile) addProfileUI?.open?.({ profile });
+      return;
+    }
+
     if (e.target.classList.contains('delete-profile')) {
       const profileId = e.target.dataset.id;
       handleDeleteProfile(profileId);
@@ -1853,17 +2090,12 @@ async function handleSignOut() {
 }
 
 /**
- * Handle add profile
+ * Handle add or edit profile
  */
 async function handleAddProfile(e) {
   e.preventDefault();
 
-  if (profiles.length >= 10) {
-    showError('Maximum 10 profiles reached');
-    return;
-  }
-
-  const name = document.getElementById('profile-name').value;
+  const name = document.getElementById('profile-name').value.trim();
   const birthdate = document.getElementById('profile-birthdate').value;
   const timezone = document.getElementById('profile-timezone').value;
 
@@ -1871,6 +2103,23 @@ async function handleAddProfile(e) {
     showError('Name and birthdate are required');
     return;
   }
+
+  if (profileFormMode === "edit" && editingProfileId) {
+    await handleUpdateProfile({
+      profileId: editingProfileId,
+      displayName: name,
+      birthdate,
+      timezone
+    });
+    return;
+  }
+
+  if (profiles.length >= 10) {
+    showError('Maximum 10 profiles reached');
+    return;
+  }
+
+  const shouldBecomeOwner = !hasOwnerProfile();
 
   try {
     const client = await getSupabaseClient();
@@ -1880,7 +2129,8 @@ async function handleAddProfile(e) {
         user_id: currentUser.id,
         display_name: name,
         birthdate: birthdate,
-        timezone: timezone || 'America/Chicago'
+        timezone: timezone || 'America/Chicago',
+        is_owner: shouldBecomeOwner
       })
       .select()
       .single();
@@ -1894,18 +2144,54 @@ async function handleAddProfile(e) {
       return;
     }
 
-    // Add to list
     profiles.unshift(data);
     renderProfiles();
 
-    // Clear form and close drawer
     const form = document.getElementById('add-profile-form');
     form?.reset?.();
     addProfileUI?.close?.();
-    showSuccess('Profile added successfully!');
+    showSuccess(shouldBecomeOwner
+      ? 'Owner profile added. Today’s Wave is ready.'
+      : 'Profile added successfully!');
   } catch (error) {
     console.error('Add profile error:', error);
     showError('Failed to add profile');
+  }
+}
+
+async function handleUpdateProfile({ profileId, displayName, birthdate, timezone }) {
+  try {
+    const client = await getSupabaseClient();
+    const { data, error } = await client
+      .from('profiles')
+      .update({
+        display_name: displayName,
+        birthdate,
+        timezone: timezone || 'America/Chicago'
+      })
+      .eq('id', profileId)
+      .eq('user_id', currentUser.id)
+      .select()
+      .single();
+
+    if (error) {
+      showError('Failed to update profile: ' + error.message);
+      return;
+    }
+
+    const index = profiles.findIndex((profile) => profile.id === profileId);
+    if (index >= 0) {
+      profiles[index] = { ...profiles[index], ...data };
+    } else {
+      profiles.unshift(data);
+    }
+
+    renderProfiles();
+    addProfileUI?.close?.();
+    showSuccess('Profile updated.');
+  } catch (error) {
+    console.error('Update profile error:', error);
+    showError('Failed to update profile');
   }
 }
 
@@ -2190,148 +2476,6 @@ function showAuthenticatedView() {
   renderInstallButton();
   renderIdentityLinkUI();
   consumeIdentityLinkNotice();
-}
-
-/**
- * Show owner onboarding modal and wait for completion
- */
-function showOwnerOnboarding() {
-  return new Promise((resolve) => {
-    const modal = document.getElementById('owner-onboarding');
-    const inputPhase = document.getElementById('onboarding-input');
-    const confirmPhase = document.getElementById('onboarding-confirm');
-
-    const nameInput = document.getElementById('owner-name');
-    const birthdateInput = document.getElementById('owner-birthdate');
-    const nextBtn = document.getElementById('onboarding-next-btn');
-    const backBtn = document.getElementById('onboarding-back-btn');
-    const acceptBtn = document.getElementById('onboarding-accept-btn');
-
-    const confirmName = document.getElementById('confirm-name');
-    const confirmBirthdate = document.getElementById('confirm-birthdate');
-
-    if (!modal || !inputPhase || !confirmPhase) {
-      resolve();
-      return;
-    }
-
-    // Already closed/resolved guard (safety for edge cases)
-    let resolved = false;
-    const finish = () => {
-      if (resolved) return;
-      resolved = true;
-      resolve();
-    };
-
-    // Show modal
-    modal.setAttribute('aria-hidden', 'false');
-    modal.classList.add('is-open');
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    nameInput?.focus();
-
-    // Enable/disable Continue based on input validity
-    const validateInputs = () => {
-      const valid = nameInput?.value?.trim().length > 0 && birthdateInput?.value?.length > 0;
-      if (nextBtn) nextBtn.disabled = !valid;
-    };
-
-    const onInput = () => validateInputs();
-    nameInput?.addEventListener('input', onInput);
-    birthdateInput?.addEventListener('input', onInput);
-    birthdateInput?.addEventListener('change', onInput);
-
-    // Phase 1 → Phase 2
-    nextBtn?.addEventListener('click', () => {
-      const name = nameInput?.value?.trim() ?? '';
-      const birthdate = birthdateInput?.value ?? '';
-      if (confirmName) confirmName.textContent = name;
-      if (confirmBirthdate) {
-        // Format birthdate for display (e.g. "1990-05-15" → "May 15, 1990")
-        try {
-          const d = new Date(birthdate + 'T12:00:00');
-          confirmBirthdate.textContent = Number.isNaN(d.getTime()) ? birthdate : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-        } catch {
-          confirmBirthdate.textContent = birthdate;
-        }
-      }
-      inputPhase.style.display = 'none';
-      confirmPhase.style.display = '';
-    });
-
-    // Phase 2 → back to Phase 1
-    backBtn?.addEventListener('click', () => {
-      confirmPhase.style.display = 'none';
-      inputPhase.style.display = '';
-      nameInput?.focus();
-    });
-
-    // Accept & create owner profile
-    acceptBtn?.addEventListener('click', async () => {
-      if (!currentUser) {
-        showError('Session expired. Please sign in again.');
-        finish();
-        return;
-      }
-
-      acceptBtn.disabled = true;
-      acceptBtn.textContent = 'Creating…';
-
-      try {
-        const client = await getSupabaseClient();
-        const displayName = nameInput?.value?.trim() ?? '';
-        const birthdate = birthdateInput?.value ?? '';
-
-        if (!displayName || !birthdate) {
-          showError('Name and birthdate are required.');
-          acceptBtn.disabled = false;
-          acceptBtn.textContent = 'Accept & Create Profile';
-          return;
-        }
-
-        const timezone = Intl.DateTimeFormat?.().resolvedOptions?.().timeZone || 'America/Chicago';
-
-        const { data, error } = await client
-          .from('profiles')
-          .insert({
-            user_id: currentUser.id,
-            display_name: displayName,
-            birthdate,
-            timezone,
-            is_owner: true
-          })
-          .select()
-          .single();
-
-        if (error) {
-          showError('Failed to create profile: ' + error.message);
-          acceptBtn.disabled = false;
-          acceptBtn.textContent = 'Accept & Create Profile';
-          return;
-        }
-
-        // Add owner to front of profiles array
-        profiles.unshift(data);
-        renderProfiles();
-        await loadDailyEmailState();
-        renderDailyEmailBox();
-
-        // Close modal
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = '';
-
-        showSuccess('Welcome to SineDay! Your Origin Duck is ready.');
-        finish();
-      } catch (err) {
-        console.error('[Onboarding] Error:', err);
-        showError('Something went wrong. Please try again.');
-        acceptBtn.disabled = false;
-        acceptBtn.textContent = 'Accept & Create Profile';
-      }
-    });
-  });
 }
 
 /**
