@@ -2210,7 +2210,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   body.print-calendar .notifications,
   body.print-calendar .skip-link,
   body.print-calendar #loading,
-  body.print-calendar #owner-onboarding {
+  body.print-calendar #daily-email-setup-sheet,
+  body.print-calendar #daily-email-setup-backdrop {
     display: none !important;
   }
 
@@ -2377,112 +2378,100 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 /* ─────────────────────────────
-   Owner Onboarding Modal
+   Daily Duck email setup sheet
    ───────────────────────────── */
 
-.onboarding {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
+.daily-email-setup-sheet.sheet {
+  background: #05060A;
+  color: #F5F7FF;
+  border-color: rgba(122, 167, 255, 0.18);
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
+}
+
+.daily-email-setup-sheet .sheet__handle {
+  background: rgba(122, 167, 255, 0.35);
+}
+
+.daily-email-setup-sheet .sheet__content {
   display: grid;
-  place-items: center;
-  padding: 20px;
-  pointer-events: none;
-  visibility: hidden;
-  transition: visibility 0.3s ease;
+  gap: 12px;
 }
 
-.onboarding.is-open {
-  pointer-events: auto;
-  visibility: visible;
+.daily-email-setup-sheet h2 {
+  margin: 0;
+  color: #F5F7FF;
+  font-size: 1.45rem;
+  line-height: 1.15;
 }
 
-.onboarding__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.onboarding.is-open .onboarding__backdrop {
-  opacity: 1;
-}
-
-.onboarding__card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  background: rgba(12, 14, 20, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-  transform: translateY(20px);
-  opacity: 0;
-  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
-              opacity 0.3s ease;
-}
-
-.onboarding.is-open .onboarding__card {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.onboarding__title {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  margin-bottom: 10px;
-  letter-spacing: -0.01em;
-}
-
-.onboarding__desc {
-  font-size: 14px;
+.daily-email-setup-sheet__body,
+.daily-email-setup-sheet__helper,
+.daily-email-setup-sheet__privacy {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.72);
+  font-size: 0.95rem;
   line-height: 1.55;
-  color: var(--color-text-secondary);
-  margin-bottom: 24px;
 }
 
-.onboarding__summary {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.03);
+.daily-email-setup-sheet__privacy {
+  color: rgba(245, 247, 255, 0.58);
+  font-size: 0.86rem;
 }
 
-.onboarding__summary-row {
+.daily-email-setup-sheet .form-group {
+  margin: 8px 0 0;
+}
+
+.daily-email-setup-sheet label {
+  color: #F5F7FF;
+}
+
+.daily-email-setup-sheet input[type="date"],
+.daily-email-setup-sheet .btn {
+  min-height: 44px;
+}
+
+.daily-email-setup-sheet__status {
+  min-height: 1.2em;
+  margin: 0;
+  color: rgba(245, 247, 255, 0.7);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.daily-email-setup-sheet__status[data-tone="error"] {
+  color: #FFB4B4;
+}
+
+.daily-email-setup-sheet__actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-}
-
-.onboarding__summary-row + .onboarding__summary-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.onboarding__summary-label {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
-.onboarding__summary-value {
-  font-size: 15px;
-  color: var(--color-text-primary);
-  font-weight: 700;
-}
-
-.onboarding__actions {
-  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.daily-email-setup-sheet__actions .btn {
+  flex: 1 1 140px;
+}
+
+.daily-email-icon-btn--needs-setup {
+  color: #7AA7FF;
+  border-color: rgba(122, 167, 255, 0.42);
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(122, 167, 255, 0.2),
+      rgba(255, 255, 255, 0.04) 68%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-email-setup-sheet.sheet,
+  .daily-email-setup-sheet.sheet.is-open,
+  #daily-email-setup-backdrop {
+    transition: none;
+  }
 }
 
 /* Owner badge in profiles list (replaces delete button) */
@@ -5248,6 +5237,11 @@ textarea.journal-entry-field-light:focus {
   text-align: center;
 }
 
+.feature-empty-state .btn {
+  margin-top: var(--feature-space-3);
+  min-height: 44px;
+}
+
 .feature-empty-state__title {
   color: #F5F7FF;
   font-weight: 800;
@@ -5622,6 +5616,8 @@ textarea.journal-entry-field-light:focus {
 .origin-profile-row__actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--feature-space-2);
   margin: 0;
 }
@@ -5641,6 +5637,21 @@ textarea.journal-entry-field-light:focus {
   touch-action: manipulation;
 }
 
+.origin-profile-row__edit {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(122, 167, 255, 0.28);
+  border-radius: 14px;
+  background: rgba(122, 167, 255, 0.08);
+  color: #F5F7FF;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 780;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .origin-profile-row:hover {
     background: transparent;
@@ -5650,6 +5661,11 @@ textarea.journal-entry-field-light:focus {
 
   .origin-profile-row__delete:hover {
     background: rgba(255, 128, 128, 0.16);
+  }
+
+  .origin-profile-row__edit:hover {
+    background: rgba(122, 167, 255, 0.16);
+    border-color: rgba(122, 167, 255, 0.44);
   }
 }
 
@@ -5728,7 +5744,9 @@ textarea.journal-entry-field-light:focus {
   .feature-screen *::before,
   .feature-screen *::after,
   .add-profile-sheet,
-  .add-profile-sheet * {
+  .add-profile-sheet *,
+  .daily-email-setup-sheet,
+  .daily-email-setup-sheet * {
     scroll-behavior: auto !important;
   }
 

@@ -76,15 +76,17 @@ export class JournalHistoryUI {
 
   setOwnerProfile(profile) {
     const previousId = this.ownerProfile?.id || null;
+    const nextId = profile?.id || null;
     this.ownerProfile = profile || null;
-    if ((this.ownerProfile?.id || null) === previousId) return;
-    this.entriesCache.clear();
-    const anchor = profile
-      ? monthAnchorFromYmd(todayYmdForTimeZone(profile.timezone))
-      : null;
-    if (anchor) {
-      this.year = anchor.year;
-      this.month = anchor.month;
+    if (nextId !== previousId) {
+      this.entriesCache.clear();
+      const anchor = profile
+        ? monthAnchorFromYmd(todayYmdForTimeZone(profile.timezone))
+        : null;
+      if (anchor) {
+        this.year = anchor.year;
+        this.month = anchor.month;
+      }
     }
     this.render();
   }
