@@ -1803,15 +1803,15 @@ body.loading {
 }
 
 .affiliate-public__hero,
-.affiliate-public__card,
-.affiliate-public__benefits {
+.affiliate-public__story,
+.affiliate-public__card {
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .affiliate-public__hero {
-  padding: 12px 0 22px;
+  padding: 18px 0 36px;
 }
 
 .affiliate-public__eyebrow {
@@ -1824,36 +1824,87 @@ body.loading {
 }
 
 .affiliate-public__hero h2 {
-  margin: 0 0 12px;
+  margin: 0 0 18px;
+  max-width: 14em;
   color: #F5F7FF;
   font-size: clamp(1.8rem, 6vw, 2.7rem);
   line-height: 1.08;
   letter-spacing: -0.035em;
 }
 
-.affiliate-public__hero p {
-  margin: 0;
+.affiliate-public__hero p:not(.affiliate-public__eyebrow) {
+  margin: 0 0 16px;
+  max-width: 38em;
+  color: rgba(245, 247, 255, 0.72);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.affiliate-public__hero p:not(.affiliate-public__eyebrow):last-child {
+  margin-bottom: 0;
+}
+
+.affiliate-public__story {
+  margin-bottom: 36px;
+  padding: clamp(24px, 5vw, 40px) clamp(20px, 4vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.affiliate-public__story-block {
+  padding: 4px 0 32px;
+  border-bottom: 1px solid rgba(245, 247, 255, 0.08);
+}
+
+.affiliate-public__story-block:last-child {
+  padding-bottom: 4px;
+  border-bottom: none;
+}
+
+.affiliate-public__story-block + .affiliate-public__story-block {
+  padding-top: 32px;
+}
+
+.affiliate-public__story-block h2 {
+  margin: 0 0 16px;
+  max-width: 16em;
+  color: #F5F7FF;
+  font-size: clamp(1.35rem, 3.6vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.affiliate-public__story-block p:not(.affiliate-public__eyebrow) {
+  margin: 0 0 14px;
+  max-width: 38em;
   color: rgba(245, 247, 255, 0.72);
   font-size: 1.02rem;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
-.affiliate-public__benefits {
-  display: grid;
-  gap: 10px;
-  margin: 0 auto 22px;
-  padding: 0;
-  list-style: none;
+.affiliate-public__story-block p:not(.affiliate-public__eyebrow):last-child {
+  margin-bottom: 0;
 }
 
-.affiliate-public__benefits li {
-  min-height: 44px;
-  padding: 14px 16px;
-  border: 1px solid rgba(122, 167, 255, 0.18);
-  border-radius: 16px;
-  background: rgba(13, 17, 27, 0.88);
-  color: rgba(245, 247, 255, 0.82);
-  line-height: 1.5;
+.affiliate-public__story-block .affiliate-public__disclosure {
+  margin-top: 4px;
+  color: rgba(245, 247, 255, 0.5);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.affiliate-public__disclosure a {
+  color: rgba(245, 247, 255, 0.62);
+  text-underline-offset: 2px;
+}
+
+.affiliate-public__disclosure a:hover,
+.affiliate-public__disclosure a:focus-visible {
+  color: #7AA7FF;
 }
 
 .affiliate-public__card {
@@ -1880,7 +1931,16 @@ body.loading {
 }
 
 .affiliate-public__form-copy {
+  margin: 0 0 10px;
+  max-width: 38em;
+}
+
+.affiliate-public__form-note {
   margin: 0 0 22px;
+  max-width: 38em;
+  color: rgba(245, 247, 255, 0.5);
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
 .affiliate-public__form {
@@ -1978,6 +2038,22 @@ body.loading {
 }
 
 @media (min-width: 720px) {
+  .affiliate-public__hero {
+    padding: 28px 0 48px;
+  }
+
+  .affiliate-public__story {
+    margin-bottom: 48px;
+  }
+
+  .affiliate-public__story-block {
+    padding-bottom: 40px;
+  }
+
+  .affiliate-public__story-block + .affiliate-public__story-block {
+    padding-top: 40px;
+  }
+
   .affiliate-public__social-grid {
     grid-template-columns: 1fr 1fr;
   }
