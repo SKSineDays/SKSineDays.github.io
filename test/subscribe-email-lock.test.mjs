@@ -9,7 +9,8 @@ const store = {
   subscribers: new Map(),
   profiles: new Map(),
   preferences: new Map(),
-  authEmail: "member@sineday.app"
+  authEmail: "member@sineday.app",
+  failProfileLookup: false
 };
 
 function clone(value) {
@@ -69,6 +70,12 @@ function makeTable(tableName) {
       }
 
       if (tableName === "subscriber_profile") {
+        if (action === "select" && store.failProfileLookup) {
+          return {
+            data: null,
+            error: new Error("simulated subscriber_profile lookup failure")
+          };
+        }
         if (action === "upsert") {
           const existing = store.profiles.get(payload.subscriber_id) || {};
           const row = { ...existing, ...payload };
@@ -163,6 +170,7 @@ test("authenticated Daily Duck setup stores derived values and not the raw birth
   store.profiles.clear();
   store.preferences.clear();
   store.authEmail = "member@sineday.app";
+  store.failProfileLookup = false;
 
   const res = await postSubscribe({
     consent: true,
@@ -190,6 +198,7 @@ test("locked Daily Duck identity is not overwritten by a later birthdate or stal
   store.profiles.clear();
   store.preferences.clear();
   store.authEmail = "member@sineday.app";
+  store.failProfileLookup = false;
 
   await postSubscribe({
     consent: true,
@@ -223,6 +232,7 @@ test("re-subscribe without a birthdate reuses the locked email rhythm", async ()
   store.profiles.clear();
   store.preferences.clear();
   store.authEmail = "member@sineday.app";
+  store.failProfileLookup = false;
 
   await postSubscribe({
     consent: true,
@@ -243,4 +253,40 @@ test("re-subscribe without a birthdate reuses the locked email rhythm", async ()
   assert.equal(res.body.originDay, 1);
   assert.equal(store.profiles.get(subscriber.id).origin_day, 1);
   assert.equal(store.subscribers.get(subscriber.id).status, "active");
+});
+
+test("fails closed when existing Daily Duck email rhythm cannot be verified", async () => {
+  store.subscribers.clear();
+  store.profiles.clear();
+  store.preferences.clear();
+  store.authEmail = "member@sineday.app";
+  store.failProfileLookup = false;
+
+  const initial = await postSubscribe({
+    consent: true,
+    timezone: "America/Chicago",
+    birthdate: "1985-04-20",
+    source: "dashboard-daily-duck"
+  });
+  assert.equal(initial.statusCode, 200);
+
+  const subscriber = [...store.subscribers.values()][0];
+  const before = clone(store.profiles.get(subscriber.id));
+
+  store.failProfileLookup = true;
+  try {
+    const res = await postSubscribe({
+      consent: true,
+      timezone: "America/Chicago",
+      birthdate: "2000-01-01",
+      source: "dashboard-daily-duck"
+    });
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.body.ok, false);
+    const after = store.profiles.get(subscriber.id);
+    assert.deepEqual(after, before);
+  } finally {
+    store.failProfileLookup = false;
+  }
 });

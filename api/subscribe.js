@@ -229,6 +229,10 @@ export default async function handler(req, res) {
 
     if (existingProfileError) {
       console.error('Profile lookup error:', existingProfileError);
+      return res.status(500).json({
+        ok: false,
+        error: 'Could not verify Daily Duck email profile'
+      });
     }
 
     const rhythmLocked = isEmailRhythmLocked(existingProfile);
