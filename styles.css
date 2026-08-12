@@ -1794,6 +1794,205 @@ body.loading {
 }
 
 /* ================================
+   Public Affiliate application
+   ================================ */
+
+.affiliate-public {
+  background: #05060A;
+  color: #F5F7FF;
+}
+
+.affiliate-public__hero,
+.affiliate-public__card,
+.affiliate-public__benefits {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.affiliate-public__hero {
+  padding: 12px 0 22px;
+}
+
+.affiliate-public__eyebrow {
+  margin-bottom: 10px;
+  color: #7AA7FF;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.affiliate-public__hero h2 {
+  margin: 0 0 12px;
+  color: #F5F7FF;
+  font-size: clamp(1.8rem, 6vw, 2.7rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.affiliate-public__hero p {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.72);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.affiliate-public__benefits {
+  display: grid;
+  gap: 10px;
+  margin: 0 auto 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.affiliate-public__benefits li {
+  min-height: 44px;
+  padding: 14px 16px;
+  border: 1px solid rgba(122, 167, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(13, 17, 27, 0.88);
+  color: rgba(245, 247, 255, 0.82);
+  line-height: 1.5;
+}
+
+.affiliate-public__card {
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.affiliate-public__form-title {
+  margin: 0 0 8px;
+  color: #F5F7FF;
+  font-size: 1.35rem;
+}
+
+.affiliate-public__form-copy,
+.affiliate-public__hint,
+.affiliate-public__dashboard-note {
+  color: rgba(245, 247, 255, 0.68);
+  line-height: 1.55;
+}
+
+.affiliate-public__form-copy {
+  margin: 0 0 22px;
+}
+
+.affiliate-public__form {
+  display: grid;
+  gap: 14px;
+}
+
+.affiliate-public__field {
+  display: grid;
+  gap: 7px;
+}
+
+.affiliate-public__field label {
+  color: rgba(245, 247, 255, 0.78);
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.affiliate-public__field input,
+.affiliate-public__field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #090C14;
+  color: #F5F7FF;
+  font: inherit;
+}
+
+.affiliate-public__field textarea {
+  min-height: 148px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.affiliate-public__field input:focus,
+.affiliate-public__field textarea:focus {
+  border-color: #7AA7FF;
+  outline: 3px solid rgba(122, 167, 255, 0.24);
+  outline-offset: 1px;
+}
+
+.affiliate-public__social-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.affiliate-public__hint {
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.affiliate-public__form .hero-btn {
+  width: 100%;
+}
+
+.affiliate-public__error {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 140, 140, 0.28);
+  border-radius: 12px;
+  background: rgba(120, 24, 36, 0.28);
+  color: #FFD7D7;
+}
+
+.affiliate-public__success {
+  display: grid;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.affiliate-public__success h3 {
+  margin: 0;
+  color: #F5F7FF;
+  font-size: 1.45rem;
+}
+
+.affiliate-public__success p {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.74);
+  line-height: 1.55;
+}
+
+.affiliate-public__success .hero-btn {
+  justify-self: start;
+}
+
+.affiliate-public__honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (min-width: 720px) {
+  .affiliate-public__social-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .affiliate-public__field--full {
+    grid-column: 1 / -1;
+  }
+
+  .affiliate-public__form .hero-btn {
+    width: auto;
+    justify-self: start;
+  }
+}
+
+/* ================================
    Prevent Background Scroll When Modal Open
    ================================ */
 

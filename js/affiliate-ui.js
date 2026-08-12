@@ -43,7 +43,20 @@ function clearPendingAffiliateCode() {
   }
 }
 
-function payoutCountrySelect(id) {
+function formatSubmittedDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function hasSocialProfile(form) {
+  return ["instagram", "tiktok", "youtube", "website", "otherSocial"]
+    .some((name) => String(form.get(name) || "").trim());
+}
   return `
     <label for="${id}">Payout country</label>
     <select id="${id}" name="country" required>
@@ -359,7 +372,21 @@ export class AffiliateUI {
       this.renderUnavailable(affiliate);
       return;
     }
-    this.renderProspective();
+
+    const reviewStatus = this.status?.application?.reviewStatus;
+    if (reviewStatus === "approved") {
+      this.renderApprovedApplicant();
+      return;
+    }
+    if (reviewStatus === "pending") {
+      this.renderPendingApplication();
+      return;
+    }
+    if (reviewStatus === "declined") {
+      this.renderDeclinedApplication();
+      return;
+    }
+    this.renderAffiliateApplication();
   }
 
   supportCard() {
@@ -408,22 +435,12 @@ export class AffiliateUI {
     `;
   }
 
-  prospectiveIntro() {
+  affiliateSetupForm() {
+    const displayName = this.status?.application?.displayName || "";
     return `
-      <section class="affiliate-sheet__hero">
-        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
-        <h2>Help more people write with their own wave.</h2>
-        <p>Share SineDay with your community. When a Premium member chooses your code, you earn $1 from each successful monthly renewal while that membership remains connected to you.</p>
-      </section>
-      <div class="affiliate-benefit-grid">
-        <div><strong>$1 recurring</strong><span>per paid renewal</span></div>
-        <div><strong>Premium gifted</strong><span>while active</span></div>
-        <div><strong>Your sharing kit</strong><span>code, link, and assets</span></div>
-        <div><strong>Stripe-hosted</strong><span>payout and tax setup</span></div>
-      </div>
       <form class="affiliate-apply-form" data-affiliate-form="apply">
         <label for="affiliate-display-name">Public display name</label>
-        <input id="affiliate-display-name" name="displayName" type="text" minlength="2" maxlength="80" required>
+        <input id="affiliate-display-name" name="displayName" type="text" minlength="2" maxlength="80" value="${escapeHtml(displayName)}" required>
         <label for="affiliate-requested-code">Requested Affiliate Code</label>
         <input id="affiliate-requested-code" name="requestedCode" type="text" minlength="4" maxlength="20" pattern="[A-Za-z0-9-]{4,20}" autocapitalize="characters" required>
         ${payoutCountrySelect("affiliate-payout-country-apply")}
@@ -437,8 +454,101 @@ export class AffiliateUI {
     `;
   }
 
-  renderProspective() {
-    this.mount.innerHTML = `${this.supportCard()}${this.prospectiveIntro()}`;
+  renderAffiliateApplication() {
+    const application = this.status?.application;
+    const viewerEmail = this.status?.viewerEmail || "";
+    this.mount.innerHTML = `
+      ${this.supportCard()}
+      <section class="affiliate-sheet__hero">
+        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
+        <h2>Help more people write with their own wave.</h2>
+        <p>Share SineDay with your community and help more people notice the wave inside their days. Tell us a little about yourself and where you share your work. Affiliate applications are reviewed before payout setup begins.</p>
+      </section>
+      <form class="affiliate-application-form" data-affiliate-form="application">
+        <label for="affiliate-applicant-name">Name / creator name</label>
+        <input id="affiliate-applicant-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" value="${escapeHtml(application?.displayName || "")}" required>
+        <label for="affiliate-applicant-email">Email</label>
+        <input id="affiliate-applicant-email" name="email" type="email" value="${escapeHtml(viewerEmail)}" maxlength="254" autocomplete="email" readonly>
+        <div class="affiliate-application-form__social">
+          <div>
+            <label for="affiliate-applicant-instagram">Instagram</label>
+            <input id="affiliate-applicant-instagram" name="instagram" type="text" maxlength="300" autocomplete="off" value="${escapeHtml(application?.instagram || "")}">
+          </div>
+          <div>
+            <label for="affiliate-applicant-tiktok">TikTok</label>
+            <input id="affiliate-applicant-tiktok" name="tiktok" type="text" maxlength="300" autocomplete="off" value="${escapeHtml(application?.tiktok || "")}">
+          </div>
+          <div>
+            <label for="affiliate-applicant-youtube">YouTube</label>
+            <input id="affiliate-applicant-youtube" name="youtube" type="text" maxlength="300" autocomplete="off" value="${escapeHtml(application?.youtube || "")}">
+          </div>
+          <div>
+            <label for="affiliate-applicant-website">Website</label>
+            <input id="affiliate-applicant-website" name="website" type="text" maxlength="300" autocomplete="url" value="${escapeHtml(application?.website || "")}">
+          </div>
+        </div>
+        <label for="affiliate-applicant-other">Other social / profile</label>
+        <input id="affiliate-applicant-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" value="${escapeHtml(application?.otherSocial || "")}">
+        <label for="affiliate-applicant-intro">Tell us about yourself</label>
+        <textarea id="affiliate-applicant-intro" name="introduction" minlength="20" maxlength="1000" rows="5" required>${escapeHtml(application?.introduction || "")}</textarea>
+        <button class="btn btn-primary" type="submit">Submit Affiliate Application</button>
+        <p class="affiliate-disclosure">Applications are reviewed before Affiliate Code and payout setup are unlocked.</p>
+      </form>
+    `;
+  }
+
+  renderPendingApplication() {
+    const application = this.status?.application;
+    const submitted = formatSubmittedDate(application?.createdAt);
+    this.mount.innerHTML = `
+      ${this.supportCard()}
+      <section class="affiliate-sheet__hero">
+        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
+        <h2>Application received</h2>
+        <p>Thanks for your interest in sharing SineDay.</p>
+        <p>Your Affiliate application is being reviewed. If approved, this page will unlock your Affiliate Code and secure payout setup.</p>
+      </section>
+      <dl class="affiliate-application-summary">
+        <div>
+          <dt>Name</dt>
+          <dd>${escapeHtml(application?.displayName || "")}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>${escapeHtml(application?.email || this.status?.viewerEmail || "")}</dd>
+        </div>
+        ${submitted ? `
+          <div>
+            <dt>Submitted</dt>
+            <dd>${escapeHtml(submitted)}</dd>
+          </div>
+        ` : ""}
+      </dl>
+    `;
+  }
+
+  renderApprovedApplicant() {
+    this.mount.innerHTML = `
+      ${this.supportCard()}
+      <section class="affiliate-sheet__hero">
+        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
+        <h2>You're approved to continue</h2>
+        <p>Your SineDay Affiliate application has been approved. You can now create your Affiliate Code and complete secure payout setup.</p>
+      </section>
+      ${this.affiliateSetupForm()}
+    `;
+  }
+
+  renderDeclinedApplication() {
+    this.mount.innerHTML = `
+      ${this.supportCard()}
+      <section class="affiliate-sheet__hero">
+        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
+        <h2>Thanks for your interest in SineDay Affiliate.</h2>
+        <p>We aren't opening Affiliate setup for this application right now.</p>
+        <p>For questions: <a href="mailto:support@sineday.app">support@sineday.app</a></p>
+      </section>
+    `;
   }
 
   renderOnboarding(affiliate) {
@@ -732,7 +842,26 @@ export class AffiliateUI {
     const submit = event.target.querySelector('[type="submit"]');
     submit.disabled = true;
     try {
-      if (formType === "apply") {
+      if (formType === "application") {
+        const form = new FormData(event.target);
+        if (!hasSocialProfile(form)) {
+          throw new Error("Please share at least one social profile or website.");
+        }
+        await this.request("/api/affiliate/application", {
+          method: "POST",
+          body: JSON.stringify({
+            displayName: form.get("displayName"),
+            instagram: form.get("instagram"),
+            tiktok: form.get("tiktok"),
+            youtube: form.get("youtube"),
+            website: form.get("website"),
+            otherSocial: form.get("otherSocial"),
+            introduction: form.get("introduction"),
+          }),
+        });
+        this.showSuccess?.("Thanks — your Affiliate application has been received.");
+        await this.refresh();
+      } else if (formType === "apply") {
         const form = new FormData(event.target);
         const data = await this.request("/api/affiliate/apply", {
           method: "POST",

@@ -1,10 +1,12 @@
 import {
   affiliateApiError,
+  getAffiliateApplicationForUser,
   handleOptions,
   requireAffiliateContext,
   setPrivateApiHeaders,
   shouldRefreshAffiliateFromStripe,
   syncAffiliateAccountState,
+  toPublicAffiliateApplication,
 } from "../_lib/affiliate-server.js";
 
 function toSafeAffiliate(affiliate) {
@@ -96,9 +98,16 @@ export default async function handler(req, res) {
       }
     }
 
+    const application = await getAffiliateApplicationForUser({
+      supabaseAdmin,
+      user,
+    });
+
     return res.status(200).json({
       ok: true,
       affiliate: toSafeAffiliate(affiliate),
+      application: toPublicAffiliateApplication(application),
+      viewerEmail: user.email || null,
       support,
     });
   } catch (error) {

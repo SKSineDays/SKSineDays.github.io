@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v12';
+const CACHE_NAME = 'sineday-v13';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -50,6 +50,8 @@ const ASSETS_TO_CACHE = [
 
 const OPTIONAL_ASSETS_TO_CACHE = [
   '/js/affiliate-ui.js',
+  '/js/affiliate-application.js',
+  '/affiliate.html',
   '/affiliate-terms.html',
   '/assets/affiliate/assets.json',
   '/assets/affiliate/sineday-affiliate-wordmark.svg',
