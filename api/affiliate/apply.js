@@ -7,9 +7,11 @@ import {
 import {
   affiliateApiError,
   ensureAffiliateRecipientAccount,
+  getAffiliateApplicationForUser,
   getAffiliateForUser,
   getAffiliateReturnUrls,
   handleOptions,
+  markAffiliateApplicationConverted,
   requireAffiliateContext,
   setPrivateApiHeaders,
 } from "../_lib/affiliate-server.js";
@@ -29,6 +31,22 @@ export default async function handler(req, res) {
   try {
     const { user, supabaseAdmin } = await requireAffiliateContext(req);
     const body = req.body || {};
+    let affiliate = await getAffiliateForUser(supabaseAdmin, user.id);
+    let approvedApplication = null;
+
+    if (!affiliate) {
+      approvedApplication = await getAffiliateApplicationForUser({
+        supabaseAdmin,
+        user,
+      });
+      if (approvedApplication?.review_status !== "approved") {
+        return res.status(403).json({
+          ok: false,
+          error: "Your Affiliate application must be approved before setup can continue.",
+        });
+      }
+    }
+
     const displayNameResult = validateAffiliateDisplayName(body.displayName);
     const codeResult = validateAffiliateCode(body.requestedCode);
     const termsVersion = getAffiliateTermsVersion();
@@ -43,7 +61,6 @@ export default async function handler(req, res) {
       return validationError(res, "Please review and accept the current Affiliate Terms.");
     }
 
-    let affiliate = await getAffiliateForUser(supabaseAdmin, user.id);
     const needsCountry = !affiliate?.stripe_connect_account_id;
     const countryResult = needsCountry
       ? validateAffiliateCountry(body.country)
@@ -89,6 +106,11 @@ export default async function handler(req, res) {
         throw new Error("Failed to create affiliate application");
       }
       affiliate = data;
+      await markAffiliateApplicationConverted({
+        supabaseAdmin,
+        applicationId: approvedApplication?.id,
+        affiliateId: affiliate.id,
+      });
     }
 
     const accountId = await ensureAffiliateRecipientAccount({

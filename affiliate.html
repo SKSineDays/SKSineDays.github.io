@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Apply to share SineDay with your community. Affiliate applications are reviewed before payout setup begins.">
+  <link rel="canonical" href="https://sineday.app/affiliate.html">
+  <title>SineDay Affiliate</title>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+  <link rel="icon" href="/favicon.ico?v=2">
+  <link rel="icon" type="image/svg+xml" href="/breathingicon.svg?v=2">
+  <link rel="manifest" href="/site.webmanifest?v=2">
+  <meta name="theme-color" content="#05060A">
+  <meta property="og:site_name" content="SineDay">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SineDay Affiliate">
+  <meta property="og:description" content="Share SineDay with your community. If the program feels aligned with what you already share, tell us a little about yourself.">
+  <meta property="og:url" content="https://sineday.app/affiliate.html">
+  <meta property="og:image" content="https://sineday.app/assets/og-hero.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="legal-page affiliate-public">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="top-bar">
+    <div class="top-bar-content">
+      <h1 class="top-bar-brand-heading">
+        <a class="top-bar-brand" href="/" aria-label="SineDay home">
+          <img class="top-bar-wordmark" src="/assets/brand/sineday-wordmark.svg" alt="SineDay" width="700" height="190">
+        </a>
+      </h1>
+      <div class="top-bar-actions">
+        <a class="icon-btn" href="/" aria-label="Back to Home" title="Back to Home" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+          <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="main-content legal-main">
+    <section class="affiliate-public__hero">
+      <p class="affiliate-public__eyebrow">SineDay Affiliate</p>
+      <h2>Help more people write with their own wave.</h2>
+      <p>Share SineDay with your community. If the program feels aligned with what you already share, tell us a little about yourself.</p>
+    </section>
+
+    <ul class="affiliate-public__benefits">
+      <li>$1 from qualifying Premium renewals connected to your Affiliate Code</li>
+      <li>SineDay Premium gifted while your Affiliate account remains active</li>
+      <li>Your own Affiliate Code and sharing link</li>
+      <li>Stripe-hosted payout setup after approval</li>
+    </ul>
+
+    <section class="affiliate-public__card" aria-labelledby="affiliate-public-form-title">
+      <h2 id="affiliate-public-form-title" class="affiliate-public__form-title">Apply to share SineDay</h2>
+      <p class="affiliate-public__form-copy">Applications are reviewed before Affiliate Code and payout setup are unlocked. You do not need a SineDay account to apply.</p>
+
+      <div id="affiliate-public-success" class="affiliate-public__success" hidden>
+        <h3 tabindex="-1">Application received</h3>
+        <p>Thanks for your interest in sharing SineDay. We have your application.</p>
+        <p class="affiliate-public__dashboard-note">Already have a SineDay account?</p>
+        <a class="hero-btn hero-btn--secondary" href="/dashboard.html">Open Dashboard</a>
+      </div>
+
+      <form id="affiliate-public-form" class="affiliate-public__form" novalidate>
+        <p id="affiliate-public-error" class="affiliate-public__error" role="alert" hidden></p>
+
+        <div class="affiliate-public__honeypot" aria-hidden="true">
+          <label for="affiliate-public-company">Company</label>
+          <input id="affiliate-public-company" name="company" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="affiliate-public__field">
+          <label for="affiliate-public-name">Name / creator name *</label>
+          <input id="affiliate-public-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" required>
+        </div>
+
+        <div class="affiliate-public__field">
+          <label for="affiliate-public-email">Email *</label>
+          <input id="affiliate-public-email" name="email" type="email" maxlength="254" autocomplete="email" required>
+        </div>
+
+        <div class="affiliate-public__social-grid">
+          <div class="affiliate-public__field">
+            <label for="affiliate-public-instagram">Instagram</label>
+            <input id="affiliate-public-instagram" name="instagram" type="text" maxlength="300" autocomplete="off">
+          </div>
+          <div class="affiliate-public__field">
+            <label for="affiliate-public-tiktok">TikTok</label>
+            <input id="affiliate-public-tiktok" name="tiktok" type="text" maxlength="300" autocomplete="off">
+          </div>
+          <div class="affiliate-public__field">
+            <label for="affiliate-public-youtube">YouTube</label>
+            <input id="affiliate-public-youtube" name="youtube" type="text" maxlength="300" autocomplete="off">
+          </div>
+          <div class="affiliate-public__field">
+            <label for="affiliate-public-website">Website</label>
+            <input id="affiliate-public-website" name="website" type="text" maxlength="300" autocomplete="url">
+          </div>
+        </div>
+
+        <div class="affiliate-public__field">
+          <label for="affiliate-public-other">Other social / profile</label>
+          <input id="affiliate-public-other" name="otherSocial" type="text" maxlength="300" autocomplete="off">
+        </div>
+
+        <div class="affiliate-public__field affiliate-public__field--full">
+          <label for="affiliate-public-intro">Tell us a little about yourself and how you'd like to share SineDay *</label>
+          <textarea id="affiliate-public-intro" name="introduction" minlength="20" maxlength="1000" rows="6" required></textarea>
+        </div>
+
+        <p class="affiliate-public__hint">At least one social, profile, or website field is required.</p>
+        <button class="hero-btn hero-btn--primary" type="submit">Apply to SineDay Affiliate</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer site-footer--legal">
+    <div class="site-footer__inner">
+      <div class="site-footer__brand">
+        <div class="site-footer__name">SineDay</div>
+        <p class="site-footer__meta">Operated by RaLux LLC DBA SineDay</p>
+      </div>
+      <nav class="site-footer__nav" aria-label="Footer navigation">
+        <a href="/accessibility.html">Accessibility</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/affiliate.html" aria-current="page">Affiliate</a>
+        <a href="/affiliate-terms.html">Affiliate Terms</a>
+        <a href="/refunds.html">Refunds &amp; Disputes</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+      <div class="site-footer__contact">
+        <a href="mailto:support@sineday.app">support@sineday.app</a>
+        <span aria-hidden="true">•</span>
+        <a href="mailto:legal@sineday.app">legal@sineday.app</a>
+      </div>
+      <div class="site-footer__note">© SineDay™ 2026</div>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/affiliate-application.js"></script>
+</body>
+</html>

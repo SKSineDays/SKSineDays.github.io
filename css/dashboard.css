@@ -6317,7 +6317,8 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-support-card form,
-.affiliate-apply-form {
+.affiliate-apply-form,
+.affiliate-application-form {
   display: grid;
   gap: 10px;
   margin-top: 18px;
@@ -6325,6 +6326,7 @@ textarea.journal-entry-field-light:focus {
 
 .affiliate-support-card label,
 .affiliate-apply-form label,
+.affiliate-application-form label,
 .affiliate-share-card label {
   color: rgba(245, 247, 255, 0.75);
   font-size: 0.82rem;
@@ -6344,8 +6346,62 @@ textarea.journal-entry-field-light:focus {
   text-transform: uppercase;
 }
 
+.affiliate-application-form input,
+.affiliate-application-form textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #090C14;
+  color: #F5F7FF;
+  font: inherit;
+  text-transform: none;
+}
+
+.affiliate-application-form textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.affiliate-application-form input[readonly] {
+  color: rgba(245, 247, 255, 0.78);
+  background: #070910;
+}
+
+.affiliate-application-form__social {
+  display: grid;
+  gap: 10px;
+}
+
+.affiliate-application-summary {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 8px;
+}
+
+.affiliate-application-summary div {
+  display: grid;
+  gap: 4px;
+}
+
+.affiliate-application-summary dt {
+  color: rgba(245, 247, 255, 0.58);
+  font-size: 0.78rem;
+  font-weight: 720;
+}
+
+.affiliate-application-summary dd {
+  margin: 0;
+  color: #F5F7FF;
+  font-size: 1rem;
+}
+
 .affiliate-support-card input:focus,
-.affiliate-apply-form input:focus {
+.affiliate-apply-form input:focus,
+.affiliate-application-form input:focus,
+.affiliate-application-form textarea:focus {
   border-color: #7AA7FF;
   outline: 3px solid rgba(122, 167, 255, 0.24);
   outline-offset: 1px;
@@ -6656,6 +6712,12 @@ textarea.journal-entry-field-light:focus {
 
   .dash-head__actions {
     width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  .affiliate-application-form__social {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
