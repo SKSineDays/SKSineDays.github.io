@@ -1802,6 +1802,10 @@ body.loading {
   color: #F5F7FF;
 }
 
+.affiliate-public [hidden] {
+  display: none !important;
+}
+
 .affiliate-public__hero,
 .affiliate-public__story,
 .affiliate-public__card {
