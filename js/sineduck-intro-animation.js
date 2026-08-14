@@ -1,17 +1,21 @@
 const TIMINGS = Object.freeze({
   WAVE_DRAW_START: 0,
-  WAVE_DRAW_END: 1100,
-  DUCK_REVEAL_START: 500,
-  DUCK_REVEAL_END: 1350,
-  HELLO_START: 1200,
-  WAVE_COPY_START: 2200,
-  HIGH_START: 3000,
-  LOW_START: 3950,
-  ALWAYS_START: 4750,
-  PERSPECTIVE_START: 5300,
-  RIDE_START: 2200,
-  RIDE_END: 5200,
-  COMPLETE_AT: 6300
+  WAVE_DRAW_END: 1600,
+  DUCK_REVEAL_START: 600,
+  DUCK_REVEAL_END: 1900,
+  HELLO_START: 1600,
+  WAVE_COPY_START: 3200,
+  RHYTHM_START: 4700,
+  ALIGNMENT_START: 6200,
+  NOT_TOP_START: 7600,
+  WITHIN_START: 9200,
+  YOURS_START: 10800,
+  EXPERIENCE_START: 12600,
+  LIFT_START: 14600,
+  PERSPECTIVE_START: 16000,
+  RIDE_START: 2800,
+  RIDE_END: 14800,
+  COMPLETE_AT: 18400
 });
 
 const PLAY_THRESHOLD = 0.72;
@@ -22,6 +26,7 @@ const WAVE_CENTER_Y = 114;
 const WAVE_AMPLITUDE = 40;
 const WAVE_SAMPLES = 64;
 const TWO_PI = Math.PI * 2;
+const RIDE_PHASE_SPAN = Math.PI * 3;
 
 function clamp01(value) {
   return Math.max(0, Math.min(1, value));
@@ -221,7 +226,7 @@ export class SineDuckIntroAnimation {
       const rideProgress = clamp01(
         (elapsed - TIMINGS.RIDE_START) / (TIMINGS.RIDE_END - TIMINGS.RIDE_START)
       );
-      const wavePhase = rideProgress * TWO_PI;
+      const wavePhase = rideProgress * RIDE_PHASE_SPAN;
       const duckOffset = -this.waveCssAmplitude * Math.sin(wavePhase);
 
       this.renderWave(wavePhase);
@@ -242,9 +247,13 @@ export class SineDuckIntroAnimation {
 
   getPhaseForElapsed(elapsed) {
     if (elapsed >= TIMINGS.PERSPECTIVE_START) return 'perspective';
-    if (elapsed >= TIMINGS.ALWAYS_START) return 'always';
-    if (elapsed >= TIMINGS.LOW_START) return 'low';
-    if (elapsed >= TIMINGS.HIGH_START) return 'high';
+    if (elapsed >= TIMINGS.LIFT_START) return 'lift';
+    if (elapsed >= TIMINGS.EXPERIENCE_START) return 'experience';
+    if (elapsed >= TIMINGS.YOURS_START) return 'yours';
+    if (elapsed >= TIMINGS.WITHIN_START) return 'within';
+    if (elapsed >= TIMINGS.NOT_TOP_START) return 'not-top';
+    if (elapsed >= TIMINGS.ALIGNMENT_START) return 'alignment';
+    if (elapsed >= TIMINGS.RHYTHM_START) return 'rhythm';
     if (elapsed >= TIMINGS.WAVE_COPY_START) return 'wave';
     if (elapsed >= TIMINGS.HELLO_START) return 'hello';
     return 'arrival';

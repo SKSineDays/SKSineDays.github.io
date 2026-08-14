@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v14';
+const CACHE_NAME = 'sineday-v15';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -15,7 +15,7 @@ const ASSETS_TO_CACHE = [
   '/js/wave-canvas.js',
   '/js/ui.js',
   '/js/sineduck-intro-animation.js',
-  '/assets/sineducks/SineDuck14@3x.png',
+  '/assets/sineducks/SineDuck15@3x.png',
   '/site.webmanifest?v=2',
   '/apple-touch-icon.png?v=2',
   '/assets/app-icon/apple-touch-icon-180.png?v=2',
