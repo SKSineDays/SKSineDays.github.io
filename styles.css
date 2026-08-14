@@ -709,17 +709,75 @@ body {
 
 .discover-sineduck__stage {
   position: relative;
+  isolation: isolate;
   width: 100%;
   height: clamp(204px, 58vw, 224px);
   margin: 0 auto;
 }
 
+.discover-sineduck__stars {
+  position: absolute;
+  inset: 4px 0 8px;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 7% 24%, rgba(245, 247, 255, 0.3) 0 0.55px, transparent 0.95px),
+    radial-gradient(circle at 13% 73%, rgba(245, 247, 255, 0.24) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 21% 42%, rgba(245, 247, 255, 0.28) 0 0.55px, transparent 0.95px),
+    radial-gradient(circle at 29% 16%, rgba(122, 167, 255, 0.24) 0 0.65px, transparent 1.05px),
+    radial-gradient(circle at 37% 67%, rgba(245, 247, 255, 0.22) 0 0.55px, transparent 0.95px),
+    radial-gradient(circle at 45% 31%, rgba(245, 247, 255, 0.26) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 54% 78%, rgba(245, 247, 255, 0.24) 0 0.55px, transparent 0.95px),
+    radial-gradient(circle at 62% 19%, rgba(245, 247, 255, 0.28) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 71% 58%, rgba(122, 167, 255, 0.22) 0 0.65px, transparent 1.05px),
+    radial-gradient(circle at 79% 34%, rgba(245, 247, 255, 0.25) 0 0.55px, transparent 0.95px),
+    radial-gradient(circle at 88% 71%, rgba(245, 247, 255, 0.28) 0 0.6px, transparent 1px),
+    radial-gradient(circle at 94% 22%, rgba(245, 247, 255, 0.22) 0 0.55px, transparent 0.95px),
+    radial-gradient(ellipse at 50% 52%, rgba(5, 6, 10, 0.7) 0%, rgba(5, 6, 10, 0.38) 58%, rgba(5, 6, 10, 0.08) 86%);
+}
+
+.discover-sineduck__stars::before,
+.discover-sineduck__stars::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.discover-sineduck__stars::before {
+  background-image:
+    radial-gradient(circle at 9% 49%, rgba(245, 247, 255, 0.58) 0 0.8px, transparent 1.25px),
+    radial-gradient(circle at 18% 19%, rgba(245, 247, 255, 0.48) 0 0.75px, transparent 1.2px),
+    radial-gradient(circle at 31% 82%, rgba(122, 167, 255, 0.5) 0 0.85px, transparent 1.3px),
+    radial-gradient(circle at 42% 52%, rgba(245, 247, 255, 0.52) 0 0.8px, transparent 1.25px),
+    radial-gradient(circle at 57% 13%, rgba(245, 247, 255, 0.5) 0 0.75px, transparent 1.2px),
+    radial-gradient(circle at 68% 72%, rgba(245, 247, 255, 0.54) 0 0.8px, transparent 1.25px),
+    radial-gradient(circle at 76% 25%, rgba(122, 167, 255, 0.48) 0 0.85px, transparent 1.3px),
+    radial-gradient(circle at 86% 50%, rgba(245, 247, 255, 0.52) 0 0.8px, transparent 1.25px),
+    radial-gradient(circle at 96% 84%, rgba(245, 247, 255, 0.46) 0 0.75px, transparent 1.2px);
+  animation: discoverSineDuckStarsMid 7.2s ease-in-out infinite;
+}
+
+.discover-sineduck__stars::after {
+  background-image:
+    radial-gradient(circle at 16% 61%, rgba(122, 167, 255, 0.7) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 34% 28%, rgba(245, 247, 255, 0.72) 0 1.05px, transparent 1.55px),
+    radial-gradient(circle at 52% 64%, rgba(122, 167, 255, 0.65) 0 0.95px, transparent 1.45px),
+    radial-gradient(circle at 73% 43%, rgba(245, 247, 255, 0.68) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 91% 16%, rgba(122, 167, 255, 0.68) 0 1.05px, transparent 1.55px);
+  animation: discoverSineDuckStarsAccent 9s ease-in-out -2.4s infinite;
+}
+
 .discover-sineduck__wave {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   overflow: visible;
+  pointer-events: none;
 }
 
 .discover-sineduck__wave-glow,
@@ -747,6 +805,7 @@ body {
   position: absolute;
   top: 63.333%;
   left: 50%;
+  z-index: 2;
   width: max-content;
   transform: translate(-50%, calc(-100% + var(--sineduck-ride-y, 0px)));
 }
@@ -764,9 +823,12 @@ body {
     0 0 7px rgba(122, 167, 255, 0.9),
     0 0 15px rgba(122, 167, 255, 0.48);
   transform: translateX(-50%);
+  z-index: 0;
 }
 
 .discover-sineduck__duck-shell {
+  position: relative;
+  z-index: 1;
   width: clamp(106px, 31vw, 116px);
   padding: 9px 8px;
   border: 1px solid rgba(255, 255, 255, 0.82);
@@ -790,7 +852,7 @@ body {
 
 .discover-sineduck__message {
   position: relative;
-  min-height: 108px;
+  min-height: 226px;
   display: grid;
   place-items: center;
   padding: 14px 16px;
@@ -821,14 +883,18 @@ body {
   position: absolute;
   inset-inline: 16px;
   opacity: 0;
-  transform: translateY(7px);
+  transform: translateY(5px);
   transition:
-    opacity 380ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 380ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity 650ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .discover-sineduck__final-copy {
   max-width: 480px;
+  display: grid;
+  gap: 7px;
+  font-size: 12.25px;
+  line-height: 1.45;
   transition:
     opacity 520ms cubic-bezier(0.22, 0.61, 0.36, 1),
     transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -847,26 +913,47 @@ body {
   .discover-sineduck__phrase[data-sineduck-phrase="hello"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="wave"]
   .discover-sineduck__phrase[data-sineduck-phrase="wave"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="high"]
-  .discover-sineduck__phrase[data-sineduck-phrase="high"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="low"]
-  .discover-sineduck__phrase[data-sineduck-phrase="low"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="always"]
-  .discover-sineduck__phrase[data-sineduck-phrase="always"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="rhythm"]
+  .discover-sineduck__phrase[data-sineduck-phrase="rhythm"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="alignment"]
+  .discover-sineduck__phrase[data-sineduck-phrase="alignment"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="not-top"]
+  .discover-sineduck__phrase[data-sineduck-phrase="not-top"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="within"]
+  .discover-sineduck__phrase[data-sineduck-phrase="within"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="yours"]
+  .discover-sineduck__phrase[data-sineduck-phrase="yours"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="experience"]
+  .discover-sineduck__phrase[data-sineduck-phrase="experience"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
+  .discover-sineduck__phrase[data-sineduck-phrase="lift"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="perspective"]
   .discover-sineduck__phrase[data-sineduck-phrase="perspective"] {
   opacity: 1;
   transform: translateY(0);
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="high"]
-  .discover-sineduck__wave-glow {
-  opacity: 0.6;
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="alignment"]
+  .discover-sineduck__phrase[data-sineduck-phrase="alignment"] {
+  color: #f5f7ff;
+  font-weight: 650;
+  letter-spacing: 0.025em;
+  text-shadow: 0 0 16px rgba(122, 167, 255, 0.34);
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="low"]
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
+  .discover-sineduck__phrase[data-sineduck-phrase="lift"] {
+  color: rgba(245, 247, 255, 0.96);
+  font-weight: 600;
+  letter-spacing: 0.012em;
+  text-shadow: 0 0 13px rgba(122, 167, 255, 0.26);
+}
+
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="alignment"]
+  .discover-sineduck__wave-glow,
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
   .discover-sineduck__wave-glow {
-  opacity: 0.38;
+  opacity: 0.5;
 }
 
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="complete"]
@@ -916,6 +1003,26 @@ body {
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@keyframes discoverSineDuckStarsMid {
+  0%,
+  100% {
+    opacity: 0.66;
+  }
+  50% {
+    opacity: 0.88;
+  }
+}
+
+@keyframes discoverSineDuckStarsAccent {
+  0%,
+  100% {
+    opacity: 0.58;
+  }
+  50% {
+    opacity: 0.78;
   }
 }
 
@@ -1048,13 +1155,23 @@ body {
   }
 
   .discover-sineduck__message {
-    min-height: 104px;
+    min-height: 198px;
     padding-inline: 24px;
   }
 
-  .discover-sineduck__phrase,
-  .discover-sineduck__final-copy {
+  .discover-sineduck__phrase {
     font-size: 16px;
+  }
+
+  .discover-sineduck__final-copy {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 340px) {
+  .discover-sineduck__message {
+    min-height: 258px;
   }
 }
 
@@ -1078,7 +1195,7 @@ body {
   }
 
   .discover-sineduck__message {
-    min-height: 86px;
+    min-height: 190px;
     padding-block: 10px;
   }
 
@@ -1106,7 +1223,9 @@ body {
   }
 
   .discover-slide--sineduck .discover-sineduck__duck-shell,
-  .discover-slide--sineduck .discover-sineduck__wave-glow {
+  .discover-slide--sineduck .discover-sineduck__wave-glow,
+  .discover-slide--sineduck .discover-sineduck__stars::before,
+  .discover-slide--sineduck .discover-sineduck__stars::after {
     animation: none !important;
   }
 
