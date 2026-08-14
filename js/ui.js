@@ -12,6 +12,7 @@
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
 import { duckUrlFromSinedayNumber } from './sineducks.js';
+import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
   try {
@@ -67,6 +68,7 @@ export class SineDayUI {
       discoverStoryBackdrop: document.querySelector('#discover-story .discover-story__backdrop'),
       discoverScroller: document.getElementById('discover-story-scroller'),
       discoverMySinedayBtn: document.getElementById('discover-my-sineday-btn'),
+      discoverSineDuckSlide: document.querySelector('[data-discover-sineduck-slide]'),
       infoModal: document.getElementById('info-modal'),
       infoModalClose: document.getElementById('info-modal-close'),
       infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop'),
@@ -77,6 +79,7 @@ export class SineDayUI {
     // State
     this.currentDay = null;
     this.waveRenderer = null;
+    this.sineDuckIntroAnimation = null;
     this.isCardVisible = false;
 
     // Touch gesture state
@@ -111,6 +114,12 @@ export class SineDayUI {
       this.waveRenderer = new WaveCanvas(this.elements.waveCanvas, {
         accentColor: '#7AA7FF'
       });
+    }
+
+    if (this.elements.discoverSineDuckSlide) {
+      this.sineDuckIntroAnimation = new SineDuckIntroAnimation(
+        this.elements.discoverSineDuckSlide
+      );
     }
 
     // Bind event listeners
@@ -866,24 +875,26 @@ export class SineDayUI {
     const story = this.elements.discoverStory;
     if (!root || !story || !story.classList.contains('is-open')) return;
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const slides = root.querySelectorAll('.discover-slide');
-    if (reduceMotion) {
-      slides.forEach((slide) => slide.style.setProperty('--scroll-progress', '1'));
-      return;
-    }
-
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const r = root.getBoundingClientRect();
     const focalY = r.top + r.height * 0.42;
     const span = Math.max(r.height * 0.52, 240);
+    let sineDuckProgress = 0;
 
     slides.forEach((slide) => {
       const sr = slide.getBoundingClientRect();
       const center = sr.top + sr.height * 0.5;
       const dist = Math.abs(center - focalY);
       const p = Math.max(0, Math.min(1, 1 - dist / span));
-      slide.style.setProperty('--scroll-progress', String(p));
+      slide.style.setProperty('--scroll-progress', String(reduceMotion ? 1 : p));
+      if (slide === this.elements.discoverSineDuckSlide) {
+        sineDuckProgress = p;
+      }
     });
+
+    this.sineDuckIntroAnimation?.setFocusProgress(sineDuckProgress);
+    story.classList.toggle('discover-story--final-slide', sineDuckProgress >= 0.55);
   }
 
   bindDiscoverScrollListeners() {
@@ -952,6 +963,7 @@ export class SineDayUI {
 
     document.body.classList.add('discover-story-open');
     story.classList.remove('discover-story--scrolled');
+    story.classList.remove('discover-story--final-slide');
     story.classList.add('is-open');
     story.setAttribute('aria-hidden', 'false');
 
@@ -985,9 +997,11 @@ export class SineDayUI {
     document.body.classList.remove('discover-story-open');
     story.classList.remove('is-open');
     story.classList.remove('discover-story--scrolled');
+    story.classList.remove('discover-story--final-slide');
     story.setAttribute('aria-hidden', 'true');
 
     this.unbindDiscoverScrollListeners();
+    this.sineDuckIntroAnimation?.reset();
 
     if (this._boundDiscoverKeydown) {
       document.removeEventListener('keydown', this._boundDiscoverKeydown);
@@ -1018,6 +1032,10 @@ export class SineDayUI {
   destroy() {
     if (this.waveRenderer) {
       this.waveRenderer.destroy();
+    }
+    if (this.sineDuckIntroAnimation) {
+      this.sineDuckIntroAnimation.destroy();
+      this.sineDuckIntroAnimation = null;
     }
     if (this._onScroll) {
       window.removeEventListener('scroll', this._onScroll);
