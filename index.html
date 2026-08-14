@@ -235,11 +235,48 @@
               <p class="discover-slide__body">SineDay turns daily reflection into a ritual. Today's Wave, Today's Duck, and Today's Thoughts help you write from the energy of the day — so you can remember what happened, what moved you, and what mattered.</p>
             </div>
           </article>
-          <article class="discover-slide discover-slide--bg-5">
+          <article class="discover-slide discover-slide--bg-5 discover-slide--sineduck" data-discover-sineduck-slide>
             <div class="discover-slide__visual" aria-hidden="true"></div>
             <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">Meet today's SineDuck.</h2>
-              <p class="discover-slide__body">Each SineDay has a duck that gives the moment a face. Enter your birthdate to discover today's wave, meet today's SineDuck, and begin remembering your days differently.</p>
+              <h2 class="discover-slide__heading">Meet SineDuck.</h2>
+              <div class="discover-sineduck">
+                <div class="discover-sineduck__stage" data-sineduck-stage aria-hidden="true">
+                  <svg class="discover-sineduck__wave" viewBox="0 0 600 180" preserveAspectRatio="none" focusable="false">
+                    <path
+                      class="discover-sineduck__wave-glow"
+                      data-sineduck-wave-glow
+                      d="M0 114 C100 60 200 60 300 114 C400 168 500 168 600 114"
+                    />
+                    <path
+                      class="discover-sineduck__wave-line"
+                      data-sineduck-wave-main
+                      d="M0 114 C100 60 200 60 300 114 C400 168 500 168 600 114"
+                    />
+                  </svg>
+                  <div class="discover-sineduck__duck-ride">
+                    <div class="discover-sineduck__duck-shell">
+                      <img
+                        class="discover-sineduck__duck"
+                        src="/assets/sineducks/SineDuck14@3x.png"
+                        width="174"
+                        height="88"
+                        alt=""
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="discover-sineduck__message">
+                  <div class="discover-sineduck__phrases" aria-hidden="true">
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="hello">Hello, I’m SineDuck.</p>
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="wave">I’m here to show you the wave.</p>
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="high">Highs…</p>
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="low">…or lows…</p>
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="always">I’m always here.</p>
+                    <p class="discover-sineduck__phrase" data-sineduck-phrase="perspective">Offering a perspective free of judgment.</p>
+                  </div>
+                  <p class="discover-sineduck__final-copy">Hello, I’m SineDuck. I’m here to show you the wave. Highs or lows, I’m always here — offering a perspective free of judgment.</p>
+                </div>
+              </div>
               <div class="discover-slide__actions">
                 <button type="button" id="discover-my-sineday-btn" class="hero-btn hero-btn--primary">Discover My SineDay</button>
               </div>
