@@ -127,7 +127,7 @@ export class SineDuckIntroAnimation {
     this.isArmed = false;
     this.isComplete = false;
     this.isStatic = false;
-    this.root.classList.remove('is-sineduck-static');
+    this.root.classList.remove('is-sineduck-complete', 'is-sineduck-static');
     this.setInitialVisualState();
     this.setPhase('arrival');
     this.measureStage();
@@ -145,7 +145,7 @@ export class SineDuckIntroAnimation {
     this.isArmed = true;
     this.isComplete = false;
     this.isStatic = false;
-    this.root.classList.remove('is-sineduck-static');
+    this.root.classList.remove('is-sineduck-complete', 'is-sineduck-static');
     this.setInitialVisualState();
     this.setPhase('idle');
   }
@@ -157,11 +157,11 @@ export class SineDuckIntroAnimation {
     this.isArmed = false;
     this.isComplete = true;
     this.isStatic = true;
-    this.root.classList.add('is-sineduck-static');
+    this.root.classList.add('is-sineduck-complete', 'is-sineduck-static');
     this.renderWave(0);
     this.setWaveDrawProgress(1);
     this.setDuckVisuals(1, 1, 0, 0);
-    this.setPhase('complete');
+    this.setPhase('companion');
   }
 
   destroy() {
@@ -184,7 +184,11 @@ export class SineDuckIntroAnimation {
     this.root?.style.removeProperty('--sineduck-duck-scale');
     this.root?.style.removeProperty('--sineduck-duck-arrive-y');
     this.root?.style.removeProperty('--sineduck-ride-y');
-    this.root?.classList.remove('is-sineduck-enhanced', 'is-sineduck-static');
+    this.root?.classList.remove(
+      'is-sineduck-complete',
+      'is-sineduck-enhanced',
+      'is-sineduck-static'
+    );
     if (this.root?.dataset.sineduckPhase) {
       delete this.root.dataset.sineduckPhase;
     }
@@ -318,10 +322,11 @@ export class SineDuckIntroAnimation {
   complete() {
     this.cancelFrame();
     this.isComplete = true;
+    this.root.classList.add('is-sineduck-complete');
     this.renderWave(0);
     this.setWaveDrawProgress(1);
     this.setDuckVisuals(1, 1, 0, 0);
-    this.setPhase('complete');
+    this.setPhase('companion');
   }
 
   cancelFrame() {

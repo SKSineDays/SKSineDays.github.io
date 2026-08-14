@@ -852,7 +852,7 @@ body {
 
 .discover-sineduck__message {
   position: relative;
-  min-height: 226px;
+  min-height: 156px;
   display: grid;
   place-items: center;
   padding: 14px 16px;
@@ -872,7 +872,7 @@ body {
 }
 
 .discover-sineduck__phrase,
-.discover-sineduck__final-copy {
+.discover-sineduck__fallback {
   margin: 0;
   color: rgba(245, 247, 255, 0.9);
   font-size: 14.5px;
@@ -889,24 +889,16 @@ body {
     transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.discover-sineduck__final-copy {
+.discover-sineduck__fallback {
   max-width: 480px;
-  display: grid;
-  gap: 7px;
-  font-size: 12.25px;
-  line-height: 1.45;
-  transition:
-    opacity 520ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .discover-slide--sineduck.is-sineduck-enhanced .discover-sineduck__phrases {
   display: grid;
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced .discover-sineduck__final-copy {
-  opacity: 0;
-  transform: translateY(6px);
+.discover-slide--sineduck.is-sineduck-enhanced .discover-sineduck__fallback {
+  display: none;
 }
 
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="hello"]
@@ -956,18 +948,7 @@ body {
   opacity: 0.5;
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="complete"]
-  .discover-sineduck__phrases {
-  opacity: 0;
-}
-
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="complete"]
-  .discover-sineduck__final-copy {
-  opacity: 1;
-  transform: none;
-}
-
-.discover-slide--sineduck.is-sineduck-enhanced:not([data-sineduck-phase="complete"])
+.discover-slide--sineduck.is-sineduck-enhanced:not(.is-sineduck-complete)
   #discover-my-sineday-btn {
   opacity: 0.58;
   transform: translateY(6px);
@@ -1026,12 +1007,12 @@ body {
   }
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced:not(.is-sineduck-static)[data-sineduck-phase="complete"]
+.discover-slide--sineduck.is-sineduck-enhanced.is-sineduck-complete:not(.is-sineduck-static)
   .discover-sineduck__duck-shell {
   animation: discoverSineDuckIdle 4.4s ease-in-out infinite;
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced:not(.is-sineduck-static)[data-sineduck-phase="complete"]
+.discover-slide--sineduck.is-sineduck-enhanced.is-sineduck-complete:not(.is-sineduck-static)
   .discover-sineduck__wave-glow {
   animation: discoverSineDuckWaveBreathe 4.8s ease-in-out infinite;
 }
@@ -1155,23 +1136,18 @@ body {
   }
 
   .discover-sineduck__message {
-    min-height: 198px;
+    min-height: 132px;
     padding-inline: 24px;
   }
 
   .discover-sineduck__phrase {
     font-size: 16px;
   }
-
-  .discover-sineduck__final-copy {
-    font-size: 14px;
-    line-height: 1.5;
-  }
 }
 
 @media (max-width: 340px) {
   .discover-sineduck__message {
-    min-height: 258px;
+    min-height: 172px;
   }
 }
 
@@ -1195,7 +1171,7 @@ body {
   }
 
   .discover-sineduck__message {
-    min-height: 190px;
+    min-height: 132px;
     padding-block: 10px;
   }
 
@@ -1230,7 +1206,6 @@ body {
   }
 
   .discover-slide--sineduck .discover-sineduck__phrase,
-  .discover-slide--sineduck .discover-sineduck__final-copy,
   .discover-slide--sineduck #discover-my-sineday-btn {
     transition: none;
   }
