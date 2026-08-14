@@ -19,7 +19,7 @@ const completedCopy = html
   .replace(/\s+/g, " ")
   .trim();
 
-test("SineDuck Discover refinement keeps its copy, timeline, stars, and PWA contract", () => {
+test("SineDuck Discover speech stays connected while the wave keeps its current speed", () => {
   assert.match(
     html,
     /src="\/assets\/sineducks\/SineDuck15@3x\.png"\s+width="174"\s+height="88"/,
@@ -28,22 +28,37 @@ test("SineDuck Discover refinement keeps its copy, timeline, stars, and PWA cont
 
   for (const [phase, phrase] of [
     ["hello", "Hello, I’m SineDuck."],
-    ["wave", "I’m here to show you the wave."],
-    ["rhythm", "Some moments rise. Some moments soften."],
-    ["alignment", "Alignment Creates Lift."],
-    ["not-top", "Lift doesn’t mean staying at the top of the wave."],
-    ["within", "It means seeing the natural flow already moving within you."],
     [
-      "yours",
-      "SineDay doesn’t create that flow. If it’s there, it’s yours to notice.",
+      "wave",
+      "I’m here to help you notice the wave already moving through your days.",
     ],
     [
-      "experience",
-      "When you can experience the movement as it is, you can meet the moment instead of fighting it.",
+      "movement",
+      "Some moments rise, while others soften and carry you inward.",
     ],
-    ["lift", "That awareness is lift."],
+    [
+      "alignment",
+      "That movement is why SineDay says: Alignment Creates Lift.",
+    ],
+    ["not-top", "But lift doesn’t mean staying at the top of the wave."],
+    [
+      "within",
+      "It begins with seeing the natural flow already moving within you.",
+    ],
     [
       "perspective",
+      "SineDay doesn’t create that flow — it gives you a perspective for noticing what is already yours.",
+    ],
+    [
+      "meeting",
+      "When you can meet the movement as it is, you don’t have to fight every high or low.",
+    ],
+    [
+      "awareness",
+      "You can experience the moment with more awareness — and that awareness is lift.",
+    ],
+    [
+      "companion",
       "Highs or lows, I’m always here — offering a perspective free of judgment.",
     ],
   ]) {
@@ -54,16 +69,25 @@ test("SineDuck Discover refinement keeps its copy, timeline, stars, and PWA cont
 
   assert.equal(
     completedCopy,
-    "Hello, I’m SineDuck. I’m here to show you the wave. Some moments rise and some moments soften. Alignment Creates Lift — but lift doesn’t mean staying at the top of the wave. It means seeing the natural flow already moving within you. SineDay doesn’t create that flow. If it’s there, it’s yours to notice. When you can experience the movement as it is, you can meet the moment instead of fighting it. That awareness is lift. Highs or lows, I’m always here — offering a perspective free of judgment.",
+    "Hello, I’m SineDuck. I’m here to help you notice the wave already moving through your days. Some moments rise, while others soften and carry you inward. That movement is why SineDay says: Alignment Creates Lift. But lift doesn’t mean staying at the top of the wave. It begins with seeing the natural flow already moving within you. SineDay doesn’t create that flow — it gives you a perspective for noticing what is already yours. When you can meet the movement as it is, you don’t have to fight every high or low. You can experience the moment with more awareness — and that awareness is lift. Highs or lows, I’m always here — offering a perspective free of judgment.",
   );
 
   assert.match(html, /class="discover-sineduck__stars" aria-hidden="true"/);
   assert.match(css, /@keyframes discoverSineDuckStarsMid/);
   assert.match(css, /@keyframes discoverSineDuckStarsAccent/);
+  assert.match(css, /opacity 900ms cubic-bezier\(0\.22, 0\.61, 0\.36, 1\)/);
+  assert.match(css, /transform: translateY\(2px\)/);
+  assert.match(animationJs, /HELLO_START: 1600/);
+  assert.match(animationJs, /WAVE_COPY_START: 4100/);
+  assert.match(animationJs, /MOVEMENT_START: 6800/);
+  assert.match(animationJs, /COMPANION_START: 26300/);
   assert.match(animationJs, /RIDE_START: 2800/);
-  assert.match(animationJs, /RIDE_END: 14800/);
-  assert.match(animationJs, /COMPLETE_AT: 18400/);
-  assert.match(animationJs, /RIDE_PHASE_SPAN = Math\.PI \* 3/);
+  assert.match(animationJs, /RIDE_END: 27600/);
+  assert.match(animationJs, /COMPLETE_AT: 29400/);
+  assert.match(animationJs, /WAVE_PHASE_SPEED = \(Math\.PI \* 3\) \/ 12000/);
+  assert.match(animationJs, /rideElapsed \* WAVE_PHASE_SPEED/);
+  assert.doesNotMatch(animationJs, /RIDE_PHASE_SPAN/);
+  assert.doesNotMatch(animationJs, /rideProgress \* /);
 
   assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v15'/);
   assert.match(serviceWorkerJs, /\/assets\/sineducks\/SineDuck15@3x\.png/);
