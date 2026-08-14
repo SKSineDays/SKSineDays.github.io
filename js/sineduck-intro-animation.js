@@ -4,18 +4,18 @@ const TIMINGS = Object.freeze({
   DUCK_REVEAL_START: 600,
   DUCK_REVEAL_END: 1900,
   HELLO_START: 1600,
-  WAVE_COPY_START: 3200,
-  RHYTHM_START: 4700,
-  ALIGNMENT_START: 6200,
-  NOT_TOP_START: 7600,
-  WITHIN_START: 9200,
-  YOURS_START: 10800,
-  EXPERIENCE_START: 12600,
-  LIFT_START: 14600,
-  PERSPECTIVE_START: 16000,
+  WAVE_COPY_START: 4100,
+  MOVEMENT_START: 6800,
+  ALIGNMENT_START: 9500,
+  NOT_TOP_START: 12100,
+  WITHIN_START: 14800,
+  PERSPECTIVE_START: 17600,
+  MEETING_START: 20500,
+  AWARENESS_START: 23400,
+  COMPANION_START: 26300,
   RIDE_START: 2800,
-  RIDE_END: 14800,
-  COMPLETE_AT: 18400
+  RIDE_END: 27600,
+  COMPLETE_AT: 29400
 });
 
 const PLAY_THRESHOLD = 0.72;
@@ -26,7 +26,8 @@ const WAVE_CENTER_Y = 114;
 const WAVE_AMPLITUDE = 40;
 const WAVE_SAMPLES = 64;
 const TWO_PI = Math.PI * 2;
-const RIDE_PHASE_SPAN = Math.PI * 3;
+// Locked to the current production crest-to-trough rate (π*3 over 12s).
+const WAVE_PHASE_SPEED = (Math.PI * 3) / 12000;
 
 function clamp01(value) {
   return Math.max(0, Math.min(1, value));
@@ -223,11 +224,7 @@ export class SineDuckIntroAnimation {
         (elapsed - TIMINGS.DUCK_REVEAL_START)
           / (TIMINGS.DUCK_REVEAL_END - TIMINGS.DUCK_REVEAL_START)
       ));
-      const rideProgress = clamp01(
-        (elapsed - TIMINGS.RIDE_START) / (TIMINGS.RIDE_END - TIMINGS.RIDE_START)
-      );
-      const wavePhase = rideProgress * RIDE_PHASE_SPAN;
-      const duckOffset = -this.waveCssAmplitude * Math.sin(wavePhase);
+      const { wavePhase, duckOffset } = this.resolveRideMotion(elapsed);
 
       this.renderWave(wavePhase);
       this.setWaveDrawProgress(waveDrawProgress);
@@ -245,15 +242,44 @@ export class SineDuckIntroAnimation {
     }
   }
 
+  resolveRideMotion(elapsed) {
+    if (elapsed < TIMINGS.RIDE_START) {
+      return { wavePhase: 0, duckOffset: 0 };
+    }
+
+    const rideElapsed = elapsed - TIMINGS.RIDE_START;
+    const rideDuration = TIMINGS.RIDE_END - TIMINGS.RIDE_START;
+
+    if (elapsed < TIMINGS.RIDE_END) {
+      const wavePhase = rideElapsed * WAVE_PHASE_SPEED;
+      return {
+        wavePhase,
+        duckOffset: -this.waveCssAmplitude * Math.sin(wavePhase)
+      };
+    }
+
+    const endPhase = rideDuration * WAVE_PHASE_SPEED;
+    const restPhase = Math.round(endPhase / TWO_PI) * TWO_PI;
+    const settleProgress = easeOutCubic(clamp01(
+      (elapsed - TIMINGS.RIDE_END) / (TIMINGS.COMPLETE_AT - TIMINGS.RIDE_END)
+    ));
+    const wavePhase = lerp(endPhase, restPhase, settleProgress);
+
+    return {
+      wavePhase,
+      duckOffset: -this.waveCssAmplitude * Math.sin(wavePhase)
+    };
+  }
+
   getPhaseForElapsed(elapsed) {
+    if (elapsed >= TIMINGS.COMPANION_START) return 'companion';
+    if (elapsed >= TIMINGS.AWARENESS_START) return 'awareness';
+    if (elapsed >= TIMINGS.MEETING_START) return 'meeting';
     if (elapsed >= TIMINGS.PERSPECTIVE_START) return 'perspective';
-    if (elapsed >= TIMINGS.LIFT_START) return 'lift';
-    if (elapsed >= TIMINGS.EXPERIENCE_START) return 'experience';
-    if (elapsed >= TIMINGS.YOURS_START) return 'yours';
     if (elapsed >= TIMINGS.WITHIN_START) return 'within';
     if (elapsed >= TIMINGS.NOT_TOP_START) return 'not-top';
     if (elapsed >= TIMINGS.ALIGNMENT_START) return 'alignment';
-    if (elapsed >= TIMINGS.RHYTHM_START) return 'rhythm';
+    if (elapsed >= TIMINGS.MOVEMENT_START) return 'movement';
     if (elapsed >= TIMINGS.WAVE_COPY_START) return 'wave';
     if (elapsed >= TIMINGS.HELLO_START) return 'hello';
     return 'arrival';

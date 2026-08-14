@@ -883,10 +883,10 @@ body {
   position: absolute;
   inset-inline: 16px;
   opacity: 0;
-  transform: translateY(5px);
+  transform: translateY(2px);
   transition:
-    opacity 650ms cubic-bezier(0.22, 0.61, 0.36, 1),
-    transform 650ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity 900ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .discover-sineduck__final-copy {
@@ -913,22 +913,22 @@ body {
   .discover-sineduck__phrase[data-sineduck-phrase="hello"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="wave"]
   .discover-sineduck__phrase[data-sineduck-phrase="wave"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="rhythm"]
-  .discover-sineduck__phrase[data-sineduck-phrase="rhythm"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="movement"]
+  .discover-sineduck__phrase[data-sineduck-phrase="movement"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="alignment"]
   .discover-sineduck__phrase[data-sineduck-phrase="alignment"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="not-top"]
   .discover-sineduck__phrase[data-sineduck-phrase="not-top"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="within"]
   .discover-sineduck__phrase[data-sineduck-phrase="within"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="yours"]
-  .discover-sineduck__phrase[data-sineduck-phrase="yours"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="experience"]
-  .discover-sineduck__phrase[data-sineduck-phrase="experience"],
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
-  .discover-sineduck__phrase[data-sineduck-phrase="lift"],
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="perspective"]
-  .discover-sineduck__phrase[data-sineduck-phrase="perspective"] {
+  .discover-sineduck__phrase[data-sineduck-phrase="perspective"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="meeting"]
+  .discover-sineduck__phrase[data-sineduck-phrase="meeting"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="awareness"]
+  .discover-sineduck__phrase[data-sineduck-phrase="awareness"],
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="companion"]
+  .discover-sineduck__phrase[data-sineduck-phrase="companion"] {
   opacity: 1;
   transform: translateY(0);
 }
@@ -941,8 +941,8 @@ body {
   text-shadow: 0 0 16px rgba(122, 167, 255, 0.34);
 }
 
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
-  .discover-sineduck__phrase[data-sineduck-phrase="lift"] {
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="awareness"]
+  .discover-sineduck__phrase[data-sineduck-phrase="awareness"] {
   color: rgba(245, 247, 255, 0.96);
   font-weight: 600;
   letter-spacing: 0.012em;
@@ -951,7 +951,7 @@ body {
 
 .discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="alignment"]
   .discover-sineduck__wave-glow,
-.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="lift"]
+.discover-slide--sineduck.is-sineduck-enhanced[data-sineduck-phase="awareness"]
   .discover-sineduck__wave-glow {
   opacity: 0.5;
 }
