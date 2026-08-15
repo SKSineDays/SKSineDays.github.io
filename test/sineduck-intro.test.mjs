@@ -79,12 +79,12 @@ test("SineDuck Discover keeps the paced show and its composed final frame", () =
   assert.match(css, /opacity 900ms cubic-bezier\(0\.22, 0\.61, 0\.36, 1\)/);
   assert.match(css, /transform: translateY\(2px\)/);
   assert.match(animationJs, /HELLO_START: 1600/);
-  assert.match(animationJs, /WAVE_COPY_START: 4100/);
-  assert.match(animationJs, /MOVEMENT_START: 6800/);
-  assert.match(animationJs, /COMPANION_START: 26300/);
+  assert.match(animationJs, /WAVE_COPY_START: 5000/);
+  assert.match(animationJs, /MOVEMENT_START: 8500/);
+  assert.match(animationJs, /COMPANION_START: 33300/);
   assert.match(animationJs, /RIDE_START: 2800/);
-  assert.match(animationJs, /RIDE_END: 27600/);
-  assert.match(animationJs, /COMPLETE_AT: 29400/);
+  assert.match(animationJs, /RIDE_END: 34800/);
+  assert.match(animationJs, /COMPLETE_AT: 37000/);
   assert.match(animationJs, /WAVE_PHASE_SPEED = \(Math\.PI \* 3\) \/ 12000/);
   assert.match(animationJs, /rideElapsed \* WAVE_PHASE_SPEED/);
   assert.doesNotMatch(animationJs, /RIDE_PHASE_SPAN/);
@@ -108,7 +108,7 @@ test("SineDuck Discover keeps the paced show and its composed final frame", () =
   );
   assert.match(uiJs, /setFocusProgress\(sineDuckProgress\)/);
 
-  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v16'/);
+  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v17'/);
   assert.match(serviceWorkerJs, /\/assets\/sineducks\/SineDuck15@3x\.png/);
   assert.doesNotMatch(serviceWorkerJs, /SineDuck14@3x\.png/);
   assert.match(serviceWorkerJs, /'\/styles\.css'/);
