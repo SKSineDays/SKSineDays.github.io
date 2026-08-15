@@ -57,6 +57,8 @@ function hasSocialProfile(form) {
   return ["instagram", "tiktok", "youtube", "website", "otherSocial"]
     .some((name) => String(form.get(name) || "").trim());
 }
+
+function payoutCountrySelect(id) {
   return `
     <label for="${id}">Payout country</label>
     <select id="${id}" name="country" required>
