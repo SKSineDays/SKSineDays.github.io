@@ -2,7 +2,7 @@
  * Vercel serverless function for email subscription signup
  *
  * POST /api/subscribe
- * Body: { email, consent, timezone, birthdate, birth_day_of_year, sineday_index, origin_day, source }
+ * Body: { email, consent, timezone, birthdate, birth_day_of_year, origin_day, source }
  *
  * Authenticated Daily Duck setup may send:
  *   { birthdate: "YYYY-MM-DD", consent: true, timezone, source: "dashboard-daily-duck" }
@@ -87,7 +87,6 @@ export default async function handler(req, res) {
       consent,
       timezone,
       birth_day_of_year,
-      sineday_index,
       origin_day,
       source
     } = body;
@@ -224,7 +223,7 @@ export default async function handler(req, res) {
     // 3. Load existing email rhythm and lock it once both derived values exist.
     const { data: existingProfile, error: existingProfileError } = await supabase
       .from('subscriber_profile')
-      .select('birth_day_of_year, sineday_index, origin_day')
+      .select('birth_day_of_year, origin_day')
       .eq('subscriber_id', subscriber.id)
       .maybeSingle();
 
@@ -261,15 +260,6 @@ export default async function handler(req, res) {
         }
       }
 
-      if (hasOwnRhythmValue(sineday_index)) {
-        if (sineday_index < 0 || sineday_index > 17) {
-          return res.status(400).json({
-            ok: false,
-            error: 'Invalid sineday_index (must be 0-17)'
-          });
-        }
-      }
-
       if (hasOwnRhythmValue(origin_day)) {
         if (!Number.isInteger(origin_day) || origin_day < 1 || origin_day > 18) {
           return res.status(400).json({
@@ -281,12 +271,10 @@ export default async function handler(req, res) {
 
       if (
         hasOwnRhythmValue(birth_day_of_year) ||
-        hasOwnRhythmValue(sineday_index) ||
         hasOwnRhythmValue(origin_day)
       ) {
         clientProvided = {
           birth_day_of_year,
-          sineday_index,
           origin_day
         };
       }
@@ -306,9 +294,6 @@ export default async function handler(req, res) {
 
       if (decision.write.birth_day_of_year != null) {
         profileData.birth_day_of_year = decision.write.birth_day_of_year;
-      }
-      if (decision.write.sineday_index != null) {
-        profileData.sineday_index = decision.write.sineday_index;
       }
       if (decision.write.origin_day != null) {
         profileData.origin_day = decision.write.origin_day;
