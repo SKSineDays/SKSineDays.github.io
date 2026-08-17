@@ -144,3 +144,15 @@ Each entry includes:
 **Notes:** Swipe gesture feels natural and intuitive on mobile. Desktop users can still click the card. No breaking changes to existing functionality.
 
 ---
+
+## 2026-08-17T04:50:38.453Z
+
+**Files:** api/_lib/affiliate.js, api/_lib/affiliate-server.js, api/create-checkout-session.js, api/stripe/webhook.js, api/affiliate/support.js, js/affiliate-ui.js, js/dashboard.js, supabase/migrations/20260815_affiliate_checkout_promotion_codes.sql
+
+**Summary:** Move Affiliate attribution from post-purchase support codes to Stripe Checkout Promotion Codes.
+
+**Rationale:** Customers need to see the mkdir -p /opt/cursor/artifacts && npm test > /opt/cursor/artifacts/affiliate_checkout_test_output.log 2>&1 && tail -20 /opt/cursor/artifacts/affiliate_checkout_test_output.log && node ai/log-change.mjs --files "api/_lib/affiliate.js,api/_lib/affiliate-server.js,api/create-checkout-session.js,api/stripe/webhook.js,api/affiliate/support.js,js/affiliate-ui.js,js/dashboard.js,supabase/migrations/20260815_affiliate_checkout_promotion_codes.sql" --summary "Move Affiliate attribution from post-purchase support codes to Stripe Checkout Promotion Codes." --rationale "Customers need to see the $1 monthly Affiliate discount before paying, and SineDay needs durable attribution from the Checkout Promotion Code rather than a seven-day backfill." --notes "One master coupon plus one Promotion Code per active Affiliate. Existing Connect, payout, and commission hold behavior is unchanged." monthly Affiliate discount before paying, and SineDay needs durable attribution from the Checkout Promotion Code rather than a seven-day backfill.
+
+**Notes:** One master coupon plus one Promotion Code per active Affiliate. Existing Connect, payout, and commission hold behavior is unchanged.
+
+---

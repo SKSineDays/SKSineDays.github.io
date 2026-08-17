@@ -15,7 +15,11 @@ import {
   signOut,
   onAuthStateChange
 } from './supabase-client.js';
-import { AffiliateUI } from "./affiliate-ui.js";
+import {
+  AffiliateUI,
+  clearPendingAffiliateCode,
+  getPendingAffiliateCode,
+} from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { duckUrlFromSinedayNumber } from "./sineducks.js";
@@ -2246,12 +2250,16 @@ async function handleUpgrade() {
     }
 
     const accessToken = await getAccessToken();
+    const pendingAffiliateCode = getPendingAffiliateCode();
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify(
+        pendingAffiliateCode ? { affiliateCode: pendingAffiliateCode } : {}
+      )
     });
 
     const data = await response.json();
@@ -2417,6 +2425,7 @@ async function checkCheckoutSuccess() {
       showSuccess('Premium activated! You now have access to all features.');
       pendingCheckoutSessionId = null;
       hasAttemptedAutoPremiumSync = false;
+      clearPendingAffiliateCode();
       await affiliateUI?.refresh?.();
       window.history.replaceState({}, '', '/dashboard.html');
     } else {

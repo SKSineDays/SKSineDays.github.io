@@ -19,7 +19,7 @@ function formatMoney(cents) {
   return MONEY.format(Number(cents || 0) / 100);
 }
 
-function getPendingAffiliateCode() {
+export function getPendingAffiliateCode() {
   try {
     const savedAt = Number(localStorage.getItem(PENDING_CODE_SAVED_AT_KEY));
     if (!savedAt || Date.now() - savedAt > PENDING_CODE_TTL_MS) {
@@ -34,7 +34,7 @@ function getPendingAffiliateCode() {
   }
 }
 
-function clearPendingAffiliateCode() {
+export function clearPendingAffiliateCode() {
   try {
     localStorage.removeItem(PENDING_CODE_KEY);
     localStorage.removeItem(PENDING_CODE_SAVED_AT_KEY);
@@ -396,43 +396,25 @@ export class AffiliateUI {
     if (support) {
       return `
         <section class="affiliate-support-card">
-          <p class="affiliate-sheet__eyebrow">Support an Affiliate</p>
+          <p class="affiliate-sheet__eyebrow">Affiliate support</p>
           <h3>You support ${escapeHtml(support.affiliateDisplayName)}</h3>
-          <p>Your permanent Affiliate Code is <strong>${escapeHtml(support.affiliateCode)}</strong>.</p>
+          <p>Affiliate Code: <strong>${escapeHtml(support.affiliateCode)}</strong></p>
         </section>
       `;
     }
 
-    if (this.entitlement?.source !== "stripe") {
-      const copy =
-        this.entitlement?.source === "affiliate_gift"
-          ? "Affiliate-gift Premium cannot support another affiliate."
-          : "Premium members can choose an affiliate to support after subscribing.";
-      return `<section class="affiliate-support-card"><p>${escapeHtml(copy)}</p></section>`;
+    if (this.entitlement?.source === "affiliate_gift") {
+      return `<section class="affiliate-support-card"><p>Affiliate-gift Premium cannot support another affiliate.</p></section>`;
     }
 
-    const pendingCode = getPendingAffiliateCode();
+    if (this.entitlement?.source === "stripe") {
+      return `<section class="affiliate-support-card"><p>Affiliate Codes are applied in Stripe Checkout when you upgrade. This membership is not connected to an affiliate.</p></section>`;
+    }
+
     return `
       <section class="affiliate-support-card">
-        <p class="affiliate-sheet__eyebrow">Support an Affiliate</p>
-        <h3>Connect your Premium membership</h3>
-        <p>Your Premium membership can support the person who introduced you to SineDay. Enter their Affiliate Code once to connect your membership.</p>
-        <form data-affiliate-form="support">
-          <label for="affiliate-support-code">Affiliate Code</label>
-          <input
-            id="affiliate-support-code"
-            name="code"
-            type="text"
-            value="${escapeHtml(pendingCode)}"
-            minlength="4"
-            maxlength="20"
-            pattern="[A-Za-z0-9-]{4,20}"
-            autocomplete="off"
-            autocapitalize="characters"
-            required
-          >
-          <button class="btn btn-primary" type="submit">Confirm Support</button>
-        </form>
+        <p class="affiliate-sheet__eyebrow">Have an Affiliate Code?</p>
+        <p>Enter it securely in Stripe Checkout when you upgrade to Premium. Affiliate Codes save you $1 each month while the promotion remains active.</p>
       </section>
     `;
   }
@@ -681,7 +663,7 @@ export class AffiliateUI {
   }
 
   renderShare(affiliate) {
-    const shortMessage = `SineDay is a journal for noticing the wave inside each day. Use my Affiliate Code ${affiliate.code} when you join Premium.`;
+    const shortMessage = `Use my SineDay Affiliate Code ${affiliate.code} at checkout to save $1 each month on Premium.`;
     const disclosure =
       "Disclosure: I may earn from qualifying SineDay Premium memberships connected to my link or code.";
     return `
@@ -816,7 +798,7 @@ export class AffiliateUI {
   async shareAffiliate() {
     const affiliate = this.status?.affiliate;
     if (!affiliate) return;
-    const text = `Help more people write with their own wave. Use my SineDay Affiliate Code ${affiliate.code}.`;
+    const text = `Use my SineDay Affiliate Code ${affiliate.code} at checkout to save $1 each month on Premium.`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -884,23 +866,6 @@ export class AffiliateUI {
           }),
         });
         window.location.assign(data.url);
-      } else if (formType === "support") {
-        const code = new FormData(event.target).get("code");
-        const preview = await this.request("/api/affiliate/support", {
-          method: "POST",
-          body: JSON.stringify({ code, confirmed: false }),
-        });
-        const confirmed = window.confirm(
-          `Connect your Premium membership to ${preview.affiliateDisplayName} using code ${preview.affiliateCode}? This choice is permanent unless SineDay Support corrects it.`,
-        );
-        if (!confirmed) return;
-        const result = await this.request("/api/affiliate/support", {
-          method: "POST",
-          body: JSON.stringify({ code, confirmed: true }),
-        });
-        clearPendingAffiliateCode();
-        this.showSuccess?.(result.message);
-        await this.refresh();
       }
     } catch (error) {
       this.showError?.(error.message);

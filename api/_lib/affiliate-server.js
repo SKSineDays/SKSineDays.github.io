@@ -1,6 +1,18 @@
 import { authenticateUser, getAdminClient } from "./auth.js";
-import { deriveAffiliateAccountState, isAffiliateProgramEnabled } from "./affiliate.js";
-import { createAffiliateRecipientAccount, retrieveAffiliateAccount } from "./stripe.js";
+import {
+  collectPromotionCodeIds,
+  deriveAffiliateAccountState,
+  getAffiliateCouponId,
+  getPromotionCouponId,
+  getStripeObjectId,
+  isAffiliateProgramEnabled,
+  validateAffiliateCode,
+} from "./affiliate.js";
+import {
+  createAffiliateRecipientAccount,
+  getStripeClient,
+  retrieveAffiliateAccount,
+} from "./stripe.js";
 
 const AFFILIATE_SYNC_SELECT = [
   "id",
@@ -9,6 +21,8 @@ const AFFILIATE_SYNC_SELECT = [
   "display_name",
   "status",
   "stripe_connect_account_id",
+  "stripe_promotion_code_id",
+  "stripe_promotion_code_created_at",
   "details_submitted",
   "payouts_enabled",
   "tax_setup_status",
@@ -17,6 +31,15 @@ const AFFILIATE_SYNC_SELECT = [
   "requirements_status",
   "activated_at",
   "updated_at",
+].join(", ");
+
+const AFFILIATE_PROMOTION_SELECT = [
+  "id",
+  "user_id",
+  "code",
+  "status",
+  "stripe_promotion_code_id",
+  "stripe_promotion_code_created_at",
 ].join(", ");
 
 export function setPrivateApiHeaders(res, methods = "GET, POST, OPTIONS") {
@@ -206,6 +229,528 @@ export async function ensureAffiliateRecipientAccount({
   }
 
   return persistedId;
+}
+
+function promotionMatchesAffiliateCoupon(promotion, couponId) {
+  return getPromotionCouponId(promotion) === couponId;
+}
+
+async function listPromotionCodesByAffiliateCode(stripe, code) {
+  const listed = await stripe.promotionCodes.list({
+    code,
+    limit: 20,
+  });
+  return (listed?.data || []).filter(
+    (promotion) => String(promotion?.code || "").toUpperCase() === code,
+  );
+}
+
+async function persistAffiliatePromotionCode({
+  supabaseAdmin,
+  affiliate,
+  promotionCodeId,
+  now,
+}) {
+  const { data: updated, error } = await supabaseAdmin
+    .from("affiliates")
+    .update({
+      stripe_promotion_code_id: promotionCodeId,
+      stripe_promotion_code_created_at: now(),
+    })
+    .eq("id", affiliate.id)
+    .is("stripe_promotion_code_id", null)
+    .select(AFFILIATE_PROMOTION_SELECT)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Failed to save affiliate promotion code");
+  }
+
+  if (updated?.stripe_promotion_code_id) {
+    return updated;
+  }
+
+  const { data: reloaded, error: reloadError } = await supabaseAdmin
+    .from("affiliates")
+    .select(AFFILIATE_PROMOTION_SELECT)
+    .eq("id", affiliate.id)
+    .maybeSingle();
+
+  if (reloadError) {
+    throw new Error("Failed to load affiliate promotion code");
+  }
+
+  if (!reloaded?.stripe_promotion_code_id) {
+    throw new Error("Failed to persist affiliate promotion code");
+  }
+
+  return reloaded;
+}
+
+export async function ensureAffiliatePromotionCode({
+  stripe,
+  supabaseAdmin,
+  affiliate,
+  couponId = getAffiliateCouponId(),
+  now = () => new Date().toISOString(),
+}) {
+  if (affiliate?.stripe_promotion_code_id) {
+    return {
+      promotionCodeId: affiliate.stripe_promotion_code_id,
+      affiliate,
+      created: false,
+    };
+  }
+
+  if (affiliate?.status !== "active") {
+    const error = new Error("Affiliate is not eligible for a promotion code");
+    error.code = "AFFILIATE_PROMOTION_NOT_ELIGIBLE";
+    throw error;
+  }
+
+  if (!couponId) {
+    throw new Error("Missing affiliate coupon configuration");
+  }
+
+  if (!affiliate?.id || !affiliate?.code) {
+    throw new Error("Affiliate promotion code is missing required identity");
+  }
+
+  let matches = await listPromotionCodesByAffiliateCode(stripe, affiliate.code);
+  let promotion = matches.find((item) =>
+    promotionMatchesAffiliateCoupon(item, couponId),
+  );
+
+  if (!promotion && matches.length) {
+    const error = new Error(
+      "Affiliate promotion code is not tied to the SineDay Affiliate coupon",
+    );
+    error.code = "AFFILIATE_PROMOTION_COUPON_MISMATCH";
+    throw error;
+  }
+
+  if (!promotion) {
+    try {
+      promotion = await stripe.promotionCodes.create(
+        {
+          coupon: couponId,
+          code: affiliate.code,
+          metadata: {
+            sineday_affiliate_id: affiliate.id,
+            sineday_affiliate_code: affiliate.code,
+          },
+        },
+        { idempotencyKey: `sineday-affiliate-promo-${affiliate.id}` },
+      );
+    } catch (error) {
+      matches = await listPromotionCodesByAffiliateCode(stripe, affiliate.code);
+      promotion = matches.find((item) =>
+        promotionMatchesAffiliateCoupon(item, couponId),
+      );
+      if (!promotion) {
+        throw error;
+      }
+    }
+  }
+
+  if (promotion?.active === false) {
+    promotion = await stripe.promotionCodes.update(promotion.id, {
+      active: true,
+    });
+  }
+
+  const promotionCodeId = promotion?.id;
+  if (!promotionCodeId) {
+    throw new Error("Stripe did not return a promotion code ID");
+  }
+
+  const persisted = await persistAffiliatePromotionCode({
+    supabaseAdmin,
+    affiliate,
+    promotionCodeId,
+    now,
+  });
+
+  console.log("affiliate promotion ensured", {
+    affiliateId: affiliate.id,
+    promotionCodeId: persisted.stripe_promotion_code_id,
+  });
+
+  return {
+    promotionCodeId: persisted.stripe_promotion_code_id,
+    affiliate: { ...affiliate, ...persisted },
+    created: persisted.stripe_promotion_code_id === promotionCodeId,
+  };
+}
+
+async function setAffiliatePromotionCodeActive(stripe, promotionCodeId, active) {
+  if (!promotionCodeId) return;
+  await stripe.promotionCodes.update(promotionCodeId, { active });
+}
+
+export async function syncAffiliatePromotionCodeState({
+  stripe,
+  supabaseAdmin,
+  affiliate,
+  previousStatus = null,
+  now = () => new Date().toISOString(),
+}) {
+  if (!affiliate?.id) return affiliate;
+
+  if (affiliate.status === "active") {
+    const ensured = await ensureAffiliatePromotionCode({
+      stripe,
+      supabaseAdmin,
+      affiliate,
+      now,
+    });
+    if (
+      affiliate.stripe_promotion_code_id &&
+      previousStatus &&
+      previousStatus !== "active"
+    ) {
+      try {
+        await setAffiliatePromotionCodeActive(
+          stripe,
+          affiliate.stripe_promotion_code_id,
+          true,
+        );
+      } catch (error) {
+        console.error("[Affiliate] Failed to reactivate promotion code:", {
+          affiliateId: affiliate.id,
+          message: error?.message || "Unknown error",
+        });
+      }
+    }
+    return ensured.affiliate || affiliate;
+  }
+
+  if (
+    ["paused", "closed"].includes(affiliate.status) &&
+    affiliate.stripe_promotion_code_id
+  ) {
+    try {
+      await setAffiliatePromotionCodeActive(
+        stripe,
+        affiliate.stripe_promotion_code_id,
+        false,
+      );
+    } catch (error) {
+      console.error("[Affiliate] Failed to deactivate promotion code:", {
+        affiliateId: affiliate.id,
+        message: error?.message || "Unknown error",
+      });
+    }
+  }
+
+  return affiliate;
+}
+
+export async function recoverAffiliatePromotionCodeIfNeeded({
+  stripe,
+  supabaseAdmin,
+  affiliate,
+  now = () => new Date().toISOString(),
+}) {
+  if (affiliate?.status !== "active" || affiliate?.stripe_promotion_code_id) {
+    return affiliate;
+  }
+
+  try {
+    const ensured = await ensureAffiliatePromotionCode({
+      stripe: stripe || getStripeClient(),
+      supabaseAdmin,
+      affiliate,
+      now,
+    });
+    return ensured.affiliate || affiliate;
+  } catch (error) {
+    console.error("[Affiliate] promotion recovery failed:", {
+      affiliateId: affiliate?.id || null,
+      message: error?.message || "Unknown error",
+    });
+    return affiliate;
+  }
+}
+
+export async function resolveCheckoutAffiliateReferral({
+  stripe,
+  supabaseAdmin,
+  user,
+  affiliateCode,
+  now = () => new Date().toISOString(),
+}) {
+  if (!affiliateCode) return null;
+
+  const validation = validateAffiliateCode(affiliateCode);
+  if (!validation.ok) return null;
+
+  const { data: affiliate, error } = await supabaseAdmin
+    .from("affiliates")
+    .select(AFFILIATE_PROMOTION_SELECT)
+    .eq("code", validation.code)
+    .maybeSingle();
+
+  if (error) throw new Error("Failed to load affiliate referral");
+  if (!affiliate || affiliate.status !== "active") return null;
+  if (affiliate.user_id === user.id) {
+    console.log("self-referral checkout promotion skipped", {
+      affiliateId: affiliate.id,
+    });
+    return null;
+  }
+
+  const ensured = await ensureAffiliatePromotionCode({
+    stripe,
+    supabaseAdmin,
+    affiliate,
+    now,
+  });
+
+  return {
+    affiliateId: affiliate.id,
+    code: affiliate.code,
+    promotionCodeId: ensured.promotionCodeId,
+  };
+}
+
+export function applyAffiliateCheckoutMode(sessionParams, referral) {
+  const next = {
+    ...sessionParams,
+    metadata: { ...(sessionParams.metadata || {}) },
+  };
+
+  if (referral?.promotionCodeId) {
+    next.discounts = [{ promotion_code: referral.promotionCodeId }];
+    next.metadata.affiliate_ref_code = referral.code;
+    next.metadata.affiliate_id = referral.affiliateId;
+    next.metadata.affiliate_promotion_code_id = referral.promotionCodeId;
+    delete next.allow_promotion_codes;
+    return next;
+  }
+
+  next.allow_promotion_codes = true;
+  delete next.discounts;
+  return next;
+}
+
+function hasUnexpandedDiscountRefs(value) {
+  if (!value) return false;
+  const items = Array.isArray(value.discounts)
+    ? value.discounts
+    : value.discounts?.data;
+  if (Array.isArray(items) && items.some((item) => typeof item === "string")) {
+    return true;
+  }
+  return Boolean(value.discount && typeof value.discount === "string");
+}
+
+export async function retrieveCheckoutPromotionCodeIds(stripe, session) {
+  const immediate = collectPromotionCodeIds({ session });
+  if (immediate.length) return immediate;
+
+  const sessionId = getStripeObjectId(session);
+  let expandedSession = session;
+  if (sessionId && stripe?.checkout?.sessions?.retrieve) {
+    try {
+      expandedSession = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["discounts.promotion_code", "subscription"],
+      });
+    } catch (error) {
+      console.error("[Affiliate] Failed to expand checkout discounts:", {
+        message: error?.message || "Unknown error",
+      });
+    }
+  }
+
+  const fromSession = collectPromotionCodeIds({ session: expandedSession });
+  if (fromSession.length) return fromSession;
+
+  const subscriptionId = getStripeObjectId(
+    expandedSession?.subscription || session?.subscription,
+  );
+  if (!subscriptionId || !stripe?.subscriptions?.retrieve) return fromSession;
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ["discounts", "discount.promotion_code"],
+    });
+    return collectPromotionCodeIds({
+      session: expandedSession,
+      subscription,
+    });
+  } catch (error) {
+    console.error("[Affiliate] Failed to expand checkout subscription discounts:", {
+      message: error?.message || "Unknown error",
+    });
+    return fromSession;
+  }
+}
+
+export async function retrieveInvoicePromotionCodeIds(stripe, invoice) {
+  const immediate = collectPromotionCodeIds({ invoice });
+  if (immediate.length) return immediate;
+
+  let expandedInvoice = invoice;
+  const invoiceId = getStripeObjectId(invoice);
+  if (
+    invoiceId &&
+    hasUnexpandedDiscountRefs(invoice) &&
+    stripe?.invoices?.retrieve
+  ) {
+    try {
+      expandedInvoice = await stripe.invoices.retrieve(invoiceId, {
+        expand: ["discounts", "discount.promotion_code"],
+      });
+    } catch (error) {
+      console.error("[Affiliate] Failed to expand invoice discounts:", {
+        message: error?.message || "Unknown error",
+      });
+    }
+  }
+
+  const fromInvoice = collectPromotionCodeIds({ invoice: expandedInvoice });
+  if (fromInvoice.length) return fromInvoice;
+
+  const subscriptionId = getStripeObjectId(
+    expandedInvoice?.subscription || invoice?.subscription,
+  );
+  if (!subscriptionId || !stripe?.subscriptions?.retrieve) return fromInvoice;
+
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ["discounts", "discount.promotion_code"],
+    });
+    return collectPromotionCodeIds({
+      invoice: expandedInvoice,
+      subscription,
+    });
+  } catch (error) {
+    console.error("[Affiliate] Failed to expand invoice subscription discounts:", {
+      message: error?.message || "Unknown error",
+    });
+    return fromInvoice;
+  }
+}
+
+function isAttributionConflict(error, code) {
+  const message = error?.message || "";
+  return message.includes(code);
+}
+
+export async function recordAffiliateAttributionFromPromotion({
+  supabaseAdmin,
+  subscriberUserId,
+  promotionCodeIds,
+  source = "checkout",
+}) {
+  if (!subscriberUserId || !promotionCodeIds?.length) {
+    return { recorded: false, reason: "no_promotion" };
+  }
+
+  let sawMappedAffiliate = false;
+
+  for (const promotionCodeId of promotionCodeIds) {
+    const { data: affiliate, error } = await supabaseAdmin
+      .from("affiliates")
+      .select(AFFILIATE_PROMOTION_SELECT)
+      .eq("stripe_promotion_code_id", promotionCodeId)
+      .maybeSingle();
+
+    if (error) throw new Error("Failed to resolve affiliate promotion");
+    if (!affiliate) {
+      console.log("non-affiliate promotion ignored for attribution", {
+        promotionCodeId,
+      });
+      continue;
+    }
+
+    sawMappedAffiliate = true;
+
+    if (affiliate.status !== "active") {
+      console.log("inactive affiliate promotion ignored for attribution", {
+        affiliateId: affiliate.id,
+      });
+      continue;
+    }
+
+    if (affiliate.user_id === subscriberUserId) {
+      console.log("self-referral commission rejected", {
+        affiliateId: affiliate.id,
+      });
+      return { recorded: false, reason: "self_referral", affiliate };
+    }
+
+    const { data: attribution, error: attributionError } = await supabaseAdmin.rpc(
+      "create_affiliate_attribution",
+      {
+        p_subscriber_user_id: subscriberUserId,
+        p_code: affiliate.code,
+      },
+    );
+
+    if (attributionError) {
+      if (isAttributionConflict(attributionError, "AFFILIATE_ATTRIBUTION_ALREADY_EXISTS")) {
+        return { recorded: false, reason: "already_exists", affiliate };
+      }
+      if (isAttributionConflict(attributionError, "AFFILIATE_SELF_REFERRAL")) {
+        console.log("self-referral commission rejected", {
+          affiliateId: affiliate.id,
+        });
+        return { recorded: false, reason: "self_referral", affiliate };
+      }
+      throw new Error("Failed to record affiliate attribution");
+    }
+
+    console.log(
+      source === "invoice"
+        ? "affiliate attribution recovered from invoice"
+        : "affiliate attribution recorded from checkout",
+      {
+        affiliateId: affiliate.id,
+        existing: attribution?.existing === true,
+      },
+    );
+
+    return {
+      recorded: attribution?.existing !== true,
+      reason: attribution?.existing === true ? "already_exists" : "created",
+      affiliate,
+      attribution,
+    };
+  }
+
+  return {
+    recorded: false,
+    reason: sawMappedAffiliate ? "affiliate_not_eligible" : "no_mapped_affiliate",
+  };
+}
+
+export async function recoverAffiliateAttributionFromInvoice({
+  stripe,
+  supabaseAdmin,
+  invoice,
+  userId,
+}) {
+  const { data: attribution, error } = await supabaseAdmin
+    .from("affiliate_attributions")
+    .select("id")
+    .eq("subscriber_user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (error) throw new Error("Failed to load affiliate attribution");
+  if (attribution) {
+    return { recorded: false, reason: "already_exists" };
+  }
+
+  const promotionCodeIds = await retrieveInvoicePromotionCodeIds(stripe, invoice);
+  return recordAffiliateAttributionFromPromotion({
+    supabaseAdmin,
+    subscriberUserId: userId,
+    promotionCodeIds,
+    source: "invoice",
+  });
 }
 
 export const AFFILIATE_APPLICATION_RECEIVED_MESSAGE =

@@ -1,7 +1,10 @@
 export const runtime = "nodejs";
 
 import { getAdminClient } from "../_lib/auth.js";
-import { syncAffiliateAccountState } from "../_lib/affiliate-server.js";
+import {
+  syncAffiliateAccountState,
+  syncAffiliatePromotionCodeState,
+} from "../_lib/affiliate-server.js";
 import { getStripeClient } from "../_lib/stripe.js";
 import {
   claimWebhookEvent,
@@ -56,6 +59,8 @@ async function synchronizeAffiliateAccount(supabaseAdmin, notification) {
         "requirements_status",
         "activated_at",
         "updated_at",
+        "stripe_promotion_code_id",
+        "stripe_promotion_code_created_at",
       ].join(", "),
     )
     .eq("stripe_connect_account_id", accountId)
@@ -63,7 +68,20 @@ async function synchronizeAffiliateAccount(supabaseAdmin, notification) {
   if (error) throw new Error("Failed to resolve affiliate account");
   if (!affiliate) return;
 
-  await syncAffiliateAccountState({ affiliate, supabaseAdmin });
+  const synced = await syncAffiliateAccountState({ affiliate, supabaseAdmin });
+  try {
+    await syncAffiliatePromotionCodeState({
+      stripe: getStripeClient(),
+      supabaseAdmin,
+      affiliate: synced,
+      previousStatus: affiliate.status,
+    });
+  } catch (error) {
+    console.error("[Affiliate] promotion sync failed:", {
+      affiliateId: synced?.id || affiliate.id,
+      message: error?.message || "Unknown error",
+    });
+  }
 }
 
 export default async function handler(req, res) {
