@@ -44,7 +44,12 @@ export default async function handler(req, res) {
       SUPABASE_URL: !!supabaseUrl,
       SUPABASE_SERVICE_ROLE_KEY: !!supabaseServiceKey,
       RESEND_API_KEY: !!resendApiKey,
-      RESEND_FROM: !!resendFrom
+      RESEND_FROM: !!resendFrom,
+      RESEND_WEBHOOK_SECRET: !!process.env.RESEND_WEBHOOK_SECRET,
+      CRON_SECRET: !!process.env.CRON_SECRET,
+      UNSUBSCRIBE_SECRET: !!process.env.UNSUBSCRIBE_SECRET,
+      PUBLIC_SITE_URL: !!process.env.PUBLIC_SITE_URL,
+      DAILY_EMAIL_CRON_ENABLED: !!process.env.DAILY_EMAIL_CRON_ENABLED
     };
 
     // Test Supabase connection

@@ -5,6 +5,15 @@
     },
     "api/stripe/connect-webhook.js": {
       "maxDuration": 10
+    },
+    "api/cron/daily-email.js": {
+      "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/daily-email",
+      "schedule": "* * * * *"
+    }
+  ]
 }

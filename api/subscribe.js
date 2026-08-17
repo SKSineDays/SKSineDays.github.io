@@ -21,6 +21,8 @@ import {
   isEmailRhythmLocked,
   resolveEmailRhythmWrite
 } from './_lib/email-rhythm.js';
+import { WELCOME_TEMPLATE_ALIAS, unwrapResendSend } from './_lib/daily-email.js';
+import { buildUnsubscribePageUrl } from './_lib/unsubscribe-token.js';
 
 /**
  * Email validation regex
@@ -157,7 +159,6 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     const isNewSubscriber = !existingSubscriber;
-    console.log(`Subscriber status: ${isNewSubscriber ? 'NEW' : 'EXISTING'} (${normalizedEmail})`);
 
     // 1. Upsert subscriber
     const { data: subscriber, error: subscriberError } = await supabase
@@ -205,7 +206,7 @@ export default async function handler(req, res) {
           email_opt_in: true,
           sms_opt_in: false,
           email_opt_in_at: now,
-          send_hour_local: 7,
+          send_hour_local: 6,
           send_minute_local: 0,
           updated_at: now
         },
@@ -329,74 +330,35 @@ export default async function handler(req, res) {
     if (isNewSubscriber) {
       const resendApiKey = process.env.RESEND_API_KEY;
       const resendFrom = process.env.RESEND_FROM;
+      const unsubscribeUrl = buildUnsubscribePageUrl(subscriber.id);
 
-      console.log('[EMAIL] Checking Resend configuration:', {
-        hasApiKey: !!resendApiKey,
-        hasFrom: !!resendFrom,
-        fromValue: resendFrom ? `${resendFrom.substring(0, 10)}...` : 'missing'
-      });
-
-      if (resendApiKey && resendFrom) {
+      if (resendApiKey && resendFrom && unsubscribeUrl) {
         try {
           const resend = new Resend(resendApiKey);
+          const { data, error } = await resend.emails.send(
+            {
+              from: resendFrom,
+              to: [normalizedEmail],
+              subject: 'Welcome to Your SineDay 🌊',
+              template: {
+                id: WELCOME_TEMPLATE_ALIAS,
+                variables: {
+                  OPT_OUT_URL: unsubscribeUrl
+                }
+              }
+            },
+            {
+              idempotencyKey: `sineday-welcome/${subscriber.id}`
+            }
+          );
 
-          console.log(`[EMAIL] Attempting to send welcome email to: ${normalizedEmail}`);
-          console.log(`[EMAIL] Using template_id: welcome-temp`);
-          console.log(`[EMAIL] From address: ${resendFrom}`);
-
-          // Send using the pre-existing Resend template "welcome-temp"
-          // Template: "Welcome Temp." - contains the canonical 18-day SineDay explanation
-          // Subject: "Welcome to Your SineDay 🌊" (defined in template)
-          // From: Daily <daily@daily.sineday.app>
-          // Note: When using template_id, don't include react or html/text fields
-          const emailPayload = {
-            from: resendFrom,
-            to: [normalizedEmail],
-            template_id: 'welcome-temp'
-          };
-
-          // Only add subject if template doesn't define it
-          // (Some templates have subject defined, some don't)
-          emailPayload.subject = 'Welcome to Your SineDay 🌊';
-
-          console.log('[EMAIL] Sending with payload:', {
-            from: emailPayload.from,
-            to: emailPayload.to,
-            template_id: emailPayload.template_id,
-            subject: emailPayload.subject
-          });
-
-          const response = await resend.emails.send(emailPayload);
-
-          console.log(`[EMAIL] ✓ Welcome email sent successfully`);
-          console.log(`[EMAIL] Resend response:`, {
-            id: response.data?.id || response.id,
-            from: response.data?.from || 'unknown',
-            to: response.data?.to || 'unknown',
-            createdAt: response.data?.created_at || 'unknown'
-          });
+          unwrapResendSend({ data, error });
         } catch (emailError) {
-          console.error('[EMAIL] ✗ Failed to send welcome email');
-          console.error('[EMAIL] Error type:', emailError.name);
-          console.error('[EMAIL] Error message:', emailError.message);
-          console.error('[EMAIL] Error statusCode:', emailError.statusCode);
-          console.error('[EMAIL] Full error object:', JSON.stringify({
-            name: emailError.name,
-            message: emailError.message,
-            statusCode: emailError.statusCode,
-            response: emailError.response?.data || emailError.response,
-            stack: emailError.stack
-          }, null, 2));
-          // Don't fail the whole request if email fails
+          console.error('[EMAIL] Welcome email failed');
         }
       } else {
-        console.warn('[EMAIL] Skipping welcome email: Missing environment variables');
-        console.warn('[EMAIL] RESEND_API_KEY present:', !!resendApiKey);
-        console.warn('[EMAIL] RESEND_FROM present:', !!resendFrom);
+        console.warn('[EMAIL] Skipping welcome email: incomplete send configuration');
       }
-    } else {
-      console.log(`[EMAIL] Skipping welcome email: Existing subscriber (${normalizedEmail})`);
-      console.log(`[EMAIL] Subscriber was created at: ${existingSubscriber?.created_at || 'unknown'}`);
     }
 
     return res.status(200).json({

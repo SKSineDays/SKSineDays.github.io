@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "gen:templates": "node scripts/generate-premium-templates.js",
-    "test": "node --experimental-test-module-mocks --test"
+    "test": "node --experimental-test-module-mocks --test test/*.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

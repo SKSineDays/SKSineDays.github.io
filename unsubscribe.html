@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Confirm that you want to stop Daily Duck emails from SineDay.">
+  <title>Unsubscribe - SineDay</title>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-icon/apple-touch-icon-180.png?v=2">
+  <link rel="apple-touch-icon" sizes="167x167" href="/assets/app-icon/apple-touch-icon-167.png?v=2">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/app-icon/apple-touch-icon-152.png?v=2">
+  <link rel="icon" href="/favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2">
+  <link rel="icon" type="image/svg+xml" href="/breathingicon.svg?v=2">
+  <link rel="manifest" href="/site.webmanifest?v=2">
+  <meta name="theme-color" content="#05060A">
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .unsubscribe-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .unsubscribe-btn {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #7AA7FF 0%, rgba(122, 167, 255, 0.8) 100%);
+      color: #05060A;
+      box-shadow: 0 4px 20px rgba(122, 167, 255, 0.3);
+    }
+
+    .unsubscribe-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .unsubscribe-btn:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(245, 247, 255, 0.4);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .unsubscribe-status {
+      min-height: 1.5em;
+      color: rgba(245, 247, 255, 0.72);
+      line-height: 1.6;
+    }
+
+    .unsubscribe-status[data-tone="error"] {
+      color: #FF8A8A;
+    }
+  </style>
+</head>
+<body class="legal-page">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="top-bar">
+    <div class="top-bar-content">
+      <h1 class="top-bar-brand-heading">
+        <a class="top-bar-brand" href="/" aria-label="SineDay home">
+          <img
+            class="top-bar-wordmark"
+            src="/assets/brand/sineday-wordmark.svg"
+            alt="SineDay"
+            width="700"
+            height="190"
+          >
+        </a>
+      </h1>
+    </div>
+  </header>
+
+  <main id="main-content" class="main-content legal-main">
+    <section class="legal-shell">
+      <div class="legal-card">
+        <p class="legal-eyebrow">Daily Duck</p>
+        <h1 class="legal-title">Stop daily emails</h1>
+        <p class="legal-subline">This page does not change your subscription until you confirm.</p>
+        <p>
+          Confirm below to stop SineDay Daily Duck emails. You can turn them back on later from your dashboard.
+        </p>
+        <div class="unsubscribe-actions">
+          <button id="unsubscribe-confirm" class="unsubscribe-btn" type="button">
+            Unsubscribe from daily emails
+          </button>
+          <p id="unsubscribe-status" class="unsubscribe-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer site-footer--legal">
+    <div class="site-footer__inner">
+      <div class="site-footer__brand">
+        <div class="site-footer__name">SineDay</div>
+        <p class="site-footer__meta">Operated by RaLux LLC DBA SineDay</p>
+      </div>
+      <nav class="site-footer__nav" aria-label="Footer navigation">
+        <a href="/privacy.html">Privacy</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+      <div class="site-footer__note">© SineDay™ 2026</div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var token = params.get("token") || "";
+      var button = document.getElementById("unsubscribe-confirm");
+      var status = document.getElementById("unsubscribe-status");
+
+      function setStatus(message, tone) {
+        status.textContent = message;
+        if (tone) status.setAttribute("data-tone", tone);
+        else status.removeAttribute("data-tone");
+      }
+
+      if (!token) {
+        button.disabled = true;
+        setStatus("This unsubscribe link is missing or incomplete.", "error");
+        return;
+      }
+
+      button.addEventListener("click", function () {
+        if (button.disabled) return;
+        button.disabled = true;
+        setStatus("Updating your email preference…");
+
+        fetch("/api/unsubscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: token })
+        }).then(function (response) {
+          if (!response.ok) throw new Error("request failed");
+          setStatus("You are unsubscribed from Daily Duck emails.");
+        }).catch(function () {
+          button.disabled = false;
+          setStatus("We could not complete that request. Please try again or email support@sineday.app.", "error");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
