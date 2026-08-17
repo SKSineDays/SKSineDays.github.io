@@ -5554,6 +5554,22 @@ textarea.journal-entry-field-light:focus {
   line-height: 1.1;
 }
 
+.add-profile-sheet__header {
+  margin: 0 0 var(--feature-space-4);
+}
+
+.add-profile-sheet__header .feature-hero__eyebrow[hidden],
+.add-profile-sheet__intro[hidden] {
+  display: none;
+}
+
+.add-profile-sheet__intro {
+  margin: var(--feature-space-2) 0 0;
+  color: rgba(245, 247, 255, 0.62);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .origin-manage-sheet__intro {
   margin: var(--feature-space-2) 0 var(--feature-space-5);
   color: rgba(245, 247, 255, 0.62);
