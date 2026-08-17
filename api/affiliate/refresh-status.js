@@ -5,7 +5,9 @@ import {
   requireAffiliateContext,
   setPrivateApiHeaders,
   syncAffiliateAccountState,
+  syncAffiliatePromotionCodeState,
 } from "../_lib/affiliate-server.js";
+import { getStripeClient } from "../_lib/stripe.js";
 
 export default async function handler(req, res) {
   setPrivateApiHeaders(res, "POST, OPTIONS");
@@ -39,6 +41,20 @@ export default async function handler(req, res) {
       affiliate,
       supabaseAdmin,
     });
+
+    try {
+      await syncAffiliatePromotionCodeState({
+        stripe: getStripeClient(),
+        supabaseAdmin,
+        affiliate: synced,
+        previousStatus: affiliate.status,
+      });
+    } catch (error) {
+      console.error("[Affiliate] promotion sync failed:", {
+        affiliateId: synced.id,
+        message: error?.message || "Unknown error",
+      });
+    }
 
     return res.status(200).json({
       ok: true,

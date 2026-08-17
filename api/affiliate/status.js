@@ -2,6 +2,7 @@ import {
   affiliateApiError,
   getAffiliateApplicationForUser,
   handleOptions,
+  recoverAffiliatePromotionCodeIfNeeded,
   requireAffiliateContext,
   setPrivateApiHeaders,
   shouldRefreshAffiliateFromStripe,
@@ -54,6 +55,8 @@ export default async function handler(req, res) {
           "requirements_status",
           "activated_at",
           "updated_at",
+          "stripe_promotion_code_id",
+          "stripe_promotion_code_created_at",
         ].join(", "),
       )
       .eq("user_id", user.id)
@@ -68,6 +71,13 @@ export default async function handler(req, res) {
       affiliate = await syncAffiliateAccountState({
         affiliate,
         supabaseAdmin,
+      });
+    }
+
+    if (affiliate?.status === "active" && !affiliate.stripe_promotion_code_id) {
+      affiliate = await recoverAffiliatePromotionCodeIfNeeded({
+        supabaseAdmin,
+        affiliate,
       });
     }
 

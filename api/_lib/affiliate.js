@@ -184,8 +184,64 @@ export function isEligiblePremiumInvoice(invoice, premiumPriceId) {
   });
 }
 
+export function getAffiliateCouponId() {
+  const couponId =
+    typeof process.env.STRIPE_AFFILIATE_COUPON_ID === "string"
+      ? process.env.STRIPE_AFFILIATE_COUPON_ID.trim()
+      : "";
+  return couponId || null;
+}
+
 export function getStripeObjectId(value) {
   return typeof value === "string" ? value : value?.id || null;
+}
+
+export function isStripePromotionCodeId(value) {
+  const id = getStripeObjectId(value);
+  return Boolean(id && id.startsWith("promo_"));
+}
+
+function addPromotionCodeId(ids, value) {
+  const id = getStripeObjectId(value);
+  if (!isStripePromotionCodeId(id) || ids.includes(id)) return;
+  ids.push(id);
+}
+
+function addPromotionCodeIdsFromDiscountLike(ids, value) {
+  if (!value || typeof value === "string") return;
+  addPromotionCodeId(ids, value.promotion_code);
+}
+
+function addPromotionCodeIdsFromList(ids, list) {
+  if (!list) return;
+  const items = Array.isArray(list) ? list : list.data;
+  if (!Array.isArray(items)) return;
+  for (const item of items) {
+    if (typeof item === "string") {
+      addPromotionCodeId(ids, item);
+      continue;
+    }
+    addPromotionCodeIdsFromDiscountLike(ids, item);
+    addPromotionCodeId(ids, item?.promotion_code);
+  }
+}
+
+export function collectPromotionCodeIds({
+  session,
+  subscription,
+  invoice,
+} = {}) {
+  const ids = [];
+  addPromotionCodeIdsFromList(ids, session?.discounts);
+  addPromotionCodeIdsFromDiscountLike(ids, subscription?.discount);
+  addPromotionCodeIdsFromList(ids, subscription?.discounts);
+  addPromotionCodeIdsFromDiscountLike(ids, invoice?.discount);
+  addPromotionCodeIdsFromList(ids, invoice?.discounts);
+  return ids;
+}
+
+export function getPromotionCouponId(promotion) {
+  return getStripeObjectId(promotion?.coupon);
 }
 
 export function unixSecondsToIso(value) {

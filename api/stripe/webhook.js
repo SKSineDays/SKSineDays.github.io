@@ -24,6 +24,11 @@ import {
   isEligiblePremiumInvoice,
   unixSecondsToIso,
 } from "../_lib/affiliate.js";
+import {
+  recordAffiliateAttributionFromPromotion,
+  recoverAffiliateAttributionFromInvoice,
+  retrieveCheckoutPromotionCodeIds,
+} from "../_lib/affiliate-server.js";
 import { getStripeClient } from "../_lib/stripe.js";
 import {
   claimWebhookEvent,
@@ -88,7 +93,7 @@ async function findUserByCustomerId(supabase, customerId) {
 /**
  * Handle checkout.session.completed
  */
-async function handleCheckoutCompleted(supabase, event) {
+async function handleCheckoutCompleted(supabase, stripe, event) {
   const session = event.data.object;
   const userId = getUserIdFromEvent(event);
 
@@ -112,6 +117,16 @@ async function handleCheckoutCompleted(supabase, event) {
       onConflict: 'user_id'
     });
   if (error) throw new Error('Failed to synchronize checkout subscription');
+
+  if (!isAffiliateProgramEnabled()) return;
+
+  const promotionCodeIds = await retrieveCheckoutPromotionCodeIds(stripe, session);
+  await recordAffiliateAttributionFromPromotion({
+    supabaseAdmin: supabase,
+    subscriberUserId: userId,
+    promotionCodeIds,
+    source: "checkout",
+  });
 }
 
 /**
@@ -189,7 +204,7 @@ async function findUserForInvoice(supabase, invoice) {
   return data?.user_id || null;
 }
 
-async function handleInvoicePaid(supabase, event) {
+async function handleInvoicePaid(supabase, stripe, event) {
   const invoice = event.data.object;
   const premiumPriceId = process.env.STRIPE_PRICE_ID;
   if (!premiumPriceId) throw new Error("Missing Premium price configuration");
@@ -198,6 +213,15 @@ async function handleInvoicePaid(supabase, event) {
   const userId = await findUserForInvoice(supabase, invoice);
   const subscriptionId = getStripeObjectId(invoice.subscription);
   if (!userId || !subscriptionId) return;
+
+  if (isAffiliateProgramEnabled()) {
+    await recoverAffiliateAttributionFromInvoice({
+      stripe,
+      supabaseAdmin: supabase,
+      invoice,
+      userId,
+    });
+  }
 
   const paidAt = invoice.status_transitions?.paid_at || event.created;
   const { error } = await supabase.rpc("record_affiliate_commission", {
@@ -377,7 +401,7 @@ export default async function handler(req, res) {
 
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(supabase, event);
+        await handleCheckoutCompleted(supabase, stripe, event);
         break;
 
       case 'customer.subscription.created':
@@ -387,7 +411,7 @@ export default async function handler(req, res) {
         break;
 
       case "invoice.paid":
-        await handleInvoicePaid(supabase, event);
+        await handleInvoicePaid(supabase, stripe, event);
         break;
 
       case "charge.refunded":

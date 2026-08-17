@@ -256,10 +256,13 @@ SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 STRIPE_SECRET_KEY=sk_test_xxx or sk_live_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 STRIPE_PRICE_ID=price_1SpIL1KKH9MbWW3vlOrrnYll
+STRIPE_AFFILIATE_COUPON_ID=coupon_xxx
 
 # App
 APP_URL=https://sineday.app
 ```
+
+`STRIPE_AFFILIATE_COUPON_ID` is server-only. Do not add it to `/api/config` or any browser-facing payload.
 
 **Note:** The app uses `price_1SpIL1KKH9MbWW3vlOrrnYll` and `prod_Tms5foiWKGnlbB` as mentioned in requirements.
 

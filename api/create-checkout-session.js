@@ -14,6 +14,11 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { isAffiliateProgramEnabled } from './_lib/affiliate.js';
+import {
+  applyAffiliateCheckoutMode,
+  resolveCheckoutAffiliateReferral,
+} from './_lib/affiliate-server.js';
 import { getStripeClient } from './_lib/stripe.js';
 
 /**
@@ -169,8 +174,16 @@ export default async function handler(req, res) {
     const privacyUrl = `${appUrl}/privacy.html`;
     const policyVersion = '2026-03-17';
 
-    // Create Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const referral = isAffiliateProgramEnabled()
+      ? await resolveCheckoutAffiliateReferral({
+          stripe,
+          supabaseAdmin,
+          user,
+          affiliateCode: req.body?.affiliateCode,
+        })
+      : null;
+
+    const sessionParams = applyAffiliateCheckoutMode({
       mode: 'subscription',
       customer: customerId,
       client_reference_id: user.id,
@@ -197,7 +210,16 @@ export default async function handler(req, res) {
         refunds_url: refundsUrl,
         privacy_url: privacyUrl
       }
-    });
+    }, referral);
+
+    if (referral?.promotionCodeId) {
+      console.log('affiliate promotion applied to checkout', {
+        affiliateId: referral.affiliateId,
+        promotionCodeId: referral.promotionCodeId,
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('Created Checkout session:', session.id);
 
