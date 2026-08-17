@@ -10,7 +10,9 @@ const store = {
   profiles: new Map(),
   preferences: new Map(),
   authEmail: "member@sineday.app",
-  failProfileLookup: false
+  failProfileLookup: false,
+  resendSends: [],
+  resendError: null
 };
 
 function clone(value) {
@@ -49,7 +51,7 @@ function makeTable(tableName) {
         if (action === "upsert") {
           const existing = [...store.subscribers.values()].find((row) => row.email === payload.email);
           const row = {
-            id: existing?.id || `sub_${store.subscribers.size + 1}`,
+            id: existing?.id || `00000000-0000-4000-8000-${String(store.subscribers.size + 1).padStart(12, "0")}`,
             created_at: existing?.created_at || "2026-01-01T00:00:00.000Z",
             ...existing,
             ...payload
@@ -123,7 +125,15 @@ mock.module("@supabase/supabase-js", {
 mock.module("resend", {
   namedExports: {
     Resend: class Resend {
-      emails = { send: async () => ({ id: "email_skip" }) };
+      emails = {
+        send: async (payload, options) => {
+          store.resendSends.push({ payload, options });
+          if (store.resendError) {
+            return { data: null, error: store.resendError };
+          }
+          return { data: { id: "email_welcome" }, error: null };
+        }
+      };
     }
   }
 });
@@ -289,4 +299,84 @@ test("fails closed when existing Daily Duck email rhythm cannot be verified", as
   } finally {
     store.failProfileLookup = false;
   }
+});
+
+function withWelcomeEnv(fn) {
+  const previous = {
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM: process.env.RESEND_FROM,
+    UNSUBSCRIBE_SECRET: process.env.UNSUBSCRIBE_SECRET,
+    PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL
+  };
+  process.env.RESEND_API_KEY = "re_test_key";
+  process.env.RESEND_FROM = "Daily <daily@daily.sineday.app>";
+  process.env.UNSUBSCRIBE_SECRET = "unsubscribe-secret-test-key";
+  process.env.PUBLIC_SITE_URL = "https://sineday.app";
+  return Promise.resolve()
+    .then(fn)
+    .finally(() => {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value == null) delete process.env[key];
+        else process.env[key] = value;
+      }
+    });
+}
+
+test("welcome route writes 6:00 instead of 7:00 and uses welcomeemail", async () => {
+  await withWelcomeEnv(async () => {
+    store.subscribers.clear();
+    store.profiles.clear();
+    store.preferences.clear();
+    store.resendSends.length = 0;
+    store.resendError = null;
+    store.authEmail = "member@sineday.app";
+    store.failProfileLookup = false;
+
+    const res = await postSubscribe({
+      consent: true,
+      timezone: "America/Chicago",
+      birthdate: "1985-04-20",
+      source: "dashboard-daily-duck"
+    });
+
+    assert.equal(res.statusCode, 200);
+    const subscriber = [...store.subscribers.values()][0];
+    const prefs = store.preferences.get(subscriber.id);
+    assert.equal(prefs.send_hour_local, 6);
+    assert.equal(prefs.send_minute_local, 0);
+    assert.equal(store.resendSends.length, 1);
+    assert.equal(store.resendSends[0].payload.template.id, "welcomeemail");
+    assert.equal(store.resendSends[0].payload.template_id, undefined);
+    assert.equal(
+      store.resendSends[0].options.idempotencyKey,
+      `sineday-welcome/${subscriber.id}`
+    );
+    assert.match(
+      store.resendSends[0].payload.template.variables.OPT_OUT_URL,
+      /^https:\/\/sineday\.app\/unsubscribe\.html\?token=/
+    );
+  });
+});
+
+test("welcome route treats Resend { data, error } as a send failure without failing subscribe", async () => {
+  await withWelcomeEnv(async () => {
+    store.subscribers.clear();
+    store.profiles.clear();
+    store.preferences.clear();
+    store.resendSends.length = 0;
+    store.resendError = { message: "template unpublished" };
+    store.authEmail = "member@sineday.app";
+    store.failProfileLookup = false;
+
+    const res = await postSubscribe({
+      consent: true,
+      timezone: "America/Chicago",
+      birthdate: "1985-04-20",
+      source: "dashboard-daily-duck"
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.equal(store.resendSends.length, 1);
+  });
 });

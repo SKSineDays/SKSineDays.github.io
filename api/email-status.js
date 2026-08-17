@@ -1,6 +1,6 @@
 /**
  * GET  /api/email-status  — returns subscriber active status for the authed user
- * PATCH /api/email-status  — sets status to 'unsubscribed' for the authed user
+ * PATCH /api/email-status  — atomically unsubscribes the authed user from Daily Duck email
  * Headers: Authorization: Bearer <access_token>
  *
  * GET never returns raw birthdate, auth metadata, or subscriber UUIDs.
@@ -71,12 +71,20 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { error } = await serviceClient
+      const { data: subscriber, error: lookupError } = await serviceClient
         .from('subscribers')
-        .update({ status: 'unsubscribed' })
-        .eq('email', email);
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (lookupError) throw lookupError;
+
+      if (subscriber?.id) {
+        const { error } = await serviceClient.rpc('unsubscribe_email_subscriber', {
+          p_subscriber_id: subscriber.id
+        });
+        if (error) throw error;
+      }
 
       return res.status(200).json({ ok: true });
     }
