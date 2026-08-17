@@ -100,8 +100,7 @@ export function deriveEmailRhythmFromBirthdate(ymd, { now = new Date(), timezone
   return {
     ok: true,
     birthDayOfYear,
-    originDay,
-    sinedayIndex: originDay - 1
+    originDay
   };
 }
 
@@ -130,25 +129,18 @@ export function resolveEmailRhythmWrite({
 
   const next = {
     birth_day_of_year: existingProfile?.birth_day_of_year ?? null,
-    origin_day: existingProfile?.origin_day ?? null,
-    sineday_index: existingProfile?.sineday_index ?? null
+    origin_day: existingProfile?.origin_day ?? null
   };
 
   if (derived) {
     next.birth_day_of_year = derived.birthDayOfYear;
     next.origin_day = derived.originDay;
-    if (hasOwnRhythmValue(derived.sinedayIndex)) {
-      next.sineday_index = derived.sinedayIndex;
-    }
   } else if (clientProvided) {
     if (hasOwnRhythmValue(clientProvided.birth_day_of_year)) {
       next.birth_day_of_year = clientProvided.birth_day_of_year;
     }
     if (hasOwnRhythmValue(clientProvided.origin_day)) {
       next.origin_day = clientProvided.origin_day;
-    }
-    if (hasOwnRhythmValue(clientProvided.sineday_index)) {
-      next.sineday_index = clientProvided.sineday_index;
     }
   }
 

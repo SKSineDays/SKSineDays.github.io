@@ -200,6 +200,7 @@ test("authenticated Daily Duck setup stores derived values and not the raw birth
   const profile = store.profiles.get(subscriber.id);
   assert.equal(profile.birth_day_of_year, 110);
   assert.equal(profile.origin_day, 1);
+  assert.equal("sineday_index" in profile, false);
   assert.equal("birthdate" in profile, false);
 });
 
@@ -222,6 +223,7 @@ test("locked Daily Duck identity is not overwritten by a later birthdate or stal
     timezone: "America/Chicago",
     birthdate: "2000-01-01",
     birth_day_of_year: 1,
+    sineday_index: 17,
     origin_day: 18,
     source: "dashboard-owner"
   });
@@ -234,6 +236,7 @@ test("locked Daily Duck identity is not overwritten by a later birthdate or stal
   const profile = store.profiles.get(subscriber.id);
   assert.equal(profile.birth_day_of_year, 110);
   assert.equal(profile.origin_day, 1);
+  assert.equal("sineday_index" in profile, false);
   assert.equal(subscriber.status, "active");
 });
 

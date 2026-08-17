@@ -42,7 +42,7 @@ test("deriveEmailRhythmFromBirthdate uses shared Origin math and rejects future 
   assert.equal(derived.originDay, getOriginTypeForDob("1985-04-20"));
   assert.equal(derived.originDay, 1);
   assert.equal(derived.birthDayOfYear, 110);
-  assert.equal(derived.sinedayIndex, 0);
+  assert.equal("sinedayIndex" in derived, false);
 
   const future = deriveEmailRhythmFromBirthdate("2026-08-13", {
     now,
@@ -76,20 +76,17 @@ test("email rhythm is locked only when both derived values exist", () => {
 test("locked email rhythm ignores later derived or client-provided values", () => {
   const existing = {
     birth_day_of_year: 100,
-    origin_day: 7,
-    sineday_index: 6
+    origin_day: 7
   };
   const decision = resolveEmailRhythmWrite({
     existingProfile: existing,
     derived: {
       birthDayOfYear: 200,
-      originDay: 3,
-      sinedayIndex: 2
+      originDay: 3
     },
     clientProvided: {
       birth_day_of_year: 1,
-      origin_day: 18,
-      sineday_index: 17
+      origin_day: 18
     }
   });
 
@@ -105,8 +102,7 @@ test("incomplete email rhythm can be completed once from Daily Duck birthdate", 
     existingProfile: { birth_day_of_year: 40, origin_day: null },
     derived: {
       birthDayOfYear: 110,
-      originDay: 1,
-      sinedayIndex: 0
+      originDay: 1
     }
   });
 
@@ -114,9 +110,9 @@ test("incomplete email rhythm can be completed once from Daily Duck birthdate", 
   assert.equal(decision.configured, true);
   assert.deepEqual(decision.write, {
     birth_day_of_year: 110,
-    origin_day: 1,
-    sineday_index: 0
+    origin_day: 1
   });
+  assert.equal("sineday_index" in decision.write, false);
 });
 
 test("stale client derived values can complete an incomplete profile but never overwrite a lock", () => {
@@ -124,8 +120,7 @@ test("stale client derived values can complete an incomplete profile but never o
     existingProfile: { birth_day_of_year: null, origin_day: null },
     clientProvided: {
       birth_day_of_year: 12,
-      origin_day: 4,
-      sineday_index: 3
+      origin_day: 4
     }
   });
   assert.equal(incomplete.configured, true);
