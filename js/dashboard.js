@@ -1869,11 +1869,59 @@ function setupLanguageRegionUI() {
   weekSel.addEventListener("change", applyAndSave);
 }
 
-function resetProfileFormCopy() {
+/**
+ * Presentation-only: first/owner profile vs additional profile vs edit.
+ * Ownership still comes from hasOwnerProfile(); this never writes profile data.
+ */
+function updateAddProfilePresentation() {
+  const isEdit = profileFormMode === "edit";
+  const isFirstProfile = !isEdit && !hasOwnerProfile();
+  const copy = isEdit
+    ? {
+        eyebrow: "",
+        title: "Edit profile",
+        intro: "",
+        submit: "Save changes",
+        nameLabel: "Name",
+        birthdateLabel: "Birthdate"
+      }
+    : isFirstProfile
+      ? {
+          eyebrow: "Your SineDay",
+          title: "Start with you",
+          intro: "Your first profile becomes the anchor for your private journal, history, and daily wave. You can add family and friends afterward.",
+          submit: "Start My SineDay",
+          nameLabel: "Your name",
+          birthdateLabel: "Your birthdate"
+        }
+      : {
+          eyebrow: "",
+          title: "Add a profile",
+          intro: "",
+          submit: "Save Profile",
+          nameLabel: "Name",
+          birthdateLabel: "Birthdate"
+        };
+
+  const eyebrow = document.getElementById("add-profile-eyebrow");
   const title = document.getElementById("add-profile-title");
+  const intro = document.getElementById("add-profile-intro");
   const submit = document.getElementById("add-profile-btn");
-  if (title) title.textContent = "Add New Profile";
-  if (submit) submit.textContent = "Save Profile";
+  const nameLabel = document.querySelector('label[for="profile-name"]');
+  const birthdateLabel = document.querySelector('label[for="profile-birthdate"]');
+
+  if (eyebrow) {
+    eyebrow.textContent = copy.eyebrow;
+    eyebrow.hidden = !copy.eyebrow;
+  }
+  if (title) title.textContent = copy.title;
+  if (intro) {
+    intro.textContent = copy.intro;
+    intro.hidden = !copy.intro;
+  }
+  if (submit) submit.textContent = copy.submit;
+  if (nameLabel) nameLabel.textContent = copy.nameLabel;
+  if (birthdateLabel) birthdateLabel.textContent = copy.birthdateLabel;
 }
 
 function ensureTimezoneOption(select, timezone) {
@@ -1914,20 +1962,17 @@ function setupAddProfileCollapse() {
     profileFormMode = profile ? "edit" : "add";
     editingProfileId = profile?.id || null;
 
-    const title = document.getElementById("add-profile-title");
-    const submit = document.getElementById("add-profile-btn");
     if (profile) {
-      if (title) title.textContent = "Edit profile";
-      if (submit) submit.textContent = "Save changes";
       fillProfileForm(profile);
     } else {
-      resetProfileFormCopy();
       document.getElementById("add-profile-form")?.reset?.();
       ensureTimezoneOption(
         document.getElementById("profile-timezone"),
         getClientTimezone()
       );
     }
+
+    updateAddProfilePresentation();
 
     toggle.setAttribute("aria-expanded", profile ? "false" : "true");
     sheet.setAttribute("aria-hidden", "false");
@@ -1949,7 +1994,7 @@ function setupAddProfileCollapse() {
     form?.reset?.();
     profileFormMode = "add";
     editingProfileId = null;
-    resetProfileFormCopy();
+    updateAddProfilePresentation();
     if (!document.querySelector(".add-profile-sheet.is-open")) {
       document.body.classList.remove("modal-open");
     }
@@ -2155,7 +2200,7 @@ async function handleAddProfile(e) {
     form?.reset?.();
     addProfileUI?.close?.();
     showSuccess(shouldBecomeOwner
-      ? 'Owner profile added. Today’s Wave is ready.'
+      ? 'Your SineDay is ready.'
       : 'Profile added successfully!');
   } catch (error) {
     console.error('Add profile error:', error);
