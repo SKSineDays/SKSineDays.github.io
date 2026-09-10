@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v19';
+const CACHE_NAME = 'sineday-v20';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -126,6 +126,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Never intercept Vercel Web Analytics / insights traffic.
+  if (url.pathname.startsWith('/_vercel/')) {
     return;
   }
 
