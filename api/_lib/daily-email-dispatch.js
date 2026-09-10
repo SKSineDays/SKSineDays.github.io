@@ -112,6 +112,15 @@ export async function dispatchClaimedDailyEmails({
         continue;
       }
 
+      console.info("[daily-email] prepared", {
+        deliveryId,
+        localDate: claim.local_date,
+        timezone: claim.timezone || null,
+        originDay: claim.origin_day,
+        sinedayDay: day,
+        templateAlias
+      });
+
       const { data, error } = await resend.emails.send(
         {
           from: env.RESEND_FROM,
@@ -136,6 +145,12 @@ export async function dispatchClaimedDailyEmails({
       );
 
       const providerMessageId = unwrapResendSend({ data, error });
+      console.info("[daily-email] sent", {
+        deliveryId,
+        sinedayDay: day,
+        templateAlias,
+        providerMessageId
+      });
       await updateDelivery(supabase, deliveryId, {
         status: "sent",
         provider: "resend",

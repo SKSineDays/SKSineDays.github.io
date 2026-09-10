@@ -23,7 +23,12 @@ process.env.DAILY_EMAIL_NOW = "1985-04-20T12:00:00.000Z";
 
 const store = createDailyEmailStore();
 const sent = [];
+const infoLogs = [];
 let resendError = null;
+
+mock.method(console, "info", (...args) => {
+  infoLogs.push(args);
+});
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -140,6 +145,7 @@ function resetStore() {
   store.profiles.clear();
   store.deliveries.clear();
   sent.length = 0;
+  infoLogs.length = 0;
   resendError = null;
   process.env.DAILY_EMAIL_CRON_ENABLED = "true";
   process.env.CRON_SECRET = CRON_SECRET;
@@ -205,6 +211,32 @@ test("duplicate cron claims produce one send", async () => {
   assert.equal(sent[0].payload.headers["List-Unsubscribe-Post"], "List-Unsubscribe=One-Click");
   assert.equal("email" in first.body, false);
   assert.equal(JSON.stringify(first.body).includes("@"), false);
+
+  const prepared = infoLogs.find(([message]) => message === "[daily-email] prepared");
+  const accepted = infoLogs.find(([message]) => message === "[daily-email] sent");
+  const summary = infoLogs.find(([message]) => message === "[daily-email] run complete");
+  assert.deepEqual(prepared?.[1], {
+    deliveryId: delivery.id,
+    localDate: "1985-04-20",
+    timezone: "America/Chicago",
+    originDay: 1,
+    sinedayDay: 1,
+    templateAlias: "day01risinginitiation-1"
+  });
+  assert.deepEqual(accepted?.[1], {
+    deliveryId: delivery.id,
+    sinedayDay: 1,
+    templateAlias: "day01risinginitiation-1",
+    providerMessageId: "re_1"
+  });
+  assert.deepEqual(summary?.[1], {
+    now: "1985-04-20T12:00:00.000Z",
+    claimed: 1,
+    sent: 1,
+    failed: 0,
+    skipped: 0
+  });
+  assert.equal(JSON.stringify(infoLogs).includes("delivered+daily-sineday@resend.dev"), false);
 });
 
 test("opt-out after claim but before send is rechecked and skipped", async () => {

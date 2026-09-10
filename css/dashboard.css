@@ -2431,6 +2431,29 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-height: 44px;
 }
 
+.daily-email-setup-preview {
+  margin: 2px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(122, 167, 255, 0.22);
+  border-radius: 14px;
+  background: #101725;
+  color: #E8ECF7;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.daily-email-setup-preview:empty {
+  display: none;
+}
+
+.daily-email-setup-permanence {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.52);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
 .daily-email-setup-sheet__status {
   min-height: 1.2em;
   margin: 0;
