@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
@@ -181,4 +184,53 @@ test("delivery errors are sanitized and truncated", () => {
   assert.equal(sanitized.includes("@"), false);
   assert.equal(sanitized.includes("http"), false);
   assert.equal(sanitizeDeliveryError("x".repeat(1500)).length, 1000);
+});
+
+const MIGRATIONS_DIR = join(dirname(fileURLToPath(import.meta.url)), "../supabase/migrations");
+const APPLIED_SCHEDULER_MIGRATION = "20260817071320_daily_email_scheduler.sql";
+const FUNCTION_START = /create or replace function public\.claim_due_daily_emails\s*\(/i;
+
+function readMigration(fileName) {
+  return readFileSync(join(MIGRATIONS_DIR, fileName), "utf8");
+}
+
+function extractClaimDueDailyEmailsDefinition(sql) {
+  const start = sql.search(FUNCTION_START);
+  if (start < 0) return null;
+  const end = sql.indexOf("$$;", start);
+  if (end < 0) return null;
+  return sql.slice(start, end + 3);
+}
+
+function latestClaimDueDailyEmailsSql() {
+  const files = readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith(".sql")).sort();
+  let latest = null;
+  for (const fileName of files) {
+    const definition = extractClaimDueDailyEmailsDefinition(readMigration(fileName));
+    if (definition) {
+      latest = { fileName, sql: definition };
+    }
+  }
+  return latest;
+}
+
+test("applied daily-email scheduler migration stays unchanged", () => {
+  const applied = readMigration(APPLIED_SCHEDULER_MIGRATION);
+  assert.equal([...applied.matchAll(/pg_catalog\.coalesce\s*\(/g)].length, 4);
+  assert.match(applied, /pg_catalog\.greatest\s*\(/);
+  assert.match(applied, /pg_catalog\.least\s*\(/);
+});
+
+test("later migration recreates claim_due_daily_emails without qualified special SQL", () => {
+  const latest = latestClaimDueDailyEmailsSql();
+  assert.ok(latest, "claim_due_daily_emails must still be defined");
+  assert.notEqual(latest.fileName, APPLIED_SCHEDULER_MIGRATION);
+  assert.doesNotMatch(latest.sql, /pg_catalog\.coalesce\s*\(/);
+  assert.doesNotMatch(latest.sql, /pg_catalog\.greatest\s*\(/);
+  assert.doesNotMatch(latest.sql, /pg_catalog\.least\s*\(/);
+  assert.match(latest.sql, /#variable_conflict use_column/);
+  assert.match(latest.sql, /v_now := coalesce\(p_now, pg_catalog\.clock_timestamp\(\)\);/);
+  assert.match(latest.sql, /v_limit := greatest\(1, least\(coalesce\(p_limit, 50\), 200\)\);/);
+  assert.match(latest.sql, /and coalesce\(d\.last_attempt_at, d\.created_at\)/);
+  assert.match(latest.sql, /and coalesce\(\s*public\.delivery_log\.last_attempt_at,/);
 });
