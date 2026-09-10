@@ -143,7 +143,9 @@ test("email-status payload never includes raw birthdate or subscriber id", () =>
     ok: true,
     subscribed: false,
     profileConfigured: false,
-    originDay: null
+    originDay: null,
+    currentSineDay: null,
+    timezone: null
   });
 
   const activeIncomplete = buildEmailStatusPayload(
@@ -154,7 +156,9 @@ test("email-status payload never includes raw birthdate or subscriber id", () =>
     ok: true,
     subscribed: true,
     profileConfigured: false,
-    originDay: null
+    originDay: null,
+    currentSineDay: null,
+    timezone: null
   });
   assert.equal("id" in activeIncomplete, false);
   assert.equal("birthdate" in activeIncomplete, false);
@@ -167,6 +171,8 @@ test("email-status payload never includes raw birthdate or subscriber id", () =>
     ok: true,
     subscribed: false,
     profileConfigured: true,
-    originDay: 7
+    originDay: 7,
+    currentSineDay: null,
+    timezone: null
   });
 });

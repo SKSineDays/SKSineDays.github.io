@@ -46,7 +46,9 @@ let dailyEmailState = {
   subscribed: false,
   loading: false,
   profileConfigured: false,
-  originDay: null
+  originDay: null,
+  currentSineDay: null,
+  timezone: null
 };
 let duckCarousel = null;
 let addProfileUI = null;
@@ -69,6 +71,7 @@ let deferredInstallPrompt = null;
 let installPromptAvailable = false;
 let subscriptionRenderGen = 0;
 let entitlementLoadGen = 0;
+let dailyEmailLoadGen = 0;
 
 /**
  * Initialize dashboard on page load
@@ -136,6 +139,7 @@ async function init() {
         loadDailyEmailState();
         showAuthenticatedView();
       } else if (event === 'SIGNED_OUT') {
+        dailyEmailLoadGen += 1;
         currentUser = null;
         currentEntitlement = null;
         profiles = [];
@@ -143,7 +147,9 @@ async function init() {
           subscribed: false,
           loading: false,
           profileConfigured: false,
-          originDay: null
+          originDay: null,
+          currentSineDay: null,
+          timezone: null
         };
         if (duckCarousel) {
           duckCarousel.destroy();
@@ -360,6 +366,8 @@ function resetDailyEmailState() {
   dailyEmailState.loading = false;
   dailyEmailState.profileConfigured = false;
   dailyEmailState.originDay = null;
+  dailyEmailState.currentSineDay = null;
+  dailyEmailState.timezone = null;
 }
 
 function applyDailyEmailResponse(data = {}) {
@@ -371,6 +379,20 @@ function applyDailyEmailResponse(data = {}) {
   }
   if (Object.prototype.hasOwnProperty.call(data, "originDay")) {
     dailyEmailState.originDay = Number.isInteger(data.originDay) ? data.originDay : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(data, "currentSineDay")) {
+    dailyEmailState.currentSineDay =
+      Number.isInteger(data.currentSineDay) &&
+      data.currentSineDay >= 1 &&
+      data.currentSineDay <= 18
+        ? data.currentSineDay
+        : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(data, "timezone")) {
+    dailyEmailState.timezone =
+      typeof data.timezone === "string" && data.timezone.length > 0
+        ? data.timezone
+        : null;
   }
 }
 
@@ -422,7 +444,13 @@ function renderDailyEmailBox() {
     if (needsSetup) {
       toggle.setAttribute("aria-label", "Daily Duck email needs your birthdate setup.");
     } else if (isSubscribed) {
-      toggle.setAttribute("aria-label", "Daily Duck email is on. Tap to turn it off.");
+      const todayLabel = dailyEmailState.currentSineDay
+        ? ` · Today: SineDay ${dailyEmailState.currentSineDay}`
+        : "";
+      toggle.setAttribute(
+        "aria-label",
+        `Daily Duck email is on${todayLabel}. Tap to turn it off.`
+      );
     } else {
       toggle.setAttribute("aria-label", "Daily Duck email is off. Tap to turn it on.");
     }
@@ -431,17 +459,25 @@ function renderDailyEmailBox() {
   if (needsSetup) {
     toggle.title = "Daily Duck email: Needs setup";
   } else if (isSubscribed) {
-    toggle.title = "Daily Duck email: On";
+    toggle.title = dailyEmailState.currentSineDay
+      ? `Daily Duck email: On · Today: SineDay ${dailyEmailState.currentSineDay}`
+      : "Daily Duck email: On";
   } else {
     toggle.title = "Daily Duck email: Off";
   }
 }
 
-async function loadDailyEmailState() {
-  if (!currentUser?.email) {
+async function loadDailyEmailState({ resetOnError = true } = {}) {
+  const loadGen = ++dailyEmailLoadGen;
+  const accountEmail = currentUser?.email?.toLowerCase().trim() || "";
+  const isCurrentLoad = () =>
+    loadGen === dailyEmailLoadGen &&
+    currentUser?.email?.toLowerCase().trim() === accountEmail;
+
+  if (!accountEmail) {
     resetDailyEmailState();
     renderDailyEmailBox();
-    return;
+    return false;
   }
 
   try {
@@ -450,19 +486,69 @@ async function loadDailyEmailState() {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     const data = await response.json();
+    if (!isCurrentLoad()) return false;
     if (!data?.ok) {
-      resetDailyEmailState();
+      if (resetOnError) resetDailyEmailState();
+      return false;
     } else {
-      dailyEmailState.subscribed = !!data.subscribed;
-      dailyEmailState.profileConfigured = !!data.profileConfigured;
-      dailyEmailState.originDay = Number.isInteger(data.originDay) ? data.originDay : null;
+      applyDailyEmailResponse(data);
     }
   } catch (err) {
+    if (!isCurrentLoad()) return false;
     console.error("Failed to load daily email state:", err);
-    resetDailyEmailState();
+    if (resetOnError) resetDailyEmailState();
+    return false;
+  } finally {
+    if (isCurrentLoad()) renderDailyEmailBox();
   }
 
-  renderDailyEmailBox();
+  return true;
+}
+
+function clearDailyEmailPreview() {
+  const preview = document.getElementById("daily-email-setup-preview");
+  if (preview) preview.textContent = "";
+}
+
+function formatDailyEmailDayTitle(phase) {
+  const title = String(phase || "").split("•").pop()?.trim().toLowerCase();
+  if (!title) return "";
+  return title.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function renderDailyEmailPreview() {
+  const birthdate = document.getElementById("daily-email-birthdate")?.value || "";
+  const preview = document.getElementById("daily-email-setup-preview");
+  if (!preview || !birthdate) {
+    clearDailyEmailPreview();
+    return;
+  }
+
+  try {
+    const timezone = getClientTimezone();
+    const current = calculateSineDayForTimezone(birthdate, timezone);
+    const originDay = getOriginTypeForDob(birthdate);
+    const dayTitle = formatDailyEmailDayTitle(current?.phase);
+
+    if (
+      current?.error ||
+      !Number.isInteger(current?.day) ||
+      !Number.isInteger(originDay) ||
+      !dayTitle
+    ) {
+      clearDailyEmailPreview();
+      return;
+    }
+
+    preview.textContent = [
+      "Daily Duck preview",
+      `Today: SineDay ${current.day} · ${dayTitle}`,
+      `Origin Day: ${originDay}`,
+      "Daily Duck email will follow this birthdate each day."
+    ].join("\n");
+  } catch {
+    clearDailyEmailPreview();
+  }
 }
 
 function openDailyEmailSetup() {
@@ -477,6 +563,7 @@ function openDailyEmailSetup() {
   backdrop.hidden = false;
   setDailyEmailStatus("");
   if (birthdateInput) birthdateInput.value = "";
+  clearDailyEmailPreview();
 
   requestAnimationFrame(() => {
     sheet.classList.add("is-open");
@@ -500,6 +587,7 @@ function closeDailyEmailSetup() {
   backdrop.classList.remove("is-open");
   form?.reset?.();
   setDailyEmailStatus("");
+  clearDailyEmailPreview();
 
   setTimeout(() => {
     sheet.hidden = true;
@@ -550,6 +638,7 @@ async function enableDailyEmail({ birthdate } = {}) {
 
     dailyEmailState.subscribed = true;
     applyDailyEmailResponse(data);
+    await loadDailyEmailState({ resetOnError: false });
     if (birthdate && dailyEmailState.originDay) {
       showSuccess(`Daily Duck email enabled for Origin Day ${dailyEmailState.originDay}.`);
     } else {
@@ -645,6 +734,8 @@ function setupDailyEmailSetupSheet() {
     closeDailyEmailSetup();
   });
   form?.addEventListener("submit", submitDailyEmailSetup);
+  birthdateInput?.addEventListener("input", renderDailyEmailPreview);
+  birthdateInput?.addEventListener("change", renderDailyEmailPreview);
 
   birthdateInput?.addEventListener("focus", () => {
     requestAnimationFrame(() => {

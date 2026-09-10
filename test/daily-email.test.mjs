@@ -3,7 +3,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
+import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import {
   DAILY_TEMPLATE_ALIASES,
   calculateDailySineDay,
@@ -35,6 +35,23 @@ test("same origin advances one SineDay on the next local date", () => {
 
 test("Origin Day 2 on 1985-04-21 is SineDay 1", () => {
   assert.equal(calculateDailySineDay(2, "1985-04-21"), 1);
+});
+
+test("production regression: Origin Day 1 is SineDay 17 on 2026-09-10", () => {
+  assert.equal(calculateDailySineDay(1, "2026-09-10"), 17);
+  assert.equal(getDailyTemplateAlias(17), "day17emergingfoundation");
+});
+
+test("different Origin Days can have different current SineDays on the same date", () => {
+  assert.equal(calculateDailySineDay(1, "2026-09-10"), 17);
+  assert.equal(calculateDailySineDay(17, "2026-09-10"), 1);
+});
+
+test("email Origin Day math reproduces direct birthdate cycle math", () => {
+  const dob = "1985-04-20";
+  const originDay = getOriginTypeForDob(dob);
+  assert.equal(originDay, 1);
+  assert.equal(calculateDailySineDay(originDay, "2026-09-10"), 17);
 });
 
 test("Day 18 wraps to Day 1", () => {

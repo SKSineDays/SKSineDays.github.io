@@ -157,12 +157,24 @@ export function resolveEmailRhythmWrite({
   };
 }
 
-export function buildEmailStatusPayload(subscriber, profile) {
+export function buildEmailStatusPayload(
+  subscriber,
+  profile,
+  { currentSineDay = null, timezone = null } = {}
+) {
   const configured = isEmailRhythmLocked(profile);
   return {
     ok: true,
     subscribed: !!subscriber && subscriber.status === "active",
     profileConfigured: configured,
-    originDay: configured ? profile.origin_day : null
+    originDay: configured ? profile.origin_day : null,
+    currentSineDay:
+      configured && Number.isInteger(currentSineDay) && currentSineDay >= 1 && currentSineDay <= 18
+        ? currentSineDay
+        : null,
+    timezone:
+      subscriber && typeof timezone === "string" && timezone.length > 0
+        ? timezone
+        : null
   };
 }

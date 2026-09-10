@@ -83,6 +83,14 @@ export default async function handler(req, res) {
       now
     });
 
+    console.info("[daily-email] run complete", {
+      now: now.toISOString(),
+      claimed: claimed.length,
+      sent: counts.sent,
+      failed: counts.failed,
+      skipped: counts.skipped
+    });
+
     return json(res, 200, {
       ok: true,
       claimed: claimed.length,

@@ -8,6 +8,10 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import {
+  calculateDailySineDay,
+  getLocalCivilDateTime
+} from './_lib/daily-email.js';
 import { buildEmailStatusPayload } from './_lib/email-rhythm.js';
 
 async function getAuthedEmail(req, serviceClient) {
@@ -49,7 +53,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const { data: subscriber, error } = await serviceClient
         .from('subscribers')
-        .select('id, status')
+        .select('id, status, timezone')
         .eq('email', email)
         .maybeSingle();
 
@@ -67,7 +71,18 @@ export default async function handler(req, res) {
 
       if (profileError) throw profileError;
 
-      return res.status(200).json(buildEmailStatusPayload(subscriber, profile));
+      const localNow = getLocalCivilDateTime(new Date(), subscriber.timezone);
+      const currentSineDay =
+        profile?.origin_day && localNow?.ymd
+          ? calculateDailySineDay(profile.origin_day, localNow.ymd)
+          : null;
+
+      return res.status(200).json(
+        buildEmailStatusPayload(subscriber, profile, {
+          currentSineDay,
+          timezone: subscriber.timezone
+        })
+      );
     }
 
     if (req.method === 'PATCH') {
