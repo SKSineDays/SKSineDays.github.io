@@ -118,9 +118,13 @@ function printResult({ alias, day, failures, status }) {
 }
 
 async function getTemplate(resend, alias) {
-  const result = await resend.templates.get(alias);
-  if (result?.error || !result?.data) return null;
-  return result.data;
+  try {
+    const result = await resend.templates.get(alias);
+    if (result?.error || !result?.data) return null;
+    return result.data;
+  } catch {
+    return null;
+  }
 }
 
 function sleep(ms) {
