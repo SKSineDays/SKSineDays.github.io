@@ -1,0 +1,236 @@
+[
+  {
+    "day": 1,
+    "file": "Day1.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 420205,
+    "previousBytes": 392881,
+    "sha256": "9881eb027c819adf1704d57e17318cddda7164aee684d78f893db54be969ead4",
+    "avif": {
+      "file": "Day1.avif",
+      "bytes": 267611,
+      "sha256": "1d9930d569f6d9c1318b81b01b92bc773ecba40c778c98b48b1efc7b1c7f1466"
+    }
+  },
+  {
+    "day": 2,
+    "file": "Day2.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 339835,
+    "previousBytes": 362356,
+    "sha256": "541e4a64e09d4e62239525060ebbe50648ccb015d51c92cda00b9f2422f60844",
+    "avif": {
+      "file": "Day2.avif",
+      "bytes": 200236,
+      "sha256": "ba178f4079850f773a40f1072b0ca271f81b1debc557b5e69b12f0a02934383b"
+    }
+  },
+  {
+    "day": 3,
+    "file": "Day3.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 294549,
+    "previousBytes": 377660,
+    "sha256": "66ba2fc325419b053ad27a56e17a9d2c24f51d29359402a3d0bcdbea686272bb",
+    "avif": {
+      "file": "Day3.avif",
+      "bytes": 170504,
+      "sha256": "06becababad4176315f03aebc0b745d2344bf0863c8bba34dcc801e3277e0661"
+    }
+  },
+  {
+    "day": 4,
+    "file": "Day4.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 421782,
+    "previousBytes": 365624,
+    "sha256": "48229d6f2431fe271a337099d169017ca91872f466f91b7a076d1cc63f15a9fe",
+    "avif": {
+      "file": "Day4.avif",
+      "bytes": 265173,
+      "sha256": "cf4ff5d2a12ac04d25ae8c71d4d1443f30daeeadaefff40adb37d97db476f0a0"
+    }
+  },
+  {
+    "day": 5,
+    "file": "Day5.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 393947,
+    "previousBytes": 400286,
+    "sha256": "096b27f5e00c8d963431703c30fad2f6feaff0bb45357c23c26d89b2ed549ef0",
+    "avif": {
+      "file": "Day5.avif",
+      "bytes": 239374,
+      "sha256": "d98a370617d0a7b056e7feb33d334c76177768e8fdf7aa318dab648db6a34379"
+    }
+  },
+  {
+    "day": 6,
+    "file": "Day6.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 422183,
+    "previousBytes": 285996,
+    "sha256": "458c8818f1446ad14417dfb32bdb4a714bebd041f2418d181225b9beca7babb6",
+    "avif": {
+      "file": "Day6.avif",
+      "bytes": 274363,
+      "sha256": "bb4a34c54183a57b3bfdb86656514f6842f047f9ffddd32605b95599d494cc4a"
+    }
+  },
+  {
+    "day": 7,
+    "file": "Day7.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 389234,
+    "previousBytes": 437453,
+    "sha256": "7b03ca661bd2dd59e68cec1a4ed0d19cf52b3050f50ca964e94f551fe6cfb8f4",
+    "avif": {
+      "file": "Day7.avif",
+      "bytes": 239977,
+      "sha256": "42349a9d4f37a33a86b5adae8b3d338c82f0a7708c2148838ea4e635b35e826c"
+    }
+  },
+  {
+    "day": 8,
+    "file": "Day8.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 395408,
+    "previousBytes": 375820,
+    "sha256": "651142468b88694aad45f3954b5cb585b78a7aaa55c30dfa6143ee2a7b7c72aa",
+    "avif": {
+      "file": "Day8.avif",
+      "bytes": 243977,
+      "sha256": "d7ca2fcc0757ba34ee0f22a92b725782617bf74a804b54c03acb64de266300b8"
+    }
+  },
+  {
+    "day": 9,
+    "file": "Day9.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 424937,
+    "previousBytes": 374799,
+    "sha256": "b5d6d7b06e759b9f4a3dc2b1fe41d4a0476206ce6ae7c2042784d217df41b0a9",
+    "avif": {
+      "file": "Day9.avif",
+      "bytes": 273294,
+      "sha256": "a00e3b8f6f10fd464e4d5c76794a84c80aa8ecfa51441da646113e9c7d9781bb"
+    }
+  },
+  {
+    "day": 10,
+    "file": "Day10.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 316769,
+    "previousBytes": 296349,
+    "sha256": "a158281ab891d9cfa5671ff57564fddc0ed7c847ac543567ef4f6831b3ecadb7",
+    "avif": {
+      "file": "Day10.avif",
+      "bytes": 178972,
+      "sha256": "dd6d4e93f36b6fa0ee9bdc65aca56c7a100fde9b851d7bc534e2c7770dd71a4a"
+    }
+  },
+  {
+    "day": 11,
+    "file": "Day11.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 387731,
+    "previousBytes": 419500,
+    "sha256": "cab8711f36e7b7c1879180d0e0cf367b784630a6669dff3bff9a0f877a34dd56",
+    "avif": {
+      "file": "Day11.avif",
+      "bytes": 238241,
+      "sha256": "6a54c5d98335424567bf0fe168856af0a93bb56d5cc9cad8939fa60d8f97c05f"
+    }
+  },
+  {
+    "day": 12,
+    "file": "Day12.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 312404,
+    "previousBytes": 495928,
+    "sha256": "6744de490693dc9a3eecf0dd4a5e4ddb059bf00d2874c698b30c068825e3535b",
+    "avif": {
+      "file": "Day12.avif",
+      "bytes": 170777,
+      "sha256": "2f38aa271bcb5a82d18cacf92c08cfae3cd0b6cf626f1b564cc0d43d998c2b75"
+    }
+  },
+  {
+    "day": 13,
+    "file": "Day13.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 290710,
+    "previousBytes": 337552,
+    "sha256": "99e1d6d2f52c97f0ec6d46261cb1517b705b6f44efaece4ca216e50c82e3937a",
+    "avif": {
+      "file": "Day13.avif",
+      "bytes": 156021,
+      "sha256": "cc1c76779e3c78d38fadb7862560dce1652095d984a4f330e7a015f45d42ad1f"
+    }
+  },
+  {
+    "day": 14,
+    "file": "Day14.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 405013,
+    "previousBytes": 476653,
+    "sha256": "842b17351f77ede6f6e2810fc74d37945674dc354077484b13489f780a1b9da1",
+    "avif": {
+      "file": "Day14.avif",
+      "bytes": 250657,
+      "sha256": "0e74bbaf0e8310e1c8832d952ed7bf6d8ea6efcc5ba8c004588bbd66669bec4e"
+    }
+  },
+  {
+    "day": 15,
+    "file": "Day15.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 346597,
+    "previousBytes": 331102,
+    "sha256": "a5e58f337e5eee7b6909346691da5c3f8b2766518e1221358b21e2d73e07f84f",
+    "avif": {
+      "file": "Day15.avif",
+      "bytes": 204404,
+      "sha256": "4d5c1f2518607c8db1e288e6e0c5a7b3ec8421bd529d305c2ecb4befb62092a1"
+    }
+  },
+  {
+    "day": 16,
+    "file": "Day16.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 197652,
+    "previousBytes": 327521,
+    "sha256": "2398107cea76d25fbbaedb54c8c09e32f9b69cb5f689ae2f62ed70b9232b4b2e",
+    "avif": {
+      "file": "Day16.avif",
+      "bytes": 99907,
+      "sha256": "b40e5edb4e75a82ec4a0951b3845681b91389ccf07428d6c525dbff89f7519ac"
+    }
+  },
+  {
+    "day": 17,
+    "file": "Day17.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 418050,
+    "previousBytes": 424899,
+    "sha256": "ae10c5e9134fa485069e17ac96782841f5737cabb9a89465771e087c0a7b0a00",
+    "avif": {
+      "file": "Day17.avif",
+      "bytes": 258494,
+      "sha256": "89f718e6b230003afce93502318b895edb043fdf56be1cb7eeaf083a518e44b4"
+    }
+  },
+  {
+    "day": 18,
+    "file": "Day18.jpeg",
+    "dimensions": "1254x1254",
+    "bytes": 338468,
+    "previousBytes": 425885,
+    "sha256": "037a499826483e0527637f0037eb5220ade20c84047de2300f87a93d32d7d735",
+    "avif": {
+      "file": "Day18.avif",
+      "bytes": 190871,
+      "sha256": "13d8f2f1493a211fa8718b432a935afd7b207a313e4131e97e251038f9e37e78"
+    }
+  }
+]

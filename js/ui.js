@@ -11,7 +11,7 @@
 
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
-import { duckUrlFromSinedayNumber } from './sineducks.js';
+import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPlacementOnDayArtwork } from './sineducks.js';
 import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
@@ -59,6 +59,8 @@ export class SineDayUI {
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
       dayImage: document.getElementById('dayImage'),
+      dayImageAvif: document.getElementById('dayImageAvif'),
+      dayImageDuck: document.getElementById('dayImageDuck'),
       dayDetailsCard: document.getElementById('day-details-card'),
       dayDetailsParagraph: document.getElementById('day-details-paragraph'),
       dayDetailsBullets: document.getElementById('day-details-bullets'),
@@ -291,19 +293,45 @@ export class SineDayUI {
 
     // Update day image card
     if (this.elements.dayImage) {
-      this.elements.dayImage.src = result.imageUrl;
-      this.elements.dayImage.alt = `Full image for SineDay ${result.day}`;
-      
-      // Add error handler for failed image loads
-      this.elements.dayImage.onerror = () => {
-        console.warn(`Failed to load day image for day ${result.day}`);
-        this.elements.dayImage.style.display = 'none';
+      if (this.elements.dayImageDuck) {
+        this.elements.dayImageDuck.src = duckSvgUrlFromSinedayNumber(result.day);
+        this.elements.dayImageDuck.alt = `SineDuck for SineDay ${result.day}`;
+        this.elements.dayImageDuck.parentElement.dataset.placement = duckPlacementOnDayArtwork(result.day);
+      }
+      const dayImage = this.elements.dayImage;
+      dayImage.style.opacity = '0';
+      dayImage.alt = result.imageAlt || `Nature study for SineDay ${result.day}`;
+
+      // Keep the reserved square and the reflection readable if artwork is unavailable.
+      dayImage.onerror = () => {
+        if (this.currentDay !== result) return;
+        if (this.elements.dayImageAvif?.getAttribute('srcset')) {
+          this.elements.dayImageAvif.removeAttribute('srcset');
+          dayImage.src = result.imageUrl;
+          return;
+        }
+        dayImage.style.opacity = '0';
+        this.clearBackgroundImage();
       };
 
-      // Show image when successfully loaded
-      this.elements.dayImage.onload = () => {
-        this.elements.dayImage.style.display = 'block';
+      dayImage.onload = async () => {
+        try {
+          await dayImage.decode();
+        } catch {
+          // A loaded image can still be displayed when explicit decoding is unavailable.
+        }
+        if (this.currentDay !== result || !dayImage.naturalWidth) return;
+        dayImage.style.opacity = '1';
+        this.updateBackgroundImage(dayImage.currentSrc || result.imageUrl);
       };
+      if (this.elements.dayImageAvif) {
+        if (result.imageAvifUrl) {
+          this.elements.dayImageAvif.srcset = result.imageAvifUrl;
+        } else {
+          this.elements.dayImageAvif.removeAttribute('srcset');
+        }
+      }
+      dayImage.src = result.imageUrl;
     }
 
     // Show day image card
@@ -323,9 +351,6 @@ export class SineDayUI {
     } else {
       this.hideDayDetailsCard();
     }
-
-    // Update background image
-    this.updateBackgroundImage(result.imageUrl);
 
     // Show result card with animation
     this.showResultCard();
@@ -403,6 +428,7 @@ export class SineDayUI {
    */
   updateBackgroundImage(imageUrl) {
     if (!this.elements.backgroundImage) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Remove hero-mode class to ensure day images show properly
     this.elements.backgroundImage.classList.remove('hero-mode');
@@ -413,6 +439,12 @@ export class SineDayUI {
     newImage.className = 'background-image-layer';
     newImage.style.backgroundImage = `url('${imageUrl}')`;
     newImage.style.opacity = '0';
+
+    if (reduceMotion) {
+      newImage.style.opacity = '1';
+      this.elements.backgroundImage.replaceChildren(newImage);
+      return;
+    }
 
     // Add to container
     this.elements.backgroundImage.appendChild(newImage);
@@ -506,6 +538,8 @@ export class SineDayUI {
    */
   showInput() {
     if (!this.elements.inputContainer) return;
+    // Invalidate artwork still decoding for the previous result.
+    this.currentDay = null;
     this.elements.inputContainer.classList.add('visible');
 
     // Move intro back under wave for pre-DOB state
@@ -848,7 +882,8 @@ export class SineDayUI {
   scrollToElement(el, offset = 80) {
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: y, behavior: reduceMotion ? 'auto' : 'smooth' });
   }
 
   /**

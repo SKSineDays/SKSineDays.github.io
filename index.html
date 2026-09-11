@@ -183,7 +183,13 @@
         <!-- Day Image Card -->
         <div id="day-image-card" class="day-image-card" role="region">
             <div class="day-image-content">
-                <img id="dayImage" class="day-full-image" alt="Your SineDay" />
+                <picture>
+                    <source id="dayImageAvif" type="image/avif" />
+                    <img id="dayImage" class="day-full-image" alt="" width="1254" height="1254" decoding="async" fetchpriority="high" />
+                </picture>
+                <div class="day-artwork-duck">
+                    <img id="dayImageDuck" alt="" width="576" height="288" decoding="async" />
+                </div>
             </div>
         </div>
 

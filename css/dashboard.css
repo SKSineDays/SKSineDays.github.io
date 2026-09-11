@@ -5399,6 +5399,10 @@ textarea.journal-entry-field-light:focus {
   gap: var(--feature-space-2);
 }
 
+.today-day-details-section {
+  scroll-margin-top: 108px;
+}
+
 .today-day-details-section[hidden] {
   display: none;
 }
@@ -5415,18 +5419,24 @@ textarea.journal-entry-field-light:focus {
 }
 
 .today-wave-details__media {
-  min-height: 260px;
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  align-self: start;
   overflow: hidden;
   border-radius: 20px;
-  background: #FFFFFF;
+  background: #0b1420;
 }
 
 .today-wave-details__image {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 260px;
   object-fit: cover;
+  object-position: center;
 }
 
 .today-wave-details__copy {
@@ -5745,11 +5755,6 @@ textarea.journal-entry-field-light:focus {
   .today-wave-details {
     grid-template-columns: 1fr;
     padding: var(--feature-space-3);
-  }
-
-  .today-wave-details__media,
-  .today-wave-details__image {
-    min-height: 230px;
   }
 }
 

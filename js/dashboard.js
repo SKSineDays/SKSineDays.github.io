@@ -22,7 +22,7 @@ import {
 } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { duckUrlFromSinedayNumber } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPlacementOnDayArtwork } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
@@ -1313,12 +1313,23 @@ function renderTodayDayDetailsSection(result) {
         imageUrl
           ? `
         <div class="today-wave-details__media">
+          <picture>
+          ${result.imageAvifUrl ? `<source srcset="${escapeHtml(resolveDayImageUrl(result.imageAvifUrl))}" type="image/avif">` : ""}
           <img
             class="today-wave-details__image"
             src="${escapeHtml(imageUrl)}"
-            alt="SineDay ${escapeHtml(String(result.day))} wave artwork"
+            alt="${escapeHtml(result.imageAlt || `Nature study for SineDay ${result.day}`)}"
+            width="1254"
+            height="1254"
+            decoding="async"
             loading="lazy"
           >
+          </picture>
+          <div class="day-artwork-duck" data-placement="${duckPlacementOnDayArtwork(result.day)}">
+            <img src="/${duckSvgUrlFromSinedayNumber(result.day)}"
+              alt="SineDuck for SineDay ${result.day}"
+              width="576" height="288" decoding="async" loading="lazy">
+          </div>
         </div>
       `
           : ""
@@ -1337,6 +1348,17 @@ function renderTodayDayDetailsSection(result) {
       }
     </article>
   `;
+
+  const artwork = section.querySelector('.today-wave-details__image');
+  artwork?.addEventListener('error', () => {
+    const source = artwork.closest('picture')?.querySelector('source');
+    if (source?.getAttribute('srcset')) {
+      source.removeAttribute('srcset');
+      artwork.src = imageUrl;
+    } else {
+      artwork.style.visibility = 'hidden';
+    }
+  });
 }
 
 function renderTodayWaveSection() {
