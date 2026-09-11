@@ -1,0 +1,308 @@
+[
+  {
+    "day": 1,
+    "file": "SineDuck1@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck1@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 454241,
+    "sha256": "39f1a175d0a9a06053f2049854b0031912d4288582e344f82fe49d816e48f3b9",
+    "source_svg": "sineday/assets/sineducks/SineDuck1.svg",
+    "source_svg_sha256": "9b1c7be1a55df31b0b31bcc2b151ba9d9fd356285035da5d7da6f01992938911",
+    "source_landscape": "sineday/Day1.jpeg",
+    "source_landscape_sha256": "9881eb027c819adf1704d57e17318cddda7164aee684d78f893db54be969ead4",
+    "placement": "top",
+    "wave_asset": "wave-01.png"
+  },
+  {
+    "day": 2,
+    "file": "SineDuck2@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck2@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 386019,
+    "sha256": "a6279b9f37172720cdbcc649e1f3c46126fcc5f8c489ac6bc5fba7294d67caa7",
+    "source_svg": "sineday/assets/sineducks/SineDuck2.svg",
+    "source_svg_sha256": "c489a2e9c265f86083c26e9fbc69651f026b0ced66a6cc55083a48e660e2dae6",
+    "source_landscape": "sineday/Day2.jpeg",
+    "source_landscape_sha256": "541e4a64e09d4e62239525060ebbe50648ccb015d51c92cda00b9f2422f60844",
+    "placement": "top",
+    "wave_asset": "wave-02.png"
+  },
+  {
+    "day": 3,
+    "file": "SineDuck3@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck3@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 393988,
+    "sha256": "626b0ff218101c78b090db604049bdb64467c790d8760a2a669ab375dc60249e",
+    "source_svg": "sineday/assets/sineducks/SineDuck3.svg",
+    "source_svg_sha256": "53606029add41db811530293486708e8948de07ae762c74ceb10dd45f9fcafd3",
+    "source_landscape": "sineday/Day3.jpeg",
+    "source_landscape_sha256": "66ba2fc325419b053ad27a56e17a9d2c24f51d29359402a3d0bcdbea686272bb",
+    "placement": "bottom",
+    "wave_asset": "wave-03.png"
+  },
+  {
+    "day": 4,
+    "file": "SineDuck4@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck4@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 448027,
+    "sha256": "5482d60cc0b531fd432e7ff28228829e597b77c781a15975f9c7fc0622d2e2c0",
+    "source_svg": "sineday/assets/sineducks/SineDuck4.svg",
+    "source_svg_sha256": "07301896cf70e2e02a24b69a0d95d7282ba624be7e909690fcc9c0739e330862",
+    "source_landscape": "sineday/Day4.jpeg",
+    "source_landscape_sha256": "48229d6f2431fe271a337099d169017ca91872f466f91b7a076d1cc63f15a9fe",
+    "placement": "top",
+    "wave_asset": "wave-04.png"
+  },
+  {
+    "day": 5,
+    "file": "SineDuck5@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck5@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 433656,
+    "sha256": "cf32e030f2393e9801e53d88f4e378761fd4efc41215b92adf8fa5202a5bec10",
+    "source_svg": "sineday/assets/sineducks/SineDuck5.svg",
+    "source_svg_sha256": "2837a18fc64dfa233d1ac809907114ff70a5877c9d7dc671f3a552581f0df182",
+    "source_landscape": "sineday/Day5.jpeg",
+    "source_landscape_sha256": "096b27f5e00c8d963431703c30fad2f6feaff0bb45357c23c26d89b2ed549ef0",
+    "placement": "bottom",
+    "wave_asset": "wave-05.png"
+  },
+  {
+    "day": 6,
+    "file": "SineDuck6@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck6@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 413977,
+    "sha256": "84f9851c1a081925fd0e538b3cd04538d6ba6aed93811848f2f6197bef3426dc",
+    "source_svg": "sineday/assets/sineducks/SineDuck6.svg",
+    "source_svg_sha256": "8b46e7834ec6ae76527b17ca7b2ee258b3b57a77edbf58bf250574c1351936bc",
+    "source_landscape": "sineday/Day6.jpeg",
+    "source_landscape_sha256": "458c8818f1446ad14417dfb32bdb4a714bebd041f2418d181225b9beca7babb6",
+    "placement": "bottom",
+    "wave_asset": "wave-06.png"
+  },
+  {
+    "day": 7,
+    "file": "SineDuck7@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck7@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 432667,
+    "sha256": "85aba1a23c8ffa89206f6b1232d131f7d3096bc7966da97d1ca5ac69142034f3",
+    "source_svg": "sineday/assets/sineducks/SineDuck7.svg",
+    "source_svg_sha256": "f3500fb865a5349f70c95056977a50328de12edae7a69d42f37d883d2c6f6de1",
+    "source_landscape": "sineday/Day7.jpeg",
+    "source_landscape_sha256": "7b03ca661bd2dd59e68cec1a4ed0d19cf52b3050f50ca964e94f551fe6cfb8f4",
+    "placement": "bottom",
+    "wave_asset": "wave-07.png"
+  },
+  {
+    "day": 8,
+    "file": "SineDuck8@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck8@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 423699,
+    "sha256": "3b6e3e08ed4bf6abff2fb5e0af2a9948f48ee99b6aa1a2253d65be0b7dcfe8f7",
+    "source_svg": "sineday/assets/sineducks/SineDuck8.svg",
+    "source_svg_sha256": "5eb58ae11ecadcfe883ec8dea02b1f17051b91269f6e5c5a04c1c932b1c8d72d",
+    "source_landscape": "sineday/Day8.jpeg",
+    "source_landscape_sha256": "651142468b88694aad45f3954b5cb585b78a7aaa55c30dfa6143ee2a7b7c72aa",
+    "placement": "bottom",
+    "wave_asset": "wave-08.png"
+  },
+  {
+    "day": 9,
+    "file": "SineDuck9@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck9@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 424197,
+    "sha256": "366b57ee1033b1f9a5d240b4a4b6b780264d44b6ed33fc5e26837213a1977eb4",
+    "source_svg": "sineday/assets/sineducks/SineDuck9.svg",
+    "source_svg_sha256": "74f4e45b04729a4878797e4ce1b5948825dd58c0d69ac029884a0b037658aef5",
+    "source_landscape": "sineday/Day9.jpeg",
+    "source_landscape_sha256": "b5d6d7b06e759b9f4a3dc2b1fe41d4a0476206ce6ae7c2042784d217df41b0a9",
+    "placement": "bottom",
+    "wave_asset": "wave-09.png"
+  },
+  {
+    "day": 10,
+    "file": "SineDuck10@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck10@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 388246,
+    "sha256": "b992fc3cdec72b17b19818e7d739985c2498ccddb8cf3909df6ea10e878aed7b",
+    "source_svg": "sineday/assets/sineducks/SineDuck10.svg",
+    "source_svg_sha256": "a21995f3189f063b54d05a7cac9bd52911f0ee51a686ca17f2ff9497df5e5476",
+    "source_landscape": "sineday/Day10.jpeg",
+    "source_landscape_sha256": "a158281ab891d9cfa5671ff57564fddc0ed7c847ac543567ef4f6831b3ecadb7",
+    "placement": "top",
+    "wave_asset": "wave-10.png"
+  },
+  {
+    "day": 11,
+    "file": "SineDuck11@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck11@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 444236,
+    "sha256": "d4cb41027c8539ae49a42715a62a3d214601ef6d87fbfaa3a10663f01b411a6c",
+    "source_svg": "sineday/assets/sineducks/SineDuck11.svg",
+    "source_svg_sha256": "1ea2476d3ad0a59e4cab4569670c6bd9a0bc1d6a1d13b8cfde251f9884328e38",
+    "source_landscape": "sineday/Day11.jpeg",
+    "source_landscape_sha256": "cab8711f36e7b7c1879180d0e0cf367b784630a6669dff3bff9a0f877a34dd56",
+    "placement": "top",
+    "wave_asset": "wave-11.png"
+  },
+  {
+    "day": 12,
+    "file": "SineDuck12@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck12@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 379879,
+    "sha256": "5f54d5183bd431476fc74a61f2808ba80a9f3d26046ebe16487a003b83b809de",
+    "source_svg": "sineday/assets/sineducks/SineDuck12.svg",
+    "source_svg_sha256": "05ef1f4c84d1eaa741e75d0d129ad970d94b06decb7100b09f9307617a0ddd8b",
+    "source_landscape": "sineday/Day12.jpeg",
+    "source_landscape_sha256": "6744de490693dc9a3eecf0dd4a5e4ddb059bf00d2874c698b30c068825e3535b",
+    "placement": "top",
+    "wave_asset": "wave-12.png"
+  },
+  {
+    "day": 13,
+    "file": "SineDuck13@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck13@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 339599,
+    "sha256": "7a9b662e7ed225b3b1f9dfd0abcfb50e818c6971df5a52413ef5af6be7e13dfc",
+    "source_svg": "sineday/assets/sineducks/SineDuck13.svg",
+    "source_svg_sha256": "b21f8c7df8a0a2d1a9bec2608768a8de8497c91275c1905710ac425ad68c7386",
+    "source_landscape": "sineday/Day13.jpeg",
+    "source_landscape_sha256": "99e1d6d2f52c97f0ec6d46261cb1517b705b6f44efaece4ca216e50c82e3937a",
+    "placement": "bottom",
+    "wave_asset": "wave-13.png"
+  },
+  {
+    "day": 14,
+    "file": "SineDuck14@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck14@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 419581,
+    "sha256": "09e6c860590cc403b91dfc93e54c50db9ba06a9dcb78ab45477110a58b00462b",
+    "source_svg": "sineday/assets/sineducks/SineDuck14.svg",
+    "source_svg_sha256": "361fb93e9502d8acf951d1b6d2a71b0baf9ad0a0811a5b12e220de8770a39d9f",
+    "source_landscape": "sineday/Day14.jpeg",
+    "source_landscape_sha256": "842b17351f77ede6f6e2810fc74d37945674dc354077484b13489f780a1b9da1",
+    "placement": "bottom",
+    "wave_asset": "wave-14.png"
+  },
+  {
+    "day": 15,
+    "file": "SineDuck15@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck15@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 400871,
+    "sha256": "41a1cea381069e77c33153a98ad98530cd870b7e601a17af41a0f090b45c9f96",
+    "source_svg": "sineday/assets/sineducks/SineDuck15.svg",
+    "source_svg_sha256": "acc49ce50ef75db97ad1a74fac3a8eac902103f9015022552c3939c7c7d7758e",
+    "source_landscape": "sineday/Day15.jpeg",
+    "source_landscape_sha256": "a5e58f337e5eee7b6909346691da5c3f8b2766518e1221358b21e2d73e07f84f",
+    "placement": "top",
+    "wave_asset": "wave-15.png"
+  },
+  {
+    "day": 16,
+    "file": "SineDuck16@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck16@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 294458,
+    "sha256": "6d8cd54fcc94191beb399e058ecd3e14394d38e41acf0b4ec002b487318720d0",
+    "source_svg": "sineday/assets/sineducks/SineDuck16.svg",
+    "source_svg_sha256": "d54ee3af5026580b2dbdb28181aed65b0d4f266f03cea19227f5b2256d59adff",
+    "source_landscape": "sineday/Day16.jpeg",
+    "source_landscape_sha256": "2398107cea76d25fbbaedb54c8c09e32f9b69cb5f689ae2f62ed70b9232b4b2e",
+    "placement": "bottom",
+    "wave_asset": "wave-16.png"
+  },
+  {
+    "day": 17,
+    "file": "SineDuck17@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck17@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 445780,
+    "sha256": "d858c1f6a48a651635ed7aafacf9ffe19a0943e4c8673e7b5790bb42bc018c94",
+    "source_svg": "sineday/assets/sineducks/SineDuck17.svg",
+    "source_svg_sha256": "b6b4b9844e4090eecbbe5d9ca004811336d7e4281cee8b9c0198dd9c3e5b2237",
+    "source_landscape": "sineday/Day17.jpeg",
+    "source_landscape_sha256": "ae10c5e9134fa485069e17ac96782841f5737cabb9a89465771e087c0a7b0a00",
+    "placement": "top",
+    "wave_asset": "wave-17.png"
+  },
+  {
+    "day": 18,
+    "file": "SineDuck18@3x.png",
+    "production_url": "https://sineday.app/assets/email/20260911/SineDuck18@3x.png",
+    "dimensions": [
+      752,
+      752
+    ],
+    "bytes": 390856,
+    "sha256": "0a21d65ee624889039325e830b23dbb00fdaf574a73caf48b0f934377bc76393",
+    "source_svg": "sineday/assets/sineducks/SineDuck18.svg",
+    "source_svg_sha256": "e9534e89ce5654f544fc631bde19b8863f067925d32b524d61fd885fb541385e",
+    "source_landscape": "sineday/Day18.jpeg",
+    "source_landscape_sha256": "037a499826483e0527637f0037eb5220ade20c84047de2300f87a93d32d7d735",
+    "placement": "top",
+    "wave_asset": "wave-18.png"
+  }
+]
