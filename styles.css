@@ -1653,9 +1653,7 @@ body {
   width: 66%;
   padding: 5%;
   box-sizing: border-box;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(4, 15, 27, 0.24);
+  background: transparent;
   pointer-events: none;
 }
 

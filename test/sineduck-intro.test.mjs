@@ -114,7 +114,7 @@ test("SineDuck Discover keeps the paced show and its composed final frame", () =
   );
   assert.match(uiJs, /setFocusProgress\(sineDuckProgress\)/);
 
-  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v20'/);
+  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v22'/);
   assert.match(serviceWorkerJs, /\/assets\/sineducks\/SineDuck15@3x\.png/);
   assert.doesNotMatch(serviceWorkerJs, /SineDuck14@3x\.png/);
   assert.match(serviceWorkerJs, /'\/styles\.css'/);
