@@ -35,3 +35,13 @@ export function duckUrlFromSinedayNumber(n) {
   // Use modulo to ensure safe wrapping
   return DUCK_URLS[(n - 1 + 18) % 18];
 }
+
+/** The original vector artwork, for sharp foreground rendering at any size. */
+export function duckSvgUrlFromSinedayNumber(n) {
+  return duckUrlFromSinedayNumber(n).replace('@3x.png', '.svg');
+}
+
+/** Preserve each background's principal natural detail beneath the foreground. */
+export function duckPlacementOnDayArtwork(n) {
+  return [1, 2, 4, 10, 11, 12, 15, 17, 18].includes(n) ? 'top' : 'bottom';
+}

@@ -1602,7 +1602,7 @@ body {
   position: relative;
   width: 100%;
   z-index: 45;
-  padding: 0 20px calc(40px + var(--safe-area-bottom));
+  padding: 0 20px;
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
@@ -1617,7 +1617,7 @@ body {
 }
 
 .day-image-content {
-  background: var(--glass-bg);
+  background: #0b1420;
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   border-bottom-left-radius: 0;
@@ -1629,37 +1629,47 @@ body {
   max-width: 460px;
   margin: 0 auto;
   overflow: hidden;
-  /* Neon UFO glow effect */
-  box-shadow: 
-    0 0 20px var(--neon-blue),
-    0 0 40px var(--neon-purple),
-    0 0 60px var(--neon-cyan),
+  box-shadow:
+    0 0 24px rgba(122, 167, 255, 0.16),
     0 20px 60px rgba(0, 0, 0, 0.6);
-}
-
-.day-image-content::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, 
-    var(--neon-blue) 0%, 
-    var(--neon-purple) 50%, 
-    var(--neon-cyan) 100%);
-  opacity: 0.5;
-  z-index: -1;
-  filter: blur(15px);
-  animation: neonPulse 3s ease-in-out infinite;
 }
 
 .day-full-image {
   width: 100%;
   height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
   display: block;
   border-radius: 20px 20px 0 0;
+  transition: opacity 240ms var(--ease-out);
+}
+
+/* A shared foreground for the original, unaltered SineDuck vector assets. */
+.day-artwork-duck {
+  position: absolute;
+  z-index: 1;
+  bottom: 7%;
+  left: 17%;
+  width: 66%;
+  padding: 5%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(4, 15, 27, 0.24);
+  pointer-events: none;
+}
+
+.day-artwork-duck img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+}
+
+.day-artwork-duck[data-placement="top"] {
+  top: 7%;
+  bottom: auto;
 }
 
 /* ================================
@@ -1675,7 +1685,7 @@ body {
   transform: translateY(20px);
   pointer-events: none;
   transition: all var(--duration-slow) var(--ease-out);
-  margin-top: -12px; /* pulls it up to connect to image */
+  margin-top: 0;
 }
 
 .day-details-card.visible {
@@ -1705,7 +1715,7 @@ body {
 }
 
 .day-details-paragraph {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--color-text-primary);
   margin: 0 0 14px;

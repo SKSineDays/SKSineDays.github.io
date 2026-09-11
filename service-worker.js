@@ -3,7 +3,8 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v20';
+const CACHE_NAME = 'sineday-v21';
+const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -14,6 +15,7 @@ const ASSETS_TO_CACHE = [
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',
+  '/js/sineducks.js',
   '/js/sineduck-intro-animation.js',
   '/assets/sineducks/SineDuck15@3x.png',
   '/site.webmanifest?v=2',
@@ -28,26 +30,7 @@ const ASSETS_TO_CACHE = [
   '/favicon.ico?v=2',
   '/favicon-16.png?v=2',
   '/favicon-32.png?v=2',
-  '/breathingicon.svg?v=2',
-  // Day images
-  '/Day1.jpeg',
-  '/Day2.jpeg',
-  '/Day3.jpeg',
-  '/Day4.jpeg',
-  '/Day5.jpeg',
-  '/Day6.jpeg',
-  '/Day7.jpeg',
-  '/Day8.jpeg',
-  '/Day9.jpeg',
-  '/Day10.jpeg',
-  '/Day11.jpeg',
-  '/Day12.jpeg',
-  '/Day13.jpeg',
-  '/Day14.jpeg',
-  '/Day15.jpeg',
-  '/Day16.jpeg',
-  '/Day17.jpeg',
-  '/Day18.jpeg'
+  '/breathingicon.svg?v=2'
 ];
 
 const OPTIONAL_ASSETS_TO_CACHE = [
@@ -72,7 +55,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[SW] Caching assets');
-        return cache.addAll(ASSETS_TO_CACHE)
+        return cache.addAll(ASSETS_TO_CACHE.map((asset) => new Request(asset, { cache: 'reload' })))
           .then(() => Promise.allSettled(
             OPTIONAL_ASSETS_TO_CACHE.map((asset) => cache.add(asset))
           ));
@@ -150,6 +133,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Fetch artwork only when viewed. Reload on a miss also refreshes legacy,
+  // unversioned URLs after the old worker cache has been removed.
+  if (DAY_IMAGE_PATH.test(url.pathname)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const response = await fetch(request, { cache: 'reload' });
+        if (response.ok) {
+          try {
+            await cache.put(request, response.clone());
+          } catch {
+            // Storage exhaustion must not hide an available network image.
+          }
+        }
+        return response;
+      }).catch(() => new Response('Artwork unavailable', { status: 503 }))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
@@ -213,7 +217,7 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CACHE_UPDATE') {
     event.waitUntil(
       caches.open(CACHE_NAME)
-        .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+        .then((cache) => cache.addAll(ASSETS_TO_CACHE.map((asset) => new Request(asset, { cache: 'reload' }))))
     );
   }
 });

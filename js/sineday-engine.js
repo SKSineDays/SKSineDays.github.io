@@ -12,116 +12,154 @@
  * - day: Number (1-18)
  * - phase: Short label for the wave position
  * - description: One-line tone/energy description
- * - imageUrl: Local path to day image
+ * - imageUrl: Versioned local path to day image
+ * - imageAvifUrl: Optional AVIF source; imageUrl remains the JPEG fallback
+ * - imageAlt: Concise description of the environmental artwork
  */
 export const DAY_DATA = [
   {
     day: 1,
     phase: "RISING • INITIATION",
     description: "Fresh beginnings call you forward",
-    imageUrl: "Day1.jpeg"
+    imageUrl: "Day1.jpeg?v=20260910",
+    imageAvifUrl: "Day1.avif?v=20260910",
+    imageAlt: "A single limestone step opens onto a quiet lakeshore trail."
   },
   {
     day: 2,
     phase: "ASCENDING • MOMENTUM",
     description: "Energy builds as you push forward",
-    imageUrl: "Day2.jpeg"
+    imageUrl: "Day2.jpeg?v=20260910",
+    imageAvifUrl: "Day2.avif?v=20260910",
+    imageAlt: "A steady breeze bends successive bands of lakeside grasses."
   },
   {
     day: 3,
     phase: "ASCENDING • CREATIVITY",
     description: "Imagination flows and ideas spark",
-    imageUrl: "Day3.jpeg"
+    imageUrl: "Day3.jpeg?v=20260910",
+    imageAvifUrl: "Day3.avif?v=20260910",
+    imageAlt: "Broken canopy light catches an unfolding fern among wet leaves."
   },
   {
     day: 4,
     phase: "ASCENDING • CONNECTION",
     description: "Social energy draws you outward",
-    imageUrl: "Day4.jpeg"
+    imageUrl: "Day4.jpeg?v=20260910",
+    imageAvifUrl: "Day4.avif?v=20260910",
+    imageAlt: "Two woodland currents meet and share one flow."
   },
   {
     day: 5,
     phase: "ASCENDING • PRODUCTIVITY",
     description: "Focus sharpens, tasks find completion",
-    imageUrl: "Day5.jpeg"
+    imageUrl: "Day5.jpeg?v=20260910",
+    imageAvifUrl: "Day5.avif?v=20260910",
+    imageAlt: "One low curtain of water settles into a limestone basin."
   },
   {
     day: 6,
     phase: "PEAK • BALANCE",
     description: "Harmony emerges in all you do",
-    imageUrl: "Day6.jpeg"
+    imageUrl: "Day6.jpeg?v=20260910",
+    imageAvifUrl: "Day6.avif?v=20260910",
+    imageAlt: "Woodland, meadow, stone and water meet around a sheltered cove."
   },
   {
     day: 7,
     phase: "PEAK • INSIGHT",
     description: "Clarity arrives, intuition guides",
-    imageUrl: "Day7.jpeg"
+    imageUrl: "Day7.jpeg?v=20260910",
+    imageAvifUrl: "Day7.avif?v=20260910",
+    imageAlt: "Clear shallow water reveals the limestone seams beneath it."
   },
   {
     day: 8,
     phase: "PEAK • CHALLENGE",
     description: "Strength tested, resolve fortified",
-    imageUrl: "Day8.jpeg"
+    imageUrl: "Day8.jpeg?v=20260910",
+    imageAvifUrl: "Day8.avif?v=20260910",
+    imageAlt: "A wind-shaped pine holds to a low rocky bank."
   },
   {
     day: 9,
     phase: "CREST • TRANSITION",
     description: "The wave turns, reflection begins",
-    imageUrl: "Day9.jpeg"
+    imageUrl: "Day9.jpeg?v=20260910",
+    imageAvifUrl: "Day9.avif?v=20260910",
+    imageAlt: "A river turns toward the quiet water along its inner bank."
   },
   {
     day: 10,
     phase: "DESCENDING • REFLECTION",
     description: "Looking inward reveals growth",
-    imageUrl: "Day10.jpeg"
+    imageUrl: "Day10.jpeg?v=20260910",
+    imageAvifUrl: "Day10.avif?v=20260910",
+    imageAlt: "Weathered growth rings and living moss beside a lake."
   },
   {
     day: 11,
     phase: "DESCENDING • INTEGRATION",
     description: "Rest allows wisdom to settle",
-    imageUrl: "Day11.jpeg"
+    imageUrl: "Day11.jpeg?v=20260910",
+    imageAvifUrl: "Day11.avif?v=20260910",
+    imageAlt: "Moss, fallen leaves and stones settle together on the forest floor."
   },
   {
     day: 12,
     phase: "DESCENDING • RECALIBRATION",
     description: "Adjust your course with care",
-    imageUrl: "Day12.jpeg"
+    imageUrl: "Day12.jpeg?v=20260910",
+    imageAvifUrl: "Day12.avif?v=20260910",
+    imageAlt: "A thin rivulet makes a small turn around one pebble."
   },
   {
     day: 13,
     phase: "DESCENDING • RELEASE",
     description: "Let go what no longer serves",
-    imageUrl: "Day13.jpeg"
+    imageUrl: "Day13.jpeg?v=20260910",
+    imageAvifUrl: "Day13.avif?v=20260910",
+    imageAlt: "A single leaf drifts from a living branch over open water."
   },
   {
     day: 14,
     phase: "TROUGH • INNER WORK",
     description: "Dive deep into self-discovery",
-    imageUrl: "Day14.jpeg"
+    imageUrl: "Day14.jpeg?v=20260910",
+    imageAvifUrl: "Day14.avif?v=20260910",
+    imageAlt: "Gentle upwelling ripples the surface of a deep clear spring."
   },
   {
     day: 15,
     phase: "TROUGH • HEALING",
     description: "Gentle care restores vitality",
-    imageUrl: "Day15.jpeg"
+    imageUrl: "Day15.jpeg?v=20260910",
+    imageAvifUrl: "Day15.avif?v=20260910",
+    imageAlt: "Rain nourishes moss sheltered in the hollow of a fallen log."
   },
   {
     day: 16,
     phase: "TROUGH • PREPARATION",
     description: "Gather strength for the rise ahead",
-    imageUrl: "Day16.jpeg"
+    imageUrl: "Day16.jpeg?v=20260910",
+    imageAvifUrl: "Day16.avif?v=20260910",
+    imageAlt: "Closed buds rest on a supporting branch above a misty lake."
   },
   {
     day: 17,
     phase: "EMERGING • FOUNDATION",
     description: "Lay groundwork for new action",
-    imageUrl: "Day17.jpeg"
+    imageUrl: "Day17.jpeg?v=20260910",
+    imageAvifUrl: "Day17.avif?v=20260910",
+    imageAlt: "Living roots hold soil and limestone beneath a lakeshore tree."
   },
   {
     day: 18,
     phase: "EMERGING • CULMINATION",
     description: "Cycle completes, renewal awaits",
-    imageUrl: "Day18.jpeg"
+    imageUrl: "Day18.jpeg?v=20260910",
+    imageAvifUrl: "Day18.avif?v=20260910",
+    imageAlt: "A retreating lake wash leaves a quiet trace on a limestone shore."
   }
 ];
 
@@ -333,6 +371,8 @@ export function getDayDetails(dayNumber) {
  * @property {string} phase - Phase label
  * @property {string} description - Day description
  * @property {string} imageUrl - Path to day image
+ * @property {string} imageAvifUrl - Optional AVIF source
+ * @property {string} imageAlt - Concise description of the artwork
  * @property {number} position - Wave position (0-1, for visualization)
  * @property {number} daysLived - Total days since birth
  */
@@ -469,6 +509,8 @@ export function calculateSineDayForTimezone(birthdateInput, timeZone) {
     phase: dayData?.phase,
     description: dayData?.description,
     imageUrl: dayData?.imageUrl,
+    imageAvifUrl: dayData?.imageAvifUrl,
+    imageAlt: dayData?.imageAlt,
   };
 }
 
@@ -521,6 +563,8 @@ export function calculateSineDayForYmd(birthYmd, targetYmd) {
     phase: dayData.phase,
     description: dayData.description,
     imageUrl: dayData.imageUrl,
+    imageAvifUrl: dayData.imageAvifUrl,
+    imageAlt: dayData.imageAlt,
     position: calculateWavePosition(daysLived),
     daysLived
   };
@@ -563,6 +607,8 @@ export function calculateSineDay(birthdateInput) {
     phase: dayData.phase,
     description: dayData.description,
     imageUrl: dayData.imageUrl,
+    imageAvifUrl: dayData.imageAvifUrl,
+    imageAlt: dayData.imageAlt,
     position: wavePosition,
     daysLived: daysLived
   };
