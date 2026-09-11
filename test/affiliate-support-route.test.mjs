@@ -128,7 +128,7 @@ test("public config and service worker keep affiliate secrets and APIs off the c
   const config = readFileSync(join(root, "api/config.js"), "utf8");
   const worker = readFileSync(join(root, "service-worker.js"), "utf8");
   assert.doesNotMatch(config, /STRIPE_AFFILIATE_COUPON_ID|STRIPE_SECRET_KEY/);
-  assert.match(worker, /sineday-v22/);
+  assert.match(worker, /sineday-v23/);
   assert.match(worker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(worker, /url\.pathname\.startsWith\('\/_vercel\/'\)/);
 });

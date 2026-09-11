@@ -57,7 +57,7 @@ test("repo HTML pages are all covered by the analytics mount list", () => {
 });
 
 test("service worker lets Vercel insights traffic bypass the cache", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v22'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v23'/);
   assert.match(
     serviceWorker,
     /if \(url\.pathname\.startsWith\('\/_vercel\/'\)\) \{\s*return;\s*\}/,

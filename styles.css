@@ -1663,6 +1663,13 @@ body {
   height: auto;
   aspect-ratio: 2 / 1;
   object-fit: contain;
+  /* Thin white silhouette from the SVG alpha — not a card or glow. */
+  -webkit-filter:
+    drop-shadow(0 0 0.85px rgba(255, 255, 255, 0.98))
+    drop-shadow(0 0 1.9px rgba(255, 255, 255, 0.9));
+  filter:
+    drop-shadow(0 0 0.85px rgba(255, 255, 255, 0.98))
+    drop-shadow(0 0 1.9px rgba(255, 255, 255, 0.9));
 }
 
 .day-artwork-duck[data-placement="top"] {

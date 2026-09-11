@@ -79,7 +79,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
       for (const store of stores.values()) if (store.has(key(request))) return store.get(key(request)).clone();
     }
   };
-  const old = await caches.open('sineday-v21');
+  const old = await caches.open('sineday-v22');
   await old.put('/Day1.jpeg', new Response('old installed artwork'));
   vm.runInNewContext(await readFile(new URL('../service-worker.js', import.meta.url), 'utf8'), {
     self: {
@@ -105,7 +105,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v22']);
+  assert.deepEqual(await caches.keys(), ['sineday-v23']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -117,7 +117,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v22');
+  const active = stores.get('sineday-v23');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
