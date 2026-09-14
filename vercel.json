@@ -10,6 +10,21 @@
       "maxDuration": 300
     }
   },
+  "headers": [
+    {
+      "source": "/assets/email/sineday-daily.vcf",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/vcard; charset=utf-8"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "inline; filename=\"SineDay-Daily.vcf\""
+        }
+      ]
+    }
+  ],
   "crons": [
     {
       "path": "/api/cron/daily-email",

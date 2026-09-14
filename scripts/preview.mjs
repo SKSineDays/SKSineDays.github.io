@@ -14,7 +14,8 @@ const types = {
   '.json': 'application/json', '.webmanifest': 'application/manifest+json',
   '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.avif': 'image/avif',
   '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
-  '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.pdf': 'application/pdf'
+  '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.pdf': 'application/pdf',
+  '.vcf': 'text/vcard; charset=utf-8'
 };
 
 createServer(async (request, response) => {
@@ -30,11 +31,16 @@ createServer(async (request, response) => {
       return;
     }
     const info = await stat(path);
-    if (!info.isFile() || !types[extname(path)]) {
+    const type = types[extname(path)];
+    if (!info.isFile() || !type) {
       response.writeHead(404).end();
       return;
     }
-    response.writeHead(200, { 'Content-Type': types[extname(path)], 'Cache-Control': 'no-store' });
+    const headers = { 'Content-Type': type, 'Cache-Control': 'no-store' };
+    if (extname(path) === '.vcf') {
+      headers['Content-Disposition'] = 'inline; filename="SineDay-Daily.vcf"';
+    }
+    response.writeHead(200, headers);
     response.end(request.method === 'HEAD' ? undefined : await readFile(path));
   } catch {
     response.writeHead(404).end();
