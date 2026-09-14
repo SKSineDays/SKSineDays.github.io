@@ -1,0 +1,9 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//SineDay//Daily Contact//EN
+N:Daily;SineDay;;;
+FN:SineDay Daily
+ORG:SineDay
+EMAIL;TYPE=INTERNET,PREF:daily@daily.sineday.app
+URL:https://sineday.app
+END:VCARD

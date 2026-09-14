@@ -8,4 +8,8 @@ Keep the existing aliases in `api/_lib/daily-email.js`; Welcome stays `welcomeem
 
 Primary links open `https://sineday.app/dashboard.html`. Existing authentication handles signed-out visitors. This link does not force a journal page or change the active profile.
 
-Run the unchanged `npm run audit:daily-email-templates` after publishing. Preserve its required markers, background fallbacks, literal SineDuck filename identity and unsubscribe variable. Representative offline rendering covered Welcome and Days 1, 6, 14, 18 at 320/375/600px and with images blocked; native email-client dark-mode behavior was not independently verified.
+The HTML sources are authored dark. Do not declare `color-scheme: dark`; that invites Apple Mail to recolor an already-dark canvas. Templates declare `color-scheme: light only` so native clients leave SineDay’s explicit dark surfaces and white SineDuck plate as written. There is no alternate light theme.
+
+Welcome includes a secondary Add SineDay to Contacts action linking to the public vCard at `/assets/email/sineday-daily.vcf` (`daily@daily.sineday.app`). Do not add that action to the daily templates.
+
+Run `npm run audit:daily-email-templates` after publishing. Preserve its required markers, background fallbacks, dark-canvas lock, literal SineDuck filename identity, unsubscribe variable, and Welcome contact-card URL.

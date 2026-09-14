@@ -40,6 +40,35 @@ function validateSurface(html, surface, color) {
   );
 }
 
+function hasMeta(html, name, content) {
+  const escapedName = escapeRegex(name);
+  const escapedContent = escapeRegex(content);
+  return new RegExp(
+    `<meta\\b[^>]*name=["']${escapedName}["'][^>]*content=["']${escapedContent}["'][^>]*>`,
+    "i"
+  ).test(html) || new RegExp(
+    `<meta\\b[^>]*content=["']${escapedContent}["'][^>]*name=["']${escapedName}["'][^>]*>`,
+    "i"
+  ).test(html);
+}
+
+function validateDarkCanvasLock(html) {
+  const failures = [];
+  if (
+    hasMeta(html, "color-scheme", "dark") ||
+    hasMeta(html, "supported-color-schemes", "dark")
+  ) {
+    failures.push("dark-scheme-invite");
+  }
+  if (
+    !hasMeta(html, "color-scheme", "light only") ||
+    !hasMeta(html, "supported-color-schemes", "light only")
+  ) {
+    failures.push("canvas-lock");
+  }
+  return failures;
+}
+
 function validateVisualShell(html) {
   const failures = [];
   if (!/data-sineday-email-wrapper=["']true["']/i.test(html)) {
@@ -56,6 +85,7 @@ function validateVisualShell(html) {
   if (!validateSurface(html, "accent", "#7AA7FF")) {
     failures.push("brand-accent");
   }
+  failures.push(...validateDarkCanvasLock(html));
   return failures;
 }
 
@@ -107,6 +137,10 @@ export function validateWelcomeTemplate(template) {
   if (template?.alias !== WELCOME_TEMPLATE_ALIAS) failures.push("alias");
   if (template?.status !== "published") failures.push("published");
   if (!html.includes("{{{OPT_OUT_URL}}}")) failures.push("opt-out");
+  if (!html.includes("https://sineday.app/assets/email/sineday-daily.vcf")) {
+    failures.push("contact-card");
+  }
+  if (!/Add SineDay to Contacts/i.test(html)) failures.push("contact-action");
   failures.push(...validateVisualShell(html));
   return [...new Set(failures)];
 }
