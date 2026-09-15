@@ -20,6 +20,21 @@ alter table public.subscriber_preferences
   add column if not exists email_consent_version text,
   add column if not exists email_consent_recorded_at timestamptz;
 
+alter table public.subscribers enable row level security;
+alter table public.subscriber_preferences enable row level security;
+alter table public.subscriber_profile enable row level security;
+alter table public.delivery_log enable row level security;
+
+revoke all on table public.subscribers from public, anon, authenticated;
+revoke all on table public.subscriber_preferences from public, anon, authenticated;
+revoke all on table public.subscriber_profile from public, anon, authenticated;
+revoke all on table public.delivery_log from public, anon, authenticated;
+
+grant select, insert, update, delete on table public.subscribers to service_role;
+grant select, insert, update, delete on table public.subscriber_preferences to service_role;
+grant select, insert, update, delete on table public.subscriber_profile to service_role;
+grant select, insert, update, delete on table public.delivery_log to service_role;
+
 update public.subscribers
 set email_unsubscribed_at = coalesce(email_unsubscribed_at, updated_at, pg_catalog.now())
 where status = 'unsubscribed'
@@ -28,6 +43,7 @@ where status = 'unsubscribed'
 create table public.mailer_signup_requests (
   id uuid primary key default gen_random_uuid(),
   token_hash text not null unique,
+  recipient_key_hash text not null,
   email text,
   timezone text,
   birth_day_of_year smallint,
@@ -48,6 +64,8 @@ create table public.mailer_signup_requests (
   updated_at timestamptz not null default pg_catalog.now(),
   constraint mailer_signup_requests_token_hash_check
     check (token_hash ~ '^[0-9a-f]{64}$'),
+  constraint mailer_signup_requests_recipient_hash_check
+    check (recipient_key_hash ~ '^[0-9a-f]{64}$'),
   constraint mailer_signup_requests_email_check
     check (
       email is null
@@ -124,6 +142,43 @@ create index mailer_signup_attempts_ip_time_idx
 create index mailer_signup_attempts_time_idx
   on public.mailer_signup_attempts (attempted_at);
 
+create table public.mailer_suppressions (
+  id uuid primary key default gen_random_uuid(),
+  email text,
+  recipient_key_hash text,
+  subscriber_id uuid references public.subscribers(id) on delete set null,
+  reason text not null,
+  provider_message_id text,
+  provider_event_at timestamptz,
+  created_at timestamptz not null default pg_catalog.now(),
+  updated_at timestamptz not null default pg_catalog.now(),
+  constraint mailer_suppressions_email_check
+    check (
+      email is null
+      or (
+        email = pg_catalog.lower(pg_catalog.btrim(email))
+        and pg_catalog.char_length(email) between 3 and 320
+      )
+    ),
+  constraint mailer_suppressions_recipient_hash_check
+    check (
+      recipient_key_hash is null
+      or recipient_key_hash ~ '^[0-9a-f]{64}$'
+    ),
+  constraint mailer_suppressions_reason_check
+    check (reason in ('email.bounced', 'email.complained', 'email.suppressed')),
+  constraint mailer_suppressions_identifier_check
+    check (email is not null or recipient_key_hash is not null)
+);
+
+create unique index mailer_suppressions_email_uidx
+  on public.mailer_suppressions (email)
+  where email is not null;
+
+create unique index mailer_suppressions_recipient_hash_uidx
+  on public.mailer_suppressions (recipient_key_hash)
+  where recipient_key_hash is not null;
+
 create table public.mailer_welcome_deliveries (
   id uuid primary key default gen_random_uuid(),
   subscriber_id uuid not null unique references public.subscribers(id) on delete cascade,
@@ -154,15 +209,18 @@ create index mailer_welcome_deliveries_due_idx
 
 alter table public.mailer_signup_requests enable row level security;
 alter table public.mailer_signup_attempts enable row level security;
+alter table public.mailer_suppressions enable row level security;
 alter table public.mailer_welcome_deliveries enable row level security;
 
 revoke all on table public.mailer_signup_requests from public, anon, authenticated;
 revoke all on table public.mailer_signup_attempts from public, anon, authenticated;
+revoke all on table public.mailer_suppressions from public, anon, authenticated;
 revoke all on table public.mailer_welcome_deliveries from public, anon, authenticated;
 revoke all on sequence public.mailer_signup_attempts_id_seq from public, anon, authenticated;
 
 grant select, insert, update, delete on table public.mailer_signup_requests to service_role;
 grant select, insert, update, delete on table public.mailer_signup_attempts to service_role;
+grant select, insert, update, delete on table public.mailer_suppressions to service_role;
 grant select, insert, update, delete on table public.mailer_welcome_deliveries to service_role;
 grant usage, select on sequence public.mailer_signup_attempts_id_seq to service_role;
 
@@ -217,6 +275,8 @@ declare
   v_recipient_attempts integer;
   v_ip_hour_attempts integer;
   v_ip_day_attempts integer;
+  v_retry_after integer := 60;
+  v_reset_at timestamptz;
 begin
   if p_token_hash is null or p_token_hash !~ '^[0-9a-f]{64}$'
     or p_recipient_key_hash is null or p_recipient_key_hash !~ '^[0-9a-f]{64}$'
@@ -253,13 +313,26 @@ begin
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(p_ip_key_hash, 7722)
   );
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(p_email, 7723)
+  );
   perform public.cleanup_mailer_signup_requests();
+
+  if exists (
+    select 1
+    from public.mailer_suppressions s
+    where s.email = p_email
+      or s.recipient_key_hash = p_recipient_key_hash
+  ) then
+    return query select 'suppressed'::text, null::uuid, 0;
+    return;
+  end if;
 
   select pg_catalog.max(a.attempted_at)
   into v_last_sent
   from public.mailer_signup_attempts a
   where a.recipient_key_hash = p_recipient_key_hash
-    and a.outcome = 'sent';
+    and a.outcome in ('created', 'sent');
 
   select pg_catalog.count(*)::integer
   into v_recipient_attempts
@@ -285,33 +358,47 @@ begin
   if v_recipient_attempts >= 5
     or v_ip_hour_attempts >= 20
     or v_ip_day_attempts >= 100 then
-    insert into public.mailer_signup_attempts (
-      recipient_key_hash,
-      ip_key_hash,
-      outcome,
-      attempted_at
-    ) values (
-      p_recipient_key_hash,
-      p_ip_key_hash,
-      'rate_limited',
-      v_now
-    );
-    return query select 'rate_limited'::text, null::uuid, 3600;
+    if v_recipient_attempts >= 5 then
+      select pg_catalog.min(a.attempted_at) + interval '24 hours'
+      into v_reset_at
+      from public.mailer_signup_attempts a
+      where a.recipient_key_hash = p_recipient_key_hash
+        and a.outcome in ('created', 'sent', 'send_failed')
+        and a.attempted_at >= v_now - interval '24 hours';
+      v_retry_after := greatest(
+        v_retry_after,
+        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+      );
+    end if;
+    if v_ip_hour_attempts >= 20 then
+      select pg_catalog.min(a.attempted_at) + interval '1 hour'
+      into v_reset_at
+      from public.mailer_signup_attempts a
+      where a.ip_key_hash = p_ip_key_hash
+        and a.outcome in ('created', 'sent', 'send_failed')
+        and a.attempted_at >= v_now - interval '1 hour';
+      v_retry_after := greatest(
+        v_retry_after,
+        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+      );
+    end if;
+    if v_ip_day_attempts >= 100 then
+      select pg_catalog.min(a.attempted_at) + interval '24 hours'
+      into v_reset_at
+      from public.mailer_signup_attempts a
+      where a.ip_key_hash = p_ip_key_hash
+        and a.outcome in ('created', 'sent', 'send_failed')
+        and a.attempted_at >= v_now - interval '24 hours';
+      v_retry_after := greatest(
+        v_retry_after,
+        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+      );
+    end if;
+    return query select 'rate_limited'::text, null::uuid, v_retry_after;
     return;
   end if;
 
   if v_last_sent is not null and v_last_sent > v_now - interval '10 minutes' then
-    insert into public.mailer_signup_attempts (
-      recipient_key_hash,
-      ip_key_hash,
-      outcome,
-      attempted_at
-    ) values (
-      p_recipient_key_hash,
-      p_ip_key_hash,
-      'cooldown',
-      v_now
-    );
     return query select
       'cooldown'::text,
       null::uuid,
@@ -326,6 +413,7 @@ begin
 
   insert into public.mailer_signup_requests (
     token_hash,
+    recipient_key_hash,
     email,
     timezone,
     birth_day_of_year,
@@ -339,6 +427,7 @@ begin
     updated_at
   ) values (
     p_token_hash,
+    p_recipient_key_hash,
     p_email,
     p_timezone,
     p_birth_day_of_year,
@@ -459,17 +548,23 @@ declare
   v_has_preferences boolean := false;
   v_first_activation boolean := false;
   v_lock_email text;
+  v_lock_recipient_key_hash text;
 begin
   if p_token_hash is null or p_token_hash !~ '^[0-9a-f]{64}$' then
     return query select 'invalid'::text, null::uuid, null::text, null::smallint, null::smallint;
     return;
   end if;
 
-  select r.email
-  into v_lock_email
+  select r.email, r.recipient_key_hash
+  into v_lock_email, v_lock_recipient_key_hash
   from public.mailer_signup_requests r
   where r.token_hash = p_token_hash;
 
+  if found and v_lock_recipient_key_hash is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(v_lock_recipient_key_hash, 7721)
+    );
+  end if;
   if found and v_lock_email is not null then
     perform pg_catalog.pg_advisory_xact_lock(
       pg_catalog.hashtextextended(v_lock_email, 7723)
@@ -499,8 +594,7 @@ begin
     return query select 'suppressed'::text, null::uuid, null::text, null::smallint, null::smallint;
     return;
   end if;
-  if v_request.status <> 'pending'
-    or v_request.confirmation_provider_message_id is null
+  if v_request.status not in ('created', 'pending')
     or v_request.email is null
     or v_request.timezone is null
     or v_request.birth_day_of_year is null
@@ -519,6 +613,25 @@ begin
         updated_at = v_now
     where id = v_request.id;
     return query select 'expired'::text, null::uuid, null::text, null::smallint, null::smallint;
+    return;
+  end if;
+
+  if exists (
+    select 1
+    from public.mailer_suppressions s
+    where s.email = v_request.email
+      or s.recipient_key_hash = v_request.recipient_key_hash
+  ) then
+    update public.mailer_signup_requests
+    set status = 'suppressed',
+        email = null,
+        timezone = null,
+        birth_day_of_year = null,
+        origin_day = null,
+        payload_cleared_at = coalesce(payload_cleared_at, v_now),
+        updated_at = v_now
+    where id = v_request.id;
+    return query select 'suppressed'::text, null::uuid, null::text, null::smallint, null::smallint;
     return;
   end if;
 
@@ -629,9 +742,9 @@ begin
       false,
       true,
       false,
-      v_request.consented_at,
+      v_now,
       v_request.consent_version,
-      v_request.consented_at,
+      v_now,
       6,
       0,
       v_now
@@ -643,9 +756,9 @@ begin
     update public.subscriber_preferences
     set email_enabled = true,
         email_opt_in = true,
-        email_opt_in_at = v_request.consented_at,
+        email_opt_in_at = v_now,
         email_consent_version = v_request.consent_version,
-        email_consent_recorded_at = v_request.consented_at,
+        email_consent_recorded_at = v_now,
         updated_at = v_now
     where subscriber_id = v_subscriber_id;
   end if;
@@ -692,6 +805,8 @@ begin
     )
     on conflict (subscriber_id) do update
       set status = 'pending',
+          attempt_count = 0,
+          last_attempt_at = null,
           next_attempt_at = excluded.next_attempt_at,
           error = null,
           updated_at = excluded.updated_at
@@ -723,6 +838,7 @@ $$;
 
 create or replace function public.activate_authenticated_email_subscriber(
   p_email text,
+  p_recipient_key_hash text,
   p_timezone text,
   p_birth_day_of_year smallint,
   p_origin_day smallint,
@@ -756,6 +872,10 @@ begin
     or p_email !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' then
     raise exception 'invalid_email';
   end if;
+  if p_recipient_key_hash is null
+    or p_recipient_key_hash !~ '^[0-9a-f]{64}$' then
+    raise exception 'invalid_recipient_hash';
+  end if;
   if p_timezone is null
     or not exists (
       select 1 from pg_catalog.pg_timezone_names tz where tz.name = p_timezone
@@ -774,8 +894,21 @@ begin
   end if;
 
   perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(p_recipient_key_hash, 7721)
+  );
+  perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtextextended(p_email, 7723)
   );
+
+  if exists (
+    select 1
+    from public.mailer_suppressions s
+    where s.email = p_email
+      or s.recipient_key_hash = p_recipient_key_hash
+  ) then
+    return query select 'suppressed'::text, null::uuid, false, null::smallint;
+    return;
+  end if;
 
   select s.*
   into v_subscriber
@@ -881,6 +1014,18 @@ begin
         email_unsubscribed_at = null,
         updated_at = v_now
     where id = v_subscriber_id;
+
+    update public.mailer_welcome_deliveries
+    set status = 'pending',
+        attempt_count = 0,
+        last_attempt_at = null,
+        next_attempt_at = v_now,
+        error = null,
+        updated_at = v_now
+    where subscriber_id = v_subscriber_id
+      and status = 'cancelled'
+      and provider_message_id is null
+      and sent_at is null;
   end if;
 
   if v_is_new then
@@ -1039,6 +1184,130 @@ begin
 end;
 $$;
 
+create or replace function public.suppress_mailer_recipient(
+  p_email text,
+  p_subscriber_id uuid,
+  p_recipient_key_hash text,
+  p_reason text,
+  p_provider_message_id text,
+  p_event_at timestamptz
+)
+returns boolean
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_now timestamptz := pg_catalog.clock_timestamp();
+  v_email text := p_email;
+  v_subscriber_id uuid := p_subscriber_id;
+  v_suppression_id uuid;
+begin
+  if p_reason not in ('email.bounced', 'email.complained', 'email.suppressed') then
+    return false;
+  end if;
+
+  if v_email is null and v_subscriber_id is not null then
+    select s.email into v_email
+    from public.subscribers s
+    where s.id = v_subscriber_id;
+  end if;
+  if v_email is not null and (
+    v_email <> pg_catalog.lower(pg_catalog.btrim(v_email))
+    or pg_catalog.char_length(v_email) not between 3 and 320
+  ) then
+    return false;
+  end if;
+  if p_recipient_key_hash is not null
+    and p_recipient_key_hash !~ '^[0-9a-f]{64}$' then
+    return false;
+  end if;
+  if v_email is null and p_recipient_key_hash is null then
+    return false;
+  end if;
+
+  if p_recipient_key_hash is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(p_recipient_key_hash, 7721)
+    );
+  end if;
+  if v_email is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(v_email, 7723)
+    );
+  end if;
+
+  if v_subscriber_id is null and v_email is not null then
+    select s.id into v_subscriber_id
+    from public.subscribers s
+    where s.email = v_email
+    for update;
+  else
+    perform 1
+    from public.subscribers s
+    where s.id = v_subscriber_id
+    for update;
+  end if;
+
+  select s.id into v_suppression_id
+  from public.mailer_suppressions s
+  where (v_email is not null and s.email = v_email)
+    or (
+      p_recipient_key_hash is not null
+      and s.recipient_key_hash = p_recipient_key_hash
+    )
+  order by (s.email = v_email) desc nulls last
+  limit 1
+  for update;
+
+  if found then
+    update public.mailer_suppressions
+    set email = coalesce(email, v_email),
+        recipient_key_hash = coalesce(recipient_key_hash, p_recipient_key_hash),
+        subscriber_id = coalesce(subscriber_id, v_subscriber_id),
+        reason = p_reason,
+        provider_message_id = coalesce(p_provider_message_id, provider_message_id),
+        provider_event_at = coalesce(p_event_at, v_now),
+        updated_at = v_now
+    where id = v_suppression_id;
+  else
+    insert into public.mailer_suppressions (
+      email,
+      recipient_key_hash,
+      subscriber_id,
+      reason,
+      provider_message_id,
+      provider_event_at,
+      created_at,
+      updated_at
+    ) values (
+      v_email,
+      p_recipient_key_hash,
+      v_subscriber_id,
+      p_reason,
+      p_provider_message_id,
+      coalesce(p_event_at, v_now),
+      v_now,
+      v_now
+    );
+  end if;
+
+  if v_subscriber_id is not null then
+    update public.subscribers
+    set status = 'suppressed',
+        updated_at = v_now
+    where id = v_subscriber_id;
+
+    update public.subscriber_preferences
+    set email_enabled = false,
+        updated_at = v_now
+    where subscriber_id = v_subscriber_id;
+  end if;
+
+  return true;
+end;
+$$;
+
 create or replace function public.record_mailer_provider_event(
   p_provider_message_id text,
   p_event_type text,
@@ -1054,9 +1323,10 @@ as $$
 declare
   v_now timestamptz := pg_catalog.clock_timestamp();
   v_request_id uuid;
+  v_welcome_id uuid;
   v_subscriber_id uuid;
   v_email text;
-  v_matched boolean := false;
+  v_recipient_key_hash text;
   v_suppress boolean;
 begin
   if p_provider_message_id is null
@@ -1072,8 +1342,8 @@ begin
   end if;
   v_suppress := p_event_type in ('email.bounced', 'email.complained', 'email.suppressed');
 
-  select r.id, r.subscriber_id, r.email
-  into v_request_id, v_subscriber_id, v_email
+  select r.id, r.subscriber_id, r.email, r.recipient_key_hash
+  into v_request_id, v_subscriber_id, v_email, v_recipient_key_hash
   from public.mailer_signup_requests r
   where r.confirmation_provider_message_id = p_provider_message_id
     or (
@@ -1081,92 +1351,124 @@ begin
       and r.id = p_signup_request_id
     )
   order by (r.confirmation_provider_message_id = p_provider_message_id) desc nulls last
-  limit 1
-  for update;
+  limit 1;
 
-  if found then
-    v_matched := true;
-    if v_suppress then
-      update public.mailer_signup_requests
-      set status = case
-            when status in ('created', 'pending') then 'suppressed'
-            else status
-          end,
-          provider_status = p_event_type,
-          provider_event_at = coalesce(p_event_at, v_now),
-          confirmation_provider_message_id = coalesce(
-            confirmation_provider_message_id,
-            p_provider_message_id
-          ),
-          email = case when status in ('created', 'pending') then null else email end,
-          timezone = case when status in ('created', 'pending') then null else timezone end,
-          birth_day_of_year = case
-            when status in ('created', 'pending') then null
-            else birth_day_of_year
-          end,
-          origin_day = case when status in ('created', 'pending') then null else origin_day end,
-          payload_cleared_at = case
-            when status in ('created', 'pending') then coalesce(payload_cleared_at, v_now)
-            else payload_cleared_at
-          end,
-          updated_at = v_now
-      where id = v_request_id;
-    else
-      update public.mailer_signup_requests
-      set provider_status = p_event_type,
-          provider_event_at = coalesce(p_event_at, v_now),
-          confirmation_provider_message_id = coalesce(
-            confirmation_provider_message_id,
-            p_provider_message_id
-          ),
-          updated_at = v_now
-      where id = v_request_id;
-    end if;
-
-    if v_subscriber_id is null and v_email is not null then
-      select s.id into v_subscriber_id
+  if v_request_id is not null then
+    if v_email is null and v_subscriber_id is not null then
+      select s.email into v_email
       from public.subscribers s
-      where s.email = v_email
-      for update;
+      where s.id = v_subscriber_id;
     end if;
-  else
-    select w.subscriber_id
-    into v_subscriber_id
-    from public.mailer_welcome_deliveries w
-    where w.provider_message_id = p_provider_message_id
-      or (
-        w.provider_message_id is null
-        and w.id = p_welcome_delivery_id
-      )
-    order by (w.provider_message_id = p_provider_message_id) desc nulls last
-    limit 1
+    if v_recipient_key_hash is not null then
+      perform pg_catalog.pg_advisory_xact_lock(
+        pg_catalog.hashtextextended(v_recipient_key_hash, 7721)
+      );
+    end if;
+    if v_email is not null then
+      perform pg_catalog.pg_advisory_xact_lock(
+        pg_catalog.hashtextextended(v_email, 7723)
+      );
+    end if;
+
+    select r.subscriber_id, coalesce(r.email, v_email), r.recipient_key_hash
+    into v_subscriber_id, v_email, v_recipient_key_hash
+    from public.mailer_signup_requests r
+    where r.id = v_request_id
     for update;
 
-    if found then
-      v_matched := true;
-      update public.mailer_welcome_deliveries
-      set provider_status = p_event_type,
-          provider_event_at = coalesce(p_event_at, v_now),
-          provider_message_id = coalesce(provider_message_id, p_provider_message_id),
-          updated_at = v_now
-      where subscriber_id = v_subscriber_id;
+    update public.mailer_signup_requests
+    set status = case
+          when v_suppress and status in ('created', 'pending') then 'suppressed'
+          when not v_suppress and status = 'created' then 'pending'
+          else status
+        end,
+        provider_status = p_event_type,
+        provider_event_at = coalesce(p_event_at, v_now),
+        confirmation_provider_message_id = coalesce(
+          confirmation_provider_message_id,
+          p_provider_message_id
+        ),
+        confirmation_sent_at = coalesce(confirmation_sent_at, v_now),
+        email = case
+          when v_suppress and status in ('created', 'pending') then null
+          else email
+        end,
+        timezone = case
+          when v_suppress and status in ('created', 'pending') then null
+          else timezone
+        end,
+        birth_day_of_year = case
+          when v_suppress and status in ('created', 'pending') then null
+          else birth_day_of_year
+        end,
+        origin_day = case
+          when v_suppress and status in ('created', 'pending') then null
+          else origin_day
+        end,
+        payload_cleared_at = case
+          when v_suppress and status in ('created', 'pending')
+            then coalesce(payload_cleared_at, v_now)
+          else payload_cleared_at
+        end,
+        updated_at = v_now
+    where id = v_request_id;
+
+    update public.mailer_signup_attempts
+    set outcome = 'sent'
+    where request_id = v_request_id
+      and outcome = 'created';
+
+    if v_suppress then
+      perform public.suppress_mailer_recipient(
+        v_email,
+        v_subscriber_id,
+        v_recipient_key_hash,
+        p_event_type,
+        p_provider_message_id,
+        p_event_at
+      );
     end if;
+    return true;
   end if;
 
-  if v_matched and v_suppress and v_subscriber_id is not null then
-    update public.subscribers
-    set status = 'suppressed',
-        updated_at = v_now
-    where id = v_subscriber_id
-      and status = 'active';
+  select w.id, w.subscriber_id, s.email
+  into v_welcome_id, v_subscriber_id, v_email
+  from public.mailer_welcome_deliveries w
+  inner join public.subscribers s on s.id = w.subscriber_id
+  where w.provider_message_id = p_provider_message_id
+    or (
+      w.provider_message_id is null
+      and w.id = p_welcome_delivery_id
+    )
+  order by (w.provider_message_id = p_provider_message_id) desc nulls last
+  limit 1;
 
-    update public.subscriber_preferences
-    set email_enabled = false,
-        updated_at = v_now
-    where subscriber_id = v_subscriber_id;
+  if v_welcome_id is null then
+    return false;
   end if;
 
-  return v_matched;
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(v_email, 7723)
+  );
+  if v_suppress then
+    perform public.suppress_mailer_recipient(
+      v_email,
+      v_subscriber_id,
+      null,
+      p_event_type,
+      p_provider_message_id,
+      p_event_at
+    );
+  end if;
+
+  update public.mailer_welcome_deliveries
+  set provider_status = p_event_type,
+      provider_event_at = coalesce(p_event_at, v_now),
+      provider_message_id = coalesce(provider_message_id, p_provider_message_id),
+      updated_at = v_now
+  where id = v_welcome_id;
+
+  return true;
 end;
 $$;
 
@@ -1208,7 +1510,10 @@ begin
   for update;
 
   update public.subscribers
-  set status = 'unsubscribed',
+  set status = case
+        when status = 'suppressed' then 'suppressed'
+        else 'unsubscribed'
+      end,
       email_unsubscribed_at = v_now,
       updated_at = v_now
   where id = p_subscriber_id;
@@ -1255,11 +1560,12 @@ revoke all on function public.create_mailer_signup_request(text, text, text, sma
 revoke all on function public.mark_mailer_confirmation_sent(uuid, text) from public, anon, authenticated;
 revoke all on function public.mark_mailer_confirmation_failed(uuid) from public, anon, authenticated;
 revoke all on function public.confirm_mailer_signup(text) from public, anon, authenticated;
-revoke all on function public.activate_authenticated_email_subscriber(text, text, smallint, smallint, text, text) from public, anon, authenticated;
+revoke all on function public.activate_authenticated_email_subscriber(text, text, text, smallint, smallint, text, text) from public, anon, authenticated;
 revoke all on function public.claim_due_mailer_welcomes(uuid, integer) from public, anon, authenticated;
 revoke all on function public.complete_mailer_welcome(uuid, text) from public, anon, authenticated;
 revoke all on function public.is_mailer_welcome_sendable(uuid) from public, anon, authenticated;
 revoke all on function public.fail_mailer_welcome(uuid, text) from public, anon, authenticated;
+revoke all on function public.suppress_mailer_recipient(text, uuid, text, text, text, timestamptz) from public, anon, authenticated;
 revoke all on function public.record_mailer_provider_event(text, text, timestamptz, uuid, uuid) from public, anon, authenticated;
 revoke all on function public.unsubscribe_email_subscriber(uuid) from public, anon, authenticated;
 
@@ -1268,11 +1574,12 @@ grant execute on function public.create_mailer_signup_request(text, text, text, 
 grant execute on function public.mark_mailer_confirmation_sent(uuid, text) to service_role;
 grant execute on function public.mark_mailer_confirmation_failed(uuid) to service_role;
 grant execute on function public.confirm_mailer_signup(text) to service_role;
-grant execute on function public.activate_authenticated_email_subscriber(text, text, smallint, smallint, text, text) to service_role;
+grant execute on function public.activate_authenticated_email_subscriber(text, text, text, smallint, smallint, text, text) to service_role;
 grant execute on function public.claim_due_mailer_welcomes(uuid, integer) to service_role;
 grant execute on function public.complete_mailer_welcome(uuid, text) to service_role;
 grant execute on function public.is_mailer_welcome_sendable(uuid) to service_role;
 grant execute on function public.fail_mailer_welcome(uuid, text) to service_role;
+grant execute on function public.suppress_mailer_recipient(text, uuid, text, text, text, timestamptz) to service_role;
 grant execute on function public.record_mailer_provider_event(text, text, timestamptz, uuid, uuid) to service_role;
 grant execute on function public.unsubscribe_email_subscriber(uuid) to service_role;
 

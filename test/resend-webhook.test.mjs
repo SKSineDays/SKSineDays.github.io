@@ -32,6 +32,13 @@ mock.module("@supabase/supabase-js", {
             store.mailerEvents.push(args);
             return { data: true, error: null };
           }
+          if (name === "suppress_mailer_recipient") {
+            const subscriber = store.subscribers.get(args.p_subscriber_id);
+            if (subscriber) subscriber.status = "suppressed";
+            const preferences = store.preferences.get(args.p_subscriber_id);
+            if (preferences) preferences.email_enabled = false;
+            return { data: true, error: null };
+          }
           return { data: null, error: new Error("unknown rpc") };
         },
         from(tableName) {
@@ -193,7 +200,7 @@ test("bounced events suppress sending but preserve email_opt_in", async () => {
   assert.equal(store.preferences.get(SUB_ID).email_opt_in, true);
 });
 
-test("replayed webhook events do not produce harmful state changes", async () => {
+test("provider suppression remains sticky even after a local unsubscribe", async () => {
   resetStore();
   store.subscribers.get(SUB_ID).status = "unsubscribed";
   const signed = signEvent({
@@ -205,7 +212,7 @@ test("replayed webhook events do not produce harmful state changes", async () =>
   const second = await postWebhook(signed);
   assert.equal(first.statusCode, 200);
   assert.equal(second.statusCode, 200);
-  assert.equal(store.subscribers.get(SUB_ID).status, "unsubscribed");
+  assert.equal(store.subscribers.get(SUB_ID).status, "suppressed");
   assert.equal(store.preferences.get(SUB_ID).email_opt_in, true);
   assert.equal(store.deliveries.get("del_1").provider_status, "email.bounced");
 });

@@ -12,6 +12,7 @@ import { getAdminClient } from "./_lib/auth.js";
 import { deriveEmailRhythmFromBirthdate } from "./_lib/email-rhythm.js";
 import {
   MAILER_CONSENT_VERSION,
+  hashRateLimitKey,
   normalizeMailerEmail,
   parseBoundedJsonBody,
   setPrivateJsonHeaders,
@@ -47,7 +48,12 @@ export default async function handler(req, res) {
     }
     const body = parsed.body;
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (
+      !process.env.SUPABASE_URL ||
+      !process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      typeof process.env.MAILER_SIGNUP_SECRET !== "string" ||
+      process.env.MAILER_SIGNUP_SECRET.length < 32
+    ) {
       console.error("[subscribe] missing Supabase configuration");
       return res.status(500).json({ ok: false, error: "Server configuration error" });
     }
@@ -99,6 +105,7 @@ export default async function handler(req, res) {
       "activate_authenticated_email_subscriber",
       {
         p_email: authEmail,
+        p_recipient_key_hash: hashRateLimitKey("recipient", authEmail),
         p_timezone: timezone,
         p_birth_day_of_year: derived?.birthDayOfYear ?? null,
         p_origin_day: derived?.originDay ?? null,

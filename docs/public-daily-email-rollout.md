@@ -55,6 +55,11 @@ webhook must continue delivering `email.sent`, `email.delivered`,
 `email.failed`, `email.bounced`, `email.complained`, and `email.suppressed` to
 `/api/resend/webhook`.
 
+Disable Resend click tracking for the transactional sending domain before
+publishing the confirmation template. The confirmation token is intentionally
+kept in a URL fragment, and template markup alone is not a substitute for the
+provider-level tracking setting.
+
 Run `npm run audit:daily-email-templates` only after the new confirmation
 template is published.
 

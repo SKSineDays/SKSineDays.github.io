@@ -146,9 +146,10 @@ export default async function handler(req, res) {
     return json(res, 202, publicSignupAcceptedPayload());
   }
 
+  let sendResult;
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const { data: sendData, error: sendError } = await resend.emails.send(
+    sendResult = await resend.emails.send(
       {
         from: process.env.RESEND_FROM,
         to: [email],
@@ -171,13 +172,22 @@ export default async function handler(req, res) {
         idempotencyKey: `sineday-confirm/${created.request_id}`
       }
     );
-    const providerMessageId = unwrapResendSend({ data: sendData, error: sendError });
-    const { error: markError } = await supabase.rpc("mark_mailer_confirmation_sent", {
-      p_request_id: created.request_id,
-      p_provider_message_id: providerMessageId
-    });
-    if (markError) throw markError;
   } catch {
+    // A transport exception is ambiguous: Resend may have accepted the
+    // idempotent send before the response was lost. Keep the token usable and
+    // let the provider webhook reconcile the created request.
+    console.error("[mailer-signup] confirmation send outcome unknown", {
+      requestId: created.request_id
+    });
+    return json(res, 202, publicSignupAcceptedPayload());
+  }
+
+  let providerMessageId;
+  try {
+    providerMessageId = unwrapResendSend(sendResult);
+  } catch {
+    // Resend returned an explicit rejection, so this request cannot produce a
+    // valid delivered link and its transient payload can be cleared.
     await markFailed(supabase, created.request_id);
     console.error("[mailer-signup] confirmation send failed", {
       requestId: created.request_id
@@ -185,6 +195,24 @@ export default async function handler(req, res) {
     return json(res, 503, {
       ok: false,
       error: "We could not send the confirmation email. Please try again."
+    });
+  }
+
+  try {
+    const { error: markError } = await supabase.rpc("mark_mailer_confirmation_sent", {
+      p_request_id: created.request_id,
+      p_provider_message_id: providerMessageId
+    });
+    if (markError) {
+      console.error("[mailer-signup] confirmation persistence deferred", {
+        requestId: created.request_id
+      });
+    }
+  } catch {
+    // Possession of the random token is sufficient for confirmation, so a
+    // provider-accepted email remains usable while its webhook reconciles ID.
+    console.error("[mailer-signup] confirmation persistence deferred", {
+      requestId: created.request_id
     });
   }
 

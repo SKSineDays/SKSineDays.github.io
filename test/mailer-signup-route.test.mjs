@@ -15,7 +15,9 @@ const store = {
   rpcCalls: [],
   sends: [],
   sendError: null,
-  rpcError: null
+  sendThrows: false,
+  rpcError: null,
+  markError: null
 };
 
 mock.module("@supabase/supabase-js", {
@@ -37,6 +39,9 @@ mock.module("@supabase/supabase-js", {
               error: null
             };
           }
+          if (name === "mark_mailer_confirmation_sent") {
+            return { data: null, error: store.markError };
+          }
           return { data: null, error: null };
         }
       };
@@ -50,6 +55,7 @@ mock.module("resend", {
       emails = {
         send: async (payload, options) => {
           store.sends.push({ payload, options });
+          if (store.sendThrows) throw new Error("connection reset");
           if (store.sendError) return { data: null, error: store.sendError };
           return { data: { id: "email_confirmation" }, error: null };
         }
@@ -84,7 +90,9 @@ function reset() {
   store.rpcCalls.length = 0;
   store.sends.length = 0;
   store.sendError = null;
+  store.sendThrows = false;
   store.rpcError = null;
+  store.markError = null;
 }
 
 function validBody() {
@@ -178,6 +186,31 @@ test("confirmation provider failures do not claim an email was sent", async () =
   assert.match(res.body.error, /could not send/i);
   assert.ok(
     store.rpcCalls.some((call) => call.name === "mark_mailer_confirmation_failed")
+  );
+});
+
+test("provider-accepted confirmations remain usable when ID persistence is delayed", async () => {
+  reset();
+  store.markError = new Error("temporary database failure");
+  const res = await post();
+  assert.equal(res.statusCode, 202);
+  assert.equal(res.body.ok, true);
+  assert.equal(store.sends.length, 1);
+  assert.equal(
+    store.rpcCalls.some((call) => call.name === "mark_mailer_confirmation_failed"),
+    false
+  );
+});
+
+test("ambiguous transport failures retain the token for webhook reconciliation", async () => {
+  reset();
+  store.sendThrows = true;
+  const res = await post();
+  assert.equal(res.statusCode, 202);
+  assert.equal(res.body.ok, true);
+  assert.equal(
+    store.rpcCalls.some((call) => call.name === "mark_mailer_confirmation_failed"),
+    false
   );
 });
 

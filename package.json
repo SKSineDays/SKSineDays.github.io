@@ -16,5 +16,8 @@
     "pdf-lib": "^1.17.1",
     "resend": "^6.18.0",
     "stripe": "^22.3.2"
+  },
+  "devDependencies": {
+    "standardwebhooks": "^1.1.1"
   }
 }

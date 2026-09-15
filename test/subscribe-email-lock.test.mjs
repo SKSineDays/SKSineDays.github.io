@@ -8,6 +8,7 @@ process.env.RESEND_API_KEY = "re_test_key";
 process.env.RESEND_FROM = "Daily <daily@daily.sineday.app>";
 process.env.UNSUBSCRIBE_SECRET = "unsubscribe-secret-test-key";
 process.env.PUBLIC_SITE_URL = "https://sineday.app";
+process.env.MAILER_SIGNUP_SECRET = "mailer-signup-secret-at-least-32-bytes";
 
 const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -173,6 +174,7 @@ test("authenticated setup derives rhythm server-side and ignores client rhythm v
     originDay: 1
   });
   assert.equal(activation.args.p_email, "member@sineday.app");
+  assert.match(activation.args.p_recipient_key_hash, /^[0-9a-f]{64}$/);
   assert.equal(activation.args.p_birth_day_of_year, 110);
   assert.equal(activation.args.p_origin_day, 1);
   assert.equal(activation.args.p_source, "dashboard-daily-duck");

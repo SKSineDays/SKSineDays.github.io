@@ -124,19 +124,18 @@ export default async function handler(req, res) {
     if (updateError) throw updateError;
 
     if (SUPPRESS_EVENTS.has(type) && delivery.subscriber_id) {
-      const now = new Date().toISOString();
-      const { error: suppressError } = await supabase
-        .from("subscribers")
-        .update({ status: "suppressed", updated_at: now })
-        .eq("id", delivery.subscriber_id)
-        .eq("status", "active");
+      const { error: suppressError } = await supabase.rpc(
+        "suppress_mailer_recipient",
+        {
+          p_email: null,
+          p_subscriber_id: delivery.subscriber_id,
+          p_recipient_key_hash: null,
+          p_reason: type,
+          p_provider_message_id: emailId,
+          p_event_at: providerEventAt
+        }
+      );
       if (suppressError) throw suppressError;
-
-      const { error: prefError } = await supabase
-        .from("subscriber_preferences")
-        .update({ email_enabled: false, updated_at: now })
-        .eq("subscriber_id", delivery.subscriber_id);
-      if (prefError) throw prefError;
     }
 
     return json(res, 200, { ok: true });
