@@ -142,4 +142,3 @@ test("expired payload cleanup retains token and provider evidence", () => {
   assert.doesNotMatch(sql, /confirmation_provider_message_id = null/i);
   assert.match(sql, /delete from public\.mailer_signup_attempts[\s\S]*interval '30 days'/i);
 });
-

@@ -172,4 +172,3 @@ test("malformed tokens fail before database access", async () => {
   assert.equal(res.statusCode, 400);
   assert.equal(store.rpcCalls.length, 0);
 });
-

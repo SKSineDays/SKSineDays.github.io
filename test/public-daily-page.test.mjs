@@ -92,4 +92,3 @@ test("service worker bypasses APIs and never caches confirmation visits", () => 
   assert.match(serviceWorker, /url\.pathname === '\/daily-confirm\.html'/);
   assert.match(serviceWorker, /fetch\(request, \{ cache: 'no-store' \}\)/);
 });
-

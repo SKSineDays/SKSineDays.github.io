@@ -172,4 +172,3 @@ export function publicSignupAcceptedPayload() {
       "Check your inbox for the confirmation step. If it does not arrive, wait a few minutes before trying again."
   };
 }
-

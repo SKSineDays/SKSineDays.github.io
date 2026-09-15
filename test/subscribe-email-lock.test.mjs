@@ -226,4 +226,3 @@ test("suppressed recipients are never automatically reactivated", async () => {
   assert.equal(res.statusCode, 409);
   assert.equal(store.resendSends.length, 0);
 });
-

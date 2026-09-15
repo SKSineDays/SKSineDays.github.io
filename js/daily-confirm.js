@@ -76,4 +76,3 @@ button?.addEventListener("click", async () => {
     button.textContent = "Confirm my daily emails";
   }
 });
-

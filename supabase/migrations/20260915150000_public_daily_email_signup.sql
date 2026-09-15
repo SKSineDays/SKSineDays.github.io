@@ -1202,4 +1202,3 @@ grant execute on function public.record_mailer_provider_event(text, text, timest
 grant execute on function public.unsubscribe_email_subscriber(uuid) to service_role;
 
 commit;
-

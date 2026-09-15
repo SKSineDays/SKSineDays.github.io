@@ -207,4 +207,3 @@ test("invalid consent, dates, timezones, and sources fail before writes", async 
     assert.equal(store.sends.length, 0);
   }
 });
-
