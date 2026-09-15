@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#05060A">
+  <meta name="description" content="Get a personalized Daily SineDay email around 6:00 AM in your chosen time zone. Free, with no account required.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="canonical" href="https://sineday.app/daily">
+  <title>Daily SineDay Emails — SineDay</title>
+
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+  <link rel="icon" href="/favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+  <link rel="icon" type="image/svg+xml" href="/breathingicon.svg?v=2">
+  <link rel="stylesheet" href="/css/daily.css">
+</head>
+<body class="daily-page">
+  <a class="daily-skip-link" href="#daily-signup">Skip to signup form</a>
+
+  <header class="daily-header">
+    <a class="daily-brand" href="/" aria-label="SineDay home">
+      <img src="/assets/brand/sineday-wordmark.svg" alt="SineDay" width="700" height="190">
+    </a>
+    <a class="daily-header__home" href="/">Explore SineDay</a>
+  </header>
+
+  <main class="daily-main">
+    <section class="daily-hero" aria-labelledby="daily-title">
+      <div class="daily-hero__copy">
+        <p class="daily-eyebrow">A quiet morning ritual</p>
+        <h1 id="daily-title">Your SineDay, in your inbox.</h1>
+        <p class="daily-lede">Meet today's SineDuck, explore the day's theme, and take a quiet moment for your own thoughts.</p>
+        <p class="daily-support">A personal morning ritual, around 6:00 AM in your chosen time zone.</p>
+        <p class="daily-benefit">Free daily emails. No account required.</p>
+      </div>
+
+      <div class="daily-duck-stage" aria-hidden="true">
+        <div class="daily-duck-stage__glow"></div>
+        <svg class="daily-duck-stage__wave" viewBox="0 0 600 160" preserveAspectRatio="none">
+          <path d="M0 92 C100 32 200 32 300 92 C400 152 500 152 600 92"></path>
+        </svg>
+        <img src="/assets/sineducks/SineDuck15.svg" alt="" width="576" height="288">
+      </div>
+    </section>
+
+    <section class="daily-grid" aria-label="Daily email signup and preview">
+      <div class="daily-form-card">
+        <div class="daily-form-card__heading">
+          <p class="daily-eyebrow">Begin your daily rhythm</p>
+          <h2>Choose where morning finds you.</h2>
+        </div>
+
+        <form id="daily-signup" class="daily-form" novalidate>
+          <div class="daily-field">
+            <label for="daily-email">Email</label>
+            <input
+              id="daily-email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="320"
+              required
+              aria-describedby="daily-email-error"
+            >
+            <p id="daily-email-error" class="daily-field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="daily-field">
+            <label for="daily-birthdate">Birthdate</label>
+            <input
+              id="daily-birthdate"
+              name="birthdate"
+              type="date"
+              autocomplete="bday"
+              required
+              aria-describedby="daily-birthdate-help daily-birthdate-error"
+            >
+            <p id="daily-birthdate-help" class="daily-field-help">We use your birthdate to calculate your SineDay rhythm. For daily emails, we save only derived rhythm values, not your full birthdate.</p>
+            <p id="daily-birthdate-error" class="daily-field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="daily-field">
+            <label for="daily-timezone">Time zone</label>
+            <input
+              id="daily-timezone"
+              name="timezone"
+              type="text"
+              autocomplete="off"
+              list="daily-timezone-list"
+              maxlength="255"
+              required
+              aria-describedby="daily-timezone-help daily-timezone-error"
+            >
+            <datalist id="daily-timezone-list"></datalist>
+            <p id="daily-timezone-help" class="daily-field-help">Detected for you. Edit it if your morning time zone is different.</p>
+            <p id="daily-timezone-error" class="daily-field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="daily-honeypot" aria-hidden="true">
+            <label for="daily-company">Company</label>
+            <input id="daily-company" name="company" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div class="daily-consent">
+            <input
+              id="daily-consent"
+              name="consent"
+              type="checkbox"
+              required
+              aria-describedby="daily-consent-error"
+            >
+            <label for="daily-consent">Yes, send me my daily SineDay emails. I can unsubscribe anytime.</label>
+          </div>
+          <p id="daily-consent-error" class="daily-field-error" aria-live="polite"></p>
+
+          <button id="daily-submit" class="daily-submit" type="submit">
+            Send me my daily SineDay
+          </button>
+          <p id="daily-form-status" class="daily-form-status" role="status" aria-live="polite" aria-atomic="true"></p>
+        </form>
+
+        <p class="daily-form-card__fineprint">No app login, account, or payment is needed. Confirmation is required before any daily email begins.</p>
+      </div>
+
+      <aside class="daily-preview" aria-labelledby="daily-preview-title">
+        <p class="daily-preview__label">A look inside</p>
+        <div class="daily-email-example">
+          <div class="daily-email-example__accent"></div>
+          <div class="daily-email-example__header">
+            <p>SineDay</p>
+            <h2 id="daily-preview-title">Your SineDay — Day 17: Foundation</h2>
+            <p class="daily-email-example__theme">EMERGING · FOUNDATION</p>
+          </div>
+          <div class="daily-email-example__duck">
+            <img src="/assets/sineducks/SineDuck17.svg" alt="SineDuck 17 — Foundation" width="576" height="288" loading="lazy">
+          </div>
+          <div class="daily-email-example__body">
+            <p class="daily-email-example__prompt">What wants a steady place to begin again?</p>
+            <p>Your daily note follows the rhythm already moving through your life—never a prediction, always an invitation to notice.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="daily-footer">
+    <p>© SineDay™ 2026</p>
+    <nav aria-label="Daily signup footer">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </footer>
+
+  <script type="module" src="/js/daily-signup.js"></script>
+</body>
+</html>

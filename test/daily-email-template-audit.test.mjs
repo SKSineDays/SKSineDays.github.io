@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
   auditDailyEmailTemplates,
+  validateConfirmationTemplate,
   validateDailyTemplate,
   validateWelcomeTemplate
 } from "../scripts/audit-daily-email-templates.mjs";
@@ -11,6 +12,10 @@ import {
 const TEMPLATE_DIR = join(process.cwd(), "docs/email-templates/20260911");
 const VCARD_PATH = join(process.cwd(), "assets/email/sineday-daily.vcf");
 const CONTACT_CARD_URL = "https://sineday.app/assets/email/sineday-daily.vcf";
+const CONFIRMATION_PATH = join(
+  process.cwd(),
+  "docs/email-templates/20260915/confirmation.html"
+);
 
 function visualShell(innerHtml = "") {
   return `
@@ -133,6 +138,21 @@ test("welcome template audit requires publication, unsubscribe, and shared shell
   assert.ok(failures.includes("visual-wrapper"));
   assert.ok(failures.includes("contact-card"));
   assert.ok(failures.includes("contact-action"));
+});
+
+test("confirmation template requires explicit action, expiry, and shared shell", () => {
+  const html = readFileSync(CONFIRMATION_PATH, "utf8");
+  assert.deepEqual(
+    validateConfirmationTemplate({
+      alias: "dailyemailconfirmation",
+      status: "published",
+      html
+    }),
+    []
+  );
+  assert.match(html, /\{\{\{CONFIRM_URL\}\}\}/);
+  assert.match(html, /Opening this email alone will not subscribe you/);
+  assert.doesNotMatch(html, /OPT_OUT_URL/);
 });
 
 test("visual shell rejects dark-scheme invitations and requires the canvas lock", () => {

@@ -92,6 +92,15 @@ export default async function handler(req, res) {
       .maybeSingle();
     if (lookupError) throw lookupError;
     if (!delivery) {
+      const { error: mailerEventError } = await supabase.rpc(
+        "record_mailer_provider_event",
+        {
+          p_provider_message_id: emailId,
+          p_event_type: type,
+          p_event_at: providerEventAt
+        }
+      );
+      if (mailerEventError) throw mailerEventError;
       return json(res, 200, { ok: true });
     }
 

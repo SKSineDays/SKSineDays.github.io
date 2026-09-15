@@ -610,10 +610,11 @@ async function enableDailyEmail({ birthdate } = {}) {
 
   try {
     const accessToken = await getAccessToken();
-    const headers = { "Content-Type": "application/json" };
-    if (accessToken) {
-      headers.Authorization = `Bearer ${accessToken}`;
+    if (!accessToken) {
+      throw new Error("Your session expired. Sign in again to enable daily email.");
     }
+    const headers = { "Content-Type": "application/json" };
+    headers.Authorization = `Bearer ${accessToken}`;
 
     const payload = {
       email: currentUser.email.toLowerCase().trim(),

@@ -5,6 +5,7 @@ import {
   DAILY_TEMPLATE_ALIASES,
   WELCOME_TEMPLATE_ALIAS
 } from "../api/_lib/daily-email.js";
+import { MAILER_CONFIRMATION_TEMPLATE_ALIAS } from "../api/_lib/mailer-signup.js";
 
 const SURFACES = Object.freeze({
   outer: "#05060A",
@@ -145,6 +146,21 @@ export function validateWelcomeTemplate(template) {
   return [...new Set(failures)];
 }
 
+export function validateConfirmationTemplate(template) {
+  const failures = [];
+  const html = String(template?.html || "");
+  if (template?.alias !== MAILER_CONFIRMATION_TEMPLATE_ALIAS) failures.push("alias");
+  if (template?.status !== "published") failures.push("published");
+  if (!html.includes("{{{CONFIRM_URL}}}")) failures.push("confirm-url");
+  if (!/Review and confirm my daily emails/i.test(html)) failures.push("confirm-action");
+  if (!/expires in 24 hours/i.test(html)) failures.push("expiry-copy");
+  if (!/Opening this email alone will not subscribe you/i.test(html)) {
+    failures.push("explicit-confirmation");
+  }
+  failures.push(...validateVisualShell(html));
+  return [...new Set(failures)];
+}
+
 function printResult({ alias, day, failures, status }) {
   const resolvedStatus =
     status || (failures.length === 0 ? "ok" : `fail(${failures.join("|")})`);
@@ -208,6 +224,26 @@ export async function auditDailyEmailTemplates({
     printResult({
       alias: WELCOME_TEMPLATE_ALIAS,
       day: "welcome",
+      failures
+    });
+  }
+
+  await sleep(600);
+  const confirmation = await getTemplate(resend, MAILER_CONFIRMATION_TEMPLATE_ALIAS);
+  if (!confirmation) {
+    passed = false;
+    printResult({
+      alias: MAILER_CONFIRMATION_TEMPLATE_ALIAS,
+      day: "confirmation",
+      failures: [],
+      status: "missing-or-unavailable"
+    });
+  } else {
+    const failures = validateConfirmationTemplate(confirmation);
+    if (failures.length > 0) passed = false;
+    printResult({
+      alias: MAILER_CONFIRMATION_TEMPLATE_ALIAS,
+      day: "confirmation",
       failures
     });
   }

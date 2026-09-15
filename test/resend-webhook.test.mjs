@@ -15,7 +15,8 @@ process.env.RESEND_WEBHOOK_SECRET = WEBHOOK_SECRET;
 const store = {
   deliveries: new Map(),
   subscribers: new Map(),
-  preferences: new Map()
+  preferences: new Map(),
+  mailerEvents: []
 };
 
 function clone(value) {
@@ -26,6 +27,13 @@ mock.module("@supabase/supabase-js", {
   namedExports: {
     createClient() {
       return {
+        async rpc(name, args) {
+          if (name === "record_mailer_provider_event") {
+            store.mailerEvents.push(args);
+            return { data: true, error: null };
+          }
+          return { data: null, error: new Error("unknown rpc") };
+        },
         from(tableName) {
           const state = { filters: {}, payload: null, action: "select" };
           const api = {
@@ -124,6 +132,7 @@ function resetStore() {
   store.deliveries.clear();
   store.subscribers.clear();
   store.preferences.clear();
+  store.mailerEvents.length = 0;
   store.deliveries.set("del_1", {
     id: "del_1",
     subscriber_id: SUB_ID,
@@ -199,6 +208,23 @@ test("replayed webhook events do not produce harmful state changes", async () =>
   assert.equal(store.subscribers.get(SUB_ID).status, "unsubscribed");
   assert.equal(store.preferences.get(SUB_ID).email_opt_in, true);
   assert.equal(store.deliveries.get("del_1").provider_status, "email.bounced");
+});
+
+test("confirmation provider events are delegated to the atomic mailer event RPC", async () => {
+  resetStore();
+  const confirmationId = "confirmation-provider-id";
+  const signed = signEvent({
+    type: "email.suppressed",
+    created_at: "2026-01-15T12:00:00.000Z",
+    data: { email_id: confirmationId }
+  });
+  const res = await postWebhook(signed);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(store.mailerEvents, [{
+    p_provider_message_id: confirmationId,
+    p_event_type: "email.suppressed",
+    p_event_at: "2026-01-15T12:00:00.000Z"
+  }]);
 });
 
 test("GET is rejected", async () => {

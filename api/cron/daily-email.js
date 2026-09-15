@@ -18,6 +18,7 @@ import {
 } from "../_lib/daily-email.js";
 import { dispatchClaimedDailyEmails } from "../_lib/daily-email-dispatch.js";
 import { secureEqual } from "../_lib/unsubscribe-token.js";
+import { claimAndDispatchWelcomeEmails } from "../_lib/welcome-email.js";
 
 function json(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
@@ -61,6 +62,22 @@ export default async function handler(req, res) {
   try {
     const now = getCronNow();
     const supabase = getAdminClient();
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    try {
+      const welcomeCounts = await claimAndDispatchWelcomeEmails({
+        supabase,
+        resend,
+        limit: 10
+      });
+      if (welcomeCounts.sent || welcomeCounts.failed) {
+        console.info("[welcome-email] recovery complete", welcomeCounts);
+      }
+    } catch {
+      // Welcome recovery is independent; a failure must not block daily claims.
+      console.error("[welcome-email] recovery failed");
+    }
+
     const { data: claims, error: claimError } = await supabase.rpc(
       "claim_due_daily_emails",
       {
@@ -75,7 +92,6 @@ export default async function handler(req, res) {
     }
 
     const claimed = Array.isArray(claims) ? claims : [];
-    const resend = new Resend(process.env.RESEND_API_KEY);
     const counts = await dispatchClaimedDailyEmails({
       claims: claimed,
       supabase,
