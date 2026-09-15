@@ -47,6 +47,7 @@ test("every privileged mailer RPC has a fixed search path and service-role-only 
     "activate_authenticated_email_subscriber",
     "claim_due_mailer_welcomes",
     "complete_mailer_welcome",
+    "is_mailer_welcome_sendable",
     "fail_mailer_welcome",
     "record_mailer_provider_event"
   ];
@@ -67,6 +68,7 @@ test("pending creation enforces durable recipient and IP throttles plus cooldown
   assert.match(sql, /v_recipient_attempts >= 5/);
   assert.match(sql, /v_ip_hour_attempts >= 20/);
   assert.match(sql, /v_ip_day_attempts >= 100/);
+  assert.match(sql, /a\.outcome in \('created', 'sent', 'send_failed'\)/);
   assert.match(sql, /v_last_sent > v_now - interval '10 minutes'/);
   assert.match(sql, /'rate_limited'/);
   assert.match(sql, /'cooldown'/);
@@ -77,7 +79,7 @@ test("confirmation is serialized, single-use, expiring, and transactional", () =
   assert.match(migration, /(?:^|\n)begin;\s*(?:\n|$)/i);
   assert.match(migration, /commit;\s*$/i);
   assert.match(sql, /where r\.token_hash = p_token_hash\s+for update/i);
-  assert.match(sql, /pg_advisory_xact_lock[\s\S]*v_request\.email/);
+  assert.match(sql, /pg_advisory_xact_lock[\s\S]*v_lock_email/);
   assert.match(sql, /if v_request\.status = 'consumed'/);
   assert.match(sql, /'already_used'/);
   assert.match(sql, /v_request\.expires_at <= v_now/);
@@ -87,7 +89,7 @@ test("confirmation is serialized, single-use, expiring, and transactional", () =
 
 test("concurrent duplicate activation reuses one subscriber identity", () => {
   const sql = functionSql("confirm_mailer_signup");
-  assert.match(sql, /pg_advisory_xact_lock[\s\S]*v_request\.email/);
+  assert.match(sql, /pg_advisory_xact_lock[\s\S]*v_lock_email/);
   assert.match(sql, /where s\.email = v_request\.email\s+for update/i);
   assert.match(sql, /insert into public\.subscribers/);
   assert.doesNotMatch(sql, /delete from public\.subscribers/i);
@@ -104,6 +106,23 @@ test("locked rhythm and active settings are preserved while fresh re-opt-in is e
   assert.match(sql, /email_enabled = true[\s\S]*email_opt_in = true/i);
   assert.doesNotMatch(sql, /sms_enabled\s*=/i);
   assert.doesNotMatch(sql, /sms_opt_in\s*=/i);
+});
+
+test("fresh activations persist required preferences and use a deadlock-safe lock order", () => {
+  const confirmation = functionSql("confirm_mailer_signup");
+  const authenticated = functionSql("activate_authenticated_email_subscriber");
+  const unsubscribe = functionSql("unsubscribe_email_subscriber");
+  assert.match(confirmation, /v_has_preferences := found;\s+if not v_has_preferences/i);
+  assert.match(authenticated, /v_has_profile := found;/i);
+  assert.match(authenticated, /v_has_preferences := found;\s+if not v_has_preferences/i);
+  assert.ok(
+    confirmation.indexOf("pg_advisory_xact_lock") <
+      confirmation.indexOf("where r.token_hash = p_token_hash\n  for update")
+  );
+  assert.ok(
+    unsubscribe.indexOf("pg_advisory_xact_lock") <
+      unsubscribe.indexOf("from public.subscribers s\n  where s.id = p_subscriber_id\n  for update")
+  );
 });
 
 test("suppression and later unsubscribe prevent token reactivation", () => {
@@ -129,6 +148,7 @@ test("welcome sends have a durable unique claim and bounded retry state", () => 
   assert.match(claim, /for update of w skip locked/i);
   assert.match(claim, /w\.attempt_count < 5/);
   assert.match(claim, /w\.status = 'processing'/);
+  assert.match(functionSql("is_mailer_welcome_sendable"), /w\.status = 'processing'/);
   assert.match(functionSql("complete_mailer_welcome"), /status = 'sent'/);
   assert.match(functionSql("fail_mailer_welcome"), /attempt_count >= 5 then 'cancelled'/);
 });

@@ -26,6 +26,9 @@ test("welcome send records its provider ID and uses the durable subscriber idemp
     supabase: {
       async rpc(name, args) {
         rpcCalls.push({ name, args });
+        if (name === "is_mailer_welcome_sendable") {
+          return { data: true, error: null };
+        }
         return { data: null, error: null };
       }
     },
@@ -44,7 +47,7 @@ test("welcome send records its provider ID and uses the durable subscriber idemp
   assert.deepEqual(counts, { sent: 1, failed: 0, skipped: 0 });
   assert.equal(sends[0].options.idempotencyKey, `sineday-welcome/${SUBSCRIBER_ID}`);
   assert.equal(sends[0].payload.template.id, "welcomeemail");
-  assert.deepEqual(rpcCalls[0], {
+  assert.deepEqual(rpcCalls[1], {
     name: "complete_mailer_welcome",
     args: {
       p_delivery_id: DELIVERY_ID,
@@ -60,6 +63,9 @@ test("known provider failures persist a bounded retry state without reporting su
     supabase: {
       async rpc(name, args) {
         rpcCalls.push({ name, args });
+        if (name === "is_mailer_welcome_sendable") {
+          return { data: true, error: null };
+        }
         return { data: null, error: null };
       }
     },
@@ -82,4 +88,32 @@ test("known provider failures persist a bounded retry state without reporting su
   assert.ok(failure);
   assert.equal(failure.args.p_error.includes("@"), false);
   assert.equal(failure.args.p_error.includes("http"), false);
+});
+
+test("welcome eligibility is rechecked after claim so unsubscribe cancels the send", async () => {
+  let sendCalled = false;
+  const counts = await dispatchClaimedWelcomeEmails({
+    claims,
+    supabase: {
+      async rpc(name) {
+        if (name === "is_mailer_welcome_sendable") {
+          return { data: false, error: null };
+        }
+        return { data: null, error: null };
+      }
+    },
+    resend: {
+      emails: {
+        async send() {
+          sendCalled = true;
+          return { data: { id: "must_not_send" }, error: null };
+        }
+      }
+    },
+    env,
+    sleep: async () => {}
+  });
+
+  assert.deepEqual(counts, { sent: 0, failed: 0, skipped: 1 });
+  assert.equal(sendCalled, false);
 });

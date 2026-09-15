@@ -49,16 +49,26 @@ export async function dispatchClaimedWelcomeEmails({
       continue;
     }
 
-    const optOutUrl = buildUnsubscribePageUrl(subscriberId, env);
-    const apiOptOutUrl = buildUnsubscribeApiUrl(subscriberId, env);
-    const listHeaders = buildListUnsubscribeHeaders(apiOptOutUrl);
-    if (!optOutUrl || !listHeaders) {
-      await failWelcome(supabase, deliveryId, new Error("Welcome email could not be prepared"));
-      counts.failed += 1;
-      continue;
-    }
-
     try {
+      const { data: sendable, error: eligibilityError } = await supabase.rpc(
+        "is_mailer_welcome_sendable",
+        {
+          p_delivery_id: deliveryId
+        }
+      );
+      if (eligibilityError) throw eligibilityError;
+      if (sendable !== true) {
+        counts.skipped += 1;
+        continue;
+      }
+
+      const optOutUrl = buildUnsubscribePageUrl(subscriberId, env);
+      const apiOptOutUrl = buildUnsubscribeApiUrl(subscriberId, env);
+      const listHeaders = buildListUnsubscribeHeaders(apiOptOutUrl);
+      if (!optOutUrl || !listHeaders) {
+        throw new Error("Welcome email could not be prepared");
+      }
+
       const { data, error } = await resend.emails.send(
         {
           from: env.RESEND_FROM,

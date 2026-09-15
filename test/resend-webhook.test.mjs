@@ -223,8 +223,29 @@ test("confirmation provider events are delegated to the atomic mailer event RPC"
   assert.deepEqual(store.mailerEvents, [{
     p_provider_message_id: confirmationId,
     p_event_type: "email.suppressed",
-    p_event_at: "2026-01-15T12:00:00.000Z"
+    p_event_at: "2026-01-15T12:00:00.000Z",
+    p_signup_request_id: null,
+    p_welcome_delivery_id: null
   }]);
+});
+
+test("mailer tags correlate provider events that arrive before provider IDs persist", async () => {
+  resetStore();
+  const requestId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+  const signed = signEvent({
+    type: "email.bounced",
+    created_at: "2026-01-15T12:00:00.000Z",
+    data: {
+      email_id: "early-provider-id",
+      tags: {
+        category: "sineday_confirmation",
+        signup_request_id: requestId
+      }
+    }
+  });
+  const res = await postWebhook(signed);
+  assert.equal(res.statusCode, 200);
+  assert.equal(store.mailerEvents[0].p_signup_request_id, requestId);
 });
 
 test("GET is rejected", async () => {

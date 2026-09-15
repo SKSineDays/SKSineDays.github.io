@@ -48,6 +48,18 @@ export default async function handler(req, res) {
     return json(res, 401, { ok: false, error: "Unauthorized" });
   }
 
+  let supabase;
+  try {
+    supabase = getAdminClient();
+    const { error: cleanupError } = await supabase.rpc(
+      "cleanup_mailer_signup_requests"
+    );
+    if (cleanupError) throw cleanupError;
+  } catch {
+    console.error("[mailer-signup] cleanup failed");
+    return json(res, 500, { ok: false, error: "Mailer cleanup failed" });
+  }
+
   if (!isDailyEmailCronEnabled()) {
     console.warn("[daily-email] sending disabled");
     return json(res, 200, {
@@ -61,7 +73,6 @@ export default async function handler(req, res) {
 
   try {
     const now = getCronNow();
-    const supabase = getAdminClient();
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     try {

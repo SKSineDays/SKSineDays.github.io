@@ -265,18 +265,21 @@ begin
   into v_recipient_attempts
   from public.mailer_signup_attempts a
   where a.recipient_key_hash = p_recipient_key_hash
+    and a.outcome in ('created', 'sent', 'send_failed')
     and a.attempted_at >= v_now - interval '24 hours';
 
   select pg_catalog.count(*)::integer
   into v_ip_hour_attempts
   from public.mailer_signup_attempts a
   where a.ip_key_hash = p_ip_key_hash
+    and a.outcome in ('created', 'sent', 'send_failed')
     and a.attempted_at >= v_now - interval '1 hour';
 
   select pg_catalog.count(*)::integer
   into v_ip_day_attempts
   from public.mailer_signup_attempts a
   where a.ip_key_hash = p_ip_key_hash
+    and a.outcome in ('created', 'sent', 'send_failed')
     and a.attempted_at >= v_now - interval '24 hours';
 
   if v_recipient_attempts >= 5
@@ -455,13 +458,23 @@ declare
   v_profile_origin smallint;
   v_has_preferences boolean := false;
   v_first_activation boolean := false;
+  v_lock_email text;
 begin
   if p_token_hash is null or p_token_hash !~ '^[0-9a-f]{64}$' then
     return query select 'invalid'::text, null::uuid, null::text, null::smallint, null::smallint;
     return;
   end if;
 
-  perform public.cleanup_mailer_signup_requests();
+  select r.email
+  into v_lock_email
+  from public.mailer_signup_requests r
+  where r.token_hash = p_token_hash;
+
+  if found and v_lock_email is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(v_lock_email, 7723)
+    );
+  end if;
 
   select r.*
   into v_request
@@ -508,10 +521,6 @@ begin
     return query select 'expired'::text, null::uuid, null::text, null::smallint, null::smallint;
     return;
   end if;
-
-  perform pg_catalog.pg_advisory_xact_lock(
-    pg_catalog.hashtextextended(v_request.email, 7723)
-  );
 
   select s.*
   into v_subscriber
@@ -599,6 +608,7 @@ begin
   from public.subscriber_preferences p
   where p.subscriber_id = v_subscriber_id
   for update;
+  v_has_preferences := found;
 
   if not v_has_preferences then
     insert into public.subscriber_preferences (
@@ -795,6 +805,7 @@ begin
   from public.subscriber_profile p
   where p.subscriber_id = v_subscriber_id
   for update;
+  v_has_profile := found;
 
   if not v_has_profile or v_profile_birth is null or v_profile_origin is null then
     if p_birth_day_of_year is null or p_origin_day is null then
@@ -824,6 +835,7 @@ begin
   from public.subscriber_preferences p
   where p.subscriber_id = v_subscriber_id
   for update;
+  v_has_preferences := found;
 
   if not v_has_preferences then
     insert into public.subscriber_preferences (
@@ -985,6 +997,27 @@ begin
 end;
 $$;
 
+create or replace function public.is_mailer_welcome_sendable(p_delivery_id uuid)
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.mailer_welcome_deliveries w
+    inner join public.subscribers s on s.id = w.subscriber_id
+    inner join public.subscriber_preferences p on p.subscriber_id = s.id
+    where w.id = p_delivery_id
+      and w.status = 'processing'
+      and s.status = 'active'
+      and p.email_enabled is true
+      and p.email_opt_in is true
+      and p.email_opt_in_at is not null
+  );
+$$;
+
 create or replace function public.fail_mailer_welcome(
   p_delivery_id uuid,
   p_error text
@@ -1009,7 +1042,9 @@ $$;
 create or replace function public.record_mailer_provider_event(
   p_provider_message_id text,
   p_event_type text,
-  p_event_at timestamptz
+  p_event_at timestamptz,
+  p_signup_request_id uuid,
+  p_welcome_delivery_id uuid
 )
 returns boolean
 language plpgsql
@@ -1041,6 +1076,12 @@ begin
   into v_request_id, v_subscriber_id, v_email
   from public.mailer_signup_requests r
   where r.confirmation_provider_message_id = p_provider_message_id
+    or (
+      r.confirmation_provider_message_id is null
+      and r.id = p_signup_request_id
+    )
+  order by (r.confirmation_provider_message_id = p_provider_message_id) desc nulls last
+  limit 1
   for update;
 
   if found then
@@ -1053,6 +1094,10 @@ begin
           end,
           provider_status = p_event_type,
           provider_event_at = coalesce(p_event_at, v_now),
+          confirmation_provider_message_id = coalesce(
+            confirmation_provider_message_id,
+            p_provider_message_id
+          ),
           email = case when status in ('created', 'pending') then null else email end,
           timezone = case when status in ('created', 'pending') then null else timezone end,
           birth_day_of_year = case
@@ -1070,6 +1115,10 @@ begin
       update public.mailer_signup_requests
       set provider_status = p_event_type,
           provider_event_at = coalesce(p_event_at, v_now),
+          confirmation_provider_message_id = coalesce(
+            confirmation_provider_message_id,
+            p_provider_message_id
+          ),
           updated_at = v_now
       where id = v_request_id;
     end if;
@@ -1085,6 +1134,12 @@ begin
     into v_subscriber_id
     from public.mailer_welcome_deliveries w
     where w.provider_message_id = p_provider_message_id
+      or (
+        w.provider_message_id is null
+        and w.id = p_welcome_delivery_id
+      )
+    order by (w.provider_message_id = p_provider_message_id) desc nulls last
+    limit 1
     for update;
 
     if found then
@@ -1092,8 +1147,9 @@ begin
       update public.mailer_welcome_deliveries
       set provider_status = p_event_type,
           provider_event_at = coalesce(p_event_at, v_now),
+          provider_message_id = coalesce(provider_message_id, p_provider_message_id),
           updated_at = v_now
-      where provider_message_id = p_provider_message_id;
+      where subscriber_id = v_subscriber_id;
     end if;
   end if;
 
@@ -1130,6 +1186,23 @@ begin
 
   select s.email
   into v_email
+  from public.subscribers s
+  where s.id = p_subscriber_id;
+
+  if v_email is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtextextended(v_email, 7723)
+    );
+
+    perform 1
+    from public.mailer_signup_requests r
+    where r.email = v_email
+      and r.status in ('created', 'pending')
+    order by r.id
+    for update;
+  end if;
+
+  perform 1
   from public.subscribers s
   where s.id = p_subscriber_id
   for update;
@@ -1185,8 +1258,9 @@ revoke all on function public.confirm_mailer_signup(text) from public, anon, aut
 revoke all on function public.activate_authenticated_email_subscriber(text, text, smallint, smallint, text, text) from public, anon, authenticated;
 revoke all on function public.claim_due_mailer_welcomes(uuid, integer) from public, anon, authenticated;
 revoke all on function public.complete_mailer_welcome(uuid, text) from public, anon, authenticated;
+revoke all on function public.is_mailer_welcome_sendable(uuid) from public, anon, authenticated;
 revoke all on function public.fail_mailer_welcome(uuid, text) from public, anon, authenticated;
-revoke all on function public.record_mailer_provider_event(text, text, timestamptz) from public, anon, authenticated;
+revoke all on function public.record_mailer_provider_event(text, text, timestamptz, uuid, uuid) from public, anon, authenticated;
 revoke all on function public.unsubscribe_email_subscriber(uuid) from public, anon, authenticated;
 
 grant execute on function public.cleanup_mailer_signup_requests() to service_role;
@@ -1197,8 +1271,9 @@ grant execute on function public.confirm_mailer_signup(text) to service_role;
 grant execute on function public.activate_authenticated_email_subscriber(text, text, smallint, smallint, text, text) to service_role;
 grant execute on function public.claim_due_mailer_welcomes(uuid, integer) to service_role;
 grant execute on function public.complete_mailer_welcome(uuid, text) to service_role;
+grant execute on function public.is_mailer_welcome_sendable(uuid) to service_role;
 grant execute on function public.fail_mailer_welcome(uuid, text) to service_role;
-grant execute on function public.record_mailer_provider_event(text, text, timestamptz) to service_role;
+grant execute on function public.record_mailer_provider_event(text, text, timestamptz, uuid, uuid) to service_role;
 grant execute on function public.unsubscribe_email_subscriber(uuid) to service_role;
 
 commit;

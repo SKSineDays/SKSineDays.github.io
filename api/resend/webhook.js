@@ -24,6 +24,8 @@ const SUPPRESS_EVENTS = new Set([
   "email.complained",
   "email.suppressed"
 ]);
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function headerValue(headers, name) {
   if (!headers) return "";
@@ -35,6 +37,11 @@ function headerValue(headers, name) {
 function json(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
   return res.status(status).json(body);
+}
+
+function eventTagUuid(event, name) {
+  const value = event?.data?.tags?.[name];
+  return typeof value === "string" && UUID_RE.test(value) ? value.toLowerCase() : null;
 }
 
 export default async function handler(req, res) {
@@ -97,7 +104,9 @@ export default async function handler(req, res) {
         {
           p_provider_message_id: emailId,
           p_event_type: type,
-          p_event_at: providerEventAt
+          p_event_at: providerEventAt,
+          p_signup_request_id: eventTagUuid(event, "signup_request_id"),
+          p_welcome_delivery_id: eventTagUuid(event, "welcome_delivery_id")
         }
       );
       if (mailerEventError) throw mailerEventError;

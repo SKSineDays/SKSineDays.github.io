@@ -84,6 +84,9 @@ mock.module("@supabase/supabase-js", {
     createClient() {
       return {
         rpc: async (name, args) => {
+          if (name === "cleanup_mailer_signup_requests") {
+            return { data: null, error: null };
+          }
           if (name !== "claim_due_daily_emails") {
             return { data: null, error: new Error("unknown rpc") };
           }

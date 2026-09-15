@@ -51,6 +51,9 @@ mock.module("@supabase/supabase-js", {
               error: null
             };
           }
+          if (name === "is_mailer_welcome_sendable") {
+            return { data: true, error: null };
+          }
           return { data: null, error: null };
         }
       };
