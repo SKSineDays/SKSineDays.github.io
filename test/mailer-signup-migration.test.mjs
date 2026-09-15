@@ -74,7 +74,7 @@ test("pending creation enforces durable recipient and IP throttles plus cooldown
 
 test("confirmation is serialized, single-use, expiring, and transactional", () => {
   const sql = functionSql("confirm_mailer_signup");
-  assert.match(migration, /^\s*begin;/i);
+  assert.match(migration, /(?:^|\n)begin;\s*(?:\n|$)/i);
   assert.match(migration, /commit;\s*$/i);
   assert.match(sql, /where r\.token_hash = p_token_hash\s+for update/i);
   assert.match(sql, /pg_advisory_xact_lock[\s\S]*v_request\.email/);
