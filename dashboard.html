@@ -219,6 +219,32 @@
             </div>
           </div>
 
+          <div class="account-data-export" aria-labelledby="account-data-export-title">
+            <div id="account-data-export-title" class="account-settings__title muted">
+              Your Data
+            </div>
+
+            <p class="account-data-export__copy">
+              Download the days you’ve saved — your journal text, actual SineDay,
+              and the SineDay you said it felt like. Empty days and photos are not included.
+            </p>
+
+            <button
+              id="download-data-btn"
+              class="btn btn-ghost btn-sm account-data-export__button"
+              type="button"
+            >
+              Download Data
+            </button>
+
+            <p
+              id="data-export-status"
+              class="account-data-export__status"
+              role="status"
+              aria-live="polite"
+            ></p>
+          </div>
+
           <a class="dash-home" href="/">← Home</a>
         </div>
       </section>
@@ -630,5 +656,6 @@
   <!-- Load our modules -->
   <script type="module" src="/js/supabase-client.js"></script>
   <script type="module" src="/js/dashboard.js"></script>
+  <script type="module" src="/js/data-export.js"></script>
 </body>
 </html>

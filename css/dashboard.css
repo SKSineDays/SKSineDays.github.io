@@ -1837,6 +1837,43 @@ option {
   border-radius: 10px;
 }
 
+.account-data-export {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  display: grid;
+  gap: 10px;
+}
+
+.account-data-export__copy {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.68);
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 36rem;
+}
+
+.account-data-export__button {
+  width: 100%;
+  min-height: 44px;
+}
+
+.account-data-export__status {
+  margin: 0;
+  min-height: 1.25em;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(245, 247, 255, 0.55);
+}
+
+.account-data-export__status.is-success {
+  color: rgba(170, 220, 190, 0.92);
+}
+
+.account-data-export__status.is-error {
+  color: rgba(255, 170, 170, 0.92);
+}
+
 /* ─────────────────────────────
    Premium Calendars UI (white paper card, UI + print)
    ───────────────────────────── */
