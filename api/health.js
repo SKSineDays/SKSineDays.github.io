@@ -48,6 +48,9 @@ export default async function handler(req, res) {
       RESEND_WEBHOOK_SECRET: !!process.env.RESEND_WEBHOOK_SECRET,
       CRON_SECRET: !!process.env.CRON_SECRET,
       UNSUBSCRIBE_SECRET: !!process.env.UNSUBSCRIBE_SECRET,
+      MAILER_SIGNUP_SECRET:
+        typeof process.env.MAILER_SIGNUP_SECRET === 'string'
+        && process.env.MAILER_SIGNUP_SECRET.length >= 32,
       PUBLIC_SITE_URL: !!process.env.PUBLIC_SITE_URL,
       DAILY_EMAIL_CRON_ENABLED: !!process.env.DAILY_EMAIL_CRON_ENABLED
     };

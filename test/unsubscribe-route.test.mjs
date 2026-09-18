@@ -38,7 +38,9 @@ mock.module("@supabase/supabase-js", {
           if (name === "unsubscribe_email_subscriber") {
             const id = args.p_subscriber_id;
             const subscriber = store.subscribers.get(id);
-            if (subscriber) subscriber.status = "unsubscribed";
+            if (subscriber && subscriber.status !== "suppressed") {
+              subscriber.status = "unsubscribed";
+            }
             const prefs = store.preferences.get(id);
             if (prefs) {
               prefs.email_enabled = false;
@@ -175,6 +177,17 @@ test("repeated unsubscribe calls are idempotent", async () => {
   assert.equal(store.preferences.get(SUB_ID).email_enabled, false);
   assert.equal(store.preferences.get(SUB_ID).email_opt_in, false);
   assert.equal(store.deliveries.get("d1").status, "skipped");
+});
+
+test("unsubscribe preserves provider suppression as the dominant state", async () => {
+  resetStore();
+  store.subscribers.get(SUB_ID).status = "suppressed";
+  const token = createUnsubscribeToken(SUB_ID, SECRET);
+  const res = await postUnsubscribe({ token });
+  assert.equal(res.statusCode, 200);
+  assert.equal(store.subscribers.get(SUB_ID).status, "suppressed");
+  assert.equal(store.preferences.get(SUB_ID).email_enabled, false);
+  assert.equal(store.preferences.get(SUB_ID).email_opt_in, false);
 });
 
 test("one-click POST accepts a token in the query string", async () => {
