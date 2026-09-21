@@ -4,105 +4,27 @@ import { mock } from "node:test";
 
 process.env.SUPABASE_URL = "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_ROLE_KEY = "service-role-test-key";
+process.env.RESEND_API_KEY = "re_test_key";
+process.env.RESEND_FROM = "Daily <daily@daily.sineday.app>";
+process.env.UNSUBSCRIBE_SECRET = "unsubscribe-secret-test-key";
+process.env.PUBLIC_SITE_URL = "https://sineday.app";
+process.env.MAILER_SIGNUP_SECRET = "mailer-signup-secret-at-least-32-bytes";
 
+const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const store = {
-  subscribers: new Map(),
-  profiles: new Map(),
-  preferences: new Map(),
   authEmail: "member@sineday.app",
-  failProfileLookup: false,
+  rpcCalls: [],
   resendSends: [],
-  resendError: null
+  activationError: null,
+  activation: {
+    result_state: "active",
+    subscriber_id: SUBSCRIBER_ID,
+    profile_configured: true,
+    origin_day: 1
+  },
+  welcomeClaimed: false
 };
-
-function clone(value) {
-  return value == null ? value : JSON.parse(JSON.stringify(value));
-}
-
-function makeTable(tableName) {
-  let filters = {};
-  let payload = null;
-  let action = "select";
-  let columns = "*";
-
-  const api = {
-    select(cols) {
-      action = action === "upsert" || action === "update" ? action : "select";
-      columns = cols;
-      return api;
-    },
-    eq(key, value) {
-      filters[key] = value;
-      return api;
-    },
-    upsert(row) {
-      action = "upsert";
-      payload = row;
-      return api;
-    },
-    update(row) {
-      action = "update";
-      payload = row;
-      return api;
-    },
-    single: async () => api.maybeSingle(),
-    async maybeSingle() {
-      if (tableName === "subscribers") {
-        if (action === "upsert") {
-          const existing = [...store.subscribers.values()].find((row) => row.email === payload.email);
-          const row = {
-            id: existing?.id || `00000000-0000-4000-8000-${String(store.subscribers.size + 1).padStart(12, "0")}`,
-            created_at: existing?.created_at || "2026-01-01T00:00:00.000Z",
-            ...existing,
-            ...payload
-          };
-          store.subscribers.set(row.id, row);
-          return { data: clone(row), error: null };
-        }
-        const row = [...store.subscribers.values()].find((item) => item.email === filters.email) || null;
-        return { data: clone(row), error: null };
-      }
-
-      if (tableName === "subscriber_preferences") {
-        if (action === "upsert") {
-          store.preferences.set(payload.subscriber_id, { ...payload });
-          return { data: clone(payload), error: null };
-        }
-        return { data: null, error: null };
-      }
-
-      if (tableName === "subscriber_profile") {
-        if (action === "select" && store.failProfileLookup) {
-          return {
-            data: null,
-            error: new Error("simulated subscriber_profile lookup failure")
-          };
-        }
-        if (action === "upsert") {
-          const existing = store.profiles.get(payload.subscriber_id) || {};
-          const row = { ...existing, ...payload };
-          store.profiles.set(payload.subscriber_id, row);
-          return { data: clone(row), error: null };
-        }
-        const row = store.profiles.get(filters.subscriber_id) || null;
-        if (!row) return { data: null, error: null };
-        if (columns === "*") return { data: clone(row), error: null };
-        const picked = {};
-        for (const key of String(columns).split(",").map((part) => part.trim())) {
-          picked[key] = row[key];
-        }
-        return { data: picked, error: null };
-      }
-
-      return { data: null, error: null };
-    },
-    then(resolve, reject) {
-      return api.maybeSingle().then(resolve, reject);
-    }
-  };
-
-  return api;
-}
 
 mock.module("@supabase/supabase-js", {
   namedExports: {
@@ -110,12 +32,33 @@ mock.module("@supabase/supabase-js", {
       return {
         auth: {
           async getUser() {
-            if (!store.authEmail) return { data: { user: null }, error: new Error("no user") };
+            if (!store.authEmail) {
+              return { data: { user: null }, error: new Error("invalid token") };
+            }
             return { data: { user: { email: store.authEmail } }, error: null };
           }
         },
-        from(tableName) {
-          return makeTable(tableName);
+        async rpc(name, args) {
+          store.rpcCalls.push({ name, args });
+          if (name === "activate_authenticated_email_subscriber") {
+            return { data: store.activation ? [store.activation] : null, error: store.activationError };
+          }
+          if (name === "claim_due_mailer_welcomes") {
+            if (store.welcomeClaimed) return { data: [], error: null };
+            store.welcomeClaimed = true;
+            return {
+              data: [{
+                delivery_id: WELCOME_ID,
+                subscriber_id: SUBSCRIBER_ID,
+                email: store.authEmail
+              }],
+              error: null
+            };
+          }
+          if (name === "is_mailer_welcome_sendable") {
+            return { data: true, error: null };
+          }
+          return { data: null, error: null };
         }
       };
     }
@@ -128,9 +71,6 @@ mock.module("resend", {
       emails = {
         send: async (payload, options) => {
           store.resendSends.push({ payload, options });
-          if (store.resendError) {
-            return { data: null, error: store.resendError };
-          }
           return { data: { id: "email_welcome" }, error: null };
         }
       };
@@ -155,16 +95,25 @@ function mockRes() {
     json(payload) {
       this.body = payload;
       return this;
-    },
-    end() {
-      return this;
     }
   };
 }
 
-async function postSubscribe(body, { bearer = "token" } = {}) {
-  process.env.SUPABASE_URL = "https://example.supabase.co";
-  process.env.SUPABASE_SERVICE_ROLE_KEY = "service-role-test-key";
+function reset() {
+  store.authEmail = "member@sineday.app";
+  store.rpcCalls.length = 0;
+  store.resendSends.length = 0;
+  store.activationError = null;
+  store.activation = {
+    result_state: "active",
+    subscriber_id: SUBSCRIBER_ID,
+    profile_configured: true,
+    origin_day: 1
+  };
+  store.welcomeClaimed = false;
+}
+
+async function post(body, bearer = "valid-token") {
   const req = {
     method: "POST",
     headers: bearer ? { authorization: `Bearer ${bearer}` } : {},
@@ -175,211 +124,110 @@ async function postSubscribe(body, { bearer = "token" } = {}) {
   return res;
 }
 
-test("authenticated Daily Duck setup stores derived values and not the raw birthdate", async () => {
-  store.subscribers.clear();
-  store.profiles.clear();
-  store.preferences.clear();
-  store.authEmail = "member@sineday.app";
-  store.failProfileLookup = false;
-
-  const res = await postSubscribe({
+test("subscribe rejects missing authentication instead of falling back to a body email", async () => {
+  reset();
+  const res = await post({
+    email: "attacker@example.com",
     consent: true,
     timezone: "America/Chicago",
-    birthdate: "1985-04-20",
-    source: "dashboard-daily-duck"
-  });
-
-  assert.equal(res.statusCode, 200);
-  assert.equal(res.body.ok, true);
-  assert.equal(res.body.profileConfigured, true);
-  assert.equal(res.body.profileLocked, true);
-  assert.equal(res.body.originDay, 1);
-  assert.equal("birthdate" in res.body, false);
-
-  const subscriber = [...store.subscribers.values()][0];
-  const profile = store.profiles.get(subscriber.id);
-  assert.equal(profile.birth_day_of_year, 110);
-  assert.equal(profile.origin_day, 1);
-  assert.equal("sineday_index" in profile, false);
-  assert.equal("birthdate" in profile, false);
+    birthdate: "1985-04-20"
+  }, "");
+  assert.equal(res.statusCode, 401);
+  assert.equal(store.rpcCalls.length, 0);
 });
 
-test("locked Daily Duck identity is not overwritten by a later birthdate or stale client values", async () => {
-  store.subscribers.clear();
-  store.profiles.clear();
-  store.preferences.clear();
-  store.authEmail = "member@sineday.app";
-  store.failProfileLookup = false;
+test("subscribe rejects invalid authentication instead of falling back to a body email", async () => {
+  reset();
+  store.authEmail = null;
+  const res = await post({
+    email: "attacker@example.com",
+    consent: true,
+    timezone: "America/Chicago",
+    birthdate: "1985-04-20"
+  });
+  assert.equal(res.statusCode, 401);
+  assert.equal(store.rpcCalls.length, 0);
+});
 
-  await postSubscribe({
+test("authenticated setup derives rhythm server-side and ignores client rhythm values", async () => {
+  reset();
+  const body = {
+    email: "MEMBER@sineday.app",
     consent: true,
     timezone: "America/Chicago",
     birthdate: "1985-04-20",
-    source: "dashboard-daily-duck"
-  });
-
-  const res = await postSubscribe({
-    consent: true,
-    timezone: "America/Chicago",
-    birthdate: "2000-01-01",
     birth_day_of_year: 1,
-    sineday_index: 17,
     origin_day: 18,
-    source: "dashboard-owner"
-  });
-
-  assert.equal(res.statusCode, 200);
-  assert.equal(res.body.profileLocked, true);
-  assert.equal(res.body.originDay, 1);
-
-  const subscriber = [...store.subscribers.values()][0];
-  const profile = store.profiles.get(subscriber.id);
-  assert.equal(profile.birth_day_of_year, 110);
-  assert.equal(profile.origin_day, 1);
-  assert.equal("sineday_index" in profile, false);
-  assert.equal(subscriber.status, "active");
-});
-
-test("re-subscribe without a birthdate reuses the locked email rhythm", async () => {
-  store.subscribers.clear();
-  store.profiles.clear();
-  store.preferences.clear();
-  store.authEmail = "member@sineday.app";
-  store.failProfileLookup = false;
-
-  await postSubscribe({
-    consent: true,
-    birthdate: "1985-04-20",
-    source: "dashboard-daily-duck"
-  });
-
-  const subscriber = [...store.subscribers.values()][0];
-  subscriber.status = "unsubscribed";
-
-  const res = await postSubscribe({
-    consent: true,
-    timezone: "America/Chicago",
-    source: "dashboard-daily-duck"
-  });
-
-  assert.equal(res.statusCode, 200);
-  assert.equal(res.body.originDay, 1);
-  assert.equal(store.profiles.get(subscriber.id).origin_day, 1);
-  assert.equal(store.subscribers.get(subscriber.id).status, "active");
-});
-
-test("fails closed when existing Daily Duck email rhythm cannot be verified", async () => {
-  store.subscribers.clear();
-  store.profiles.clear();
-  store.preferences.clear();
-  store.authEmail = "member@sineday.app";
-  store.failProfileLookup = false;
-
-  const initial = await postSubscribe({
-    consent: true,
-    timezone: "America/Chicago",
-    birthdate: "1985-04-20",
-    source: "dashboard-daily-duck"
-  });
-  assert.equal(initial.statusCode, 200);
-
-  const subscriber = [...store.subscribers.values()][0];
-  const before = clone(store.profiles.get(subscriber.id));
-
-  store.failProfileLookup = true;
-  try {
-    const res = await postSubscribe({
-      consent: true,
-      timezone: "America/Chicago",
-      birthdate: "2000-01-01",
-      source: "dashboard-daily-duck"
-    });
-
-    assert.equal(res.statusCode, 500);
-    assert.equal(res.body.ok, false);
-    const after = store.profiles.get(subscriber.id);
-    assert.deepEqual(after, before);
-  } finally {
-    store.failProfileLookup = false;
-  }
-});
-
-function withWelcomeEnv(fn) {
-  const previous = {
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
-    RESEND_FROM: process.env.RESEND_FROM,
-    UNSUBSCRIBE_SECRET: process.env.UNSUBSCRIBE_SECRET,
-    PUBLIC_SITE_URL: process.env.PUBLIC_SITE_URL
+    source: "affiliate"
   };
-  process.env.RESEND_API_KEY = "re_test_key";
-  process.env.RESEND_FROM = "Daily <daily@daily.sineday.app>";
-  process.env.UNSUBSCRIBE_SECRET = "unsubscribe-secret-test-key";
-  process.env.PUBLIC_SITE_URL = "https://sineday.app";
-  return Promise.resolve()
-    .then(fn)
-    .finally(() => {
-      for (const [key, value] of Object.entries(previous)) {
-        if (value == null) delete process.env[key];
-        else process.env[key] = value;
-      }
-    });
-}
+  const res = await post(body);
+  const activation = store.rpcCalls.find(
+    (call) => call.name === "activate_authenticated_email_subscriber"
+  );
 
-test("welcome route writes 6:00 instead of 7:00 and uses welcomeemail", async () => {
-  await withWelcomeEnv(async () => {
-    store.subscribers.clear();
-    store.profiles.clear();
-    store.preferences.clear();
-    store.resendSends.length = 0;
-    store.resendError = null;
-    store.authEmail = "member@sineday.app";
-    store.failProfileLookup = false;
-
-    const res = await postSubscribe({
-      consent: true,
-      timezone: "America/Chicago",
-      birthdate: "1985-04-20",
-      source: "dashboard-daily-duck"
-    });
-
-    assert.equal(res.statusCode, 200);
-    const subscriber = [...store.subscribers.values()][0];
-    const prefs = store.preferences.get(subscriber.id);
-    assert.equal(prefs.send_hour_local, 6);
-    assert.equal(prefs.send_minute_local, 0);
-    assert.equal(store.resendSends.length, 1);
-    assert.equal(store.resendSends[0].payload.template.id, "welcomeemail");
-    assert.equal(store.resendSends[0].payload.template_id, undefined);
-    assert.equal(
-      store.resendSends[0].options.idempotencyKey,
-      `sineday-welcome/${subscriber.id}`
-    );
-    assert.match(
-      store.resendSends[0].payload.template.variables.OPT_OUT_URL,
-      /^https:\/\/sineday\.app\/unsubscribe\.html\?token=/
-    );
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, {
+    ok: true,
+    message: "Successfully subscribed",
+    profileConfigured: true,
+    profileLocked: true,
+    originDay: 1
   });
+  assert.equal(activation.args.p_email, "member@sineday.app");
+  assert.match(activation.args.p_recipient_key_hash, /^[0-9a-f]{64}$/);
+  assert.equal(activation.args.p_birth_day_of_year, 110);
+  assert.equal(activation.args.p_origin_day, 1);
+  assert.equal(activation.args.p_source, "dashboard-daily-duck");
+  assert.equal("birthdate" in activation.args, false);
+  assert.equal(body.birthdate, "");
 });
 
-test("welcome route treats Resend { data, error } as a send failure without failing subscribe", async () => {
-  await withWelcomeEnv(async () => {
-    store.subscribers.clear();
-    store.profiles.clear();
-    store.preferences.clear();
-    store.resendSends.length = 0;
-    store.resendError = { message: "template unpublished" };
-    store.authEmail = "member@sineday.app";
-    store.failProfileLookup = false;
-
-    const res = await postSubscribe({
-      consent: true,
-      timezone: "America/Chicago",
-      birthdate: "1985-04-20",
-      source: "dashboard-daily-duck"
-    });
-
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.ok, true);
-    assert.equal(store.resendSends.length, 1);
+test("authenticated setup preserves the welcome template and idempotency convention", async () => {
+  reset();
+  const res = await post({
+    consent: true,
+    timezone: "America/Chicago",
+    birthdate: "1985-04-20"
   });
+  assert.equal(res.statusCode, 200);
+  assert.equal(store.resendSends.length, 1);
+  assert.equal(store.resendSends[0].payload.template.id, "welcomeemail");
+  assert.equal(
+    store.resendSends[0].options.idempotencyKey,
+    `sineday-welcome/${SUBSCRIBER_ID}`
+  );
+  assert.match(
+    store.resendSends[0].payload.template.variables.OPT_OUT_URL,
+    /^https:\/\/sineday\.app\/unsubscribe\.html\?token=/
+  );
+});
+
+test("required atomic activation failures fail the request", async () => {
+  reset();
+  store.activationError = new Error("transaction rolled back");
+  const res = await post({
+    consent: true,
+    timezone: "America/Chicago",
+    birthdate: "1985-04-20"
+  });
+  assert.equal(res.statusCode, 500);
+  assert.equal(res.body.ok, false);
+  assert.equal(store.resendSends.length, 0);
+});
+
+test("suppressed recipients are never automatically reactivated", async () => {
+  reset();
+  store.activation = {
+    result_state: "suppressed",
+    subscriber_id: null,
+    profile_configured: false,
+    origin_day: null
+  };
+  const res = await post({
+    consent: true,
+    timezone: "America/Chicago",
+    birthdate: "1985-04-20"
+  });
+  assert.equal(res.statusCode, 409);
+  assert.equal(store.resendSends.length, 0);
 });

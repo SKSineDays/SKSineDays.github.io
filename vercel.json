@@ -23,6 +23,50 @@
           "value": "inline; filename=\"SineDay-Daily.vcf\""
         }
       ]
+    },
+    {
+      "source": "/daily/confirm",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/daily-confirm.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/daily",
+      "destination": "/daily.html"
+    },
+    {
+      "source": "/daily/confirm",
+      "destination": "/daily-confirm.html"
     }
   ],
   "crons": [

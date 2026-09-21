@@ -23,6 +23,10 @@ const publicHtmlFiles = [
   "unsubscribe.html",
   "auth/callback.html",
 ];
+const trackerFreeHtmlFiles = [
+  "daily.html",
+  "daily-confirm.html",
+];
 
 test("package.json pins @vercel/analytics", () => {
   assert.equal(typeof pkg.dependencies["@vercel/analytics"], "string");
@@ -51,13 +55,23 @@ test("every public page mounts the Vercel Analytics bootstrap", () => {
 test("repo HTML pages are all covered by the analytics mount list", () => {
   const rootHtml = readdirSync(root).filter((name) => name.endsWith(".html"));
   for (const file of rootHtml) {
-    assert.ok(publicHtmlFiles.includes(file), `${file} is not in the analytics page list`);
+    assert.ok(
+      publicHtmlFiles.includes(file) || trackerFreeHtmlFiles.includes(file),
+      `${file} is not covered by the analytics policy`,
+    );
   }
   assert.ok(publicHtmlFiles.includes("auth/callback.html"));
 });
 
+test("email signup and confirmation pages stay tracker-free", () => {
+  for (const file of trackerFreeHtmlFiles) {
+    const html = readFileSync(join(root, file), "utf8");
+    assert.doesNotMatch(html, /vercel-analytics|_vercel\/insights/i, file);
+  }
+});
+
 test("service worker lets Vercel insights traffic bypass the cache", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v23'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v24'/);
   assert.match(
     serviceWorker,
     /if \(url\.pathname\.startsWith\('\/_vercel\/'\)\) \{\s*return;\s*\}/,
