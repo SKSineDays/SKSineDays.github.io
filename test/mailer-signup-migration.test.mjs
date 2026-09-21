@@ -18,6 +18,10 @@ function functionSql(name) {
   return migration.slice(start, end + 3);
 }
 
+test("PostgreSQL special syntax is not schema-qualified", () => {
+  assert.doesNotMatch(migration, /\bpg_catalog\.extract\s*\(/i);
+});
+
 test("mailer tables are server-only with RLS and explicit grants", () => {
   for (const table of [
     "mailer_signup_requests",

@@ -367,7 +367,7 @@ begin
         and a.attempted_at >= v_now - interval '24 hours';
       v_retry_after := greatest(
         v_retry_after,
-        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+        pg_catalog.ceil(extract(epoch from (v_reset_at - v_now)))::integer
       );
     end if;
     if v_ip_hour_attempts >= 20 then
@@ -379,7 +379,7 @@ begin
         and a.attempted_at >= v_now - interval '1 hour';
       v_retry_after := greatest(
         v_retry_after,
-        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+        pg_catalog.ceil(extract(epoch from (v_reset_at - v_now)))::integer
       );
     end if;
     if v_ip_day_attempts >= 100 then
@@ -391,7 +391,7 @@ begin
         and a.attempted_at >= v_now - interval '24 hours';
       v_retry_after := greatest(
         v_retry_after,
-        pg_catalog.ceil(pg_catalog.extract(epoch from (v_reset_at - v_now)))::integer
+        pg_catalog.ceil(extract(epoch from (v_reset_at - v_now)))::integer
       );
     end if;
     return query select 'rate_limited'::text, null::uuid, v_retry_after;
@@ -405,7 +405,7 @@ begin
       greatest(
         60,
         pg_catalog.ceil(
-          pg_catalog.extract(epoch from ((v_last_sent + interval '10 minutes') - v_now))
+          extract(epoch from ((v_last_sent + interval '10 minutes') - v_now))
         )::integer
       );
     return;
