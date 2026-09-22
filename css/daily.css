@@ -1,3 +1,5 @@
+@import url('./sineduck-plate.css');
+
 :root {
   --daily-bg: #05060a;
   --daily-surface: rgba(13, 17, 27, 0.88);
@@ -194,16 +196,6 @@ body.daily-page {
   filter: drop-shadow(0 0 10px rgba(122, 167, 255, 0.65));
 }
 
-.daily-duck-stage > img {
-  position: absolute;
-  z-index: 2;
-  bottom: 38%;
-  left: 50%;
-  display: block;
-  width: min(72%, 310px);
-  height: auto;
-  transform: translateX(-50%);
-}
 
 .daily-grid {
   display: grid;
@@ -434,24 +426,16 @@ body.daily-page {
   display: grid;
   min-height: 220px;
   place-items: center;
-  background: radial-gradient(ellipse at center, rgba(122, 167, 255, 0.1), transparent 75%);
+  padding: clamp(18px, 5vw, 28px) clamp(16px, 4vw, 24px);
+  background: #ffffff;
 }
 
-.daily-email-example__duck img {
-  display: block;
+.daily-email-example__duck .sineduck-plate {
   width: min(76%, 300px);
-  height: auto;
 }
 
-/* Preserve official line art with the same white alpha treatment as day artwork. */
-.daily-duck-stage > img,
-.daily-email-example__duck img {
-  filter:
-    drop-shadow(0.6px 0 0 #fff)
-    drop-shadow(-0.6px 0 0 #fff)
-    drop-shadow(0 0.6px 0 #fff)
-    drop-shadow(0 -0.6px 0 #fff)
-    drop-shadow(0 0 1.15px rgba(255, 255, 255, 0.9));
+.daily-email-example__duck .sineduck-plate::before {
+  display: none;
 }
 
 .daily-email-example__body {

@@ -1327,9 +1327,11 @@ function renderTodayDayDetailsSection(result) {
           >
           </picture>
           <div class="day-artwork-duck" data-placement="${duckPlacementOnDayArtwork(result.day)}">
-            <img src="/${duckSvgUrlFromSinedayNumber(result.day)}"
-              alt="SineDuck for SineDay ${result.day}"
-              width="576" height="288" decoding="async" loading="lazy">
+            <div class="sineduck-plate sineduck-plate--on-photo">
+              <img src="/${duckSvgUrlFromSinedayNumber(result.day)}"
+                alt="SineDuck for SineDay ${result.day}"
+                width="576" height="288" decoding="async" loading="lazy">
+            </div>
           </div>
         </div>
       `

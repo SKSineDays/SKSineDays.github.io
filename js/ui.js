@@ -11,7 +11,7 @@
 
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPlacementOnDayArtwork } from './sineducks.js';
+import { duckSvgUrlFromSinedayNumber, duckPlacementOnDayArtwork } from './sineducks.js';
 import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
@@ -266,7 +266,7 @@ export class SineDayUI {
 
     // Update duck image with error handling
     if (this.elements.todayDuck) {
-      const duckUrl = duckUrlFromSinedayNumber(result.day);
+      const duckUrl = duckSvgUrlFromSinedayNumber(result.day);
       this.elements.todayDuck.src = duckUrl;
       this.elements.todayDuck.alt = `SineDuck for SineDay ${result.day}`;
 
