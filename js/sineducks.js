@@ -41,6 +41,12 @@ export function duckSvgUrlFromSinedayNumber(n) {
   return duckUrlFromSinedayNumber(n).replace('@3x.png', '.svg');
 }
 
+/** The finished square composition used by the Daily SineDay mailers. */
+export function mailerArtworkUrlFromSinedayNumber(n) {
+  const day = ((n - 1 + 18) % 18) + 1;
+  return `assets/email/20260911/SineDuck${day}@3x.png`;
+}
+
 /** Preserve each background's principal natural detail beneath the foreground. */
 export function duckPlacementOnDayArtwork(n) {
   return [1, 2, 4, 10, 11, 12, 15, 17, 18].includes(n) ? 'top' : 'bottom';

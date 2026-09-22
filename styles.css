@@ -3,8 +3,6 @@
  * Mobile-first, iPhone-native aesthetic
  */
 
-@import url('./css/sineduck-plate.css');
-
 /* ================================
    CSS Variables & Reset
    ================================ */
@@ -561,9 +559,19 @@ body {
 }
 
 .daily-email-banner__duck {
+  position: relative;
+  z-index: 2;
   display: block;
-  width: 100%;
+  width: 90%;
+  max-width: 240px;
   height: auto;
+  /* Match the mailer foreground: black line art with a tight white contour. */
+  filter:
+    drop-shadow(0.6px 0 0 #fff)
+    drop-shadow(-0.6px 0 0 #fff)
+    drop-shadow(0 0.6px 0 #fff)
+    drop-shadow(0 -0.6px 0 #fff)
+    drop-shadow(0 0 1.15px rgba(255, 255, 255, 0.9));
 }
 
 .daily-email-banner__wave {
@@ -609,6 +617,11 @@ body {
     grid-row: 1;
     min-height: 146px;
     gap: 24px;
+  }
+
+  .daily-email-banner__duck {
+    width: 174px;
+    max-width: 75%;
   }
 
   .daily-email-banner__wave {
@@ -1025,10 +1038,13 @@ body {
   position: relative;
   z-index: 1;
   width: clamp(106px, 31vw, 116px);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 9px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(235, 241, 255, 0.9));
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.38),
+    0 0 24px rgba(122, 167, 255, 0.24);
   opacity: var(--sineduck-duck-opacity, 1);
   transform:
     translateY(var(--sineduck-duck-arrive-y, 0px))
@@ -1323,6 +1339,8 @@ body {
 
   .discover-sineduck__duck-shell {
     width: 138px;
+    padding: 11px 10px;
+    border-radius: 25px;
   }
 
   .discover-sineduck__message {
@@ -1356,6 +1374,8 @@ body {
 
   .discover-sineduck__duck-shell {
     width: 100px;
+    padding: 7px;
+    border-radius: 19px;
   }
 
   .discover-sineduck__message {
@@ -1668,6 +1688,24 @@ body {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+.duck-image {
+  display: block;
+  width: min(64vw, 220px);
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  margin: 16px auto;
+  /* Echo the exact mailer treatment without introducing a card or blob. */
+  filter:
+    drop-shadow(0.8px 0 0 #fff)
+    drop-shadow(-0.8px 0 0 #fff)
+    drop-shadow(0 0.8px 0 #fff)
+    drop-shadow(0 -0.8px 0 #fff)
+    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
+    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  image-rendering: auto;
+}
+
 .swipe-hint {
   display: flex;
   align-items: center;
@@ -1819,9 +1857,31 @@ body {
   bottom: 7%;
   left: 17%;
   width: 66%;
+  padding: 5%;
   box-sizing: border-box;
   background: transparent;
   pointer-events: none;
+}
+
+.day-artwork-duck img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  /* Form-fitting white silhouette from the SVG alpha — not a card or haze. */
+  -webkit-filter:
+    drop-shadow(0.6px 0 0 rgb(255, 255, 255))
+    drop-shadow(-0.6px 0 0 rgb(255, 255, 255))
+    drop-shadow(0 0.6px 0 rgb(255, 255, 255))
+    drop-shadow(0 -0.6px 0 rgb(255, 255, 255))
+    drop-shadow(0 0 1.15px rgba(255, 255, 255, 0.9));
+  filter:
+    drop-shadow(0.6px 0 0 rgb(255, 255, 255))
+    drop-shadow(-0.6px 0 0 rgb(255, 255, 255))
+    drop-shadow(0 0.6px 0 rgb(255, 255, 255))
+    drop-shadow(0 -0.6px 0 rgb(255, 255, 255))
+    drop-shadow(0 0 1.15px rgba(255, 255, 255, 0.9));
 }
 
 .day-artwork-duck[data-placement="top"] {
