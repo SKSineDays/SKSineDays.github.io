@@ -22,7 +22,7 @@ import {
 } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPlacementOnDayArtwork } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
@@ -1278,6 +1278,29 @@ function resolveDayImageUrl(imageUrl) {
   return imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
 }
 
+function bindArtworkFallback(image, {
+  fallbackUrl = "",
+  fallbackAlt = "",
+  fallbackClass = "",
+  onUnavailable = null,
+} = {}) {
+  if (!image) return;
+
+  let fallbackApplied = false;
+  image.addEventListener("error", () => {
+    if (!fallbackApplied && fallbackUrl) {
+      fallbackApplied = true;
+      if (fallbackClass) image.classList.add(fallbackClass);
+      if (fallbackAlt) image.alt = fallbackAlt;
+      image.src = fallbackUrl;
+      return;
+    }
+
+    image.closest("[data-artwork-shell]")?.setAttribute("hidden", "");
+    onUnavailable?.();
+  });
+}
+
 function clearTodayDayDetailsSection() {
   const section = document.getElementById("today-day-details-section");
   if (!section) return;
@@ -1295,8 +1318,9 @@ function renderTodayDayDetailsSection(result) {
   }
 
   const details = getDayDetails(result.day);
-  const imageUrl = resolveDayImageUrl(result.imageUrl);
-  if (!imageUrl && !details) {
+  const artworkUrl = resolveDayImageUrl(mailerArtworkUrlFromSinedayNumber(result.day));
+  const fallbackUrl = resolveDayImageUrl(result.imageUrl);
+  if (!artworkUrl && !details) {
     clearTodayDayDetailsSection();
     return;
   }
@@ -1311,26 +1335,18 @@ function renderTodayDayDetailsSection(result) {
   section.innerHTML = `
     <article class="today-wave-details feature-surface">
       ${
-        imageUrl
+        artworkUrl
           ? `
-        <div class="today-wave-details__media">
-          <picture>
-          ${result.imageAvifUrl ? `<source srcset="${escapeHtml(resolveDayImageUrl(result.imageAvifUrl))}" type="image/avif">` : ""}
+        <div class="today-wave-details__media" data-artwork-shell>
           <img
             class="today-wave-details__image"
-            src="${escapeHtml(imageUrl)}"
-            alt="${escapeHtml(result.imageAlt || `Nature study for SineDay ${result.day}`)}"
-            width="1254"
-            height="1254"
+            src="${escapeHtml(artworkUrl)}"
+            alt="${escapeHtml(`Daily SineDuck artwork for SineDay ${result.day}: ${result.description || result.phase || ""}`)}"
+            width="752"
+            height="752"
             decoding="async"
             loading="lazy"
           >
-          </picture>
-          <div class="day-artwork-duck" data-placement="${duckPlacementOnDayArtwork(result.day)}">
-            <img src="/${duckSvgUrlFromSinedayNumber(result.day)}"
-              alt="SineDuck for SineDay ${result.day}"
-              width="576" height="288" decoding="async" loading="lazy">
-          </div>
         </div>
       `
           : ""
@@ -1351,14 +1367,13 @@ function renderTodayDayDetailsSection(result) {
   `;
 
   const artwork = section.querySelector('.today-wave-details__image');
-  artwork?.addEventListener('error', () => {
-    const source = artwork.closest('picture')?.querySelector('source');
-    if (source?.getAttribute('srcset')) {
-      source.removeAttribute('srcset');
-      artwork.src = imageUrl;
-    } else {
-      artwork.style.visibility = 'hidden';
-    }
+  bindArtworkFallback(artwork, {
+    fallbackUrl,
+    fallbackAlt: result.imageAlt || `Nature study for SineDay ${result.day}`,
+    fallbackClass: "is-landscape-fallback",
+    onUnavailable: () => {
+      section.querySelector(".today-wave-details")?.classList.add("today-wave-details--without-artwork");
+    },
   });
 }
 
@@ -1391,6 +1406,8 @@ function renderTodayWaveSection() {
     return;
   }
 
+  const artworkUrl = resolveDayImageUrl(mailerArtworkUrlFromSinedayNumber(result.day));
+  const fallbackDuckUrl = resolveDayImageUrl(duckUrlFromSinedayNumber(result.day));
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
   const date = new Date(`${todayYmd}T12:00:00Z`);
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -1415,13 +1432,17 @@ function renderTodayWaveSection() {
           <h2 class="today-wave-hero__title feature-hero__title">${escapeHtml(result.phase || "")}</h2>
           <p class="today-wave-hero__description feature-hero__subtitle">${escapeHtml(result.description || "")}</p>
         </div>
-        <div class="today-wave-hero__duck">
+        <figure class="today-wave-hero__artwork" data-artwork-shell>
           <img
-            src="/${duckUrlFromSinedayNumber(result.day)}"
-            alt="Today’s SineDuck, Day ${escapeHtml(String(result.day))}"
+            class="today-wave-hero__image"
+            src="${escapeHtml(artworkUrl)}"
+            alt="${escapeHtml(`Daily SineDuck artwork for SineDay ${result.day}: ${result.description || result.phase || ""}`)}"
+            width="752"
+            height="752"
+            decoding="async"
             fetchpriority="high"
           >
-        </div>
+        </figure>
       </div>
       <div class="today-wave-hero__actions">
           <button id="write-today-journal" class="feature-floating-action" type="button">
@@ -1439,6 +1460,15 @@ function renderTodayWaveSection() {
       </div>
     </article>
   `;
+
+  bindArtworkFallback(section.querySelector(".today-wave-hero__image"), {
+    fallbackUrl: fallbackDuckUrl,
+    fallbackAlt: `SineDuck for SineDay ${result.day}`,
+    fallbackClass: "is-duck-fallback",
+    onUnavailable: () => {
+      section.querySelector(".today-wave-hero__main")?.classList.add("today-wave-hero__main--without-artwork");
+    },
+  });
 
   document.getElementById("write-today-journal")?.addEventListener("click", async () => {
     setDashboardPage(1);
