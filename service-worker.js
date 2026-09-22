@@ -3,13 +3,12 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v25';
+const CACHE_NAME = 'sineday-v26';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/styles.css',
-  '/css/sineduck-plate.css',
   '/assets/og-hero.png',
   '/assets/brand/sineday-wordmark.svg',
   '/assets/brand/sineday-wordmark-light.png',
