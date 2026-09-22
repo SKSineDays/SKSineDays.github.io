@@ -18,7 +18,7 @@ test("public signup page contains the required copy, fields, consent, and one fo
     "Free daily emails. No account required.",
     "Send me my daily SineDay",
     "Yes, send me my daily SineDay emails. I can unsubscribe anytime.",
-    "We use your birthdate to calculate your SineDay rhythm. For daily emails, we save only derived rhythm values, not your full birthdate."
+    "We use your birthdate to calculate your SineDay rhythm. This email-only signup stores the derived rhythm values needed for your daily emails, not your full birthdate."
   ]) {
     assert.ok(daily.includes(copy), copy);
   }
