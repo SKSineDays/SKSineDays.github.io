@@ -86,7 +86,7 @@ test("Vercel keeps cron and vCard behavior while adding targeted daily rewrites"
 });
 
 test("service worker bypasses APIs and never caches confirmation visits", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v24'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v25'/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(serviceWorker, /url\.pathname === '\/daily\/confirm'/);
   assert.match(serviceWorker, /url\.pathname === '\/daily-confirm\.html'/);
