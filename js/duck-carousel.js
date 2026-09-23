@@ -198,16 +198,27 @@ export class DuckCarousel {
     return (sceneW / 2) - (this.cardWidth / 2) - (index * pitch);
   }
 
+  _snapToDevicePixel(value) {
+    const dpr = Math.max(1, Number(window.devicePixelRatio) || 1);
+    return Math.round(value * dpr) / dpr;
+  }
+
   _applyPosition(animate = true) {
     if (!this.cards.length) return;
 
-    this.baseTranslate = this._translateForIndex(this.currentIndex);
+    const baseTranslate = this._translateForIndex(this.currentIndex);
+    const settledTranslate = this._snapToDevicePixel(
+      baseTranslate + this.dragOffset
+    );
+    this.baseTranslate = this.dragOffset === 0 ? settledTranslate : baseTranslate;
 
     this.trackEl.style.transition = animate
       ? "transform 280ms cubic-bezier(0.22, 1, 0.36, 1)"
       : "none";
 
-    this.trackEl.style.transform = `translate3d(${this.baseTranslate + this.dragOffset}px, 0, 0)`;
+    // Rest on a physical-pixel boundary without retaining a 3D compositing layer.
+    // Pointer movement remains unsnapped below so dragging stays fluid.
+    this.trackEl.style.transform = `translateX(${settledTranslate}px)`;
     this._updateCardStates();
     this._updateNavState();
   }
@@ -261,6 +272,7 @@ export class DuckCarousel {
       this.dragOffset = 0;
 
       this.trackEl.style.transition = "none";
+      this.trackEl.style.willChange = "transform";
       this.sceneEl.setPointerCapture?.(e.pointerId);
     };
 
@@ -295,6 +307,7 @@ export class DuckCarousel {
 
       this.dragOffset = 0;
       this._applyPosition(!prefersReduced());
+      this.trackEl.style.willChange = "";
     };
 
     this.sceneEl.addEventListener("pointerdown", onDown);
@@ -388,12 +401,14 @@ function _duck(className, duckUrl, fallbackUrl) {
   image.height = 288;
   image.decoding = "async";
   image.loading = "lazy";
+  shell.style.setProperty("--identity-duck-image", `url("/${duckUrl}")`);
 
   let fallbackApplied = false;
   image.addEventListener("error", () => {
     if (!fallbackApplied && fallbackUrl) {
       fallbackApplied = true;
       image.src = `/${fallbackUrl}`;
+      shell.style.setProperty("--identity-duck-image", `url("/${fallbackUrl}")`);
       return;
     }
     shell.hidden = true;

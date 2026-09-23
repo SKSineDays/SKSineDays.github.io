@@ -1282,10 +1282,18 @@ function bindArtworkFallback(image, {
   fallbackUrl = "",
   fallbackAlt = "",
   fallbackClass = "",
+  supportProperty = "",
   onUnavailable = null,
 } = {}) {
   if (!image) return;
 
+  const artworkShell = image.closest("[data-artwork-shell]");
+  const syncSupportImage = () => {
+    if (!supportProperty || !artworkShell) return;
+    artworkShell.style.setProperty(supportProperty, `url("${image.src}")`);
+  };
+
+  syncSupportImage();
   let fallbackApplied = false;
   image.addEventListener("error", () => {
     if (!fallbackApplied && fallbackUrl) {
@@ -1293,10 +1301,11 @@ function bindArtworkFallback(image, {
       if (fallbackClass) image.classList.add(fallbackClass);
       if (fallbackAlt) image.alt = fallbackAlt;
       image.src = fallbackUrl;
+      syncSupportImage();
       return;
     }
 
-    image.closest("[data-artwork-shell]")?.setAttribute("hidden", "");
+    artworkShell?.setAttribute("hidden", "");
     onUnavailable?.();
   });
 }
@@ -1463,6 +1472,7 @@ function renderTodayWaveSection() {
   bindArtworkFallback(section.querySelector(".today-wave-hero__image"), {
     fallbackUrl: fallbackDuckUrl,
     fallbackAlt: `SineDuck for SineDay ${result.day}`,
+    supportProperty: "--identity-duck-image",
   });
 
   document.getElementById("write-today-journal")?.addEventListener("click", async () => {
