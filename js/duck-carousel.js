@@ -10,7 +10,7 @@
 //   carousel.reload(profiles)
 //   carousel.destroy()
 
-import { duckUrlFromSinedayNumber } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { calculateSineDayForTimezone } from "./sineday-engine.js";
 
@@ -115,50 +115,54 @@ export class DuckCarousel {
   _buildCard(profile) {
     const name = profile.display_name || "Unnamed";
     const originDay = getOriginTypeForDob(profile.birthdate, this.anchorDate);
-    const originUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
+    const originUrl = originDay ? mailerArtworkUrlFromSinedayNumber(originDay) : null;
+    const originFallbackUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
 
     const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
     const energyResult = calculateSineDayForTimezone(profile.birthdate, tz);
     const energyDay = energyResult?.day ?? null;
     const energyDescription = energyResult?.description || "";
-    const energyUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
+    const energyUrl = energyDay ? mailerArtworkUrlFromSinedayNumber(energyDay) : null;
+    const energyFallbackUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
 
     const card = _el("button", "duck-stack");
     card.type = "button";
     card.setAttribute(
       "aria-label",
-      `${name}: Origin Day ${originDay ?? "?"}, Today Day ${energyDay ?? "?"}`
+      `${name}: Today’s Wave, Day ${energyDay ?? "?"}; Origin Day ${originDay ?? "?"}`
     );
 
-    const energy = _el("div", "duck-stack__energy");
-    energy.innerHTML = energyUrl
-      ? `<img src="/${energyUrl}" alt="" />`
-      : `<span aria-hidden="true">&nbsp;</span>`;
-
-    const origin = _el("div", "duck-stack__origin");
-    origin.innerHTML = originUrl
-      ? `<img src="/${originUrl}" alt="" />`
-      : `<span aria-hidden="true">&nbsp;</span>`;
-
-    const energyMeta = _el("div", "duck-stack__meta duck-stack__meta--energy");
-    energyMeta.textContent = energyDay ? `Today’s Wave · Day ${energyDay}` : "Today’s Wave";
-
-    const energyLine = _el("div", "duck-stack__subline");
-    energyLine.textContent = energyDescription;
-
-    const originMeta = _el("div", "duck-stack__meta duck-stack__meta--origin");
-    originMeta.textContent = `Origin Day ${originDay ?? "?"}`;
-
-    const label = _el("div", "duck-stack__label");
+    const label = _el("div", "duck-stack__identity");
     label.textContent = name;
 
+    const energy = _artwork(
+      "duck-stack__today-artwork",
+      energyUrl,
+      energyFallbackUrl
+    );
+
+    const energyMeta = _el("div", "duck-stack__meta duck-stack__meta--today");
+    energyMeta.textContent = energyDay ? `Today’s Wave · Day ${energyDay}` : "Today’s Wave";
+
+    const energyLine = _el("div", "duck-stack__description");
+    energyLine.textContent = energyDescription;
+
+    const originSummary = _el("div", "duck-stack__origin-summary");
+    const origin = _artwork(
+      "duck-stack__origin-artwork",
+      originUrl,
+      originFallbackUrl
+    );
+    const originMeta = _el("div", "duck-stack__meta duck-stack__meta--origin");
+    originMeta.textContent = `Origin Day ${originDay ?? "?"}`;
+    originSummary.append(origin, originMeta);
+
     card.append(
+      label,
       energy,
       energyMeta,
       energyLine,
-      origin,
-      originMeta,
-      label
+      originSummary
     );
 
     return { el: card, profile };
@@ -168,14 +172,14 @@ export class DuckCarousel {
     const sceneW = this.sceneEl.clientWidth || 400;
 
     if (sceneW <= 420) {
-      this.cardWidth = 230;
-      this.cardGap = 16;
+      this.cardWidth = Math.min(278, Math.max(244, sceneW - 56));
+      this.cardGap = 14;
     } else if (sceneW <= 640) {
-      this.cardWidth = 246;
-      this.cardGap = 20;
+      this.cardWidth = 286;
+      this.cardGap = 18;
     } else {
-      this.cardWidth = 270;
-      this.cardGap = 26;
+      this.cardWidth = 300;
+      this.cardGap = 24;
     }
 
     this.rootEl.style.setProperty("--duck-card-width", `${this.cardWidth}px`);
@@ -367,6 +371,37 @@ function _el(tag, className) {
   const e = document.createElement(tag);
   if (className) e.className = className;
   return e;
+}
+
+function _artwork(className, artworkUrl, fallbackUrl) {
+  const shell = _el("div", className);
+  shell.setAttribute("aria-hidden", "true");
+  if (!artworkUrl) {
+    shell.classList.add("is-unavailable");
+    return shell;
+  }
+
+  const image = document.createElement("img");
+  image.src = `/${artworkUrl}`;
+  image.alt = "";
+  image.width = 752;
+  image.height = 752;
+  image.decoding = "async";
+  image.loading = "lazy";
+
+  let fallbackApplied = false;
+  image.addEventListener("error", () => {
+    if (!fallbackApplied && fallbackUrl) {
+      fallbackApplied = true;
+      image.classList.add("is-duck-fallback");
+      image.src = `/${fallbackUrl}`;
+      return;
+    }
+    shell.hidden = true;
+  });
+
+  shell.appendChild(image);
+  return shell;
 }
 
 export default DuckCarousel;

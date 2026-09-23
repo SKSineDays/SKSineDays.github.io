@@ -50,6 +50,29 @@ test('homepage uses the finished mailer artwork without a synthetic white plate'
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*background:\s*(?:#fff|white|rgba\(255)/);
 });
 
+test('dashboard Origin surfaces use finished mailer artwork without legacy duck overlays', async () => {
+  const [dashboard, carousel, styles] = await Promise.all([
+    readFile(new URL('../js/dashboard.js', import.meta.url), 'utf8'),
+    readFile(new URL('../js/duck-carousel.js', import.meta.url), 'utf8'),
+    readFile(new URL('../css/dashboard.css', import.meta.url), 'utf8')
+  ]);
+
+  assert.match(dashboard, /mailerArtworkUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(dashboard, /class="today-wave-hero__image"/);
+  assert.match(dashboard, /class="today-wave-details__image"/);
+  assert.match(dashboard, /fallbackUrl:\s*fallbackDuckUrl/);
+  assert.doesNotMatch(dashboard, /day-artwork-duck|duckSvgUrlFromSinedayNumber|duckPlacementOnDayArtwork/);
+
+  assert.match(carousel, /mailerArtworkUrlFromSinedayNumber\(energyDay\)/);
+  assert.match(carousel, /mailerArtworkUrlFromSinedayNumber\(originDay\)/);
+  assert.match(carousel, /image\.loading = "lazy"/);
+
+  assert.doesNotMatch(styles, /\.today-wave-hero__duck\s*\{/);
+  assert.doesNotMatch(styles, /\.duck-stack__energy\s*\{/);
+  assert.doesNotMatch(styles, /\.duck-stack__origin\s*\{/);
+  assert.match(styles, /\.today-wave-hero__artwork\s*\{[^}]*background:\s*#0B101A/);
+});
+
 test('worker updates old artwork, caches viewed formats offline, and never caches APIs', async () => {
   const origin = 'https://sineday.test';
   class BrowserRequest extends Request {
@@ -120,7 +143,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v26']);
+  assert.deepEqual(await caches.keys(), ['sineday-v27']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -132,7 +155,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v26');
+  const active = stores.get('sineday-v27');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
