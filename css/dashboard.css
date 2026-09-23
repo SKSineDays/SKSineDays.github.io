@@ -1410,7 +1410,6 @@ option {
   align-items: center;
   gap: var(--duck-card-gap);
   padding: 0 28px;
-  will-change: transform;
 }
 
 .duck-stack {
@@ -1434,9 +1433,7 @@ option {
   transform: scale(0.86) translateY(14px);
   transition:
     transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 220ms ease,
-    filter 220ms ease;
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.26));
+    opacity 220ms ease;
 }
 
 .duck-stack:hover {
@@ -1446,7 +1443,6 @@ option {
 .duck-stack.is-near {
   opacity: 0.78;
   transform: scale(0.93) translateY(8px);
-  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.32));
 }
 
 .duck-stack.is-far .duck-stack__meta,
@@ -1457,10 +1453,7 @@ option {
 
 .duck-stack.is-active {
   opacity: 1;
-  transform: scale(1) translateY(0);
-  filter:
-    drop-shadow(0 32px 58px rgba(0, 0, 0, 0.46))
-    drop-shadow(0 0 34px rgba(122, 167, 255, 0.12));
+  transform: none;
   z-index: 2;
 }
 
@@ -1481,27 +1474,40 @@ option {
 }
 
 .duck-stack__today-artwork {
+  position: relative;
   width: min(100%, 220px);
   aspect-ratio: 2 / 1;
   margin: 0 auto;
   background: transparent;
 }
 
+.duck-stack__today-artwork::before,
+.duck-stack__origin-artwork::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--identity-duck-image) center / contain no-repeat;
+  filter:
+    brightness(0)
+    invert(1)
+    drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff)
+    drop-shadow(0 -1px 0 #fff);
+  pointer-events: none;
+}
+
 .duck-stack__today-artwork img,
 .duck-stack__origin-artwork img {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 2 / 1;
   object-fit: contain;
   background: transparent;
-  filter:
-    drop-shadow(0.8px 0 0 #fff)
-    drop-shadow(-0.8px 0 0 #fff)
-    drop-shadow(0 0.8px 0 #fff)
-    drop-shadow(0 -0.8px 0 #fff)
-    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
-    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  filter: none;
 }
 
 .duck-stack__today-artwork.is-unavailable,
@@ -1556,6 +1562,7 @@ option {
 }
 
 .duck-stack__origin-artwork {
+  position: relative;
   flex: 0 0 100px;
   width: 100px;
   aspect-ratio: 2 / 1;
@@ -5395,26 +5402,38 @@ textarea.journal-entry-field-light:focus {
 }
 
 .today-wave-hero__artwork {
+  position: relative;
   width: min(100%, 280px);
   aspect-ratio: 2 / 1;
   margin: 0;
   background: transparent;
 }
 
+.today-wave-hero__artwork::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--identity-duck-image) center / contain no-repeat;
+  filter:
+    brightness(0)
+    invert(1)
+    drop-shadow(2px 0 0 #fff)
+    drop-shadow(-2px 0 0 #fff)
+    drop-shadow(0 2px 0 #fff)
+    drop-shadow(0 -2px 0 #fff);
+  pointer-events: none;
+}
+
 .today-wave-hero__image {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 2 / 1;
   object-fit: contain;
   background: transparent;
-  filter:
-    drop-shadow(0.8px 0 0 #fff)
-    drop-shadow(-0.8px 0 0 #fff)
-    drop-shadow(0 0.8px 0 #fff)
-    drop-shadow(0 -0.8px 0 #fff)
-    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
-    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  filter: none;
 }
 
 .today-wave-hero__phase {
