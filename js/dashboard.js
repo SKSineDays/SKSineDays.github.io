@@ -22,7 +22,7 @@ import {
 } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { duckUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
@@ -1406,7 +1406,7 @@ function renderTodayWaveSection() {
     return;
   }
 
-  const artworkUrl = resolveDayImageUrl(mailerArtworkUrlFromSinedayNumber(result.day));
+  const artworkUrl = resolveDayImageUrl(duckSvgUrlFromSinedayNumber(result.day));
   const fallbackDuckUrl = resolveDayImageUrl(duckUrlFromSinedayNumber(result.day));
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
   const date = new Date(`${todayYmd}T12:00:00Z`);
@@ -1428,21 +1428,20 @@ function renderTodayWaveSection() {
         <span class="today-wave-hero__day-pill">Day ${escapeHtml(String(result.day))}</span>
       </div>
       <div class="today-wave-hero__main">
-        <div class="today-wave-hero__copy">
-          <h2 class="today-wave-hero__title feature-hero__title">${escapeHtml(result.phase || "")}</h2>
-          <p class="today-wave-hero__description feature-hero__subtitle">${escapeHtml(result.description || "")}</p>
-        </div>
+        <h2 class="today-wave-hero__title">SineDay ${escapeHtml(String(result.day))}</h2>
         <figure class="today-wave-hero__artwork" data-artwork-shell>
           <img
             class="today-wave-hero__image"
             src="${escapeHtml(artworkUrl)}"
-            alt="${escapeHtml(`Daily SineDuck artwork for SineDay ${result.day}: ${result.description || result.phase || ""}`)}"
-            width="752"
-            height="752"
+            alt="${escapeHtml(`SineDuck for SineDay ${result.day}`)}"
+            width="576"
+            height="288"
             decoding="async"
             fetchpriority="high"
           >
         </figure>
+        <p class="today-wave-hero__phase">${escapeHtml(result.phase || "")}</p>
+        <p class="today-wave-hero__description">${escapeHtml(result.description || "")}</p>
       </div>
       <div class="today-wave-hero__actions">
           <button id="write-today-journal" class="feature-floating-action" type="button">
@@ -1464,10 +1463,6 @@ function renderTodayWaveSection() {
   bindArtworkFallback(section.querySelector(".today-wave-hero__image"), {
     fallbackUrl: fallbackDuckUrl,
     fallbackAlt: `SineDuck for SineDay ${result.day}`,
-    fallbackClass: "is-duck-fallback",
-    onUnavailable: () => {
-      section.querySelector(".today-wave-hero__main")?.classList.add("today-wave-hero__main--without-artwork");
-    },
   });
 
   document.getElementById("write-today-journal")?.addEventListener("click", async () => {

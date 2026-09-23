@@ -10,7 +10,7 @@
 //   carousel.reload(profiles)
 //   carousel.destroy()
 
-import { duckUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { calculateSineDayForTimezone } from "./sineday-engine.js";
 
@@ -115,14 +115,14 @@ export class DuckCarousel {
   _buildCard(profile) {
     const name = profile.display_name || "Unnamed";
     const originDay = getOriginTypeForDob(profile.birthdate, this.anchorDate);
-    const originUrl = originDay ? mailerArtworkUrlFromSinedayNumber(originDay) : null;
+    const originUrl = originDay ? duckSvgUrlFromSinedayNumber(originDay) : null;
     const originFallbackUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
 
     const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
     const energyResult = calculateSineDayForTimezone(profile.birthdate, tz);
     const energyDay = energyResult?.day ?? null;
     const energyDescription = energyResult?.description || "";
-    const energyUrl = energyDay ? mailerArtworkUrlFromSinedayNumber(energyDay) : null;
+    const energyUrl = energyDay ? duckSvgUrlFromSinedayNumber(energyDay) : null;
     const energyFallbackUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
 
     const card = _el("button", "duck-stack");
@@ -135,7 +135,7 @@ export class DuckCarousel {
     const label = _el("div", "duck-stack__identity");
     label.textContent = name;
 
-    const energy = _artwork(
+    const energy = _duck(
       "duck-stack__today-artwork",
       energyUrl,
       energyFallbackUrl
@@ -148,7 +148,7 @@ export class DuckCarousel {
     energyLine.textContent = energyDescription;
 
     const originSummary = _el("div", "duck-stack__origin-summary");
-    const origin = _artwork(
+    const origin = _duck(
       "duck-stack__origin-artwork",
       originUrl,
       originFallbackUrl
@@ -373,19 +373,19 @@ function _el(tag, className) {
   return e;
 }
 
-function _artwork(className, artworkUrl, fallbackUrl) {
+function _duck(className, duckUrl, fallbackUrl) {
   const shell = _el("div", className);
   shell.setAttribute("aria-hidden", "true");
-  if (!artworkUrl) {
+  if (!duckUrl) {
     shell.classList.add("is-unavailable");
     return shell;
   }
 
   const image = document.createElement("img");
-  image.src = `/${artworkUrl}`;
+  image.src = `/${duckUrl}`;
   image.alt = "";
-  image.width = 752;
-  image.height = 752;
+  image.width = 576;
+  image.height = 288;
   image.decoding = "async";
   image.loading = "lazy";
 
@@ -393,7 +393,6 @@ function _artwork(className, artworkUrl, fallbackUrl) {
   image.addEventListener("error", () => {
     if (!fallbackApplied && fallbackUrl) {
       fallbackApplied = true;
-      image.classList.add("is-duck-fallback");
       image.src = `/${fallbackUrl}`;
       return;
     }

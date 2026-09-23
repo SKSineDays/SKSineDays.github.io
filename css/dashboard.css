@@ -1336,7 +1336,7 @@ option {
 
 .duck-ring__scene {
   position: relative;
-  height: 560px;
+  height: 390px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.10);
   background:
@@ -1417,7 +1417,7 @@ option {
   position: relative;
   flex: 0 0 var(--duck-card-width);
   width: var(--duck-card-width);
-  min-height: 500px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1481,32 +1481,27 @@ option {
 }
 
 .duck-stack__today-artwork {
-  width: min(100%, 244px);
-  aspect-ratio: 1;
+  width: min(100%, 220px);
+  aspect-ratio: 2 / 1;
   margin: 0 auto;
-  overflow: hidden;
-  border-radius: 28px;
-  background: #0B101A;
-  box-shadow:
-    0 24px 54px rgba(0, 0, 0, 0.42),
-    0 0 46px rgba(var(--color-accent-rgb), 0.12);
+  background: transparent;
 }
 
 .duck-stack__today-artwork img,
 .duck-stack__origin-artwork img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.duck-stack__today-artwork img.is-duck-fallback,
-.duck-stack__origin-artwork img.is-duck-fallback {
-  padding: 18%;
+  height: auto;
+  aspect-ratio: 2 / 1;
   object-fit: contain;
-  background:
-    radial-gradient(circle at 50% 48%, rgba(122, 167, 255, 0.14), transparent 62%),
-    #090D16;
+  background: transparent;
+  filter:
+    drop-shadow(0.8px 0 0 #fff)
+    drop-shadow(-0.8px 0 0 #fff)
+    drop-shadow(0 0.8px 0 #fff)
+    drop-shadow(0 -0.8px 0 #fff)
+    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
+    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 }
 
 .duck-stack__today-artwork.is-unavailable,
@@ -1561,27 +1556,10 @@ option {
 }
 
 .duck-stack__origin-artwork {
-  flex: 0 0 72px;
-  width: 72px;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 18px;
-  background: #0B101A;
-  box-shadow:
-    0 15px 32px rgba(0, 0, 0, 0.38),
-    0 0 28px rgba(var(--color-accent-rgb), 0.1);
-}
-
-.duck-stack.is-active .duck-stack__today-artwork {
-  box-shadow:
-    0 30px 68px rgba(0, 0, 0, 0.5),
-    0 0 58px rgba(var(--color-accent-rgb), 0.18);
-}
-
-.duck-stack.is-active .duck-stack__origin-artwork {
-  box-shadow:
-    0 18px 38px rgba(0, 0, 0, 0.46),
-    0 0 34px rgba(var(--color-accent-rgb), 0.14);
+  flex: 0 0 100px;
+  width: 100px;
+  aspect-ratio: 2 / 1;
+  background: transparent;
 }
 
 .duck-ring__nav {
@@ -1720,7 +1698,7 @@ option {
   }
 
   .duck-ring__scene {
-    height: 540px;
+    height: 390px;
     border-radius: 20px;
   }
 
@@ -1760,7 +1738,7 @@ option {
   }
 
   .duck-ring__scene {
-    height: 560px;
+    height: 390px;
   }
 
   .duck-ring__sphere {
@@ -1778,18 +1756,17 @@ option {
   }
 
   .duck-stack {
-    min-height: 486px;
+    min-height: 320px;
     padding-top: 8px;
   }
 
   .duck-stack__today-artwork {
-    width: min(100%, 238px);
-    border-radius: 26px;
+    width: min(100%, 210px);
   }
 
   .duck-stack__origin-artwork {
-    flex-basis: 68px;
-    width: 68px;
+    flex-basis: 100px;
+    width: 100px;
   }
 
   .duck-stack__description {
@@ -5339,7 +5316,7 @@ textarea.journal-entry-field-light:focus {
 
 .today-wave-hero {
   isolation: isolate;
-  min-height: clamp(560px, 70vh, 720px);
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -5399,50 +5376,67 @@ textarea.journal-entry-field-light:focus {
 }
 
 .today-wave-hero__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(18px, 5vw, 48px);
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  gap: 16px;
+  text-align: center;
 }
 
-.today-wave-hero__main--without-artwork {
-  grid-template-columns: minmax(0, 680px);
-}
-
-.today-wave-hero__copy {
-  max-width: 660px;
+.today-wave-hero__title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.375rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .today-wave-hero__artwork {
-  position: relative;
-  width: min(100%, 480px);
-  aspect-ratio: 1;
+  width: min(100%, 280px);
+  aspect-ratio: 2 / 1;
   margin: 0;
-  overflow: hidden;
-  justify-self: end;
-  border-radius: clamp(24px, 4vw, 38px);
-  background: #0B101A;
-  box-shadow:
-    0 34px 78px rgba(0, 0, 0, 0.48),
-    0 0 64px rgba(122, 167, 255, 0.17);
+  background: transparent;
 }
 
 .today-wave-hero__image {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  background: transparent;
+  filter:
+    drop-shadow(0.8px 0 0 #fff)
+    drop-shadow(-0.8px 0 0 #fff)
+    drop-shadow(0 0.8px 0 #fff)
+    drop-shadow(0 -0.8px 0 #fff)
+    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
+    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 }
 
-.today-wave-hero__image.is-duck-fallback {
-  padding: 18%;
-  object-fit: contain;
-  background:
-    radial-gradient(circle at 50% 48%, rgba(122, 167, 255, 0.16), transparent 62%),
-    #090D16;
+.today-wave-hero__phase {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.today-wave-hero__description {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #F5F7FF;
 }
 
 .today-wave-hero__actions {
+  justify-content: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--feature-space-2);
@@ -5564,7 +5558,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--origin .duck-ring__scene {
-  height: clamp(560px, 68vh, 640px);
+  height: 390px;
   border: 0;
   border-radius: var(--feature-radius-major);
   background:
@@ -5586,7 +5580,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--origin .duck-stack {
-  min-height: 500px;
+  min-height: 320px;
 }
 
 .feature-screen--origin .duck-stack__identity {
@@ -5798,14 +5792,8 @@ textarea.journal-entry-field-light:focus {
     padding: clamp(20px, 5vw, 28px);
   }
 
-  .today-wave-hero__main {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--feature-space-5);
-  }
-
   .today-wave-hero__artwork {
-    width: min(100%, 430px);
-    justify-self: center;
+    width: min(100%, 220px);
   }
 
   .today-wave-hero__actions {
