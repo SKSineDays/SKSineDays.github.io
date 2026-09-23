@@ -50,27 +50,35 @@ test('homepage uses the finished mailer artwork without a synthetic white plate'
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*background:\s*(?:#fff|white|rgba\(255)/);
 });
 
-test('dashboard Origin surfaces use finished mailer artwork without legacy duck overlays', async () => {
+test('dashboard identity surfaces use individual SineDucks while Explore keeps finished scene artwork', async () => {
   const [dashboard, carousel, styles] = await Promise.all([
     readFile(new URL('../js/dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/duck-carousel.js', import.meta.url), 'utf8'),
     readFile(new URL('../css/dashboard.css', import.meta.url), 'utf8')
   ]);
-
-  assert.match(dashboard, /mailerArtworkUrlFromSinedayNumber\(result\.day\)/);
-  assert.match(dashboard, /class="today-wave-hero__image"/);
-  assert.match(dashboard, /class="today-wave-details__image"/);
-  assert.match(dashboard, /fallbackUrl:\s*fallbackDuckUrl/);
-  assert.doesNotMatch(dashboard, /day-artwork-duck|duckSvgUrlFromSinedayNumber|duckPlacementOnDayArtwork/);
-
-  assert.match(carousel, /mailerArtworkUrlFromSinedayNumber\(energyDay\)/);
-  assert.match(carousel, /mailerArtworkUrlFromSinedayNumber\(originDay\)/);
-  assert.match(carousel, /image\.loading = "lazy"/);
-
-  assert.doesNotMatch(styles, /\.today-wave-hero__duck\s*\{/);
-  assert.doesNotMatch(styles, /\.duck-stack__energy\s*\{/);
-  assert.doesNotMatch(styles, /\.duck-stack__origin\s*\{/);
-  assert.match(styles, /\.today-wave-hero__artwork\s*\{[^}]*background:\s*#0B101A/);
+  const hero = dashboard.split('function renderTodayWaveSection()')[1].split('function ')[0];
+  const details = dashboard.split('function renderTodayDayDetailsSection(result)')[1].split('function renderTodayWaveSection()')[0];
+  assert.match(hero, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(hero, /duckUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(hero, /fallbackUrl:\s*fallbackDuckUrl/);
+  assert.doesNotMatch(hero, /mailerArtworkUrlFromSinedayNumber/);
+  assert.match(details, /mailerArtworkUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(details, /resolveDayImageUrl\(result\.imageUrl\)/);
+  assert.match(carousel, /duckSvgUrlFromSinedayNumber\(energyDay\)/);
+  assert.match(carousel, /duckSvgUrlFromSinedayNumber\(originDay\)/);
+  assert.match(carousel, /duckUrlFromSinedayNumber\(energyDay\)/);
+  assert.match(carousel, /duckUrlFromSinedayNumber\(originDay\)/);
+  assert.doesNotMatch(carousel, /mailerArtworkUrlFromSinedayNumber|is-duck-fallback/);
+  for (const selector of ['.today-wave-hero__artwork', '.today-wave-hero__image', '.duck-stack__today-artwork', '.duck-stack__origin-artwork']) {
+    const rule = styles.slice(styles.indexOf(selector + ' {')).split('}')[0];
+    assert.match(rule, /aspect-ratio:\s*2 \/ 1/);
+    assert.match(rule, /background:\s*transparent/);
+    assert.doesNotMatch(rule, /object-fit:\s*cover|overflow:\s*hidden|border-radius/);
+  }
+  const profileImages = styles.split('.duck-stack__origin-artwork img {')[1].split('}')[0];
+  assert.match(profileImages, /object-fit:\s*contain/);
+  assert.match(profileImages, /aspect-ratio:\s*2 \/ 1/);
+  assert.match(styles.split('.today-wave-hero__image {')[1].split('}')[0], /object-fit:\s*contain/);
 });
 
 test('worker updates old artwork, caches viewed formats offline, and never caches APIs', async () => {
