@@ -91,6 +91,43 @@ function validateVisualShell(html) {
   return failures;
 }
 
+function validateConfirmationShell(html) {
+  const failures = [];
+  const confirmUrlMatches = String(html || "").match(/\{\{\{CONFIRM_URL\}\}\}/g) || [];
+  const confirmLink = String(html || "").match(
+    /<a\b[^>]*href=["']\{\{\{CONFIRM_URL\}\}\}["'][^>]*>/i,
+  )?.[0] || "";
+  const variables = [
+    ...String(html || "").matchAll(/\{\{\{([A-Z0-9_]+)\}\}\}/g),
+  ].map((match) => match[1]);
+
+  if (confirmUrlMatches.length !== 1) failures.push("confirm-url-count");
+  if (!confirmLink) failures.push("confirm-link");
+  if (confirmLink && !/\bses:no-track=["']true["']/i.test(confirmLink)) {
+    failures.push("confirm-tracking");
+  }
+  if (variables.some((variable) => variable !== "CONFIRM_URL")) {
+    failures.push("confirmation-variable");
+  }
+  if (/\{\{\{OPT_OUT_URL\}\}\}/i.test(html)) failures.push("confirmation-opt-out");
+  if (/<(?:script|form|input)\b/i.test(html)) failures.push("confirmation-active-content");
+  if (!/<table\b[^>]*role=["']presentation["']/i.test(html)) {
+    failures.push("confirmation-table");
+  }
+  if (!/color-scheme\s*:\s*light only/i.test(html)) {
+    failures.push("confirmation-canvas");
+  }
+  for (const color of Object.values(SURFACES)) {
+    if (!new RegExp(escapeRegex(color), "i").test(html)) {
+      failures.push("confirmation-surfaces");
+      break;
+    }
+  }
+  if (!/#7AA7FF/i.test(html)) failures.push("confirmation-accent");
+
+  return failures;
+}
+
 function getDuckImageTags(html) {
   return String(html || "").match(/<img\b[^>]*SineDuck[^"\']*\.png[^>]*>/gi) || [];
 }
@@ -190,7 +227,7 @@ export function validateConfirmationTemplate(template) {
   if (!/Opening this email alone will not subscribe you/i.test(html)) {
     failures.push("explicit-confirmation");
   }
-  failures.push(...validateVisualShell(html));
+  failures.push(...validateConfirmationShell(html));
   return [...new Set(failures)];
 }
 
