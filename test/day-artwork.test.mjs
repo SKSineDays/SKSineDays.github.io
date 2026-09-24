@@ -105,8 +105,8 @@ test('dashboard identity surfaces use individual SineDucks while Explore layers 
     ['.sdcal__duck', '48px'],
     ['.planner__duck', '56px']
   ]) {
-    const rule = styles.slice(styles.indexOf(selector + ' {')).split('}')[0];
-    assert.match(rule, new RegExp(`width:\\s*${size}`));
+    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.match(styles, new RegExp(`(?:^|\\n)${escapedSelector}\\s*\\{[^}]*width:\\s*${size}`));
   }
 });
 
