@@ -235,6 +235,12 @@ body {
   filter: none;
 }
 
+.dashboard-tab .duck-icon-badge img,
+.dashboard-tab .duck-icon-badge .dashboard-tab__icon {
+  transform: scale(2);
+  transform-origin: center;
+}
+
 .dashboard-tab.is-active .duck-icon-badge {
   transform: scale(1.07);
   box-shadow:
@@ -5053,8 +5059,8 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-history__duck {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
@@ -7230,12 +7236,18 @@ textarea.journal-entry-field-light:focus {
   box-shadow:
     0 10px 22px rgba(0, 0, 0, 0.28),
     inset 0 0 0 1px rgba(5, 6, 10, 0.06);
+  overflow: hidden;
 }
 
 .feature-screen--history .journal-history__duck {
-  width: 64px;
-  height: 64px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
+}
+
+.feature-screen--history .journal-history__actual .journal-history__duck {
+  transform: scale(1.5);
+  transform-origin: center;
 }
 
 .feature-screen--history .journal-history__felt {
@@ -7251,12 +7263,15 @@ textarea.journal-entry-field-light:focus {
   border-radius: 50%;
   background: #FFFFFF;
   box-shadow: 0 7px 16px rgba(0, 0, 0, 0.32);
+  overflow: hidden;
 }
 
 .feature-screen--history .journal-history__felt img {
   width: 28px;
   height: 28px;
   object-fit: contain;
+  transform: scale(1.3);
+  transform-origin: center;
 }
 
 .feature-screen--history .journal-history__loading {
