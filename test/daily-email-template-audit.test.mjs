@@ -8,8 +8,10 @@ import {
   validateDailyTemplate,
   validateWelcomeTemplate
 } from "../scripts/audit-daily-email-templates.mjs";
+import { DAILY_SINEDAY_TITLES } from "../api/_lib/daily-email.js";
 
 const TEMPLATE_DIR = join(process.cwd(), "docs/email-templates/20260924");
+const PREVIOUS_TEMPLATE_DIR = join(process.cwd(), "docs/email-templates/20260923");
 const VCARD_PATH = join(process.cwd(), "assets/email/sineday-daily.vcf");
 const CONTACT_CARD_URL = "https://sineday.app/assets/email/sineday-daily.vcf";
 const CONFIRMATION_PATH = join(
@@ -192,6 +194,37 @@ test("checked-in daily HTML sources lock the dark canvas and use matching scenes
     assert.doesNotMatch(html, /sineday-daily\.vcf/);
     assert.match(html, /data-sineday-surface="day-scene"[^>]*bgcolor="#0A0D14"/);
     assert.match(html, new RegExp(`SineDayScene${day}\\.png`));
+  }
+});
+
+test("20260924 snapshot changes only the daily hero contract and preserves plain text", () => {
+  for (let day = 1; day <= 18; day += 1) {
+    const number = String(day).padStart(2, "0");
+    const htmlName = `day-${number}.html`;
+    const textName = `day-${number}.txt`;
+    const previousHtml = readFileSync(join(PREVIOUS_TEMPLATE_DIR, htmlName), "utf8");
+    const currentHtml = readFileSync(join(TEMPLATE_DIR, htmlName), "utf8");
+    const expectedHtml = previousHtml
+      .replace(
+        `https://sineday.app/assets/email/20260923/sineducks/SineDuckFinale${day}.png`,
+        `https://sineday.app/assets/email/20260924/scenes/SineDayScene${day}.png`,
+      )
+      .replace('width="464" height="261"', 'width="464" height="464"')
+      .replace(
+        new RegExp(`alt="SineDuck Day ${day} — [^"]+"`),
+        `alt="SineDay Day ${day} — ${DAILY_SINEDAY_TITLES[day]}: the official Finale mark over its nature scene."`,
+      )
+      .replace(
+        'data-sineday-surface="duck-artwork"',
+        'data-sineday-surface="day-scene"',
+      );
+
+    assert.equal(currentHtml, expectedHtml, htmlName);
+    assert.deepEqual(
+      readFileSync(join(TEMPLATE_DIR, textName)),
+      readFileSync(join(PREVIOUS_TEMPLATE_DIR, textName)),
+      textName,
+    );
   }
 });
 
