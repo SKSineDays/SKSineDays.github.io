@@ -443,15 +443,11 @@ body.daily-page {
   height: auto;
 }
 
-/* Preserve official line art with the same white alpha treatment as day artwork. */
+/* The approved artwork owns its appearance; preserve its full canvas. */
 .daily-duck-stage > img,
 .daily-email-example__duck img {
-  filter:
-    drop-shadow(0.6px 0 0 #fff)
-    drop-shadow(-0.6px 0 0 #fff)
-    drop-shadow(0 0.6px 0 #fff)
-    drop-shadow(0 -0.6px 0 #fff)
-    drop-shadow(0 0 1.15px rgba(255, 255, 255, 0.9));
+  object-fit: contain;
+  aspect-ratio: 16 / 9;
 }
 
 .daily-email-example__body {
@@ -540,7 +536,8 @@ body.daily-page {
   display: block;
   width: min(66%, 260px);
   height: auto;
-  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.46));
+  object-fit: contain;
+  aspect-ratio: 16 / 9;
 }
 
 .daily-confirm-card h1 {

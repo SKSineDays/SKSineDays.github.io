@@ -1469,28 +1469,11 @@ option {
 }
 
 .duck-stack__today-artwork {
-  --duck-outline: 0.4px;
   position: relative;
   width: min(100%, 220px);
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 16 / 9;
   margin: 0 auto;
   background: transparent;
-}
-
-.duck-stack__today-artwork::before,
-.duck-stack__origin-artwork::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--identity-duck-image) center / contain no-repeat;
-  filter:
-    brightness(0)
-    invert(1)
-    drop-shadow(var(--duck-outline) 0 0 #fff)
-    drop-shadow(calc(-1 * var(--duck-outline)) 0 0 #fff)
-    drop-shadow(0 var(--duck-outline) 0 #fff)
-    drop-shadow(0 calc(-1 * var(--duck-outline)) 0 #fff);
-  pointer-events: none;
 }
 
 .duck-stack__today-artwork img,
@@ -1500,7 +1483,7 @@ option {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 16 / 9;
   object-fit: contain;
   background: transparent;
   filter: none;
@@ -1558,11 +1541,10 @@ option {
 }
 
 .duck-stack__origin-artwork {
-  --duck-outline: 0.2px;
   position: relative;
   flex: 0 0 100px;
   width: 100px;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 16 / 9;
   background: transparent;
 }
 
@@ -4732,15 +4714,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .duck-image-on-white {
-  background: #ffffff;
-  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.28),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
 }
 
 .duck-image-on-white img {
@@ -5400,7 +5376,7 @@ textarea.journal-entry-field-light:focus {
 
 .today-wave-hero__artwork {
   width: min(100%, 280px);
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 16 / 9;
   margin: 0;
   background: transparent;
 }
@@ -5409,16 +5385,9 @@ textarea.journal-entry-field-light:focus {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 2 / 1;
+  aspect-ratio: 16 / 9;
   object-fit: contain;
   background: transparent;
-  filter:
-    drop-shadow(0.8px 0 0 #fff)
-    drop-shadow(-0.8px 0 0 #fff)
-    drop-shadow(0 0.8px 0 #fff)
-    drop-shadow(0 -0.8px 0 #fff)
-    drop-shadow(0 0 1.4px rgba(255, 255, 255, 0.96))
-    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
 }
 
 .today-wave-hero__phase {
@@ -5697,7 +5666,9 @@ textarea.journal-entry-field-light:focus {
 
 .origin-profile-row__duck img {
   width: 44px;
-  height: 44px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
 }
 
 .origin-profile-row__identity {

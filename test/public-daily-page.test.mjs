@@ -28,7 +28,7 @@ test("public signup page contains the required copy, fields, consent, and one fo
   assert.match(daily, /name="timezone"/);
   assert.match(daily, /name="consent"[\s\S]*type="checkbox"/);
   assert.doesNotMatch(daily, /name="consent"[^>]*\bchecked\b/);
-  assert.match(daily, /assets\/sineducks\/SineDuck17\.svg/);
+  assert.match(daily, /assets\/sineducks\/SineDuckFinale17\.svg/);
   assert.match(daily, /privacy\.html/);
   assert.match(daily, /contact\.html/);
 });
@@ -86,7 +86,7 @@ test("Vercel keeps cron and vCard behavior while adding targeted daily rewrites"
 });
 
 test("service worker bypasses APIs and never caches confirmation visits", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v27'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v28'/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(serviceWorker, /url\.pathname === '\/daily\/confirm'/);
   assert.match(serviceWorker, /url\.pathname === '\/daily-confirm\.html'/);

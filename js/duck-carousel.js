@@ -10,7 +10,7 @@
 //   carousel.reload(profiles)
 //   carousel.destroy()
 
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber } from "./sineducks.js";
+import { duckPngUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { calculateSineDayForTimezone } from "./sineday-engine.js";
 
@@ -116,14 +116,14 @@ export class DuckCarousel {
     const name = profile.display_name || "Unnamed";
     const originDay = getOriginTypeForDob(profile.birthdate, this.anchorDate);
     const originUrl = originDay ? duckSvgUrlFromSinedayNumber(originDay) : null;
-    const originFallbackUrl = originDay ? duckUrlFromSinedayNumber(originDay) : null;
+    const originFallbackUrl = originDay ? duckPngUrlFromSinedayNumber(originDay) : null;
 
     const tz = profile.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
     const energyResult = calculateSineDayForTimezone(profile.birthdate, tz);
     const energyDay = energyResult?.day ?? null;
     const energyDescription = energyResult?.description || "";
     const energyUrl = energyDay ? duckSvgUrlFromSinedayNumber(energyDay) : null;
-    const energyFallbackUrl = energyDay ? duckUrlFromSinedayNumber(energyDay) : null;
+    const energyFallbackUrl = energyDay ? duckPngUrlFromSinedayNumber(energyDay) : null;
 
     const card = _el("button", "duck-stack");
     card.type = "button";
@@ -398,17 +398,15 @@ function _duck(className, duckUrl, fallbackUrl) {
   image.src = `/${duckUrl}`;
   image.alt = "";
   image.width = 576;
-  image.height = 288;
+  image.height = 324;
   image.decoding = "async";
   image.loading = "lazy";
-  shell.style.setProperty("--identity-duck-image", `url("/${duckUrl}")`);
 
   let fallbackApplied = false;
   image.addEventListener("error", () => {
     if (!fallbackApplied && fallbackUrl) {
       fallbackApplied = true;
       image.src = `/${fallbackUrl}`;
-      shell.style.setProperty("--identity-duck-image", `url("/${fallbackUrl}")`);
       return;
     }
     shell.hidden = true;

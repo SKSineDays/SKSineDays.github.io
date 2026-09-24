@@ -9,7 +9,7 @@ import {
   validateWelcomeTemplate
 } from "../scripts/audit-daily-email-templates.mjs";
 
-const TEMPLATE_DIR = join(process.cwd(), "docs/email-templates/20260911");
+const TEMPLATE_DIR = join(process.cwd(), "docs/email-templates/20260923");
 const VCARD_PATH = join(process.cwd(), "assets/email/sineday-daily.vcf");
 const CONTACT_CARD_URL = "https://sineday.app/assets/email/sineday-daily.vcf";
 const CONFIRMATION_PATH = join(
@@ -41,7 +41,7 @@ function visualShell(innerHtml = "") {
           <tr><td data-sineday-surface="header" bgcolor="#0A0D14" style="background-color:#0A0D14;">Header</td></tr>
           <tr><td data-sineday-surface="notice" bgcolor="#121826" style="background-color:#121826;">Notice</td></tr>
           <tr><td data-sineday-surface="reflection" bgcolor="#101725" style="background-color:#101725;">Reflection</td></tr>
-          <tr><td data-sineday-surface="duck-plate" bgcolor="#FFFFFF" style="background-color:#FFFFFF;">${innerHtml}</td></tr>
+          <tr><td data-sineday-surface="duck-artwork" bgcolor="#0A0D14" style="background-color:#0A0D14;">${innerHtml}</td></tr>
           <tr><td data-sineday-surface="footer" bgcolor="#080A10" style="background-color:#080A10;">{{{OPT_OUT_URL}}}</td></tr>
         </table>
       </body>
@@ -51,6 +51,7 @@ function visualShell(innerHtml = "") {
 
 function welcomeShell() {
   return visualShell(`
+    <img src="https://sineday.app/assets/email/20260923/sineducks/SineDuckCelebrity.png" width="464" height="261" border="0" alt="Meet SineDuck" style="display:block">
     <a href="${CONTACT_CARD_URL}">Add SineDay to Contacts</a>
   `);
 }
@@ -63,10 +64,10 @@ function dailyTemplate(day = 17, alias = "day17emergingfoundation") {
     html: visualShell(`
       <p>Day ${day}</p>
       <img
-        src="https://sineday.app/assets/sineducks/SineDuck${day}@3x.png"
-        width="96"
+        src="https://sineday.app/assets/email/20260923/sineducks/SineDuckFinale${day}.png"
+        width="464" height="261"
         border="0"
-        alt="SineDuck ${day} — Foundation"
+        alt="SineDuck Day ${day} — Foundation"
         style="display:block;width:96px;height:auto;border:0;"
       >
     `)
@@ -170,7 +171,7 @@ test("visual shell rejects dark-scheme invitations and requires the canvas lock"
   assert.ok(failures.includes("canvas-lock"));
 });
 
-test("checked-in HTML sources lock the dark canvas and keep the duck plate white", () => {
+test("checked-in HTML sources lock the dark canvas and preserve the official artwork without a plate", () => {
   const files = readdirSync(TEMPLATE_DIR).filter((name) => name.endsWith(".html"));
   assert.equal(files.length, 19);
 
@@ -197,7 +198,7 @@ test("checked-in HTML sources lock the dark canvas and keep the duck plate white
     );
     assert.deepEqual(failures, [], name);
     assert.doesNotMatch(html, /sineday-daily\.vcf/);
-    assert.match(html, /data-sineday-surface="duck-plate"[^>]*bgcolor="#FFFFFF"/);
+    assert.match(html, /data-sineday-surface="duck-artwork"[^>]*bgcolor="#0A0D14"/);
   }
 });
 
@@ -227,4 +228,19 @@ test("network audit requires RESEND_API_KEY without making a request", async (t)
 
   assert.equal(passed, false);
   assert.equal(requested, false);
+});
+
+test('Finale audit rejects stale assets, wrong dimensions, insecure URLs and cropped marks', () => {
+  for (const [from, to, failure] of [
+    ['SineDuckFinale17.png', 'SineDuck17@3x.png', 'expected-duck'],
+    ['height="261"', 'height="464"', 'duck-image'],
+    ['https://sineday.app/assets/email/', 'http://sineday.app/assets/email/', 'expected-duck'],
+    ['display:block', 'display:inline', 'duck-image'],
+    ['alt="SineDuck Day 17 — Foundation"', 'alt=""', 'duck-image'],
+    ['height:auto', 'height:auto;object-fit:cover', 'duck-crop']
+  ]) {
+    const template = dailyTemplate();
+    template.html = template.html.replace(from, to);
+    assert.ok(validateDailyTemplate(template, 17, template.alias).includes(failure), failure);
+  }
 });

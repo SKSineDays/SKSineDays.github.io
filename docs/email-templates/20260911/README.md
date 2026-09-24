@@ -1,4 +1,6 @@
-# Approved SineDay custom HTML mailers
+# Archived SineDay custom HTML mailers
+
+Superseded by [the 20260923 production sources](../20260923/README.md). Retained for historical provenance and previously delivered emails; do not republish these sources.
 
 Welcome and all 18 daily emails, approved by the owner for publication on 2026-09-11. These files are Resend template source, not app runtime code.
 

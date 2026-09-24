@@ -22,7 +22,7 @@ import {
 } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from "./sineducks.js";
+import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPngUrlFromSinedayNumber } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
@@ -1318,7 +1318,7 @@ function renderTodayDayDetailsSection(result) {
   }
 
   const details = getDayDetails(result.day);
-  const artworkUrl = resolveDayImageUrl(mailerArtworkUrlFromSinedayNumber(result.day));
+  const artworkUrl = resolveDayImageUrl(result.imageAvifUrl || result.imageUrl);
   const fallbackUrl = resolveDayImageUrl(result.imageUrl);
   if (!artworkUrl && !details) {
     clearTodayDayDetailsSection();
@@ -1341,7 +1341,7 @@ function renderTodayDayDetailsSection(result) {
           <img
             class="today-wave-details__image"
             src="${escapeHtml(artworkUrl)}"
-            alt="${escapeHtml(`Daily SineDuck artwork for SineDay ${result.day}: ${result.description || result.phase || ""}`)}"
+            alt="${escapeHtml(result.imageAlt || `Nature study for SineDay ${result.day}`)}"
             width="752"
             height="752"
             decoding="async"
@@ -1407,7 +1407,7 @@ function renderTodayWaveSection() {
   }
 
   const artworkUrl = resolveDayImageUrl(duckSvgUrlFromSinedayNumber(result.day));
-  const fallbackDuckUrl = resolveDayImageUrl(duckUrlFromSinedayNumber(result.day));
+  const fallbackDuckUrl = resolveDayImageUrl(duckPngUrlFromSinedayNumber(result.day));
   const locale = `${(userSettings?.language || "en")}-${(userSettings?.region || "US")}`;
   const date = new Date(`${todayYmd}T12:00:00Z`);
   const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -1435,7 +1435,7 @@ function renderTodayWaveSection() {
             src="${escapeHtml(artworkUrl)}"
             alt="${escapeHtml(`SineDuck for SineDay ${result.day}`)}"
             width="576"
-            height="288"
+            height="324"
             decoding="async"
             fetchpriority="high"
           >

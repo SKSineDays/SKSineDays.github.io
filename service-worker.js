@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v27';
+const CACHE_NAME = 'sineday-v28';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -17,7 +17,7 @@ const ASSETS_TO_CACHE = [
   '/js/ui.js',
   '/js/sineducks.js',
   '/js/sineduck-intro-animation.js',
-  '/assets/sineducks/SineDuck15@3x.png',
+  '/assets/sineducks/SineDuck%20Celebrity.svg',
   '/site.webmanifest?v=2',
   '/apple-touch-icon.png?v=2',
   '/assets/app-icon/apple-touch-icon-180.png?v=2',

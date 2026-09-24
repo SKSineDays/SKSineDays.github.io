@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { calculateSineDayForYmd } from "../../js/sineday-engine.js";
-import { duckUrlFromSinedayNumber } from "../../js/sineducks.js";
+import { duckPngUrlFromSinedayNumber } from "../../js/sineducks.js";
 import { isRtlLocale } from "../../shared/i18n.js";
 
 const MS_PER_DAY = 86400000;
@@ -60,7 +60,7 @@ function weekdayLabels(locale, weekStart) {
 }
 
 async function loadDuckPngBytes(relativePath, origin) {
-  // relativePath like "assets/sineducks/SineDuck1@3x.png"
+  // relativePath like "assets/email/20260923/sineducks/SineDuckFinale1.png"
   const clean = String(relativePath || "").replace(/^\/+/, "");
   const url = new URL("/" + clean, origin).toString();
 
@@ -76,7 +76,7 @@ async function loadDuckPngBytes(relativePath, origin) {
 async function buildDuckCache(pdf, origin) {
   const cache = new Map();
   for (let day = 1; day <= 18; day++) {
-    const rel = duckUrlFromSinedayNumber(day);
+    const rel = duckPngUrlFromSinedayNumber(day);
     const bytes = await loadDuckPngBytes(rel, origin);
     const img = await pdf.embedPng(bytes);
     cache.set(day, img);

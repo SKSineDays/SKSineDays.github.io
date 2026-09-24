@@ -17,7 +17,7 @@ const serviceWorkerJs = readFileSync(join(root, "service-worker.js"), "utf8");
 test("SineDuck Discover keeps the paced show and its composed final frame", () => {
   assert.match(
     html,
-    /src="\/assets\/sineducks\/SineDuck15@3x\.png"\s+width="174"\s+height="88"/,
+    /src="\/assets\/sineducks\/SineDuck%20Celebrity\.svg"\s+width="176"\s+height="99"/,
   );
   assert.doesNotMatch(html, /SineDuck14@3x\.png/);
 
@@ -114,8 +114,8 @@ test("SineDuck Discover keeps the paced show and its composed final frame", () =
   );
   assert.match(uiJs, /setFocusProgress\(sineDuckProgress\)/);
 
-  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v27'/);
-  assert.match(serviceWorkerJs, /\/assets\/sineducks\/SineDuck15@3x\.png/);
+  assert.match(serviceWorkerJs, /CACHE_NAME = 'sineday-v28'/);
+  assert.match(serviceWorkerJs, /\/assets\/sineducks\/SineDuck%20Celebrity\.svg/);
   assert.doesNotMatch(serviceWorkerJs, /SineDuck14@3x\.png/);
   assert.match(serviceWorkerJs, /'\/styles\.css'/);
   assert.match(serviceWorkerJs, /'\/js\/ui\.js'/);

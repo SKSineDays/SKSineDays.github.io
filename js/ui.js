@@ -11,7 +11,7 @@
 
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
-import { duckSvgUrlFromSinedayNumber, mailerArtworkUrlFromSinedayNumber } from './sineducks.js';
+import { duckSvgUrlFromSinedayNumber } from './sineducks.js';
 import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
@@ -292,11 +292,11 @@ export class SineDayUI {
     // Update day image card
     if (this.elements.dayImage) {
       const dayImage = this.elements.dayImage;
-      const mailerArtworkUrl = mailerArtworkUrlFromSinedayNumber(result.day);
+      const natureArtworkUrl = result.imageAvifUrl || result.imageUrl;
       dayImage.style.opacity = '0';
-      dayImage.alt = `Daily SineDuck artwork for SineDay ${result.day}: ${result.description}`;
+      dayImage.alt = result.imageAlt || `Nature study for SineDay ${result.day}`;
 
-      // Fall back to the original landscape if the finished mailer composition is unavailable.
+      // Preserve the approved JPEG fallback for browsers without AVIF support.
       dayImage.onerror = () => {
         if (this.currentDay !== result) return;
         if (!dayImage.src.endsWith(result.imageUrl)) {
@@ -315,9 +315,9 @@ export class SineDayUI {
         }
         if (this.currentDay !== result || !dayImage.naturalWidth) return;
         dayImage.style.opacity = '1';
-        this.updateBackgroundImage(dayImage.currentSrc || mailerArtworkUrl);
+        this.updateBackgroundImage(dayImage.currentSrc || natureArtworkUrl);
       };
-      dayImage.src = mailerArtworkUrl;
+      dayImage.src = natureArtworkUrl;
     }
 
     // Show day image card

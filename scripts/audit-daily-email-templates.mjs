@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import { readFile } from "node:fs/promises";
 import { Resend } from "resend";
 import {
   DAILY_SINEDAY_TITLES,
@@ -91,16 +92,16 @@ function validateVisualShell(html) {
 }
 
 function getDuckImageTags(html) {
-  return String(html || "").match(/<img\b[^>]*SineDuck\d{1,2}@3x\.png[^>]*>/gi) || [];
+  return String(html || "").match(/<img\b[^>]*SineDuck[^"\']*\.png[^>]*>/gi) || [];
 }
 
 export function validateDailyTemplate(template, day, expectedAlias) {
   const failures = [];
   const html = String(template?.html || "");
   const subject = String(template?.subject || "");
-  const expectedDuck = new RegExp(`SineDuck${day}@3x\\.png`, "i");
+  const expectedDuck = new RegExp(escapeRegex(`https://sineday.app/assets/email/20260923/sineducks/SineDuckFinale${day}.png`) + `["']`, "i");
   const duckNumbers = [
-    ...html.matchAll(/SineDuck(\d{1,2})@3x\.png/gi)
+    ...html.matchAll(/SineDuck(?:Finale)?(\d{1,2})(?:@3x)?\.(?:png|svg)/gi)
   ].map((match) => Number(match[1]));
 
   if (template?.alias !== expectedAlias) failures.push("alias");
@@ -117,16 +118,18 @@ export function validateDailyTemplate(template, day, expectedAlias) {
   if (
     !expectedTag ||
     !/\bsrc=["']https:\/\//i.test(expectedTag) ||
-    !/\bwidth=["']\d+["']/i.test(expectedTag) ||
+    !/\bwidth=["']464["']/i.test(expectedTag) ||
+    !/\bheight=["']261["']/i.test(expectedTag) ||
     !/\bborder=["']0["']/i.test(expectedTag) ||
-    !/\balt=["'][^"']+["']/i.test(expectedTag) ||
+    !new RegExp(`alt=["'][^"']*Day ${day}\\b[^"']+`, "i").test(expectedTag) ||
     !/display\s*:\s*block/i.test(expectedTag)
   ) {
     failures.push("duck-image");
   }
-  if (!validateSurface(html, "duck-plate", "#FFFFFF")) {
-    failures.push("duck-plate");
-  }
+  if (!validateSurface(html, "duck-artwork", "#0A0D14")) failures.push("duck-artwork");
+  if (/SineDuck\d+(?:@3x)?\.(?:png|svg)|duck-plate/i.test(html)) failures.push("legacy-duck");
+  if (duckTags.length !== 1) failures.push("duck-count");
+  if (/object-fit\s*:\s*cover/i.test(expectedTag || "")) failures.push("duck-crop");
 
   failures.push(...validateVisualShell(html));
   return [...new Set(failures)];
@@ -142,6 +145,11 @@ export function validateWelcomeTemplate(template) {
     failures.push("contact-card");
   }
   if (!/Add SineDay to Contacts/i.test(html)) failures.push("contact-action");
+  const celebrity = getDuckImageTags(html);
+  if (celebrity.length !== 1 || !celebrity[0].includes('src="https://sineday.app/assets/email/20260923/sineducks/SineDuckCelebrity.png"') ||
+      !/width="464"/.test(celebrity[0]) || !/height="261"/.test(celebrity[0]) ||
+      !/display:block/.test(celebrity[0]) || !/alt="[^"\n]+"/.test(celebrity[0]) ||
+      !validateSurface(html, "duck-artwork", "#0A0D14")) failures.push("celebrity-image");
   failures.push(...validateVisualShell(html));
   return [...new Set(failures)];
 }
@@ -253,7 +261,22 @@ export async function auditDailyEmailTemplates({
 
 async function main() {
   try {
-    const passed = await auditDailyEmailTemplates();
+    // Connected-plugin callers can audit freshly fetched live templates without
+    // copying credentials into the shell. This uses the same validators.
+    const snapshotIndex = process.argv.indexOf("--snapshot");
+    let options;
+    if (snapshotIndex !== -1) {
+      const snapshot = JSON.parse(await readFile(process.argv[snapshotIndex + 1], "utf8"));
+      if (!snapshot.fetchedAt || !snapshot.templates || Date.now() - Date.parse(snapshot.fetchedAt) > 15 * 60_000 || !Number.isFinite(Date.parse(snapshot.fetchedAt))) {
+        throw new Error("A fresh live-template snapshot is required");
+      }
+      console.log(`source=resend-plugin-snapshot fetchedAt=${snapshot.fetchedAt}`);
+      options = {
+        apiKey: "plugin-snapshot",
+        resend: { templates: { get: async alias => ({ data: snapshot.templates[alias] }) } }
+      };
+    }
+    const passed = await auditDailyEmailTemplates(options);
     if (!passed) process.exitCode = 1;
   } catch {
     console.error("alias=all day=all status=audit-failed");
