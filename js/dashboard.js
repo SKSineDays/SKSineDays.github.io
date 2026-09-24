@@ -2106,6 +2106,100 @@ function fillProfileForm(profile) {
   ensureTimezoneOption(timezoneSelect, profile?.timezone || getClientTimezone());
 }
 
+let activeProfileSheet = null;
+let profileSheetTransition = 0;
+let profileSheetKeyboardBound = false;
+
+function setProfileSheetBackgroundDisabled(disabled) {
+  for (const element of [
+    document.querySelector("main"),
+    document.querySelector(".site-footer"),
+  ]) {
+    if (!element) continue;
+    if (disabled) {
+      if (!element.hasAttribute("inert")) {
+        element.setAttribute("inert", "");
+        element.dataset.profileSheetInert = "true";
+      }
+    } else if (element.dataset.profileSheetInert === "true") {
+      element.removeAttribute("inert");
+      delete element.dataset.profileSheetInert;
+    }
+  }
+
+  document.documentElement.classList.toggle("modal-open", disabled);
+  document.body.classList.toggle("modal-open", disabled);
+}
+
+function deactivateProfileSheet(entry, { immediate = false } = {}) {
+  if (!entry) return;
+  entry.toggle?.setAttribute("aria-expanded", "false");
+  entry.sheet.classList.remove("is-open");
+  if (immediate) entry.sheet.setAttribute("aria-hidden", "true");
+}
+
+function openProfileSheet(entry, { opener = document.activeElement } = {}) {
+  if (!entry?.sheet || !entry.panel) return;
+
+  profileSheetTransition += 1;
+  if (activeProfileSheet && activeProfileSheet !== entry) {
+    deactivateProfileSheet(activeProfileSheet, { immediate: true });
+  }
+
+  entry.opener = opener instanceof HTMLElement && opener.isConnected
+    ? opener
+    : entry.toggle;
+  activeProfileSheet = entry;
+  entry.toggle?.setAttribute("aria-expanded", "true");
+  entry.sheet.setAttribute("aria-hidden", "false");
+  setProfileSheetBackgroundDisabled(true);
+
+  requestAnimationFrame(() => {
+    if (activeProfileSheet !== entry) return;
+    entry.sheet.classList.add("is-open");
+    entry.initialFocus?.()?.focus?.({ preventScroll: true });
+  });
+}
+
+function closeProfileSheet(entry, { restoreFocus = true, immediate = false } = {}) {
+  if (!entry || activeProfileSheet !== entry) return;
+
+  const transition = ++profileSheetTransition;
+  const opener = entry.opener;
+  deactivateProfileSheet(entry, { immediate });
+
+  const finish = () => {
+    if (transition !== profileSheetTransition || activeProfileSheet !== entry) return;
+    entry.sheet.setAttribute("aria-hidden", "true");
+    activeProfileSheet = null;
+    setProfileSheetBackgroundDisabled(false);
+    if (restoreFocus) {
+      const focusTarget = opener?.isConnected ? opener : entry.toggle;
+      focusTarget?.focus?.({ preventScroll: true });
+    }
+  };
+
+  if (immediate || prefersReducedDashboardMotion()) {
+    finish();
+  } else {
+    window.setTimeout(finish, 340);
+  }
+}
+
+function bindProfileSheetKeyboardHandling() {
+  if (profileSheetKeyboardBound) return;
+  profileSheetKeyboardBound = true;
+  document.addEventListener("keydown", (event) => {
+    if (!activeProfileSheet) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeProfileSheet(activeProfileSheet);
+      return;
+    }
+    trapFocusWithin(activeProfileSheet.panel, event);
+  });
+}
+
 /**
  * Set up Add Profile bottom sheet (iOS-style)
  */
@@ -2117,6 +2211,17 @@ function setupAddProfileCollapse() {
   const backdrop = sheet?.querySelector("[data-close='add-profile-sheet']");
 
   if (!toggle || !sheet || !panel) return null;
+
+  const entry = {
+    sheet,
+    panel,
+    toggle,
+    opener: toggle,
+    initialFocus: () =>
+      panel.querySelector('input[name="name"]') ||
+      panel.querySelector("#profile-name") ||
+      panel.querySelector("input"),
+  };
 
   const open = (options = {}) => {
     const profile = options.profile || null;
@@ -2134,47 +2239,29 @@ function setupAddProfileCollapse() {
     }
 
     updateAddProfilePresentation();
-
-    toggle.setAttribute("aria-expanded", profile ? "false" : "true");
-    sheet.setAttribute("aria-hidden", "false");
-    requestAnimationFrame(() => sheet.classList.add("is-open"));
-    document.body.classList.add("modal-open");
-
-    const nameInput =
-      panel.querySelector('input[name="name"]') ||
-      panel.querySelector("#profile-name") ||
-      panel.querySelector("input");
-    nameInput?.focus();
+    const opener = options.opener || document.activeElement || toggle;
+    const logicalOpener = opener?.closest?.(".edit-profile")
+      ? document.getElementById("manage-profiles-toggle")
+      : opener;
+    openProfileSheet(entry, { opener: logicalOpener });
   };
 
   const close = () => {
-    toggle.setAttribute("aria-expanded", "false");
-    sheet.classList.remove("is-open");
-    sheet.setAttribute("aria-hidden", "true");
     const form = document.getElementById("add-profile-form");
     form?.reset?.();
     profileFormMode = "add";
     editingProfileId = null;
     updateAddProfilePresentation();
-    if (!document.querySelector(".add-profile-sheet.is-open")) {
-      document.body.classList.remove("modal-open");
-    }
-    const manageOpen = document.getElementById("manage-profiles-sheet")?.classList.contains("is-open");
-    (manageOpen ? document.getElementById("manage-profiles-toggle") : toggle)?.focus();
+    closeProfileSheet(entry);
   };
 
-  toggle.addEventListener("click", () => {
-    const expanded = toggle.getAttribute("aria-expanded") === "true";
-    expanded ? close() : open();
+  toggle.addEventListener("click", (event) => {
+    activeProfileSheet === entry ? close() : open({ opener: event.currentTarget });
   });
 
   cancel?.addEventListener("click", close);
   backdrop?.addEventListener("click", close);
-
-  panel.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
-    trapFocusWithin(panel, e);
-  });
+  bindProfileSheetKeyboardHandling();
 
   return { close, open };
 }
@@ -2188,33 +2275,24 @@ function setupManageProfilesSheet() {
 
   if (!toggle || !sheet || !panel) return null;
 
-  const open = () => {
-    toggle.setAttribute("aria-expanded", "true");
-    sheet.setAttribute("aria-hidden", "false");
-    requestAnimationFrame(() => sheet.classList.add("is-open"));
-    document.body.classList.add("modal-open");
-    closeButton?.focus();
+  const entry = {
+    sheet,
+    panel,
+    toggle,
+    opener: toggle,
+    initialFocus: () => closeButton || panel.querySelector("button, input, select"),
   };
-
-  const close = () => {
-    toggle.setAttribute("aria-expanded", "false");
-    sheet.classList.remove("is-open");
-    sheet.setAttribute("aria-hidden", "true");
-    if (!document.querySelector(".add-profile-sheet.is-open")) {
-      document.body.classList.remove("modal-open");
-    }
-    toggle.focus();
+  const open = ({ opener = document.activeElement } = {}) => {
+    openProfileSheet(entry, { opener });
   };
+  const close = () => closeProfileSheet(entry);
 
-  toggle.addEventListener("click", () => {
-    toggle.getAttribute("aria-expanded") === "true" ? close() : open();
+  toggle.addEventListener("click", (event) => {
+    activeProfileSheet === entry ? close() : open({ opener: event.currentTarget });
   });
   closeButton?.addEventListener("click", close);
   backdrop?.addEventListener("click", close);
-  panel.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") close();
-    trapFocusWithin(panel, event);
-  });
+  bindProfileSheetKeyboardHandling();
 
   return { close, open };
 }
@@ -2266,7 +2344,7 @@ function setupEventListeners() {
   document.addEventListener('click', (e) => {
     const openAdd = e.target.closest?.("[data-open-add-profile]");
     if (openAdd) {
-      addProfileUI?.open?.();
+      addProfileUI?.open?.({ opener: openAdd });
       return;
     }
 
@@ -2274,7 +2352,7 @@ function setupEventListeners() {
     if (editBtn) {
       const profileId = editBtn.dataset.id;
       const profile = profiles.find((item) => item.id === profileId);
-      if (profile) addProfileUI?.open?.({ profile });
+      if (profile) addProfileUI?.open?.({ profile, opener: editBtn });
       return;
     }
 

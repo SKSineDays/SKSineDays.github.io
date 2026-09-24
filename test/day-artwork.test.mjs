@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import vm from 'node:vm';
+import sharp from 'sharp';
 import { DAY_DATA, DAY_DETAILS, calculateSineDayForYmd } from '../js/sineday-engine.js';
 import {
   duckPlacementOnDayArtwork,
@@ -183,7 +184,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v29']);
+  assert.deepEqual(await caches.keys(), ['sineday-v30']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -195,7 +196,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v29');
+  const active = stores.get('sineday-v30');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
@@ -238,12 +239,21 @@ test('reduced motion presents artwork immediately and scrolls without animation'
   assert.deepEqual(scroll, { top: 140, behavior: 'auto' });
 });
 
- test('generic public surfaces use Celebrity and day 17 remains numbered', async () => {
-  for (const file of ['index.html', 'daily.html', 'daily-confirm.html', 'dashboard.html']) {
+test('generic public surfaces use Celebrity while dashboard tabs use the requested Finale mapping', async () => {
+  for (const file of ['index.html', 'daily.html', 'daily-confirm.html']) {
     const html = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.match(html, /SineDuck%20Celebrity\.svg/);
     assert.doesNotMatch(html, /SineDuck\d+(?:@3x)?\.(?:svg|png)/);
   }
+  const dashboard = await readFile(new URL('../dashboard.html', import.meta.url), 'utf8');
+  assert.match(dashboard, /SineDuck%20Celebrity\.svg/);
+  const tabIcons = [...dashboard.matchAll(/class="dashboard-tab__icon" src="([^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(tabIcons, [
+    '/assets/sineducks/SineDuckFinale2.svg',
+    '/assets/sineducks/SineDuckFinale8.svg',
+    '/assets/sineducks/SineDuckFinale11.svg',
+    '/assets/sineducks/SineDuckFinale17.svg'
+  ]);
   assert.match(await readFile(new URL('../daily.html', import.meta.url), 'utf8'), /SineDuckFinale17\.svg/);
 });
 
@@ -257,5 +267,39 @@ test('email raster manifest matches approved SVGs and full 16:9 PNGs', async () 
     assert.equal(createHash('sha256').update(png).digest('hex'), asset.sha256);
     assert.equal(png.readUInt32BE(16), 1920);
     assert.equal(png.readUInt32BE(20), 1080);
+  }
+});
+
+test('daily email scenes deterministically match canonical sources and placement', async () => {
+  const sceneManifest = JSON.parse(await readFile(new URL('../docs/email-templates/20260924/asset-manifest.json', import.meta.url)));
+  const natureManifest = JSON.parse(await readFile(new URL('../docs/art-direction/day-background-assets.json', import.meta.url)));
+  const finaleManifest = JSON.parse(await readFile(new URL('../docs/email-templates/20260923/asset-manifest.json', import.meta.url)));
+  assert.equal(sceneManifest.assets.length, 18);
+
+  for (const asset of sceneManifest.assets) {
+    const day = asset.day;
+    const nature = natureManifest.find(entry => entry.day === day);
+    const finale = finaleManifest.assets.find(entry => entry.file.endsWith(`SineDuckFinale${day}.png`));
+    const [sceneBytes, natureBytes, finaleBytes] = await Promise.all([
+      readFile(new URL(`../${asset.file}`, import.meta.url)),
+      readFile(new URL(`../${nature.file}`, import.meta.url)),
+      readFile(new URL(`../${finale.file}`, import.meta.url))
+    ]);
+    assert.equal(asset.width, 752);
+    assert.equal(asset.height, 752);
+    assert.equal(sceneBytes.length, asset.bytes);
+    assert.equal(createHash('sha256').update(sceneBytes).digest('hex'), asset.sha256);
+    assert.equal(createHash('sha256').update(natureBytes).digest('hex'), asset.nature_sha256);
+    assert.equal(createHash('sha256').update(finaleBytes).digest('hex'), asset.finale_sha256);
+    assert.equal(asset.placement, duckPlacementOnDayArtwork(day));
+    assert.deepEqual(asset.composite, {
+      left: 99,
+      top: asset.placement === 'top' ? 84 : 356,
+      width: 555,
+      height: 312
+    });
+    const metadata = await sharp(sceneBytes).metadata();
+    assert.equal(metadata.width, 752);
+    assert.equal(metadata.height, 752);
   }
 });

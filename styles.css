@@ -2710,7 +2710,9 @@ body.loading {
    Prevent Background Scroll When Modal Open
    ================================ */
 
+html.modal-open,
 body.modal-open,
 body.discover-story-open {
   overflow: hidden;
+  overscroll-behavior: none;
 }
