@@ -51,10 +51,13 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
     readFile(new URL('../styles.css', import.meta.url), 'utf8')
   ]);
   assert.doesNotMatch(html, /sineduck-plate/);
+  assert.match(html, /class="daily-email-banner__duck"\s+src="\/assets\/sineducks\/SineDuckFinale17\.svg"/);
   assert.match(html, /class="day-artwork-duck"[\s\S]*id="dayImageDuck"/);
   assert.match(ui, /const natureArtworkUrl = result\.imageAvifUrl \|\| result\.imageUrl/);
   assert.match(ui, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(ui, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(styles, /\.duck-image\s*\{[^}]*width:\s*min\(80vw,\s*320px\)/);
+  assert.match(styles, /\.day-artwork-duck\s*\{[^}]*left:\s*9%;[^}]*width:\s*82%/);
   assert.match(styles, /\.day-artwork-duck img\s*\{[^}]*aspect-ratio:\s*16 \/ 9;[^}]*object-fit:\s*contain;/);
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*filter:/);
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*background:\s*(?:#fff|white|rgba\(255)/);
@@ -92,6 +95,19 @@ test('dashboard identity surfaces use individual SineDucks while Explore layers 
   assert.match(profileImages, /object-fit:\s*contain/);
   assert.match(profileImages, /aspect-ratio:\s*16 \/ 9/);
   assert.match(styles.split('.today-wave-hero__image {')[1].split('}')[0], /object-fit:\s*contain/);
+  assert.match(styles.split('.today-wave-hero__artwork {')[1].split('}')[0], /width:\s*min\(100%,\s*400px\)/);
+  assert.match(styles.split('.duck-stack__today-artwork {')[1].split('}')[0], /width:\s*min\(100%,\s*240px\)/);
+  assert.match(styles.split('.duck-stack__origin-artwork {')[1].split('}')[0], /flex:\s*0 0 112px/);
+
+  for (const [selector, size] of [
+    ['.duck-icon-badge', '32px'],
+    ['.duck-avatar', '40px'],
+    ['.sdcal__duck', '48px'],
+    ['.planner__duck', '56px']
+  ]) {
+    const rule = styles.slice(styles.indexOf(selector + ' {')).split('}')[0];
+    assert.match(rule, new RegExp(`width:\\s*${size}`));
+  }
 });
 
 test('worker updates old artwork, caches viewed formats offline, and never caches APIs', async () => {

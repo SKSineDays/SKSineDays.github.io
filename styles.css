@@ -1680,7 +1680,7 @@ body {
 
 .duck-image {
   display: block;
-  width: min(64vw, 220px);
+  width: min(80vw, 320px);
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: contain;
@@ -1837,8 +1837,8 @@ body {
   position: absolute;
   z-index: 1;
   bottom: 7%;
-  left: 17%;
-  width: 66%;
+  left: 9%;
+  width: 82%;
   padding: 5%;
   box-sizing: border-box;
   background: transparent;
