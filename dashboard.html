@@ -336,7 +336,7 @@
               aria-pressed="true"
             >
               <span class="dashboard-tab-icon duck-icon-badge">
-                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck%20Celebrity.svg" alt="" aria-hidden="true">
+                <img class="dashboard-tab__icon" src="/assets/sineducks/SineDuckFinale2.svg" alt="" aria-hidden="true">
               </span>
               <span class="dashboard-tab__label">Origin</span>
             </button>
@@ -348,7 +348,7 @@
               aria-pressed="false"
             >
               <span class="dashboard-tab-icon duck-icon-badge">
-                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck%20Celebrity.svg" alt="" aria-hidden="true">
+                <img class="dashboard-tab__icon" src="/assets/sineducks/SineDuckFinale8.svg" alt="" aria-hidden="true">
               </span>
               <span class="dashboard-tab__label">Journal <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
             </button>
@@ -360,7 +360,7 @@
               aria-pressed="false"
             >
               <span class="dashboard-tab-icon duck-icon-badge">
-                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck%20Celebrity.svg" alt="" aria-hidden="true">
+                <img class="dashboard-tab__icon" src="/assets/sineducks/SineDuckFinale11.svg" alt="" aria-hidden="true">
               </span>
               <span class="dashboard-tab__label">History <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
             </button>
@@ -372,7 +372,7 @@
               aria-pressed="false"
             >
               <span class="dashboard-tab-icon duck-icon-badge">
-                <img class="dashboard-tab__icon" src="assets/sineducks/SineDuck%20Celebrity.svg" alt="" aria-hidden="true">
+                <img class="dashboard-tab__icon" src="/assets/sineducks/SineDuckFinale17.svg" alt="" aria-hidden="true">
               </span>
               <span class="dashboard-tab__label">Print <span class="dashboard-tab__lock" aria-hidden="true">🔒</span></span>
             </button>
@@ -436,81 +436,6 @@
                   </button>
                 </div>
 
-                <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
-                  <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
-                  <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
-                    <div class="add-profile-sheet__inner">
-                      <div class="feature-sheet__handle" aria-hidden="true"></div>
-                      <div class="add-profile-sheet__header">
-                        <p id="add-profile-eyebrow" class="feature-hero__eyebrow" hidden></p>
-                        <h3 id="add-profile-title">Add a profile</h3>
-                        <p id="add-profile-intro" class="add-profile-sheet__intro" hidden></p>
-                      </div>
-                      <form id="add-profile-form">
-                        <div class="form-group">
-                          <label for="profile-name">Name</label>
-                          <input type="text" id="profile-name" placeholder="John Doe" required>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="profile-birthdate">Birthdate</label>
-                          <input type="date" id="profile-birthdate" required>
-                        </div>
-
-                        <div class="form-group">
-                          <label for="profile-timezone">Timezone</label>
-                          <select id="profile-timezone">
-                            <option value="America/Chicago">America/Chicago (Central)</option>
-                            <option value="America/New_York">America/New_York (Eastern)</option>
-                            <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
-                            <option value="America/Denver">America/Denver (Mountain)</option>
-                            <option value="Europe/London">Europe/London</option>
-                            <option value="Europe/Paris">Europe/Paris</option>
-                            <option value="Asia/Tokyo">Asia/Tokyo</option>
-                            <option value="Asia/Shanghai">Asia/Shanghai</option>
-                            <option value="Australia/Sydney">Australia/Sydney</option>
-                          </select>
-                        </div>
-
-                        <div class="add-profile-sheet__actions">
-                          <button id="add-profile-cancel" class="btn btn-ghost" type="button">Cancel</button>
-                          <button id="add-profile-btn" class="btn btn-primary" type="submit">Save Profile</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="manage-profiles-sheet" class="add-profile-sheet origin-manage-sheet" aria-hidden="true">
-                  <div class="add-profile-sheet__backdrop" data-close="manage-profiles-sheet"></div>
-                  <div
-                    id="manage-profiles-panel"
-                    class="add-profile-sheet__panel"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="manage-profiles-title"
-                  >
-                    <div class="add-profile-sheet__inner">
-                      <div class="feature-sheet__handle" aria-hidden="true"></div>
-                      <div class="origin-manage-sheet__header">
-                        <div>
-                          <p class="feature-hero__eyebrow">Origin Circle</p>
-                          <h3 id="manage-profiles-title">Manage people</h3>
-                        </div>
-                        <button
-                          id="manage-profiles-close"
-                          class="feature-icon-button"
-                          type="button"
-                          aria-label="Close profile management"
-                        >×</button>
-                      </div>
-                      <p class="origin-manage-sheet__intro">
-                        Your owner profile anchors Today’s Wave. You can update your saved profiles here; the owner profile cannot be deleted.
-                      </p>
-                      <div id="profiles-list"></div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -617,6 +542,82 @@
     </section>
     </div>
   </main>
+
+  <div id="add-profile-sheet" class="add-profile-sheet" aria-hidden="true">
+    <div class="add-profile-sheet__backdrop" data-close="add-profile-sheet"></div>
+    <div id="add-profile-panel" class="add-profile-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="add-profile-title">
+      <div class="add-profile-sheet__inner">
+        <div class="feature-sheet__handle" aria-hidden="true"></div>
+        <div class="add-profile-sheet__header">
+          <p id="add-profile-eyebrow" class="feature-hero__eyebrow" hidden></p>
+          <h3 id="add-profile-title">Add a profile</h3>
+          <p id="add-profile-intro" class="add-profile-sheet__intro" hidden></p>
+        </div>
+        <form id="add-profile-form">
+          <div class="form-group">
+            <label for="profile-name">Name</label>
+            <input type="text" id="profile-name" placeholder="John Doe" required>
+          </div>
+
+          <div class="form-group">
+            <label for="profile-birthdate">Birthdate</label>
+            <input type="date" id="profile-birthdate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="profile-timezone">Timezone</label>
+            <select id="profile-timezone">
+              <option value="America/Chicago">America/Chicago (Central)</option>
+              <option value="America/New_York">America/New_York (Eastern)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles (Pacific)</option>
+              <option value="America/Denver">America/Denver (Mountain)</option>
+              <option value="Europe/London">Europe/London</option>
+              <option value="Europe/Paris">Europe/Paris</option>
+              <option value="Asia/Tokyo">Asia/Tokyo</option>
+              <option value="Asia/Shanghai">Asia/Shanghai</option>
+              <option value="Australia/Sydney">Australia/Sydney</option>
+            </select>
+          </div>
+
+          <div class="add-profile-sheet__actions">
+            <button id="add-profile-cancel" class="btn btn-ghost" type="button">Cancel</button>
+            <button id="add-profile-btn" class="btn btn-primary" type="submit">Save Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="manage-profiles-sheet" class="add-profile-sheet origin-manage-sheet" aria-hidden="true">
+    <div class="add-profile-sheet__backdrop" data-close="manage-profiles-sheet"></div>
+    <div
+      id="manage-profiles-panel"
+      class="add-profile-sheet__panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="manage-profiles-title"
+    >
+      <div class="add-profile-sheet__inner">
+        <div class="feature-sheet__handle" aria-hidden="true"></div>
+        <div class="origin-manage-sheet__header">
+          <div>
+            <p class="feature-hero__eyebrow">Origin Circle</p>
+            <h3 id="manage-profiles-title">Manage people</h3>
+          </div>
+          <button
+            id="manage-profiles-close"
+            class="feature-icon-button"
+            type="button"
+            aria-label="Close profile management"
+          >×</button>
+        </div>
+        <p class="origin-manage-sheet__intro">
+          Your owner profile anchors Today’s Wave. You can update your saved profiles here; the owner profile cannot be deleted.
+        </p>
+        <div id="profiles-list"></div>
+      </div>
+    </div>
+  </div>
 
   <footer class="site-footer site-footer--legal">
     <div class="site-footer__inner">

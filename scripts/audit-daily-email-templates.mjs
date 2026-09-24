@@ -95,41 +95,66 @@ function getDuckImageTags(html) {
   return String(html || "").match(/<img\b[^>]*SineDuck[^"\']*\.png[^>]*>/gi) || [];
 }
 
+function getSceneImageTags(html) {
+  return String(html || "").match(/<img\b[^>]*SineDayScene\d{1,2}\.png[^>]*>/gi) || [];
+}
+
 export function validateDailyTemplate(template, day, expectedAlias) {
   const failures = [];
   const html = String(template?.html || "");
   const subject = String(template?.subject || "");
-  const expectedDuck = new RegExp(escapeRegex(`https://sineday.app/assets/email/20260923/sineducks/SineDuckFinale${day}.png`) + `["']`, "i");
-  const duckNumbers = [
-    ...html.matchAll(/SineDuck(?:Finale)?(\d{1,2})(?:@3x)?\.(?:png|svg)/gi)
+  const expectedScene = new RegExp(
+    escapeRegex(`https://sineday.app/assets/email/20260924/scenes/SineDayScene${day}.png`) + `["']`,
+    "i",
+  );
+  const expectedAlt = `Day ${day} — ${DAILY_SINEDAY_TITLES[day]} nature scene with SineDuck`;
+  const expectedWaveUrl =
+    `https://sineday.app/assets/email/20260911/wave-${String(day).padStart(2, "0")}.png`;
+  const sceneNumbers = [
+    ...html.matchAll(/SineDayScene(\d{1,2})\.png/gi)
   ].map((match) => Number(match[1]));
+  const waveUrls = [
+    ...html.matchAll(/https:\/\/sineday\.app\/assets\/email\/20260911\/wave-\d{2}\.png/gi)
+  ].map((match) => match[0]);
+  const expectedWaveCount = waveUrls.filter(
+    (url) => url.toLowerCase() === expectedWaveUrl.toLowerCase(),
+  ).length;
 
   if (template?.alias !== expectedAlias) failures.push("alias");
   if (template?.status !== "published") failures.push("published");
   if (!hasDay(subject, day)) failures.push("subject-day");
   if (!hasDay(html, day)) failures.push("html-day");
-  if (!expectedDuck.test(html)) failures.push("expected-duck");
-  if (duckNumbers.some((number) => number !== day)) failures.push("wrong-duck");
+  if (!expectedScene.test(html)) failures.push("expected-scene");
+  if (sceneNumbers.some((number) => number !== day)) failures.push("wrong-scene");
+  if (expectedWaveCount !== 1) failures.push("expected-wave");
+  if (waveUrls.some((url) => url.toLowerCase() !== expectedWaveUrl.toLowerCase())) {
+    failures.push("wrong-wave");
+  }
+  if (waveUrls.length !== 1) failures.push("wave-count");
   if (!html.includes("{{{OPT_OUT_URL}}}")) failures.push("opt-out");
   if (!DAILY_SINEDAY_TITLES[day]) failures.push("title");
 
-  const duckTags = getDuckImageTags(html);
-  const expectedTag = duckTags.find((tag) => expectedDuck.test(tag));
+  const sceneTags = getSceneImageTags(html);
+  const expectedTag = sceneTags.find((tag) => expectedScene.test(tag));
   if (
     !expectedTag ||
     !/\bsrc=["']https:\/\//i.test(expectedTag) ||
     !/\bwidth=["']464["']/i.test(expectedTag) ||
-    !/\bheight=["']261["']/i.test(expectedTag) ||
+    !/\bheight=["']464["']/i.test(expectedTag) ||
     !/\bborder=["']0["']/i.test(expectedTag) ||
-    !new RegExp(`alt=["'][^"']*Day ${day}\\b[^"']+`, "i").test(expectedTag) ||
+    !new RegExp(`\\balt=["']${escapeRegex(expectedAlt)}["']`, "i").test(expectedTag) ||
     !/display\s*:\s*block/i.test(expectedTag)
   ) {
-    failures.push("duck-image");
+    failures.push("scene-image");
   }
-  if (!validateSurface(html, "duck-artwork", "#0A0D14")) failures.push("duck-artwork");
-  if (/SineDuck\d+(?:@3x)?\.(?:png|svg)|duck-plate/i.test(html)) failures.push("legacy-duck");
-  if (duckTags.length !== 1) failures.push("duck-count");
-  if (/object-fit\s*:\s*cover/i.test(expectedTag || "")) failures.push("duck-crop");
+  if (!validateSurface(html, "day-scene", "#0A0D14")) failures.push("day-scene");
+  if (
+    /SineDuck(?:Finale)?\d+(?:@3x)?\.(?:png|svg)|duck-plate|assets\/email\/20260911\/(?!wave-)/i.test(html)
+  ) {
+    failures.push("legacy-artwork");
+  }
+  if (sceneTags.length !== 1) failures.push("scene-count");
+  if (/object-fit\s*:\s*cover/i.test(expectedTag || "")) failures.push("scene-crop");
 
   failures.push(...validateVisualShell(html));
   return [...new Set(failures)];

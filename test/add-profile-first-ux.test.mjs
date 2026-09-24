@@ -32,6 +32,10 @@ const addProfileSetupJs = dashboardJs.slice(
   dashboardJs.indexOf("function setupAddProfileCollapse()"),
   dashboardJs.indexOf("function setupManageProfilesSheet()"),
 );
+const profileSheetControllerJs = dashboardJs.slice(
+  dashboardJs.indexOf("let activeProfileSheet"),
+  dashboardJs.indexOf("/**\n * Set up Add Profile"),
+);
 
 test("Add Profile stays one existing sheet and one form", () => {
   assert.equal((html.match(/id="add-profile-form"/g) || []).length, 1);
@@ -40,6 +44,17 @@ test("Add Profile stays one existing sheet and one form", () => {
   assert.match(addProfileSheetHtml, /<h3 id="add-profile-title">Add a profile<\/h3>/);
   assert.match(addProfileSheetHtml, /aria-labelledby="add-profile-title"/);
   assert.doesNotMatch(addProfileSheetHtml, /<div[^>]*id="add-profile-title"/);
+});
+
+test("profile sheets are top-level modal siblings outside the transformed pager", () => {
+  const pagerStart = html.indexOf('class="dashboard-pager__viewport"');
+  const pagerEnd = html.indexOf("</main>");
+  const addSheet = html.indexOf('id="add-profile-sheet"');
+  const manageSheet = html.indexOf('id="manage-profiles-sheet"');
+  assert.ok(pagerStart >= 0 && pagerEnd > pagerStart);
+  assert.ok(addSheet > pagerEnd);
+  assert.ok(manageSheet > pagerEnd);
+  assert.equal((html.match(/id="manage-profiles-sheet"/g) || []).length, 1);
 });
 
 test("first-profile copy is presentation-only and hidden until JS reveals it", () => {
@@ -88,13 +103,30 @@ test("updateAddProfilePresentation centralizes first vs additional vs edit copy"
 test("Add Profile sheet applies presentation immediately before opening", () => {
   assert.match(addProfileSetupJs, /updateAddProfilePresentation\(\);/);
   const presentationIndex = addProfileSetupJs.indexOf("updateAddProfilePresentation();");
-  const openClassIndex = addProfileSetupJs.indexOf('sheet.classList.add("is-open")');
-  assert.ok(presentationIndex >= 0 && openClassIndex > presentationIndex);
+  const openIndex = addProfileSetupJs.indexOf("openProfileSheet(entry");
+  assert.ok(presentationIndex >= 0 && openIndex > presentationIndex);
   assert.match(
     addProfileSetupJs,
     /profileFormMode = "add";\s*editingProfileId = null;\s*updateAddProfilePresentation\(\);/,
   );
   assert.doesNotMatch(initJs, /addProfileUI\?\.open|addProfileUI\.open/);
+});
+
+test("shared profile-sheet controller owns focus, inert background, and one balanced lock", () => {
+  assert.match(profileSheetControllerJs, /let activeProfileSheet = null/);
+  assert.match(profileSheetControllerJs, /activeProfileSheet && activeProfileSheet !== entry/);
+  assert.match(profileSheetControllerJs, /deactivateProfileSheet\(activeProfileSheet, \{ immediate: true \}\)/);
+  assert.match(profileSheetControllerJs, /document\.querySelector\("main"\)/);
+  assert.match(profileSheetControllerJs, /document\.querySelector\("\.site-footer"\)/);
+  assert.match(profileSheetControllerJs, /document\.documentElement\.classList\.toggle\("modal-open", disabled\)/);
+  assert.match(profileSheetControllerJs, /document\.body\.classList\.toggle\("modal-open", disabled\)/);
+  assert.match(profileSheetControllerJs, /document\.addEventListener\("keydown"/);
+  assert.match(profileSheetControllerJs, /event\.key === "Escape"/);
+  assert.match(profileSheetControllerJs, /trapFocusWithin\(activeProfileSheet\.panel, event\)/);
+  assert.match(profileSheetControllerJs, /opener\?\.isConnected \? opener : entry\.toggle/);
+  assert.match(css, /max-height:\s*min\(85vh,\s*calc\(100dvh/);
+  assert.match(css, /overscroll-behavior-y:\s*contain/);
+  assert.match(css, /touch-action:\s*pan-y/);
 });
 
 test("first saved profile still becomes owner through existing insert logic", () => {

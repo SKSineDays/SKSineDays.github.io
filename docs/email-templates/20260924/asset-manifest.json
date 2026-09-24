@@ -1,0 +1,372 @@
+{
+  "renderer": "sharp 0.35.4",
+  "geometry": {
+    "scene": "752x752",
+    "duck": "555x312",
+    "left": 99,
+    "top": 84,
+    "bottom_top": 356
+  },
+  "assets": [
+    {
+      "day": 1,
+      "file": "assets/email/20260924/scenes/SineDayScene1.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene1.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1400801,
+      "sha256": "440a9dbc7f778ae9b86ded8e7dca30cfee6bf7c8ea62fefd0eec63a240407f34",
+      "nature_source": "Day1.jpeg",
+      "nature_sha256": "9881eb027c819adf1704d57e17318cddda7164aee684d78f893db54be969ead4",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale1.png",
+      "finale_sha256": "fa5cd8bb3d9a5c9cd54f6e4c205799639ab16539e251883108748baa3376a180",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 2,
+      "file": "assets/email/20260924/scenes/SineDayScene2.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene2.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1234046,
+      "sha256": "c0ce4f9f09f5ae223c97b0bce5dcd247acf2f752baa5ab97791fe19748d71067",
+      "nature_source": "Day2.jpeg",
+      "nature_sha256": "541e4a64e09d4e62239525060ebbe50648ccb015d51c92cda00b9f2422f60844",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale2.png",
+      "finale_sha256": "584dab5e903b424b25870bf8d942f2330b27682c764669a2015478e5fe5c9ee4",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 3,
+      "file": "assets/email/20260924/scenes/SineDayScene3.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene3.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1159185,
+      "sha256": "fca921bf9dc3351c6d75e71f9aec7fcf32105318f19896c6935d3acbba07e8e4",
+      "nature_source": "Day3.jpeg",
+      "nature_sha256": "66ba2fc325419b053ad27a56e17a9d2c24f51d29359402a3d0bcdbea686272bb",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale3.png",
+      "finale_sha256": "b1ae8779bef746950cd53762cf0404354f9019ff81a5dbb19146ea0d3473834d",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 4,
+      "file": "assets/email/20260924/scenes/SineDayScene4.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene4.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1364329,
+      "sha256": "7ee045ca7421c58920bfaf342fd221d14a4b24901f7ade96339dff01d52c48e6",
+      "nature_source": "Day4.jpeg",
+      "nature_sha256": "48229d6f2431fe271a337099d169017ca91872f466f91b7a076d1cc63f15a9fe",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale4.png",
+      "finale_sha256": "376313f7e00bcc3722fe3a781c0e94843dccf60fedc6917b1fdc35d6c3eadbb9",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 5,
+      "file": "assets/email/20260924/scenes/SineDayScene5.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene5.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1313941,
+      "sha256": "8d8f8d7d4e509c501ff88d69e53f99df8a30a4f3bc0a72abb86d22767829cb8e",
+      "nature_source": "Day5.jpeg",
+      "nature_sha256": "096b27f5e00c8d963431703c30fad2f6feaff0bb45357c23c26d89b2ed549ef0",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale5.png",
+      "finale_sha256": "04fa23355ea0d407fbb2dd9e5e51a427a148173068444dbc3f417c80cac09e06",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 6,
+      "file": "assets/email/20260924/scenes/SineDayScene6.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene6.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1328495,
+      "sha256": "89534b049c54cf0e46cae0e16c76ae1e2daef20be6efe6bd174fb8f203fba2e7",
+      "nature_source": "Day6.jpeg",
+      "nature_sha256": "458c8818f1446ad14417dfb32bdb4a714bebd041f2418d181225b9beca7babb6",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale6.png",
+      "finale_sha256": "6239e35090eb2a20846f0babe384a66bd88aa9bcd40d2602fa5db562748a1a25",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 7,
+      "file": "assets/email/20260924/scenes/SineDayScene7.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene7.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1327689,
+      "sha256": "49a4c01f52f177f2d39bf05f2122ca28390ac2c0517559e8f794845619cf080c",
+      "nature_source": "Day7.jpeg",
+      "nature_sha256": "7b03ca661bd2dd59e68cec1a4ed0d19cf52b3050f50ca964e94f551fe6cfb8f4",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale7.png",
+      "finale_sha256": "2ffc8cc7f9a41f47f514497797d3454094a82e1c53e682e0c9762761d2d4f0f8",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 8,
+      "file": "assets/email/20260924/scenes/SineDayScene8.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene8.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1304214,
+      "sha256": "fc68dbedc0c8e65f5e5e7f4dbebe0b3ce7e2c226c3af30adc9df7b8260e440b4",
+      "nature_source": "Day8.jpeg",
+      "nature_sha256": "651142468b88694aad45f3954b5cb585b78a7aaa55c30dfa6143ee2a7b7c72aa",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale8.png",
+      "finale_sha256": "8c834653eea42633a1dfd38f3def5cff4121029ef7df1400ca1294eea2e88b20",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 9,
+      "file": "assets/email/20260924/scenes/SineDayScene9.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene9.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1345486,
+      "sha256": "605c8e294e365df3070bde1fc9044b3623e7ce25b49733f2ada7b403fca1086d",
+      "nature_source": "Day9.jpeg",
+      "nature_sha256": "b5d6d7b06e759b9f4a3dc2b1fe41d4a0476206ce6ae7c2042784d217df41b0a9",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale9.png",
+      "finale_sha256": "df766625a622e429dda7e6defa2997da0d2636ef344abefa90cc407d99df83d9",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 10,
+      "file": "assets/email/20260924/scenes/SineDayScene10.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene10.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1211318,
+      "sha256": "12607036ad68da7b7ddfef74b7d78d6beb19fef4be7492bb77c385837945897a",
+      "nature_source": "Day10.jpeg",
+      "nature_sha256": "a158281ab891d9cfa5671ff57564fddc0ed7c847ac543567ef4f6831b3ecadb7",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale10.png",
+      "finale_sha256": "8ed17fdca702df030a46df5c651d8a29b88db8c72c1644e8d5aba96b17f78da0",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 11,
+      "file": "assets/email/20260924/scenes/SineDayScene11.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene11.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1347353,
+      "sha256": "af5aa9974d90e70217ad14b0a4a6ca8b81c73467a649efd7fbb861b415016024",
+      "nature_source": "Day11.jpeg",
+      "nature_sha256": "cab8711f36e7b7c1879180d0e0cf367b784630a6669dff3bff9a0f877a34dd56",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale11.png",
+      "finale_sha256": "e68ef8969d4838630835b4799d82d22a5d21d196a9edab15a492aee8b851af75",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 12,
+      "file": "assets/email/20260924/scenes/SineDayScene12.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene12.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1166194,
+      "sha256": "14bc81b73d94b3438c64d290086c4fa9a417d67470ba69508b32efcc5f893e1b",
+      "nature_source": "Day12.jpeg",
+      "nature_sha256": "6744de490693dc9a3eecf0dd4a5e4ddb059bf00d2874c698b30c068825e3535b",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale12.png",
+      "finale_sha256": "55679c94d9a5a278f4a070e43e5fdbd031184fbed11b11d2afd556c7dda814c5",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 13,
+      "file": "assets/email/20260924/scenes/SineDayScene13.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene13.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1105150,
+      "sha256": "763e24cd84fd0f007a0b0199ac8179069ac2e21142c30d70b630c5ceed8a32db",
+      "nature_source": "Day13.jpeg",
+      "nature_sha256": "99e1d6d2f52c97f0ec6d46261cb1517b705b6f44efaece4ca216e50c82e3937a",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale13.png",
+      "finale_sha256": "fb367c2e319bc5880816b63f25ace1d97d527c901dbc4cfb5265af4416a5a36a",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 14,
+      "file": "assets/email/20260924/scenes/SineDayScene14.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene14.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1372441,
+      "sha256": "4facfcb228aa267b360d72132a462788ff482d750d3bc044da0a9763f7b44dab",
+      "nature_source": "Day14.jpeg",
+      "nature_sha256": "842b17351f77ede6f6e2810fc74d37945674dc354077484b13489f780a1b9da1",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale14.png",
+      "finale_sha256": "1fb2125789ce28a8c314630d4334b8cbdcbab0be4aa65915aa6f4c72a3d24e08",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 15,
+      "file": "assets/email/20260924/scenes/SineDayScene15.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene15.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1236303,
+      "sha256": "0b4cb0deb12d29c93eef64f0bc2e587de064f0a012964ac5c2a930daba82e9f0",
+      "nature_source": "Day15.jpeg",
+      "nature_sha256": "a5e58f337e5eee7b6909346691da5c3f8b2766518e1221358b21e2d73e07f84f",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale15.png",
+      "finale_sha256": "9bae96f618fb376c87eb691ce5808dda1bd241df2d567802bd0d1b044d1efc0f",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 16,
+      "file": "assets/email/20260924/scenes/SineDayScene16.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene16.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 883429,
+      "sha256": "1a1cdcae829375536f9903f4cbbed97f6f9c69496fe7ffc7b68c51b8d49ebe6e",
+      "nature_source": "Day16.jpeg",
+      "nature_sha256": "2398107cea76d25fbbaedb54c8c09e32f9b69cb5f689ae2f62ed70b9232b4b2e",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale16.png",
+      "finale_sha256": "ff6dabbe616a2324e9cc41f8ca30392378cbf1d66f0d6b4844ba9e4f21a27d04",
+      "placement": "bottom",
+      "composite": {
+        "left": 99,
+        "top": 356,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 17,
+      "file": "assets/email/20260924/scenes/SineDayScene17.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene17.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1392441,
+      "sha256": "d466a0c36b6370809e3bce02c59be271832ba19162a35ae4a123ddbaaa150b33",
+      "nature_source": "Day17.jpeg",
+      "nature_sha256": "ae10c5e9134fa485069e17ac96782841f5737cabb9a89465771e087c0a7b0a00",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale17.png",
+      "finale_sha256": "d0ef2ea7726a313387933d1b1301692f098535d681b47ac757f5fc98b25dbf30",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    },
+    {
+      "day": 18,
+      "file": "assets/email/20260924/scenes/SineDayScene18.png",
+      "production_url": "https://sineday.app/assets/email/20260924/scenes/SineDayScene18.png",
+      "width": 752,
+      "height": 752,
+      "bytes": 1226296,
+      "sha256": "cc805ae8402f8588b9b0b68d61ba08a644b60fb9f96b0fab87db01894a9bd45a",
+      "nature_source": "Day18.jpeg",
+      "nature_sha256": "037a499826483e0527637f0037eb5220ade20c84047de2300f87a93d32d7d735",
+      "finale_source": "assets/email/20260923/sineducks/SineDuckFinale18.png",
+      "finale_sha256": "8458711195c462705e5101cb007b068da5bce65461ca2ce87a2dbeef957d5384",
+      "placement": "top",
+      "composite": {
+        "left": 99,
+        "top": 84,
+        "width": 555,
+        "height": 312
+      }
+    }
+  ]
+}
