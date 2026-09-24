@@ -147,7 +147,7 @@ test("welcome template audit requires publication, unsubscribe, and shared shell
   assert.ok(failures.includes("contact-action"));
 });
 
-test("confirmation template requires explicit action, expiry, and shared shell", () => {
+test("confirmation template requires explicit consent safety and visual semantics", () => {
   const html = readFileSync(CONFIRMATION_PATH, "utf8");
   assert.deepEqual(
     validateConfirmationTemplate({
@@ -160,6 +160,56 @@ test("confirmation template requires explicit action, expiry, and shared shell",
   assert.match(html, /\{\{\{CONFIRM_URL\}\}\}/);
   assert.match(html, /Opening this email alone will not subscribe you/);
   assert.doesNotMatch(html, /OPT_OUT_URL/);
+});
+
+test("confirmation audit accepts editor-normalized markup without repository markers", () => {
+  const html = readFileSync(CONFIRMATION_PATH, "utf8")
+    .replace(/\sdata-sineday-(?:email-wrapper|surface)=["'][^"']+["']/gi, "")
+    .replace(/\sbgcolor=["'][^"']+["']/gi, "")
+    .replace(/<meta name="(?:color-scheme|supported-color-schemes)"[^>]*>\s*/gi, "");
+
+  assert.doesNotMatch(html, /data-sineday-|bgcolor=/i);
+  assert.deepEqual(
+    validateConfirmationTemplate({
+      alias: "dailyemailconfirmation",
+      status: "published",
+      html,
+    }),
+    [],
+  );
+});
+
+test("confirmation audit rejects unsafe links, variables, active content, and missing visual semantics", () => {
+  const html = readFileSync(CONFIRMATION_PATH, "utf8");
+  const cases = [
+    [html.replace("</body>", "{{{CONFIRM_URL}}}</body>"), "confirm-url-count"],
+    [html.replace(' ses:no-track="true"', ""), "confirm-tracking"],
+    [html.replaceAll("{{{CONFIRM_URL}}}", "{{{OTHER_URL}}}"), "confirm-url"],
+    [html.replaceAll("{{{CONFIRM_URL}}}", "{{{OTHER_URL}}}"), "confirmation-variable"],
+    [html.replace("Opening this email alone will not subscribe you.", ""), "explicit-confirmation"],
+    [html.replace("</body>", "<form><input></form></body>"), "confirmation-active-content"],
+    [html.replaceAll("#121826", "#FFFFFF"), "confirmation-surfaces"],
+    [html.replaceAll("#7AA7FF", "#FFFFFF"), "confirmation-accent"],
+  ];
+
+  for (const [candidate, expectedFailure] of cases) {
+    assert.ok(
+      validateConfirmationTemplate({
+        alias: "dailyemailconfirmation",
+        status: "published",
+        html: candidate,
+      }).includes(expectedFailure),
+      expectedFailure,
+    );
+  }
+});
+
+test("daily templates retain the stricter instrumented visual-shell contract", () => {
+  const template = dailyTemplate();
+  template.html = template.html.replace(/\sdata-sineday-[^=]+=["'][^"']+["']/gi, "");
+  const failures = validateDailyTemplate(template, 17, template.alias);
+  assert.ok(failures.includes("visual-wrapper"));
+  assert.ok(failures.includes("surface-outer"));
 });
 
 test("visual shell rejects dark-scheme invitations and requires the canvas lock", () => {
