@@ -445,7 +445,7 @@ body {
 .daily-email-banner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.66fr);
+  grid-template-columns: minmax(0, 1fr) minmax(296px, 0.72fr);
   width: 100%;
   margin-top: 28px;
   padding: clamp(24px, 4vw, 36px);

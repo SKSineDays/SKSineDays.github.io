@@ -56,6 +56,7 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
   assert.match(ui, /const natureArtworkUrl = result\.imageAvifUrl \|\| result\.imageUrl/);
   assert.match(ui, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(ui, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(styles, /\.daily-email-banner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(296px,\s*0\.72fr\)/);
   assert.match(styles, /\.daily-email-banner__duck\s*\{[^}]*width:\s*min\(100%,\s*296px\)/);
   assert.match(styles, /@media \(max-width: 600px\)[\s\S]*?\.daily-email-banner__duck\s*\{[^}]*width:\s*min\(75%,\s*200px\)/);
   assert.match(styles, /\.duck-image\s*\{[^}]*width:\s*min\(80vw,\s*300px\)/);
