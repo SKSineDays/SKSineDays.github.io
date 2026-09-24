@@ -1846,6 +1846,7 @@ function setupAccountSheet() {
 
   document.addEventListener('keydown', (e) => {
     if (toggle.getAttribute('aria-expanded') !== 'true') return;
+    if (document.querySelector('#affiliate-sheet:not([hidden])')) return;
     if (e.key === 'Escape') close();
     trapFocusWithin(sheet, e);
   });
