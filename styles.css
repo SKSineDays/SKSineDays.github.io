@@ -1845,6 +1845,10 @@ body {
   pointer-events: none;
 }
 
+.day-artwork-duck[hidden] {
+  display: none;
+}
+
 .day-artwork-duck img {
   display: block;
   width: 100%;

@@ -4,7 +4,12 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import { DAY_DATA, DAY_DETAILS, calculateSineDayForYmd } from '../js/sineday-engine.js';
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPngUrlFromSinedayNumber } from '../js/sineducks.js';
+import {
+  duckPlacementOnDayArtwork,
+  duckUrlFromSinedayNumber,
+  duckSvgUrlFromSinedayNumber,
+  duckPngUrlFromSinedayNumber
+} from '../js/sineducks.js';
 
 test('all eighteen dates keep their production copy, numbered assets and fallback pairs', async () => {
   const source = JSON.parse(await readFile(new URL('../docs/art-direction/day-background-prompts.json', import.meta.url)));
@@ -18,6 +23,7 @@ test('all eighteen dates keep their production copy, numbered assets and fallbac
     assert.equal(duckUrlFromSinedayNumber(result.day), `assets/sineducks/SineDuckFinale${day}.svg`);
     const duckSvg = duckSvgUrlFromSinedayNumber(result.day);
     assert.equal(duckSvg, `assets/sineducks/SineDuckFinale${day}.svg`);
+    assert.equal(duckPlacementOnDayArtwork(day), [1, 2, 4, 10, 11, 12, 15, 17, 18].includes(day) ? 'top' : 'bottom');
     assert.match(await readFile(new URL(`../${duckSvg}`, import.meta.url), 'utf8'), /viewBox="0 0 1920 1080"/);
     const mailerArtwork = duckPngUrlFromSinedayNumber(result.day);
     assert.equal(mailerArtwork, `assets/email/20260923/sineducks/SineDuckFinale${day}.png`);
@@ -44,14 +50,17 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
     readFile(new URL('../js/ui.js', import.meta.url), 'utf8'),
     readFile(new URL('../styles.css', import.meta.url), 'utf8')
   ]);
-  assert.doesNotMatch(html, /sineduck-plate|dayImageDuck/);
+  assert.doesNotMatch(html, /sineduck-plate/);
+  assert.match(html, /class="day-artwork-duck"[\s\S]*id="dayImageDuck"/);
   assert.match(ui, /const natureArtworkUrl = result\.imageAvifUrl \|\| result\.imageUrl/);
+  assert.match(ui, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(ui, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(styles, /\.day-artwork-duck img\s*\{[^}]*aspect-ratio:\s*16 \/ 9;[^}]*object-fit:\s*contain;/);
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*filter:/);
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*background:\s*(?:#fff|white|rgba\(255)/);
 });
 
-test('dashboard identity surfaces use individual SineDucks while Explore keeps nature artwork', async () => {
+test('dashboard identity surfaces use individual SineDucks while Explore layers one over nature artwork', async () => {
   const [dashboard, carousel, styles] = await Promise.all([
     readFile(new URL('../js/dashboard.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/duck-carousel.js', import.meta.url), 'utf8'),
@@ -65,6 +74,9 @@ test('dashboard identity surfaces use individual SineDucks while Explore keeps n
   assert.doesNotMatch(hero, /mailerArtworkUrlFromSinedayNumber/);
   assert.match(details, /resolveDayImageUrl\(result\.imageAvifUrl \|\| result\.imageUrl\)/);
   assert.match(details, /resolveDayImageUrl\(result\.imageUrl\)/);
+  assert.match(details, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
+  assert.match(details, /duckPlacementOnDayArtwork\(result\.day\)/);
+  assert.match(details, /class="day-artwork-duck today-wave-details__duck"/);
   assert.match(carousel, /duckSvgUrlFromSinedayNumber\(energyDay\)/);
   assert.match(carousel, /duckSvgUrlFromSinedayNumber\(originDay\)/);
   assert.match(carousel, /duckPngUrlFromSinedayNumber\(energyDay\)/);
@@ -152,7 +164,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v28']);
+  assert.deepEqual(await caches.keys(), ['sineday-v29']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -164,7 +176,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v28');
+  const active = stores.get('sineday-v29');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
