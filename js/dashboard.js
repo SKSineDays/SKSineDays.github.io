@@ -22,7 +22,12 @@ import {
 } from "./affiliate-ui.js";
 import { DuckCarousel } from "./duck-carousel.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
-import { duckUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber, duckPngUrlFromSinedayNumber } from "./sineducks.js";
+import {
+  duckPlacementOnDayArtwork,
+  duckUrlFromSinedayNumber,
+  duckSvgUrlFromSinedayNumber,
+  duckPngUrlFromSinedayNumber,
+} from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
@@ -1320,6 +1325,8 @@ function renderTodayDayDetailsSection(result) {
   const details = getDayDetails(result.day);
   const artworkUrl = resolveDayImageUrl(result.imageAvifUrl || result.imageUrl);
   const fallbackUrl = resolveDayImageUrl(result.imageUrl);
+  const duckUrl = resolveDayImageUrl(duckSvgUrlFromSinedayNumber(result.day));
+  const duckPlacement = duckPlacementOnDayArtwork(result.day);
   if (!artworkUrl && !details) {
     clearTodayDayDetailsSection();
     return;
@@ -1347,6 +1354,16 @@ function renderTodayDayDetailsSection(result) {
             decoding="async"
             loading="lazy"
           >
+          <div class="day-artwork-duck today-wave-details__duck" data-placement="${duckPlacement}">
+            <img
+              src="${escapeHtml(duckUrl)}"
+              alt="SineDuck for SineDay ${result.day}"
+              width="576"
+              height="324"
+              decoding="async"
+              loading="lazy"
+            >
+          </div>
         </div>
       `
           : ""
@@ -1374,6 +1391,11 @@ function renderTodayDayDetailsSection(result) {
     onUnavailable: () => {
       section.querySelector(".today-wave-details")?.classList.add("today-wave-details--without-artwork");
     },
+  });
+
+  const duckLayer = section.querySelector(".today-wave-details__duck");
+  duckLayer?.querySelector("img")?.addEventListener("error", () => {
+    duckLayer.hidden = true;
   });
 }
 

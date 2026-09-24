@@ -11,7 +11,10 @@
 
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
-import { duckSvgUrlFromSinedayNumber } from './sineducks.js';
+import {
+  duckPlacementOnDayArtwork,
+  duckSvgUrlFromSinedayNumber
+} from './sineducks.js';
 import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
@@ -59,6 +62,8 @@ export class SineDayUI {
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
       dayImage: document.getElementById('dayImage'),
+      dayImageDuckLayer: document.getElementById('dayImageDuckLayer'),
+      dayImageDuck: document.getElementById('dayImageDuck'),
       dayDetailsCard: document.getElementById('day-details-card'),
       dayDetailsParagraph: document.getElementById('day-details-paragraph'),
       dayDetailsBullets: document.getElementById('day-details-bullets'),
@@ -318,6 +323,24 @@ export class SineDayUI {
         this.updateBackgroundImage(dayImage.currentSrc || natureArtworkUrl);
       };
       dayImage.src = natureArtworkUrl;
+    }
+
+    if (this.elements.dayImageDuck && this.elements.dayImageDuckLayer) {
+      const dayImageDuck = this.elements.dayImageDuck;
+      const dayImageDuckLayer = this.elements.dayImageDuckLayer;
+      dayImageDuckLayer.hidden = true;
+      dayImageDuckLayer.dataset.placement = duckPlacementOnDayArtwork(result.day);
+      dayImageDuck.alt = `SineDuck for SineDay ${result.day}`;
+
+      dayImageDuck.onerror = () => {
+        if (this.currentDay !== result) return;
+        dayImageDuckLayer.hidden = true;
+      };
+      dayImageDuck.onload = () => {
+        if (this.currentDay !== result || !dayImageDuck.naturalWidth) return;
+        dayImageDuckLayer.hidden = false;
+      };
+      dayImageDuck.src = duckSvgUrlFromSinedayNumber(result.day);
     }
 
     // Show day image card
