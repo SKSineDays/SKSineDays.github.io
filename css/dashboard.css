@@ -1470,7 +1470,7 @@ option {
 
 .duck-stack__today-artwork {
   position: relative;
-  width: min(100%, 220px);
+  width: min(100%, 240px);
   aspect-ratio: 16 / 9;
   margin: 0 auto;
   background: transparent;
@@ -1542,8 +1542,8 @@ option {
 
 .duck-stack__origin-artwork {
   position: relative;
-  flex: 0 0 100px;
-  width: 100px;
+  flex: 0 0 112px;
+  width: 112px;
   aspect-ratio: 16 / 9;
   background: transparent;
 }
@@ -1747,12 +1747,12 @@ option {
   }
 
   .duck-stack__today-artwork {
-    width: min(100%, 210px);
+    width: min(100%, 230px);
   }
 
   .duck-stack__origin-artwork {
-    flex-basis: 100px;
-    width: 100px;
+    flex-basis: 112px;
+    width: 112px;
   }
 
   .duck-stack__description {
@@ -5375,7 +5375,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .today-wave-hero__artwork {
-  width: min(100%, 280px);
+  width: min(100%, 360px);
   aspect-ratio: 16 / 9;
   margin: 0;
   background: transparent;
@@ -5768,7 +5768,7 @@ textarea.journal-entry-field-light:focus {
   }
 
   .today-wave-hero__artwork {
-    width: min(100%, 220px);
+    width: min(100%, 300px);
   }
 
   .today-wave-hero__actions {

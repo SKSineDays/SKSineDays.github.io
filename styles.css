@@ -445,7 +445,7 @@ body {
 .daily-email-banner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.66fr);
+  grid-template-columns: minmax(0, 1fr) minmax(296px, 0.72fr);
   width: 100%;
   margin-top: 28px;
   padding: clamp(24px, 4vw, 36px);
@@ -562,8 +562,7 @@ body {
   position: relative;
   z-index: 2;
   display: block;
-  width: 90%;
-  max-width: 240px;
+  width: min(100%, 296px);
   height: auto;
   object-fit: contain;
   aspect-ratio: 16 / 9;
@@ -615,8 +614,7 @@ body {
   }
 
   .daily-email-banner__duck {
-    width: 174px;
-    max-width: 75%;
+    width: min(75%, 200px);
   }
 
   .daily-email-banner__wave {
@@ -1680,7 +1678,7 @@ body {
 
 .duck-image {
   display: block;
-  width: min(64vw, 220px);
+  width: min(80vw, 300px);
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: contain;
@@ -1837,8 +1835,8 @@ body {
   position: absolute;
   z-index: 1;
   bottom: 7%;
-  left: 17%;
-  width: 66%;
+  left: 9%;
+  width: 82%;
   padding: 5%;
   box-sizing: border-box;
   background: transparent;
