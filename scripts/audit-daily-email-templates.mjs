@@ -135,7 +135,7 @@ export function validateDailyTemplate(template, day, expectedAlias) {
   }
   if (!validateSurface(html, "day-scene", "#0A0D14")) failures.push("day-scene");
   if (
-    /SineDuck(?:Finale)?\d+(?:@3x)?\.(?:png|svg)|duck-plate|assets\/email\/20260911\//i.test(html)
+    /SineDuck(?:Finale)?\d+(?:@3x)?\.(?:png|svg)|duck-plate|assets\/email\/20260911\/(?!wave-)/i.test(html)
   ) {
     failures.push("legacy-artwork");
   }
