@@ -372,14 +372,15 @@ export async function renderWeekPdf({
   return await pdf.save();
 }
 
-function drawScaledImage(page, img, centerX, y, targetH) {
-  const scale = targetH / img.height;
+function drawScaledImage(page, img, centerX, y, targetH, maxWidth = Infinity) {
+  const scale = Math.min(targetH / img.height, maxWidth / img.width);
   const width = img.width * scale;
+  const height = img.height * scale;
   page.drawImage(img, {
     x: centerX - width / 2,
     y,
     width,
-    height: targetH
+    height
   });
 }
 
@@ -433,9 +434,10 @@ export async function renderDayPdf({
 
   drawFooter(page, font, W, yy || new Date().getUTCFullYear());
 
-  const moodDuckH = 30;
-  const duckGap = 8;
-  const duckSlotW = (W - margin * 2 - duckGap * 8) / 9;
+  const moodDuckH = 34;
+  const moodRowMargin = 24;
+  const duckGap = 2;
+  const duckSlotW = (W - moodRowMargin * 2 - duckGap * 8) / 9;
   const moodLabelSize = 7;
   const moodLabelGap = 5;
   const moodArcAmplitude = 16;
@@ -451,12 +453,12 @@ export async function renderDayPdf({
 
     for (let col = 0; col < cols; col++) {
       const day = startDay + col;
-      const slotX = margin + col * (duckSlotW + duckGap);
+      const slotX = moodRowMargin + col * (duckSlotW + duckGap);
       const centerX = slotX + duckSlotW / 2;
       const duckBottomY = baseRowBottomY + moodDuckArcOffset(col, cols, invertedArc);
 
       const img = duckCache.get(day);
-      if (img) drawScaledImage(page, img, centerX, duckBottomY, moodDuckH);
+      if (img) drawScaledImage(page, img, centerX, duckBottomY, moodDuckH, duckSlotW);
 
       const label = String(day);
       const labelW = bold.widthOfTextAtSize(label, moodLabelSize);
@@ -497,8 +499,9 @@ export async function renderDayPdf({
 
   const centerX = W / 2;
   const infoTop = topDuckBottomY - 40;
-  const infoDuckH = 42;
-  const infoBottom = infoTop - 84;
+  const infoDuckH = 64;
+  const infoDuckTop = infoTop - 42;
+  const infoDuckBottom = infoDuckTop - infoDuckH;
 
   const dateW = bold.widthOfTextAtSize(dateText, 14);
   page.drawText(dateText, {
@@ -521,10 +524,10 @@ export async function renderDayPdf({
 
   if (dayNumber) {
     const todayDuck = duckCache.get(dayNumber);
-    if (todayDuck) drawScaledImage(page, todayDuck, centerX, infoBottom + 4, infoDuckH);
+    if (todayDuck) drawScaledImage(page, todayDuck, centerX, infoDuckBottom, infoDuckH, 132);
   }
 
-  const writeTop = infoBottom - 8;
+  const writeTop = infoDuckBottom - 8;
   const writeBottom = bottomDuckBottomY + moodDuckH + 36;
   const writeX = margin;
   const writeW = W - margin * 2;

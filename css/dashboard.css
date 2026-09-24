@@ -3331,17 +3331,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 @media (max-width: 350px) {
-  .dash-head__top {
-    flex-wrap: wrap;
-  }
-
   .dash-head__title-row {
-    flex-basis: 183px;
-    min-width: 183px;
+    flex-basis: auto;
+    min-width: 0;
+    gap: 6px;
   }
 
-  .dash-head__actions {
-    margin-left: auto;
+  .dash-head__heading {
+    flex-basis: 96px;
+    min-width: 88px;
+    max-width: 104px;
+  }
+
+  .pill--ok,
+  .pill--neutral {
+    padding-inline: 4px;
+    font-size: 10px;
+    letter-spacing: 0.02em;
   }
 }
 
@@ -6286,18 +6292,55 @@ textarea.journal-entry-field-light:focus {
    ═══════════════════════════════════════════════════════════════ */
 
 .affiliate-toggle {
-  width: auto;
-  min-width: 44px;
-  min-height: 44px;
-  gap: 7px;
-  padding-inline: 12px;
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(243, 212, 154, 0.22);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(243, 212, 154, 0.12), transparent 48%),
+    rgba(255, 255, 255, 0.035);
   color: #F3D49A;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.affiliate-toggle[hidden] {
+  display: none;
+}
+
+.account-actions--affiliate {
+  margin: 10px 0 12px;
+}
+
+.affiliate-toggle__icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
 }
 
 .affiliate-toggle__label {
   color: #F5F7FF;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 760;
+}
+
+.affiliate-toggle__chevron {
+  margin-left: auto;
+  color: rgba(245, 247, 255, 0.58);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.affiliate-toggle:hover {
+  border-color: rgba(243, 212, 154, 0.36);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(243, 212, 154, 0.16), transparent 48%),
+    rgba(255, 255, 255, 0.065);
 }
 
 .affiliate-sheet {
@@ -6749,20 +6792,6 @@ textarea.journal-entry-field-light:focus {
 }
 
 @media (max-width: 640px) {
-  .affiliate-toggle {
-    width: 44px;
-    padding: 0;
-  }
-
-  .affiliate-toggle__label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
-
   .affiliate-sheet {
     width: 100%;
     max-width: none;
@@ -6773,20 +6802,6 @@ textarea.journal-entry-field-light:focus {
 
   .affiliate-sheet__content {
     padding-inline: 17px;
-  }
-}
-
-@media (max-width: 430px) {
-  .dash-head__top {
-    flex-wrap: wrap;
-  }
-
-  .dash-head__title-row {
-    flex-basis: 100%;
-  }
-
-  .dash-head__actions {
-    width: 100%;
   }
 }
 

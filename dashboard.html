@@ -114,22 +114,6 @@
             </button>
 
             <button
-              id="affiliate-toggle"
-              class="dash-head__icon-btn affiliate-toggle"
-              type="button"
-              aria-expanded="false"
-              aria-controls="affiliate-sheet"
-              aria-label="Affiliate program"
-              title="Affiliate"
-              hidden
-            >
-              <svg class="dash-head__icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M15.75 7.25c-.82-.93-2.13-1.5-3.75-1.5-2.2 0-3.75 1.08-3.75 2.7 0 1.66 1.3 2.3 3.75 2.82 2.45.52 3.75 1.15 3.75 2.82 0 1.62-1.55 2.66-3.75 2.66-1.78 0-3.2-.65-4.05-1.72M12 3.5v17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-              </svg>
-              <span class="affiliate-toggle__label">Affiliate</span>
-            </button>
-
-            <button
               id="account-toggle"
               class="dash-head__icon-btn"
               type="button"
@@ -166,6 +150,23 @@
 
             <button id="connect-apple-btn" class="btn-ghost" type="button">
               Connect Apple Login
+            </button>
+          </div>
+
+          <div class="account-actions account-actions--affiliate">
+            <button
+              id="affiliate-toggle"
+              class="affiliate-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="affiliate-sheet"
+              hidden
+            >
+              <svg class="affiliate-toggle__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M15.75 7.25c-.82-.93-2.13-1.5-3.75-1.5-2.2 0-3.75 1.08-3.75 2.7 0 1.66 1.3 2.3 3.75 2.82 2.45.52 3.75 1.15 3.75 2.82 0 1.62-1.55 2.66-3.75 2.66-1.78 0-3.2-.65-4.05-1.72M12 3.5v17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              <span class="affiliate-toggle__label">Affiliate Program</span>
+              <span class="affiliate-toggle__chevron" aria-hidden="true">›</span>
             </button>
           </div>
 
