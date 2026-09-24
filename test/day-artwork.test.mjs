@@ -104,7 +104,7 @@ test('dashboard identity surfaces use individual SineDucks while Explore layers 
   assert.match(styles.split('.duck-stack__origin-artwork {')[1].split('}')[0], /flex:\s*0 0 112px/);
 
   for (const [selector, size] of [
-    ['.duck-icon-badge', '32px'],
+    ['.duck-icon-badge', '40px'],
     ['.duck-avatar', '40px'],
     ['.sdcal__duck', '48px'],
     ['.planner__duck', '56px']
@@ -184,7 +184,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v30']);
+  assert.deepEqual(await caches.keys(), ['sineday-v31']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -196,7 +196,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v30');
+  const active = stores.get('sineday-v31');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
