@@ -2,7 +2,7 @@
   {
     "alias": "day01risinginitiation-1",
     "html": "day-01.html",
-    "html_sha256": "ada2a79d4ce052b4ac5efb441716dc90089c75803b23c4754690c3aba7f2b1d8",
+    "html_sha256": "1f2cb43a9c784f2c36947a835bee20a59b4b2b192f9c18084a72b0d81a4c6133",
     "text": "day-01.txt",
     "text_sha256": "ed81a5a4f839c8b68c96b2e203ee3889fdd6242e74deb325859da0c011081e10",
     "metadata_before": "Name: Day_01_RISING_INITIATION\nID: 45691cf1-b5a7-459d-b170-5481717ff1f6\nStatus: published\nAlias: day01risinginitiation-1\nSubject: Your SineDay — Day 1: Initiation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:14.591358+00\nUpdated at: 2026-09-14 16:44:48.943+00\nPublished at: 2026-09-14 16:44:48.938+00",
@@ -13,7 +13,7 @@
   {
     "alias": "day02ascendingmomentum-1",
     "html": "day-02.html",
-    "html_sha256": "e48f4a659a287f26891a7a6b39952e1d09c894a4ff187d8bd0c3729c3187892f",
+    "html_sha256": "9295404270a8499d08b9905bda987ec02b2435fbdb9be7ff13cbd21b0bdf89cd",
     "text": "day-02.txt",
     "text_sha256": "f44aac3797138ecaef75296fd676849c92f670c3ae69f698c2c5d7615235c0b4",
     "metadata_before": "Name: Day_02_ASCENDING_MOMENTUM\nID: b1a20190-dcbb-4b3f-a43f-7470b34e9546\nStatus: published\nAlias: day02ascendingmomentum-1\nSubject: Your SineDay — Day 2: Momentum\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:15.971922+00\nUpdated at: 2026-09-14 16:44:49.313+00\nPublished at: 2026-09-14 16:44:49.309+00",
@@ -24,7 +24,7 @@
   {
     "alias": "day03ascendingcreativity",
     "html": "day-03.html",
-    "html_sha256": "efe7083bf6a5628bc8a2563b82d06bffcf0301388abe93abcecf81716fffcdb5",
+    "html_sha256": "2f80775295de15fe4449bd0d15cf4e094c18fb4e5247fec9e9502c103ae9aecc",
     "text": "day-03.txt",
     "text_sha256": "ab3795f44873f0c8b9307abe73493db4983dc9ce6d50d93d16f0e74d230d058e",
     "metadata_before": "Name: Day_03_ASCENDING_CREATIVITY\nID: 43a3ebe9-1492-4bcb-b411-d46d8dc8b6d4\nStatus: published\nAlias: day03ascendingcreativity\nSubject: Your SineDay — Day 3: Creativity\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:17.470898+00\nUpdated at: 2026-09-14 16:44:49.911+00\nPublished at: 2026-09-14 16:44:49.906+00",
@@ -35,7 +35,7 @@
   {
     "alias": "day04ascendingconnection-1",
     "html": "day-04.html",
-    "html_sha256": "b5d3e3e38dc9ac392462d55741189d9da4b486c3895f48804dc1128554182d58",
+    "html_sha256": "9755a484e00a6e09bdcc4577bf033ab487e24a2480469ea78037a7eb253020d4",
     "text": "day-04.txt",
     "text_sha256": "a3ea103ff4c695be25521c00c304ffc981adfd7e95988b5f8d2fd908fd0fa702",
     "metadata_before": "Name: Day_04_ASCENDING_CONNECTION\nID: d8e150f9-4fd8-4607-947f-22723f341673\nStatus: published\nAlias: day04ascendingconnection-1\nSubject: Your SineDay — Day 4: Connection\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:18.822387+00\nUpdated at: 2026-09-14 16:44:50.546+00\nPublished at: 2026-09-14 16:44:50.544+00",
@@ -46,7 +46,7 @@
   {
     "alias": "day05ascendingproductivity-1",
     "html": "day-05.html",
-    "html_sha256": "bc02fd91705864bf09e0c647f65a0ac85fedada0998787c7ebfe946a6538d034",
+    "html_sha256": "7fdb8c762e752b2fdacc29e9d6c583078cced251c896ccb9e898693fba052589",
     "text": "day-05.txt",
     "text_sha256": "b06700c30f94cd2978cf42ab376ccd6a55c7ceab64f515e948a2080785589c60",
     "metadata_before": "Name: Day_05_ASCENDING_PRODUCTIVITY\nID: 4ef10889-22c5-46dd-aef0-b6d5a32cf148\nStatus: published\nAlias: day05ascendingproductivity-1\nSubject: Your SineDay — Day 5: Productivity\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:20.203129+00\nUpdated at: 2026-09-14 16:44:50.866+00\nPublished at: 2026-09-14 16:44:50.862+00",
@@ -57,7 +57,7 @@
   {
     "alias": "day06peakbalance",
     "html": "day-06.html",
-    "html_sha256": "539486591cc6ab88d014eedaa756e0cc719864b4c8ea93cf70c4003df68096e7",
+    "html_sha256": "d1a4bed750dc04082b435a73cd4c22fdcb767b85273be68cea514dd6a0f76b8f",
     "text": "day-06.txt",
     "text_sha256": "110f371679aac3c8887e6c1431be8d6aa648bd2d34855ee639d121bfa414dad2",
     "metadata_before": "Name: Day_06_PEAK_BALANCE\nID: 7db82367-0c11-4a46-af6f-c79e8bfea07a\nStatus: published\nAlias: day06peakbalance\nSubject: Your SineDay — Day 6: Balance\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:21.684515+00\nUpdated at: 2026-09-14 16:44:51.187+00\nPublished at: 2026-09-14 16:44:51.184+00",
@@ -68,7 +68,7 @@
   {
     "alias": "day07peakinsight-1",
     "html": "day-07.html",
-    "html_sha256": "2565682bcb2ecbb6d8be98eb4ecc3c67cc3232c6ac51ab88b31b7189d576dd88",
+    "html_sha256": "0f6eba825df091061ffb8009262153b3a1d421df6164125f35ed56f111f22298",
     "text": "day-07.txt",
     "text_sha256": "3f479dee297695f8002baf636d5ae94dfa9531d45d82d8066cccab2ab613ffc0",
     "metadata_before": "Name: Day_07_PEAK_INSIGHT\nID: 5f724020-2ddc-469e-bf07-63827d3f784d\nStatus: published\nAlias: day07peakinsight-1\nSubject: Your SineDay — Day 7: Insight\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:23.109141+00\nUpdated at: 2026-09-14 16:45:17.295+00\nPublished at: 2026-09-14 16:45:17.293+00",
@@ -79,7 +79,7 @@
   {
     "alias": "day08peakchallenge-1",
     "html": "day-08.html",
-    "html_sha256": "350dcd153e061c0b023b02f10d6839aa101646a97684e1c3e233fbae2e7d4bc7",
+    "html_sha256": "d6048704c7da7013aa9ef81447369e6d7774b2d4de6e23cbb144fd967f213e3b",
     "text": "day-08.txt",
     "text_sha256": "f0c56051e9b10f581f330915cd3fc9fbd5b86030c82034bbee9e6d46415e48e9",
     "metadata_before": "Name: Day_08_PEAK_CHALLENGE\nID: e1ec3ddd-b383-4eb7-b4b0-a560b10b9252\nStatus: published\nAlias: day08peakchallenge-1\nSubject: Your SineDay — Day 8: Challenge\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:24.541922+00\nUpdated at: 2026-09-14 16:45:16.363+00\nPublished at: 2026-09-14 16:45:16.357+00",
@@ -90,7 +90,7 @@
   {
     "alias": "day09cresttransition",
     "html": "day-09.html",
-    "html_sha256": "c4d589d85c3c115ff45bb6a8f1a1bdbc7f68ef29369657f9b42e99fa06e04667",
+    "html_sha256": "42fe7ff06b10af0ef36f005085af8ed6f3b4dc768db117fac136a3eb309a9299",
     "text": "day-09.txt",
     "text_sha256": "3484f102b509b32db0fb8edd68edde1d763a523140f5b33af29f4cb952dc5adb",
     "metadata_before": "Name: Day_09_CREST_TRANSITION\nID: ee2cb2b5-0da9-4df6-ac9e-c88acd8326d0\nStatus: published\nAlias: day09cresttransition\nSubject: Your SineDay — Day 9: Transition\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:26.005944+00\nUpdated at: 2026-09-14 16:45:16.964+00\nPublished at: 2026-09-14 16:45:16.962+00",
@@ -101,7 +101,7 @@
   {
     "alias": "day10descendingreflection",
     "html": "day-10.html",
-    "html_sha256": "e16c3491eea8a17a9caf3408b7863cabcdce66d8ebf112e72a7c076c71948087",
+    "html_sha256": "b909eef5ba9d079dd4227191d28612c6fb9db4cf15b04a3228fd0e48e6fe8258",
     "text": "day-10.txt",
     "text_sha256": "0f3b45724fa15b54bb914dd517259e3d964bcf312f05979bc24deab33f6175f4",
     "metadata_before": "Name: Day_10_DESCENDING_REFLECTION\nID: a41d7eb6-f2b5-4b39-9999-7ce587ea9feb\nStatus: published\nAlias: day10descendingreflection\nSubject: Your SineDay — Day 10: Reflection\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:27.344634+00\nUpdated at: 2026-09-14 16:45:17.817+00\nPublished at: 2026-09-14 16:45:17.815+00",
@@ -112,7 +112,7 @@
   {
     "alias": "day11descendingintegration-1",
     "html": "day-11.html",
-    "html_sha256": "cbc4f1cfe1cfba463de654f1ffe2a2c92cf25df59fe2e9a35cf1f4916b2cf2bf",
+    "html_sha256": "2062b9bff4857e63c37e9e0d279d1b36d9cac403c3de8df0e3f8fc2e68bd4ec6",
     "text": "day-11.txt",
     "text_sha256": "68a5fe121e5310835dfd2d0de8c65120ce9bb925d65365adc53b313c4081d1f3",
     "metadata_before": "Name: Day_11_DESCENDING_INTEGRATION\nID: adf13d1c-8220-451e-ba0f-b59fe2aab212\nStatus: published\nAlias: day11descendingintegration-1\nSubject: Your SineDay — Day 11: Integration\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:28.72876+00\nUpdated at: 2026-09-14 16:45:18.191+00\nPublished at: 2026-09-14 16:45:18.188+00",
@@ -123,7 +123,7 @@
   {
     "alias": "day12descendingrecalibration-1",
     "html": "day-12.html",
-    "html_sha256": "6b36a288027ec48fd28e8a2558da66dfd5505fb298efedc098a20b41ed2b2b4e",
+    "html_sha256": "6f5fca26bcd6a55fea894b65aa2514bfb7b70d25b5ab7c58b07b1eba0b3f6859",
     "text": "day-12.txt",
     "text_sha256": "c8fdb03cbcd56f98004ed37b7c244863792ce7d8393746aad39942eafa72baaa",
     "metadata_before": "Name: Day_12_DESCENDING_RECALIBRATION\nID: c563a15d-3731-4777-8a42-c86d5193d26a\nStatus: published\nAlias: day12descendingrecalibration-1\nSubject: Your SineDay — Day 12: Recalibration\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:30.080405+00\nUpdated at: 2026-09-14 16:45:18.986+00\nPublished at: 2026-09-14 16:45:18.983+00",
@@ -134,7 +134,7 @@
   {
     "alias": "day13descendingrelease",
     "html": "day-13.html",
-    "html_sha256": "742c439cc3d6a76274074bdc1314332bd4cd36c040c074a2d63c965a54c4bbf0",
+    "html_sha256": "0912ef393a11bcd679d299992fffb2ab57ac5beb2ba596dfc441915c66e5803f",
     "text": "day-13.txt",
     "text_sha256": "0e526889d23e3168601df20b94db2deb493925a375750c380d4b014457c1df8c",
     "metadata_before": "Name: Day_13_DESCENDING_RELEASE\nID: 3093a65e-c3da-455d-82ca-877b47e50bd0\nStatus: published\nAlias: day13descendingrelease\nSubject: Your SineDay — Day 13: Release\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:31.352254+00\nUpdated at: 2026-09-14 16:45:55.005+00\nPublished at: 2026-09-14 16:45:55.003+00",
@@ -145,7 +145,7 @@
   {
     "alias": "day14troughinnerwork",
     "html": "day-14.html",
-    "html_sha256": "b3cac923b7e321f9953cb48131830e0c0763de57a58e4be5c2c4c36f856b87a2",
+    "html_sha256": "5b36d29e305b1335fe30cb9a96e4c85f9af64335b5a7ecdc27940f6e8b137aa6",
     "text": "day-14.txt",
     "text_sha256": "7ecf9172ad78f01838d37a373cd75281a0129d33af7272d6a61a86eb6e7a0953",
     "metadata_before": "Name: Day_14_TROUGH_INNER_WORK\nID: 5436c6d8-4db6-440f-aa64-6c4e01d56ba3\nStatus: published\nAlias: day14troughinnerwork\nSubject: Your SineDay — Day 14: Inner Work\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:32.657396+00\nUpdated at: 2026-09-14 16:45:55.496+00\nPublished at: 2026-09-14 16:45:55.492+00",
@@ -156,7 +156,7 @@
   {
     "alias": "day15troughhealing-1",
     "html": "day-15.html",
-    "html_sha256": "5307bc37dee12c49175b1c92b47823067164cd1a622d501591dcb7fff001c3d0",
+    "html_sha256": "59015f939efb2251da819cc99703f392fcd96344b7259f8683bd16641de618e2",
     "text": "day-15.txt",
     "text_sha256": "cec6f77b410704b65ed366aed922662450266568eca7a85aff5fe7b4437bf032",
     "metadata_before": "Name: Day_15_TROUGH_HEALING\nID: 8de1ccdd-0ce5-4efc-9f2c-a5eb6761f16f\nStatus: published\nAlias: day15troughhealing-1\nSubject: Your SineDay — Day 15: Healing\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:34.000304+00\nUpdated at: 2026-09-14 16:45:56.209+00\nPublished at: 2026-09-14 16:45:56.206+00",
@@ -167,7 +167,7 @@
   {
     "alias": "day16troughpreparation-1",
     "html": "day-16.html",
-    "html_sha256": "3b8f38ba4b9228f9c12109668af157c54c926e9d5eee26b5b5a31494dccc389a",
+    "html_sha256": "365112411ab77f8b9cfc2d30e58d06b2f7ee600fb5f7abdbfe2856070c2db283",
     "text": "day-16.txt",
     "text_sha256": "c96f1214335753eabb9d87ced5c50d9890618070d9f28b4f2a08f9cd3cfd8467",
     "metadata_before": "Name: Day_16_TROUGH_PREPARATION\nID: 961698c0-e8bb-448a-b327-182dc093aca8\nStatus: published\nAlias: day16troughpreparation-1\nSubject: Your SineDay — Day 16: Preparation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:35.399873+00\nUpdated at: 2026-09-14 16:45:55.92+00\nPublished at: 2026-09-14 16:45:55.917+00",
@@ -178,7 +178,7 @@
   {
     "alias": "day17emergingfoundation",
     "html": "day-17.html",
-    "html_sha256": "39dc94c24712f8c9dbe849663108c801857fe6de07ba15565cb906cead1f9fe5",
+    "html_sha256": "68c6bd8efa6d9e472b7c7576cd51fa6c08b8170f5c7530c5b28afca9dfad6d2c",
     "text": "day-17.txt",
     "text_sha256": "b9565be05cd21170570fcdd1d15a522c22c6bb1f6817397d7cf909481aaf0943",
     "metadata_before": "Name: Day_17_EMERGING_FOUNDATION\nID: 50144103-eaa0-4efc-91dd-b6392b9ba127\nStatus: published\nAlias: day17emergingfoundation\nSubject: Your SineDay — Day 17: Foundation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:36.996926+00\nUpdated at: 2026-09-14 16:45:56.701+00\nPublished at: 2026-09-14 16:45:56.698+00",
@@ -189,7 +189,7 @@
   {
     "alias": "day18emergingculmination",
     "html": "day-18.html",
-    "html_sha256": "c22cd1920542e23a3f797bc8a4fa34d4d4ba6fe5002036d4a33db7712aa91b42",
+    "html_sha256": "6d835fdf21013d3ba8ff50f914dc2816c3ee1f3946522c69180bac6b6b7756f7",
     "text": "day-18.txt",
     "text_sha256": "d0f7e65705dfe4b915e3beb656f29c531ad29feaeebed1817f01dbe714bea450",
     "metadata_before": "Name: Day_18_EMERGING_CULMINATION\nID: 13dfb78b-c760-4bf8-863f-2796b57d6325\nStatus: published\nAlias: day18emergingculmination\nSubject: Your SineDay — Day 18: Culmination\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:38.38883+00\nUpdated at: 2026-09-14 16:45:57.159+00\nPublished at: 2026-09-14 16:45:57.157+00",

@@ -69,8 +69,12 @@ function dailyTemplate(day = 17, alias = "day17emergingfoundation") {
         src="https://sineday.app/assets/email/20260924/scenes/SineDayScene${day}.png"
         width="464" height="464"
         border="0"
-        alt="SineDay Day ${day} — Foundation: the official Finale mark over its nature scene."
+        alt="Day ${day} — ${DAILY_SINEDAY_TITLES[day]} nature scene with SineDuck"
         style="display:block;width:100%;max-width:464px;height:auto;border:0;"
+      >
+      <img
+        src="https://sineday.app/assets/email/20260911/wave-${String(day).padStart(2, "0")}.png"
+        alt="Day ${day}: today’s place on the repeating 18-day wave."
       >
     `)
   };
@@ -194,6 +198,12 @@ test("checked-in daily HTML sources lock the dark canvas and use matching scenes
     assert.doesNotMatch(html, /sineday-daily\.vcf/);
     assert.match(html, /data-sineday-surface="day-scene"[^>]*bgcolor="#0A0D14"/);
     assert.match(html, new RegExp(`SineDayScene${day}\\.png`));
+    assert.match(
+      html,
+      new RegExp(
+        `alt="Day ${day} — ${DAILY_SINEDAY_TITLES[day]} nature scene with SineDuck"`,
+      ),
+    );
   }
 });
 
@@ -204,21 +214,30 @@ test("20260924 snapshot changes only the daily hero contract and preserves plain
     const textName = `day-${number}.txt`;
     const previousHtml = readFileSync(join(PREVIOUS_TEMPLATE_DIR, htmlName), "utf8");
     const currentHtml = readFileSync(join(TEMPLATE_DIR, htmlName), "utf8");
+    const previousAlt =
+      `alt="Official SineDuck for Day ${day} — ${DAILY_SINEDAY_TITLES[day]}"`;
+    const currentAlt =
+      `alt="Day ${day} — ${DAILY_SINEDAY_TITLES[day]} nature scene with SineDuck"`;
+    assert.equal(
+      previousHtml.split(previousAlt).length - 1,
+      1,
+      `${htmlName} must contain exactly one replaceable 20260923 hero alt`,
+    );
     const expectedHtml = previousHtml
       .replace(
         `https://sineday.app/assets/email/20260923/sineducks/SineDuckFinale${day}.png`,
         `https://sineday.app/assets/email/20260924/scenes/SineDayScene${day}.png`,
       )
       .replace('width="464" height="261"', 'width="464" height="464"')
-      .replace(
-        new RegExp(`alt="SineDuck Day ${day} — [^"]+"`),
-        `alt="SineDay Day ${day} — ${DAILY_SINEDAY_TITLES[day]}: the official Finale mark over its nature scene."`,
-      )
+      .replace(previousAlt, currentAlt)
       .replace(
         'data-sineday-surface="duck-artwork"',
         'data-sineday-surface="day-scene"',
       );
 
+    assert.notEqual(expectedHtml, previousHtml, `${htmlName} transformation must change source`);
+    assert.ok(expectedHtml.includes(currentAlt), `${htmlName} replacement alt must be present`);
+    assert.ok(!expectedHtml.includes(previousAlt), `${htmlName} old hero alt must be removed`);
     assert.equal(currentHtml, expectedHtml, htmlName);
     assert.deepEqual(
       readFileSync(join(TEMPLATE_DIR, textName)),
@@ -262,11 +281,44 @@ test('scene audit rejects stale assets, wrong dimensions, insecure URLs and crop
     ['height="464"', 'height="261"', 'scene-image'],
     ['https://sineday.app/assets/email/', 'http://sineday.app/assets/email/', 'expected-scene'],
     ['display:block', 'display:inline', 'scene-image'],
-    ['alt="SineDay Day 17 — Foundation: the official Finale mark over its nature scene."', 'alt=""', 'scene-image'],
+    ['alt="Day 17 — Foundation nature scene with SineDuck"', 'alt=""', 'scene-image'],
     ['height:auto', 'height:auto;object-fit:cover', 'scene-crop']
   ]) {
     const template = dailyTemplate();
     template.html = template.html.replace(from, to);
     assert.ok(validateDailyTemplate(template, 17, template.alias).includes(failure), failure);
   }
+});
+
+test("daily template audit requires exactly one matching Day-specific wave image", () => {
+  const expectedWave =
+    "https://sineday.app/assets/email/20260911/wave-17.png";
+
+  const missing = dailyTemplate();
+  missing.html = missing.html.replace(expectedWave, "");
+  assert.ok(
+    validateDailyTemplate(missing, 17, missing.alias).includes("expected-wave"),
+  );
+  assert.ok(
+    validateDailyTemplate(missing, 17, missing.alias).includes("wave-count"),
+  );
+
+  const duplicate = dailyTemplate();
+  duplicate.html = duplicate.html.replace(
+    expectedWave,
+    `${expectedWave}${expectedWave}`,
+  );
+  assert.ok(
+    validateDailyTemplate(duplicate, 17, duplicate.alias).includes("expected-wave"),
+  );
+  assert.ok(
+    validateDailyTemplate(duplicate, 17, duplicate.alias).includes("wave-count"),
+  );
+
+  const wrongDay = dailyTemplate();
+  wrongDay.html = wrongDay.html.replace(expectedWave, "https://sineday.app/assets/email/20260911/wave-18.png");
+  const wrongDayFailures = validateDailyTemplate(wrongDay, 17, wrongDay.alias);
+  assert.ok(wrongDayFailures.includes("expected-wave"));
+  assert.ok(wrongDayFailures.includes("wrong-wave"));
+  assert.ok(!wrongDayFailures.includes("legacy-artwork"));
 });

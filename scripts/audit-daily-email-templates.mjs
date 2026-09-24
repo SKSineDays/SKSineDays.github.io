@@ -107,9 +107,18 @@ export function validateDailyTemplate(template, day, expectedAlias) {
     escapeRegex(`https://sineday.app/assets/email/20260924/scenes/SineDayScene${day}.png`) + `["']`,
     "i",
   );
+  const expectedAlt = `Day ${day} — ${DAILY_SINEDAY_TITLES[day]} nature scene with SineDuck`;
+  const expectedWaveUrl =
+    `https://sineday.app/assets/email/20260911/wave-${String(day).padStart(2, "0")}.png`;
   const sceneNumbers = [
     ...html.matchAll(/SineDayScene(\d{1,2})\.png/gi)
   ].map((match) => Number(match[1]));
+  const waveUrls = [
+    ...html.matchAll(/https:\/\/sineday\.app\/assets\/email\/20260911\/wave-\d{2}\.png/gi)
+  ].map((match) => match[0]);
+  const expectedWaveCount = waveUrls.filter(
+    (url) => url.toLowerCase() === expectedWaveUrl.toLowerCase(),
+  ).length;
 
   if (template?.alias !== expectedAlias) failures.push("alias");
   if (template?.status !== "published") failures.push("published");
@@ -117,6 +126,11 @@ export function validateDailyTemplate(template, day, expectedAlias) {
   if (!hasDay(html, day)) failures.push("html-day");
   if (!expectedScene.test(html)) failures.push("expected-scene");
   if (sceneNumbers.some((number) => number !== day)) failures.push("wrong-scene");
+  if (expectedWaveCount !== 1) failures.push("expected-wave");
+  if (waveUrls.some((url) => url.toLowerCase() !== expectedWaveUrl.toLowerCase())) {
+    failures.push("wrong-wave");
+  }
+  if (waveUrls.length !== 1) failures.push("wave-count");
   if (!html.includes("{{{OPT_OUT_URL}}}")) failures.push("opt-out");
   if (!DAILY_SINEDAY_TITLES[day]) failures.push("title");
 
@@ -128,7 +142,7 @@ export function validateDailyTemplate(template, day, expectedAlias) {
     !/\bwidth=["']464["']/i.test(expectedTag) ||
     !/\bheight=["']464["']/i.test(expectedTag) ||
     !/\bborder=["']0["']/i.test(expectedTag) ||
-    !new RegExp(`alt=["'][^"']*Day ${day}\\b[^"']+`, "i").test(expectedTag) ||
+    !new RegExp(`\\balt=["']${escapeRegex(expectedAlt)}["']`, "i").test(expectedTag) ||
     !/display\s*:\s*block/i.test(expectedTag)
   ) {
     failures.push("scene-image");
