@@ -562,8 +562,7 @@ body {
   position: relative;
   z-index: 2;
   display: block;
-  width: 90%;
-  max-width: 240px;
+  width: min(100%, 296px);
   height: auto;
   object-fit: contain;
   aspect-ratio: 16 / 9;
@@ -615,8 +614,7 @@ body {
   }
 
   .daily-email-banner__duck {
-    width: 174px;
-    max-width: 75%;
+    width: min(75%, 200px);
   }
 
   .daily-email-banner__wave {
@@ -1680,7 +1678,7 @@ body {
 
 .duck-image {
   display: block;
-  width: min(80vw, 320px);
+  width: min(80vw, 300px);
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: contain;

@@ -56,7 +56,9 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
   assert.match(ui, /const natureArtworkUrl = result\.imageAvifUrl \|\| result\.imageUrl/);
   assert.match(ui, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(ui, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
-  assert.match(styles, /\.duck-image\s*\{[^}]*width:\s*min\(80vw,\s*320px\)/);
+  assert.match(styles, /\.daily-email-banner__duck\s*\{[^}]*width:\s*min\(100%,\s*296px\)/);
+  assert.match(styles, /@media \(max-width: 600px\)[\s\S]*?\.daily-email-banner__duck\s*\{[^}]*width:\s*min\(75%,\s*200px\)/);
+  assert.match(styles, /\.duck-image\s*\{[^}]*width:\s*min\(80vw,\s*300px\)/);
   assert.match(styles, /\.day-artwork-duck\s*\{[^}]*left:\s*9%;[^}]*width:\s*82%/);
   assert.match(styles, /\.day-artwork-duck img\s*\{[^}]*aspect-ratio:\s*16 \/ 9;[^}]*object-fit:\s*contain;/);
   assert.doesNotMatch(styles, /\.duck-image\s*\{[^}]*filter:/);
@@ -95,7 +97,7 @@ test('dashboard identity surfaces use individual SineDucks while Explore layers 
   assert.match(profileImages, /object-fit:\s*contain/);
   assert.match(profileImages, /aspect-ratio:\s*16 \/ 9/);
   assert.match(styles.split('.today-wave-hero__image {')[1].split('}')[0], /object-fit:\s*contain/);
-  assert.match(styles.split('.today-wave-hero__artwork {')[1].split('}')[0], /width:\s*min\(100%,\s*400px\)/);
+  assert.match(styles.split('.today-wave-hero__artwork {')[1].split('}')[0], /width:\s*min\(100%,\s*360px\)/);
   assert.match(styles.split('.duck-stack__today-artwork {')[1].split('}')[0], /width:\s*min\(100%,\s*240px\)/);
   assert.match(styles.split('.duck-stack__origin-artwork {')[1].split('}')[0], /flex:\s*0 0 112px/);
 

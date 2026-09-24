@@ -5375,7 +5375,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .today-wave-hero__artwork {
-  width: min(100%, 400px);
+  width: min(100%, 360px);
   aspect-ratio: 16 / 9;
   margin: 0;
   background: transparent;
