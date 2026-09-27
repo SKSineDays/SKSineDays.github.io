@@ -72,7 +72,7 @@
   "crons": [
     {
       "path": "/api/cron/daily-email",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

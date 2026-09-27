@@ -1,10 +1,10 @@
 /**
  * GET /api/cron/daily-email
  *
- * Minute cron (UTC). Claims subscribers whose local time is in the 6:00 AM
+ * Five-minute cron (UTC). Claims subscribers whose local time is in the 6:00 AM
  * send window and dispatches published Resend day templates.
  *
- * Requires Vercel Pro/Enterprise for reliable minutely cron across timezones.
+ * Requires Vercel Pro/Enterprise for reliable five-minute cron across timezones.
  * Sending is fail-closed until DAILY_EMAIL_CRON_ENABLED=true.
  */
 

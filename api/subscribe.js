@@ -147,7 +147,7 @@ export default async function handler(req, res) {
           limit: 1
         });
       } catch {
-        // The persisted welcome row is retried by the existing minute cron.
+        // The persisted welcome row is retried by the existing five-minute cron.
         console.error("[subscribe] welcome dispatch deferred");
       }
     }
