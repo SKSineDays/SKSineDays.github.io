@@ -118,7 +118,7 @@ export default async function handler(req, res) {
           limit: 1
         });
       } catch {
-        // Activation is durable. The existing minute cron retries persisted welcomes.
+        // Activation is durable. The existing five-minute cron retries persisted welcomes.
         console.error("[mailer-confirm] welcome dispatch deferred");
       }
     }

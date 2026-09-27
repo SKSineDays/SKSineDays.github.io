@@ -76,7 +76,7 @@ test("Vercel keeps cron and vCard behavior while adding targeted daily rewrites"
     ]
   );
   assert.deepEqual(vercel.crons, [
-    { path: "/api/cron/daily-email", schedule: "* * * * *" }
+    { path: "/api/cron/daily-email", schedule: "*/5 * * * *" }
   ]);
   const vcard = vercel.headers.find(
     (entry) => entry.source === "/assets/email/sineday-daily.vcf"
