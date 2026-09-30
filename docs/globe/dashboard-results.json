@@ -1,0 +1,5 @@
+{
+  "errors": [],
+  "groups": 2,
+  "checks": "Real dashboard: Origin/Journal/History/Printables activity, single instance, fresh-snapshot reuse, account switch teardown and sign-out passed."
+}

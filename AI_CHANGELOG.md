@@ -156,3 +156,15 @@ Each entry includes:
 **Notes:** One master coupon plus one Promotion Code per active Affiliate. Existing Connect, payout, and commission hold behavior is unchanged.
 
 ---
+
+## 2026-09-30T23:00:41.089Z
+
+**Files:** api/_lib/globe-auth.js, api/globe/groups.js, api/globe/me.js, assets/globe/SOURCES.md, assets/globe/earth-july-2004.jpg, assets/globe/earth-still.webp, assets/vendor/three-r180/LICENSE, assets/vendor/three-r180/README.md, assets/vendor/three-r180/three.core.min.js, assets/vendor/three-r180/three.module.min.js, css/dashboard.css, dashboard.html, docs/globe/IMPLEMENTATION.md, docs/globe/after-desktop.png, docs/globe/after-landscape.png, docs/globe/after-mobile.png, docs/globe/after-small-mobile.png, docs/globe/asset-costs.json, docs/globe/before-desktop.png, docs/globe/before-mobile.png, docs/globe/browser-results.json, docs/globe/credits.html, docs/globe/dashboard-mobile.png, docs/globe/dashboard-results.json, docs/globe/pwa-results.json, js/dashboard.js, js/duck-carousel.js, js/globe-points.js, js/globe-renderer.js, js/origin-globe.js, package-lock.json, package.json, privacy.html, scripts/generate-globe-catalog.py, scripts/prepare-earth-assets.py, service-worker.js, shared/globe-regions.js, supabase/migrations/20260930172350_globe_memberships.sql, test/affiliate-support-route.test.mjs, test/day-artwork.test.mjs, test/globe-browser-smoke.cjs, test/globe-dashboard-smoke.cjs, test/globe-database.test.mjs, test/globe-points.test.mjs, test/globe-routes.test.mjs, test/globe-service-worker-smoke.cjs, test/public-daily-page.test.mjs, test/sineduck-intro.test.mjs, test/vercel-analytics.test.mjs
+
+**Summary:** Replace the Origin ambient sphere with a real local 3D Earth and optional account lights.
+
+**Rationale:** Preserve official duck presentation and private profile boundaries while adding coarse explicit-consent membership, owner RLS, authenticated SQL aggregation, lifecycle controls and mobile-budget rendering.
+
+**Notes:** Main reinspected at 678a68a. 38 focused database/API/existing assertions and local carousel/dashboard/PWA smoke checks pass. NASA map and Three.js r180 are credited and locally served. Migration remains unapplied; hosted member flow, deployed latency/assets and physical iPhone/iOS PWA validation remain release gates. Includes narrow pointer-capture/native-image-drag fixes found in interaction verification.
+
+---

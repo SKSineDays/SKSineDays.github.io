@@ -2,7 +2,7 @@
 //
 // Horizontal Duck Carousel — side-scroll rail with centered active profile.
 // Replaces the old 3D ring with a production-safer sideways carousel.
-// The sphere remains as a rotating ambient backdrop only.
+// The opt-in Earth is an isolated ambient layer; profile cards remain private.
 //
 // Public API:
 //   const carousel = new DuckCarousel(containerEl, opts)
@@ -10,6 +10,7 @@
 //   carousel.reload(profiles)
 //   carousel.destroy()
 
+import { OriginGlobe } from "./origin-globe.js";
 import { duckPngUrlFromSinedayNumber, duckSvgUrlFromSinedayNumber } from "./sineducks.js";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import { calculateSineDayForTimezone } from "./sineday-engine.js";
@@ -47,6 +48,7 @@ export class DuckCarousel {
     };
 
     this._buildDOM();
+    this.globe = new OriginGlobe(this.sphereBackEl, this.rootEl, { getAccessToken: opts.getAccessToken });
     this._initPointer();
     this._initNav();
     this._initClickToCenter();
@@ -69,14 +71,8 @@ export class DuckCarousel {
 
     this.sceneEl = _el("div", "duck-ring__scene");
 
-    this.sphereBackEl = _el("div", "duck-ring__sphere duck-ring__sphere--back");
+    this.sphereBackEl = _el("div", "origin-earth");
     this.sphereBackEl.setAttribute("aria-hidden", "true");
-    const sphereImg = document.createElement("img");
-    sphereImg.src = "/assets/sineday-sphere.png";
-    sphereImg.alt = "";
-    sphereImg.decoding = "async";
-    sphereImg.loading = "eager";
-    this.sphereBackEl.appendChild(sphereImg);
 
     this.viewportEl = _el("div", "duck-ring__viewport");
     this.trackEl = _el("div", "duck-ring__track");
@@ -273,7 +269,10 @@ export class DuckCarousel {
 
       this.trackEl.style.transition = "none";
       this.trackEl.style.willChange = "transform";
-      this.sceneEl.setPointerCapture?.(e.pointerId);
+      // Keep a card click targeted at its button while drag events still bubble
+      // to the scene; scene capture would swallow click-to-center.
+      const captureEl = e.target.closest?.(".duck-stack") || this.sceneEl;
+      captureEl.setPointerCapture?.(e.pointerId);
     };
 
     const onMove = (e) => {
@@ -348,7 +347,7 @@ export class DuckCarousel {
     const hasProfiles = this.profiles.length > 0;
     this.emptyEl.style.display = hasProfiles ? "none" : "flex";
     this.viewportEl.style.display = hasProfiles ? "" : "none";
-    this.sphereBackEl.style.display = hasProfiles ? "" : "none";
+    // Earth and account participation remain available without private profiles.
 
     if (!hasProfiles) {
       this.prevBtn.style.display = "none";
@@ -374,7 +373,12 @@ export class DuckCarousel {
     this.setProfiles(profiles);
   }
 
+  setActive(active) {
+    this.globe?.setActive(active);
+  }
+
   destroy() {
+    this.globe?.destroy();
     this._ro?.disconnect();
     this.wrapEl.innerHTML = "";
   }
@@ -401,6 +405,7 @@ function _duck(className, duckUrl, fallbackUrl) {
   image.height = 324;
   image.decoding = "async";
   image.loading = "lazy";
+  image.draggable = false;
 
   let fallbackApplied = false;
   image.addEventListener("error", () => {
