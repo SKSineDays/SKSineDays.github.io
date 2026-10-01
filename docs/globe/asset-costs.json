@@ -1,0 +1,50 @@
+[
+  {
+    "path": "assets/globe/earth-july-2004.jpg",
+    "bytes": 212925,
+    "gzipBytes": 204277,
+    "sha256": "33c7b5ef453fd157b68539d2268f9c3299268ae87363b726cd54615c66e50681"
+  },
+  {
+    "path": "assets/globe/earth-still.webp",
+    "bytes": 29150,
+    "gzipBytes": 29148,
+    "sha256": "c48be0c8b1454ab8307f266698844d811dac4f1a07ccdf512e85de6d4d92fe84"
+  },
+  {
+    "path": "assets/vendor/three-r180/three.core.min.js",
+    "bytes": 381124,
+    "gzipBytes": 100467,
+    "sha256": "61ba0df005b05991361d040d8ff670e1aadfd0ce7aeebd1fdb0725957a8957de"
+  },
+  {
+    "path": "assets/vendor/three-r180/three.module.min.js",
+    "bytes": 338908,
+    "gzipBytes": 78794,
+    "sha256": "e2b5ee6bccd38fd6d8a2428546b83c5f2426d84b152ef82be8055556e3b40eb6"
+  },
+  {
+    "path": "shared/globe-regions.js",
+    "bytes": 100068,
+    "gzipBytes": 44278,
+    "sha256": "e78740ba11dde6245a078b5d544013e166ca162161819338e8b47b385a5b7c05"
+  },
+  {
+    "path": "js/origin-globe.js",
+    "bytes": 13416,
+    "gzipBytes": 3898,
+    "sha256": "8d1254d71aea5ed84eff2137ac9af3909ba36dd3c9413a2a19a1f1bf52222236"
+  },
+  {
+    "path": "js/globe-renderer.js",
+    "bytes": 7541,
+    "gzipBytes": 2381,
+    "sha256": "2013a0f721fc47eea36f64674c1b0c64bf3d687df26a7f0bad746dcaf0ee3567"
+  },
+  {
+    "path": "js/globe-points.js",
+    "bytes": 988,
+    "gzipBytes": 505,
+    "sha256": "e09d8c6f57159ca1bbc53b4ffc2dc901489c943ca4e68c643dc002912ade79cc"
+  }
+]

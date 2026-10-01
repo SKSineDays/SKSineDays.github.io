@@ -9,7 +9,9 @@
     "gen:templates": "node scripts/generate-premium-templates.js",
     "compose:daily-email-scenes": "node scripts/compose-daily-email-scenes.mjs",
     "audit:daily-email-templates": "node scripts/audit-daily-email-templates.mjs",
-    "test": "node --experimental-test-module-mocks --test test/*.mjs"
+    "test": "node --experimental-test-module-mocks --test test/*.mjs",
+    "test:globe": "node --experimental-test-module-mocks --test test/globe-*.test.mjs",
+    "test:globe:browser": "node test/globe-browser-smoke.cjs && node test/globe-dashboard-smoke.cjs && node test/globe-service-worker-smoke.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -19,7 +21,9 @@
     "stripe": "^22.3.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "sharp": "^0.35.4",
-    "standardwebhooks": "^1.1.1"
+    "standardwebhooks": "^1.1.1",
+    "playwright": "1.62.1"
   }
 }

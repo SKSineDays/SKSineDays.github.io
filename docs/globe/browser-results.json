@@ -1,0 +1,19 @@
+{
+  "performance": {
+    "viewport": [
+      390,
+      844
+    ],
+    "sampleSeconds": 2.1,
+    "frames": 62,
+    "meanSubmitMs": 0.3064516128882045,
+    "drawCalls": 3,
+    "triangles": 9984,
+    "dpr": 1.5,
+    "backing": [
+      549,
+      549
+    ]
+  },
+  "checks": "Passed: native module imports, duck dimensions/artwork unchanged, 320/390/844/1280 layouts, arrows/drag/keyboard/click-to-center, vertical scrolling, pointer-free canvas, pause, reduced motion, hidden document, inactive Origin, snapshot reuse, consent off by default, save/remove failures, region change, immediate opt-out delta, empty profiles, context loss, data failure/offline, zero counts, texture/module failure, WebGL2 fallback, destroy."
+}

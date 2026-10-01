@@ -20,7 +20,7 @@ import {
   clearPendingAffiliateCode,
   getPendingAffiliateCode,
 } from "./affiliate-ui.js";
-import { DuckCarousel } from "./duck-carousel.js";
+import { DuckCarousel } from "./duck-carousel.js?v=earth-1";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import {
   duckPlacementOnDayArtwork,
@@ -134,6 +134,10 @@ async function init() {
     // Listen to auth changes
     onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        if (currentUser?.id !== session.user.id) {
+          duckCarousel?.destroy();
+          duckCarousel = null;
+        }
         currentUser = session.user;
 
         loadLinkedIdentities()
@@ -938,6 +942,8 @@ function updateDashboardPagerUI({ syncActiveTabVisibility = false } = {}) {
     page.toggleAttribute("inert", !isActive);
   });
 
+  duckCarousel?.setActive(pages[dashboardPageIndex]?.classList.contains("feature-screen--origin"));
+
   tabs.forEach((tab, index) => {
     const isActive = index === dashboardPageIndex;
     tab.classList.toggle("is-active", isActive);
@@ -1155,7 +1161,14 @@ function ensureDuckCarousel() {
   if (!wrapEl) return null;
 
   duckCarousel = new DuckCarousel(wrapEl, {
-    anchorDate: ORIGIN_ANCHOR_DATE
+    anchorDate: ORIGIN_ANCHOR_DATE,
+    getAccessToken: (() => {
+      const ownerId = currentUser?.id;
+      return async () => {
+        const session = await getCurrentSession();
+        return session?.user?.id === ownerId ? session.access_token : null;
+      };
+    })()
   });
 
   return duckCarousel;

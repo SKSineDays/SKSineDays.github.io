@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v33';
+const CACHE_NAME = 'sineday-v34';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -167,7 +167,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    // Read only this version. An old worker's in-flight write can recreate its
+    // retired cache after activation; it must not supply stale native modules.
+    caches.open(CACHE_NAME).then((cache) => cache.match(request)).then((cachedResponse) => {
       if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
         const fetchPromise = fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
