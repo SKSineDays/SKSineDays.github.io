@@ -168,3 +168,15 @@ Each entry includes:
 **Notes:** Main reinspected at 678a68a. 38 focused database/API/existing assertions and local carousel/dashboard/PWA smoke checks pass. NASA map and Three.js r180 are credited and locally served. Migration remains unapplied; hosted member flow, deployed latency/assets and physical iPhone/iOS PWA validation remain release gates. Includes narrow pointer-capture/native-image-drag fixes found in interaction verification.
 
 ---
+
+## 2026-10-01T15:30:22.121Z
+
+**Files:** api/globe/me.js, api/globe/groups.js, js/origin-globe.js, js/globe-points.js, js/globe-renderer.js, js/duck-carousel.js, css/dashboard.css, shared/globe-cities.js, shared/globe-regions.js, supabase/migrations/20261001150055_globe_city_memberships.sql, assets/globe/city-supplements.json, assets/globe/earth-still.webp, assets/globe/SOURCES.md, scripts/generate-globe-catalog.py, scripts/prepare-earth-assets.py, dashboard.html, js/dashboard.js, privacy.html, service-worker.js, docs/globe, test/globe-*
+
+**Summary:** Refine Origin Earth profile centering, optional city lights and soft sunlight.
+
+**Rationale:** Tie unchanged private profile artwork to the Earth geometry; allow explicitly consented public city anchors while preserving legacy country-only membership, owner RLS and anonymous aggregation.
+
+**Notes:** Current main and live Supabase #105 schema inspected read-only. 31 focused unit/regression tests and carousel/dashboard/v34-to-v35 worker smoke passed locally, including city catalog failure/retry and touch/keyboard selection. New forward migration remains unapplied; Stephen must apply only 20261001150055_globe_city_memberships.sql before merging/deploying and perform physical iPhone visual QA. No production test accounts or writes.
+
+---

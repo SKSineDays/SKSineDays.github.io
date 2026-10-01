@@ -7,9 +7,9 @@
   },
   {
     "path": "assets/globe/earth-still.webp",
-    "bytes": 29150,
-    "gzipBytes": 29148,
-    "sha256": "c48be0c8b1454ab8307f266698844d811dac4f1a07ccdf512e85de6d4d92fe84"
+    "bytes": 31728,
+    "gzipBytes": 31720,
+    "sha256": "290e87ce824bed0ef200b5a647eb4d9f0a13203fab3fa4255a82158bc2c477c0"
   },
   {
     "path": "assets/vendor/three-r180/three.core.min.js",
@@ -25,26 +25,32 @@
   },
   {
     "path": "shared/globe-regions.js",
-    "bytes": 100068,
-    "gzipBytes": 44278,
-    "sha256": "e78740ba11dde6245a078b5d544013e166ca162161819338e8b47b385a5b7c05"
+    "bytes": 100124,
+    "gzipBytes": 44290,
+    "sha256": "992f4632f25a37f74d3930a99f2ce81ef2765323ac1826cd875d5398e9fafe87"
   },
   {
     "path": "js/origin-globe.js",
-    "bytes": 13416,
-    "gzipBytes": 3898,
-    "sha256": "8d1254d71aea5ed84eff2137ac9af3909ba36dd3c9413a2a19a1f1bf52222236"
+    "bytes": 21985,
+    "gzipBytes": 6071,
+    "sha256": "26aac36cdbf8b26803bcdab3275f0418831d10e8b667fabdf89d7d62cc675671"
   },
   {
     "path": "js/globe-renderer.js",
-    "bytes": 7541,
-    "gzipBytes": 2381,
-    "sha256": "2013a0f721fc47eea36f64674c1b0c64bf3d687df26a7f0bad746dcaf0ee3567"
+    "bytes": 8152,
+    "gzipBytes": 2617,
+    "sha256": "86e7b1fbf9f400c4f21bb2d64a22492f113b8f1f0dd7d46e2b7ccb1200d4f425"
   },
   {
     "path": "js/globe-points.js",
-    "bytes": 988,
-    "gzipBytes": 505,
-    "sha256": "e09d8c6f57159ca1bbc53b4ffc2dc901489c943ca4e68c643dc002912ade79cc"
+    "bytes": 1372,
+    "gzipBytes": 638,
+    "sha256": "d21eb30aab9ea14604b8271e7513848260131d11e3cb3fd5b0026a95a6fe5598"
+  },
+  {
+    "path": "shared/globe-cities.js",
+    "bytes": 931206,
+    "gzipBytes": 184363,
+    "sha256": "f447c92f8832b5d7bbe740dbdc95a567691807215bd3a081519df1f7d9b14095"
   }
 ]

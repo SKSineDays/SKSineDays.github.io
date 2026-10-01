@@ -32,11 +32,12 @@ export class EarthRenderer {
     this.tilt.add(this.earth);
     this.scene.add(this.tilt);
     this.geometry = new THREE.SphereGeometry(1, 64, 40);
-    this.material = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 7, specular: 0x183348 });
+    this.material = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 9, specular: 0x21384a });
     this.earth.add(new THREE.Mesh(this.geometry, this.material));
-    this.scene.add(new THREE.AmbientLight(0xa4b9dc, 1.05));
-    const sunlight = new THREE.DirectionalLight(0xfff1de, 2.2);
-    sunlight.position.set(-3, 2, 4);
+    this.scene.add(new THREE.AmbientLight(0xb5c6df, 1.3));
+    this.scene.add(new THREE.HemisphereLight(0xc5ddf0, 0x283545, .45));
+    const sunlight = new THREE.DirectionalLight(0xfff0da, 3.1);
+    sunlight.position.set(-3, 2.4, 3);
     this.scene.add(sunlight);
     this.atmosphereMaterial = new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, side: THREE.BackSide,
@@ -107,7 +108,17 @@ export class EarthRenderer {
 
   setData(groups) {
     if (this.destroyed) return;
-    const points = globePoints(groups);
+    this.groups = groups;
+    // Country-only snapshots do not download the optional city catalog.
+    if (groups.some(group => group.cityKey) && !this.cities && !this.loadingCities) {
+      this.loadingCities = import('../shared/globe-cities.js').then(catalog => {
+        if (this.destroyed) return;
+        this.cities = catalog.GLOBE_CITY_BY_KEY;
+        this.setData(this.groups);
+      }).catch(() => { if (!this.destroyed) this.onCitiesUnavailable?.(); })
+        .finally(() => { this.loadingCities = null; });
+    }
+    const points = globePoints(groups, this.cities);
     const previous = this.pointsGeometry;
     this.pointsGeometry = new THREE.BufferGeometry();
     this.points.geometry = this.pointsGeometry;

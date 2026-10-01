@@ -1,12 +1,118 @@
 {
+  "centering": {
+    "mobile": {
+      "earth": {
+        "x": 12,
+        "y": 100.046875,
+        "width": 366,
+        "height": 366
+      },
+      "profile": {
+        "x": 56,
+        "y": 113.734375,
+        "width": 278,
+        "height": 338.609375
+      },
+      "nav": {
+        "x": 326,
+        "y": 260.046875,
+        "width": 46,
+        "height": 46
+      },
+      "counter": {
+        "x": 171,
+        "y": 478.046875,
+        "width": 48,
+        "height": 26
+      }
+    },
+    "small-mobile": {
+      "earth": {
+        "x": 12,
+        "y": 121.34375,
+        "width": 296,
+        "height": 296
+      },
+      "profile": {
+        "x": 38,
+        "y": 100.046875,
+        "width": 244,
+        "height": 338.609375
+      },
+      "nav": {
+        "x": 256,
+        "y": 246.34375,
+        "width": 46,
+        "height": 46
+      },
+      "counter": {
+        "x": 136,
+        "y": 450.65625,
+        "width": 48,
+        "height": 26
+      }
+    },
+    "landscape": {
+      "earth": {
+        "x": 202,
+        "y": 140.84375,
+        "width": 440,
+        "height": 440
+      },
+      "profile": {
+        "x": 272,
+        "y": 186.046875,
+        "width": 300,
+        "height": 349.578125
+      },
+      "nav": {
+        "x": 732,
+        "y": 337.84375,
+        "width": 46,
+        "height": 46
+      },
+      "counter": {
+        "x": 398,
+        "y": 592.84375,
+        "width": 48,
+        "height": 26
+      }
+    },
+    "desktop": {
+      "earth": {
+        "x": 420,
+        "y": 150.84375,
+        "width": 440,
+        "height": 440
+      },
+      "profile": {
+        "x": 490,
+        "y": 196.046875,
+        "width": 300,
+        "height": 349.578125
+      },
+      "nav": {
+        "x": 940,
+        "y": 347.84375,
+        "width": 46,
+        "height": 46
+      },
+      "counter": {
+        "x": 616,
+        "y": 602.84375,
+        "width": 48,
+        "height": 26
+      }
+    }
+  },
   "performance": {
     "viewport": [
       390,
       844
     ],
     "sampleSeconds": 2.1,
-    "frames": 62,
-    "meanSubmitMs": 0.3064516128882045,
+    "frames": 20,
+    "meanSubmitMs": 1.8049999999813735,
     "drawCalls": 3,
     "triangles": 9984,
     "dpr": 1.5,
@@ -15,5 +121,5 @@
       549
     ]
   },
-  "checks": "Passed: native module imports, duck dimensions/artwork unchanged, 320/390/844/1280 layouts, arrows/drag/keyboard/click-to-center, vertical scrolling, pointer-free canvas, pause, reduced motion, hidden document, inactive Origin, snapshot reuse, consent off by default, save/remove failures, region change, immediate opt-out delta, empty profiles, context loss, data failure/offline, zero counts, texture/module failure, WebGL2 fallback, destroy."
+  "checks": "Passed: centered profile/Earth/nav and lower counter at 320/390/844/1280, unchanged ducks, arrows/drag/keyboard/side click, lazy city catalog, keyboard/touch city choice, country restoration, fresh city consent, saved city restoration/change, country change clears city, no-match validation, country-only and city catalog failure, immediate mixed opt-out delta; existing lifecycle/fallback/account smoke."
 }
