@@ -18,7 +18,7 @@ if(f.startsWith('/api/')){if(f==='/api/globe/groups')groups++;const body=f==='/a
 if(u.hostname!=='sineday.test')return r.fulfill({contentType:'application/javascript',body:''});
 try{const body=fs.readFileSync(path.join(process.cwd(),f));const types={'.js':'application/javascript','.css':'text/css','.html':'text/html','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png'};return r.fulfill({contentType:types[path.extname(f)]||'application/octet-stream',body})}catch{return r.fulfill({status:404,body:''})}});
 await p.goto('http://sineday.test/dashboard.html');await p.locator('.origin-earth').scrollIntoViewIfNeeded();await p.waitForFunction(()=>window.testCarousel?.globe?.renderer?.ready);
-await p.screenshot({path:'docs/globe/dashboard-mobile.png',fullPage:true});
+await p.screenshot({path:'docs/globe/dashboard-mobile.png',fullPage:true,scale:"css"});
 for(const name of ['Journal','Journal History','Journal Printables']){await p.getByRole('button',{name,exact:true}).click();assert.equal(await p.evaluate(()=>testCarousel.globe.active),false);assert.equal(await p.evaluate(()=>testCarousel.globe.renderer.rotating),false)}
 await p.getByRole('button',{name:'Your Origin Ducks',exact:true}).click();await p.locator('.origin-earth').scrollIntoViewIfNeeded();assert.equal(await p.locator('.origin-earth canvas').count(),1);assert.equal(groups,1);
 await p.evaluate(()=>{window.oldGlobe=testCarousel.globe;testUser={id:'second-local-account',email:'second@example.test'};testAuthCallback('SIGNED_IN',{user:testUser,access_token:'second-token'})});await p.waitForFunction(()=>window.oldGlobe.destroyed);assert.equal(await p.locator('.origin-earth canvas').count()<=1,true);

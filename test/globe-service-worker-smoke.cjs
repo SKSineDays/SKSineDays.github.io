@@ -30,7 +30,7 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
     try {
       const file = pathname === '/' ? 'index.html' : pathname.slice(1);
       const body = !current && ['service-worker.js', 'js/duck-carousel.js', 'css/dashboard.css'].includes(file)
-        ? execFileSync('git', ['show', `${process.env.GLOBE_BASE_REF || '678a68a'}:${file}`], { cwd: root })
+        ? execFileSync('git', ['show', `${process.env.GLOBE_BASE_REF || '5fa74d1'}:${file}`], { cwd: root })
         : fs.readFileSync(path.join(root, file));
       res.setHeader('Content-Type', types[path.extname(file)] || 'application/octet-stream');
       res.end(body);
@@ -49,7 +49,8 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
     });
     await page.waitForFunction(() => navigator.serviceWorker.controller, null, { timeout: 15000 });
     const old = await page.evaluate(async () => (await fetch('/js/duck-carousel.js')).text());
-    assert.ok(old.includes('/assets/sineday-sphere.png'));
+    assert.ok(old.includes('new OriginGlobe'));
+    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v34'));
     current = true;
     await page.evaluate(async () => {
       const registration = await navigator.serviceWorker.getRegistration();
@@ -59,15 +60,15 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
     });
     // Deliberately recreate a retired cache: the current worker must ignore it.
     await page.evaluate(async () => {
-      const retired = await caches.open('sineday-v33');
+      const retired = await caches.open('sineday-v34');
       await retired.put('/js/origin-globe.js', new Response('stale module'));
     });
     const assets = await page.evaluate(async () => {
       const read = async url => (await fetch(url)).text();
       return {
-        carousel: await read('/js/duck-carousel.js?v=earth-1'),
+        carousel: await read('/js/duck-carousel.js?v=earth-2'),
         controller: await read('/js/origin-globe.js'),
-        css: await read('/css/dashboard.css?v=earth-1'),
+        css: await read('/css/dashboard.css?v=earth-2'),
         three: await read('/assets/vendor/three-r180/three.module.min.js'),
         textureStatus: (await fetch('/assets/globe/earth-july-2004.jpg')).status
       };
@@ -75,6 +76,7 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
     assert.ok(assets.carousel.includes('new OriginGlobe'));
     assert.ok(assets.controller.includes('export class OriginGlobe'));
     assert.ok(assets.css.includes('.origin-earth'));
+    assert.ok(assets.css.includes('grid-area: 1 / 1'));
     assert.ok(assets.three.includes('./three.core.min.js'));
     assert.equal(assets.textureStatus, 503);
     await page.evaluate(async () => { await fetch('/api/globe/groups'); await fetch('/api/globe/groups'); });
@@ -86,7 +88,8 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
       return false;
     });
     assert.equal(cachedApi, false);
-    const result = { checks: 'Passed: v33→v34 worker update, matching versioned carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth failure does not block worker installation.' };
+    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v35'));
+    const result = { checks: 'Passed: v34→v35 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation.' };
     fs.writeFileSync(path.join(root, 'docs/globe/pwa-results.json'), JSON.stringify(result, null, 2) + '\n');
     console.log(JSON.stringify(result));
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

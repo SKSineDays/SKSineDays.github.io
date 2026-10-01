@@ -98,8 +98,8 @@ export class DuckCarousel {
     this.nextBtn.setAttribute("aria-label", "Next profile");
     this.nextBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>`;
 
-    this.rootEl.appendChild(this.prevBtn);
-    this.rootEl.appendChild(this.nextBtn);
+    this.sceneEl.appendChild(this.prevBtn);
+    this.sceneEl.appendChild(this.nextBtn);
 
     this.counterEl = _el("div", "duck-ring__counter");
     this.counterEl.setAttribute("aria-hidden", "true");
@@ -258,6 +258,7 @@ export class DuckCarousel {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const onDown = (e) => {
+      if (e.target.closest?.(".duck-ring__nav")) return;
       if (this.cards.length <= 1) return;
 
       this._drag.active = true;

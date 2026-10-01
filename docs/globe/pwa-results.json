@@ -1,3 +1,3 @@
 {
-  "checks": "Passed: v33→v34 worker update, matching versioned carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth failure does not block worker installation."
+  "checks": "Passed: v34→v35 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation."
 }

@@ -8172,17 +8172,30 @@ textarea.journal-entry-field-light:focus {
 
 /* Origin Earth: bounded canvas, separate from the unchanged duck artwork. */
 .feature-screen--origin .duck-ring__scene {
-  height: 550px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(48, 89, 133, .14), transparent 63%);
+  display: grid;
+  grid-template-columns: 100%;
+  height: auto;
+  background: radial-gradient(ellipse at 50% 50%, rgba(48, 89, 133, .14), transparent 63%);
 }
-.feature-screen--origin .duck-ring__viewport { top: 156px; }
+.feature-screen--origin .duck-ring__viewport {
+  grid-area: 1 / 1;
+  position: relative;
+  inset: auto;
+  align-self: center;
+  width: 100%;
+}
+.feature-screen--origin .duck-ring__track {
+  position: relative;
+  height: auto;
+  padding: 0;
+}
 .origin-earth {
-  position: absolute;
-  top: 0;
-  left: 50%;
+  grid-area: 1 / 1;
+  position: relative;
+  align-self: center;
+  justify-self: center;
   width: min(100%, 440px);
   aspect-ratio: 1;
-  transform: translateX(-50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -8197,8 +8210,14 @@ textarea.journal-entry-field-light:focus {
 .origin-earth canvas { visibility: hidden; }
 .origin-earth.is-earth-ready canvas { visibility: visible; }
 .origin-earth.is-earth-ready .origin-earth-fallback { visibility: hidden; }
-.feature-screen--origin .duck-ring__counter { top: 516px; bottom: auto; }
-.feature-screen--origin .duck-ring__nav { top: 355px; }
+.feature-screen--origin .duck-ring__counter {
+  position: relative;
+  inset: auto;
+  transform: none;
+  width: fit-content;
+  margin: 12px auto 8px;
+}
+.feature-screen--origin .duck-ring__nav { top: 50%; width: 46px; height: 46px; }
 .origin-globe-controls {
   position: relative;
   z-index: 3;
@@ -8239,15 +8258,14 @@ textarea.journal-entry-field-light:focus {
 .origin-globe-dialog h2 { margin: 0 0 14px; padding: 0; border: 0; font-size: 1.5rem; letter-spacing: -.035em; line-height: 1.2; }
 .origin-globe-dialog p { color: #bac7d9; line-height: 1.6; font-size: .88rem; }
 .origin-globe-dialog label { display: block; font-size: .9rem; margin: 18px 0 8px; }
-.origin-globe-dialog select { width: 100%; min-height: 48px; background: #152235; color: #f5f7ff; border: 1px solid #4e6380; border-radius: 10px; padding: 10px; font: inherit; }
+.origin-globe-dialog select, .origin-globe-dialog input[type="search"] { width: 100%; min-height: 48px; background: #152235; color: #f5f7ff; border: 1px solid #4e6380; border-radius: 10px; padding: 10px; font: inherit; font-size: 16px; }
+.origin-globe-city-list { list-style: none; padding: 0; margin: 8px 0; max-height: min(220px, 28dvh); overflow-y: auto; overscroll-behavior: contain; }
+.origin-globe-city-list button { width: 100%; text-align: left; border-radius: 8px; }
+.origin-globe-city-list [aria-selected="true"] { background: #263f5e; border-color: #a7c7ff; }
+.origin-globe-dialog .origin-globe-city-status { font-size: .75rem; margin: 8px 0; }
+.origin-globe-dialog input:disabled { opacity: .55; }
 .origin-globe-dialog .origin-globe-consent { display: flex; align-items: center; gap: 12px; min-height: 44px; }
 .origin-globe-consent input { width: 22px; height: 22px; accent-color: #9ebfff; }
 .origin-globe-dialog .origin-globe-note { font-size: .75rem; }
 .origin-globe-dialog [data-message] { min-height: 1.6em; }
 .origin-globe-dialog button[hidden] { display: none; }
-@media (max-width: 374px) {
-  .feature-screen--origin .duck-ring__scene { height: 530px; }
-  .feature-screen--origin .duck-ring__viewport { top: 136px; }
-  .feature-screen--origin .duck-ring__counter { top: 496px; }
-  .feature-screen--origin .duck-ring__nav { top: 335px; }
-}

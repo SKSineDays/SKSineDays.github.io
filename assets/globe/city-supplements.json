@@ -1,0 +1,18 @@
+[
+  {
+    "key": "us-census-0566080",
+    "regionKey": "US",
+    "name": "Springdale",
+    "adminName": "Arkansas",
+    "latitude": 36.191438,
+    "longitude": -94.155062
+  },
+  {
+    "key": "us-census-4855080",
+    "regionKey": "US",
+    "name": "Paris",
+    "adminName": "Texas",
+    "latitude": 33.668929,
+    "longitude": -95.546616
+  }
+]
