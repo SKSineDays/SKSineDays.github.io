@@ -7,6 +7,7 @@
       "maxDuration": 10
     },
     "api/cron/daily-email.js": {
+      "regions": ["pdx1"],
       "maxDuration": 300
     }
   },
