@@ -42,7 +42,12 @@ mock.module("@supabase/supabase-js", {
           return { data: null, error: new Error("unknown rpc") };
         },
         from(tableName) {
-          const state = { filters: {}, payload: null, action: "select" };
+          const state = {
+            filters: {},
+            orFilter: null,
+            payload: null,
+            action: "select"
+          };
           const api = {
             select() {
               state.action = state.action === "update" ? "update" : "select";
@@ -57,8 +62,27 @@ mock.module("@supabase/supabase-js", {
               state.filters[key] = value;
               return api;
             },
+            or(filter) {
+              state.orFilter = filter;
+              return api;
+            },
             async maybeSingle() {
               if (tableName === "delivery_log") {
+                if (state.action === "update") {
+                  const row = store.deliveries.get(state.filters.id);
+                  const incomingTimestamp = state.orFilter?.match(
+                    /^provider_event_at\.is\.null,provider_event_at\.lte\.(.+)$/
+                  )?.[1];
+                  const canApply =
+                    row &&
+                    (
+                      row.provider_event_at == null ||
+                      row.provider_event_at <= incomingTimestamp
+                    );
+                  if (!canApply) return { data: null, error: null };
+                  Object.assign(row, state.payload);
+                  return { data: clone(row), error: null };
+                }
                 const row = [...store.deliveries.values()].find(
                   (item) => item.provider_message_id === state.filters.provider_message_id
                 );
@@ -144,7 +168,8 @@ function resetStore() {
     id: "del_1",
     subscriber_id: SUB_ID,
     provider_message_id: EMAIL_ID,
-    provider_status: null
+    provider_status: null,
+    provider_event_at: null
   });
   store.subscribers.set(SUB_ID, { id: SUB_ID, status: "active" });
   store.preferences.set(SUB_ID, {
@@ -215,6 +240,31 @@ test("provider suppression remains sticky even after a local unsubscribe", async
   assert.equal(store.subscribers.get(SUB_ID).status, "suppressed");
   assert.equal(store.preferences.get(SUB_ID).email_opt_in, true);
   assert.equal(store.deliveries.get("del_1").provider_status, "email.bounced");
+});
+
+test("older provider events cannot overwrite newer delivery status", async () => {
+  resetStore();
+  const delivered = signEvent({
+    type: "email.delivered",
+    created_at: "2026-01-15T11:00:05.000Z",
+    data: { email_id: EMAIL_ID }
+  });
+  const sent = signEvent({
+    type: "email.sent",
+    created_at: "2026-01-15T11:00:03.000Z",
+    data: { email_id: EMAIL_ID }
+  });
+
+  const deliveredResponse = await postWebhook(delivered);
+  const sentResponse = await postWebhook(sent);
+
+  assert.equal(deliveredResponse.statusCode, 200);
+  assert.equal(sentResponse.statusCode, 200);
+  assert.equal(store.deliveries.get("del_1").provider_status, "email.delivered");
+  assert.equal(
+    store.deliveries.get("del_1").provider_event_at,
+    "2026-01-15T11:00:05.000Z"
+  );
 });
 
 test("confirmation provider events are delegated to the atomic mailer event RPC", async () => {
