@@ -113,15 +113,23 @@ export default async function handler(req, res) {
       return json(res, 200, { ok: true });
     }
 
-    const { error: updateError } = await supabase
+    const { data: updatedDelivery, error: updateError } = await supabase
       .from("delivery_log")
       .update({
         provider_status: type,
         provider_event_at: providerEventAt,
         updated_at: new Date().toISOString()
       })
-      .eq("id", delivery.id);
+      .eq("id", delivery.id)
+      .or(
+        `provider_event_at.is.null,provider_event_at.lte.${providerEventAt}`
+      )
+      .select("id")
+      .maybeSingle();
     if (updateError) throw updateError;
+    if (!updatedDelivery) {
+      return json(res, 200, { ok: true });
+    }
 
     if (SUPPRESS_EVENTS.has(type) && delivery.subscriber_id) {
       const { error: suppressError } = await supabase.rpc(
