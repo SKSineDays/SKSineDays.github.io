@@ -180,3 +180,15 @@ Each entry includes:
 **Notes:** Current main and live Supabase #105 schema inspected read-only. 31 focused unit/regression tests and carousel/dashboard/v34-to-v35 worker smoke passed locally, including city catalog failure/retry and touch/keyboard selection. New forward migration remains unapplied; Stephen must apply only 20261001150055_globe_city_memberships.sql before merging/deploying and perform physical iPhone visual QA. No production test accounts or writes.
 
 ---
+
+## 2026-10-03T23:07:58.322Z
+
+**Files:** index.html, styles.css, login.html, test/homepage-dashboard-invitation.test.mjs
+
+**Summary:** Invite visitors into the dashboard and welcome new and returning users at sign-in.
+
+**Rationale:** Explain the dashboard before the main call to action while keeping Premium expectations clear and reusing the existing intro in both calculator states.
+
+**Notes:** Focused copy, placement, daily-email and SineDuck source checks pass (11 tests). UI and auth JavaScript are unchanged. Cloud browser could not open the local preview (ERR_BLOCKED_BY_CLIENT); browser layout and live OAuth were not verified.
+
+---
