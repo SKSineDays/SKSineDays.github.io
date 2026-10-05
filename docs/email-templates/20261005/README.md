@@ -40,7 +40,7 @@ The additive generator is `scripts/generate-daily-editorial-copy.mjs`. It verifi
 
 ## Local preview and verification
 
-Start the existing static-only server with `npm run dev`, then open `/docs/email-templates/20261005/preview.html` at its local address. The preview can switch among all 18 days at 320, 375, and 520 pixels. It is not a publication or subscriber-send tool.
+The temporary hosted viewer has been removed. Use the automated offline browser command below to review all 18 email files locally; it does not publish or send email.
 
 The existing browser verifier accepts an optional dated snapshot while preserving its `20261004` default:
 

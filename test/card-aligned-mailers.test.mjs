@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { DAY_DATA, DAY_DETAILS } from '../js/sineday-engine.js';
-import { CARD_BASE_DIR, CARD_ALIGNED_DIR, validateCardAlignedCopy, validateIdentities, generateCardAlignedMailers, reviseCardAlignedTemplate } from '../scripts/generate-card-aligned-mailers.mjs';
+import { CARD_BASE_DIR, CARD_ALIGNED_DIR, previewHtml, validateCardAlignedCopy, validateIdentities, generateCardAlignedMailers, reviseCardAlignedTemplate } from '../scripts/generate-card-aligned-mailers.mjs';
 import { generateDailyEditorialCopy } from '../scripts/generate-daily-editorial-copy.mjs';
 import { generateDailyEmailCopy } from '../scripts/generate-daily-email-copy.mjs';
 import { DAILY_TEMPLATE_ALIASES, DAILY_SINEDAY_TITLES, getDailyEmailSubject } from '../api/_lib/daily-email.js';
@@ -191,5 +191,28 @@ test('stale artifact, stale provenance and extra output identities are detected 
     await generateCardAlignedMailers({ outputDirectory: directory });
     await writeFile(join(directory, 'day-19.html'), 'extra');
     await assert.rejects(generateCardAlignedMailers({ outputDirectory: directory, check: true }), /extra day output identity/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+
+test('temporary review viewers are absent from the hosted source', () => {
+  for (const directory of ['20261004', '20261005', '20261005-card-aligned']) {
+    assert.equal(existsSync(new URL(`../docs/email-templates/${directory}/preview.html`, import.meta.url)), false);
+  }
+});
+
+test('generation preserves email outputs without writing a hosted review viewer', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'sineday-no-hosted-preview-'));
+  try {
+    await writeFile(join(directory, 'copy.json'), JSON.stringify(copy));
+    await generateCardAlignedMailers({ outputDirectory: directory });
+    await generateCardAlignedMailers({ outputDirectory: directory, check: true });
+    assert.equal(existsSync(join(directory, 'preview.html')), false);
+    for (let day = 1; day <= 18; day++) {
+      for (const ext of ['html', 'txt']) assert.equal(read(directory, day, ext), read(CARD_ALIGNED_DIR, day, ext));
+    }
+    const viewer = previewHtml(copy, copy.days.map(({ day }) => [`day-${String(day).padStart(2, '0')}.html`, read(directory, day, 'html')]));
+    assert.ok(viewer.includes('id="payload"'));
+    assert.ok(viewer.includes('choose(1)'));
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
