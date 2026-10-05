@@ -1,0 +1,282 @@
+{
+  "reflection_label": "Your Sine, through your eyes",
+  "reflection_caveat": "Your writing can come from life or be entirely made up.",
+  "reply_prefix": "Reply here or email",
+  "reply_address": "mysine@sineday.app",
+  "reply_suffix": "One sentence is enough.",
+  "collection_diagnosis": "The current emails move between predicted energy, abstract definitions, lists of possible experiences, and requests to find recurring wave patterns. Those are different assignments. This draft gives each day one human point, develops it through an ordinary situation, and carries that point into an observation question and a specific writing invitation. The wave supplies the order and names; it does not explain or predict the reader's experience.",
+  "editorial_basis": "Canonical titles, phase labels, and day order follow DAY_DATA. DAY_DETAILS was read as thematic background, not as evidence for claims about energy, mood, health, or what a date makes possible. Recent SineDay Journal files are explicitly labeled editorial drafts and were used as brand context, not verified examples of the founder's own writing.",
+  "preservation_note": "This is an editorial draft only. Retain the existing subject, titles, phase labels, assets, wave order, dashboard CTA, blog section, footer, privacy promise, and unsubscribe content. No changes to the checkout or external services are part of this deliverable.",
+  "days": [
+    {
+      "day": 1,
+      "title": "Initiation",
+      "phase": "Rising",
+      "core_point": "A beginning is the small act that takes someone into something whose outcome they do not yet know.",
+      "diagnosis": "The old subtitle calls the reader forward, while the body offers several kinds of beginning and then explains the card. The writing question switches to recurring wave patterns. Keep the whole email with one recognizable first act.",
+      "subtitle": "The moment something gets started.",
+      "preheader": "Day 1 · Initiation. A first act, with the rest still unknown.",
+      "paragraphs": [
+        "Before a conversation has a subject, someone says hello. Before a page has a story, there is a first line. Initiation invites attention to that small move from considering something to being in it.",
+        "You may have a beginning in mind, or recognize one only when you look back. There is plenty to notice in the moment itself: where you were, what you did, and what you couldn't yet know."
+      ],
+      "notice": "Is there a small beginning you can put your finger on?",
+      "writing_prompt": "Write about someone's first small step into something, before they know how it will turn out."
+    },
+    {
+      "day": 2,
+      "title": "Momentum",
+      "phase": "Ascending",
+      "core_point": "Momentum can be seen in something that continues across separate attempts, with each return picking up what came before.",
+      "diagnosis": "The old copy predicts growing ease and traction, then asks what wants to move. Give Momentum a visible form: someone returning to unfinished work and continuing from where they left off.",
+      "subtitle": "Picking up where you left off.",
+      "preheader": "Day 2 · Momentum. A return to something already under way.",
+      "paragraphs": [
+        "A jigsaw sits on a table. Someone adds a few pieces, leaves it for a day, and comes back. Each return begins with what is already there, including the pieces that still don't fit.",
+        "Momentum invites a look at something that continues across separate moments. You might notice what you can pick up again, or how what came before shapes the next attempt. A pause is part of that account too."
+      ],
+      "notice": "What are you returning to, and what is already there?",
+      "writing_prompt": "Follow someone returning to something unfinished, showing what carries over from their last attempt."
+    },
+    {
+      "day": 3,
+      "title": "Creativity",
+      "phase": "Ascending",
+      "core_point": "Imagination lets a familiar thing be seen or used in another way.",
+      "diagnosis": "The old email suggests that imagination and ideas arrive more readily at this wave position. Anchor Creativity in a change of view the reader can explore, with no requirement to feel inspired or produce something useful.",
+      "subtitle": "Another way to see a familiar thing.",
+      "preheader": "Day 3 · Creativity. What else could an ordinary object become?",
+      "paragraphs": [
+        "A cardboard box can be packaging, a hiding place, or the beginning of a small theatre. Its possible uses depend on who is looking at it and what they imagine. Creativity offers that freedom to an ordinary thing.",
+        "You might look around for something you usually pass without a thought. A different use, a strange comparison, or a made-up history could change how you see it. The idea can remain a passing amusement."
+      ],
+      "notice": "What familiar thing could you look at another way?",
+      "writing_prompt": "Give someone an ordinary object and write what happens when they imagine an unexpected use for it."
+    },
+    {
+      "day": 4,
+      "title": "Connection",
+      "phase": "Ascending",
+      "core_point": "Making room for another person's account can change how we understand a shared moment.",
+      "diagnosis": "The old subtitle promises outward social energy, and the body ranges from affection to boundaries. Focus the email on one meeting of perspectives, rather than the reader's amount of sociability.",
+      "subtitle": "A shared moment, seen by someone else.",
+      "preheader": "Day 4 · Connection. Another person's account can change the picture.",
+      "paragraphs": [
+        "Two people can leave the same conversation remembering different things. One recalls the joke; the other remembers that someone waited for their answer. Hearing the second account can change what the first person thought happened.",
+        "Connection invites curiosity about that other view. You might think of a recent exchange and something the other person said that stayed with you. There may also be something about their experience you still don't know."
+      ],
+      "notice": "What has someone else's account helped you see?",
+      "writing_prompt": "Write a brief exchange from two viewpoints, letting each person notice something the other misses."
+    },
+    {
+      "day": 5,
+      "title": "Productivity",
+      "phase": "Ascending",
+      "core_point": "The meaning of a piece of work can be found in the ordinary difference it makes for someone.",
+      "diagnosis": "The old copy links the ascending wave to focus and completion, then treats a scattered day as data. Move from measuring output to looking closely at the use and human consequence of one piece of work.",
+      "subtitle": "What a piece of work makes possible.",
+      "preheader": "Day 5 · Productivity. A small task can have a very ordinary purpose.",
+      "paragraphs": [
+        "Someone clears the kitchen table, and there is room to eat together. The task takes a few minutes; its purpose becomes visible when the plates arrive. Work can be understood through the difference it makes in a particular scene.",
+        "Productivity offers a chance to look at one piece of work that way. You might consider what it is for, who uses it, or which part usually goes unnoticed. Even something unfinished can have a story worth telling."
+      ],
+      "notice": "What difference does one ordinary task make for you or someone else?",
+      "writing_prompt": "Describe a small task through the scene that follows, showing who uses or notices the result."
+    },
+    {
+      "day": 6,
+      "title": "Balance",
+      "phase": "Peak",
+      "core_point": "Balance begins with recognizing two things that matter at the same time, without pretending the choice is simple.",
+      "diagnosis": "The old copy makes Balance an adjustment exercise, which duplicates Recalibration. Keep this day with simultaneous needs and the experience of dividing attention; reserve changes to a plan for Day 12.",
+      "subtitle": "When two things matter at once.",
+      "preheader": "Day 6 · Balance. Two needs can belong in the same picture.",
+      "paragraphs": [
+        "You want to finish what you're doing, and someone wants a little time with you. Both things matter. From inside that moment, balance can look like a pause, a conversation, or a choice that still leaves something waiting.",
+        "This theme invites a closer look at what is asking for your attention. There may be two wishes of your own, or a need you share with someone else. You can describe the pull of each without settling it immediately."
+      ],
+      "notice": "Which two things are asking for your attention?",
+      "writing_prompt": "Write someone's thoughts as they face two things they care about and have time for only one."
+    },
+    {
+      "day": 7,
+      "title": "Insight",
+      "phase": "Peak",
+      "core_point": "One new detail can change our first reading of a situation, while leaving room for uncertainty.",
+      "diagnosis": "The old copy promises clarity and tells the reader to stop arguing with what they already know. Make Insight a revision of an interpretation, rather than certainty about an inner truth.",
+      "subtitle": "The detail that changes your first impression.",
+      "preheader": "Day 7 · Insight. What happens when one more detail enters the picture?",
+      "paragraphs": [
+        "A short reply can seem abrupt until you hear it spoken with a smile. One detail changes your reading of the same words. Insight can begin with a small correction to the story you were already telling yourself.",
+        "You might remember a time when new information altered an impression. What did you notice, and what did it change? There can still be unanswered questions around the part that became clearer."
+      ],
+      "notice": "Has a small detail changed your first impression of something?",
+      "writing_prompt": "Give someone a first impression, then introduce one small detail that changes how they read the scene."
+    },
+    {
+      "day": 8,
+      "title": "Challenge",
+      "phase": "Peak",
+      "core_point": "An obstacle gives us a moment in which to observe a person's response, without requiring triumph or a lesson.",
+      "diagnosis": "The old email turns resistance into a test of strength and resolve. Let Challenge concern the actual response to a difficulty, including uncertainty, asking for help, or leaving it unresolved.",
+      "subtitle": "What happens when something gets in the way.",
+      "preheader": "Day 8 · Challenge. An obstacle, and the person meeting it.",
+      "paragraphs": [
+        "The door won't open. Someone tries the handle again, looks for another entrance, or turns to the person beside them. A small obstacle can make the next few moments quite different from what was expected.",
+        "Challenge offers a way to observe those moments: the first reaction, the available choices, the thing someone tries. A difficulty may remain difficult. You can leave the account there, with a person still deciding what to do."
+      ],
+      "notice": "When something gets in your way, what do you notice about your first response?",
+      "writing_prompt": "Put a small obstacle in someone's way and describe their response, leaving the outcome open."
+    },
+    {
+      "day": 9,
+      "title": "Transition",
+      "phase": "Crest",
+      "core_point": "A transition can be experienced as an in-between moment, with the familiar changing and the next situation still unclear.",
+      "diagnosis": "The old email tells the reader that outward momentum is becoming inward attention and asks what should end. Keep Transition inside a change that is happening, distinct from Day 18's view of a completed stretch.",
+      "subtitle": "Being in the middle of a change.",
+      "preheader": "Day 9 · Transition. A moment between the familiar and what comes next.",
+      "paragraphs": [
+        "A room half-packed for a move still contains the old life, though it no longer works quite the same way. The kettle is out; the cups are in a box. Much of a transition happens in these in-between arrangements.",
+        "You might consider a change while it is still under way. Some things remain familiar, and others need a new place or a new name. There is room to notice the awkwardness and ordinary details before knowing how it will turn out."
+      ],
+      "notice": "Is anything in your life between a familiar arrangement and a new one?",
+      "writing_prompt": "Place someone halfway through a change, with one familiar thing and one that now feels different."
+    },
+    {
+      "day": 10,
+      "title": "Reflection",
+      "phase": "Descending",
+      "core_point": "Revisiting one past moment lets us compare what we understood then with how we see it now.",
+      "diagnosis": "The old copy promises understanding after the rise and asks the reader to assess what worked. Focus Reflection on revisiting a particular scene, leaving Day 11 to show experience in present-day behavior.",
+      "subtitle": "A past moment, from where you stand now.",
+      "preheader": "Day 10 · Reflection. What do you notice when you look back at one moment?",
+      "paragraphs": [
+        "An old photograph holds a moment you once stood inside. You may remember what you were looking forward to, or notice someone at the edge who seemed unimportant then. The picture is unchanged; your account of it may have moved on.",
+        "Reflection invites a return to one moment, however ordinary. You can remember what you understood at the time and consider what you see now. The two accounts may agree, or leave a question between them."
+      ],
+      "notice": "What do you notice now about a moment you remember?",
+      "writing_prompt": "Write about someone looking at an old photograph, comparing what they understood then with what they see now."
+    },
+    {
+      "day": 11,
+      "title": "Integration",
+      "phase": "Descending",
+      "core_point": "Experience becomes part of everyday life through a small change in how someone acts or responds.",
+      "diagnosis": "The old email mixes rest, quiet, learning, and growth without showing what integration looks like. Show a past experience becoming part of an ordinary response now, distinct from looking back on the experience itself.",
+      "subtitle": "What experience changes in the everyday.",
+      "preheader": "Day 11 · Integration. Something learned can show up in a small response.",
+      "paragraphs": [
+        "Someone once gave you time to finish a thought. Later, in another conversation, you find yourself leaving that space for somebody else. An experience has become part of the way you listen, perhaps without a deliberate decision.",
+        "Integration invites attention to what you carry into ordinary moments. It may be a way of asking a question, using a tool, or welcoming someone. You might recognize where it came from, or simply notice that you do it differently now."
+      ],
+      "notice": "What do you do differently because of something you've experienced?",
+      "writing_prompt": "Show someone responding differently than they once would have, hinting at the experience behind the change."
+    },
+    {
+      "day": 12,
+      "title": "Recalibration",
+      "phase": "Descending",
+      "core_point": "A plan can be revised when an ordinary fact turns out to be different from what we expected.",
+      "diagnosis": "The old email recommends small corrections in abstract terms and makes them a consequence of the descending wave. Give Recalibration a specific cause: new information about the situation changes the plan.",
+      "subtitle": "When the plan meets what is actually there.",
+      "preheader": "Day 12 · Recalibration. One new fact can change a plan.",
+      "paragraphs": [
+        "You plan to put a shelf beside the door, then measure the space. It is narrower than you thought. The purpose may stay the same, while the dimensions, position, or plan itself change in response to what is there.",
+        "Recalibration invites that kind of comparison between expectation and experience. You might consider a plan whose details have shifted. What did you discover, and which part of the plan changed with it?"
+      ],
+      "notice": "Has something you've learned changed the plan you had in mind?",
+      "writing_prompt": "Give someone a plan and an inconvenient fact, then show which detail they choose to change."
+    },
+    {
+      "day": 13,
+      "title": "Release",
+      "phase": "Descending",
+      "core_point": "Our attachment to something can change, and that change can be observed without being forced into a decision to let go.",
+      "diagnosis": "The old copy assumes something is weighing on the reader and frames release as relief. Explore a changing attachment instead, with room for affection, uncertainty, and a choice that is still open.",
+      "subtitle": "When your reasons for keeping something change.",
+      "preheader": "Day 13 · Release. What does an old attachment mean to you now?",
+      "paragraphs": [
+        "An old ticket turns up in a drawer. Once it was too important to throw away. You might still want it, or find that the memory feels complete without the piece of paper. The same object can mean something different after a while.",
+        "Release invites a look at that changing attachment. There may be affection, relief, hesitation, or several feelings at once. You can be curious about your reasons for keeping something before deciding what happens to it."
+      ],
+      "notice": "Do you still keep anything for a reason that has changed?",
+      "writing_prompt": "Write about someone finding a keepsake and wondering whether their reason for keeping it still matters."
+    },
+    {
+      "day": 14,
+      "title": "Inner Work",
+      "phase": "Trough",
+      "core_point": "The private thoughts beneath an ordinary answer are worth noticing with curiosity, even when they remain mixed or unfinished.",
+      "diagnosis": "The old email assigns introspection and deeper truth to the trough. Use the difference between a spoken answer and the thoughts behind it to make Inner Work concrete without predicting a mood or demanding disclosure.",
+      "subtitle": "The thoughts behind an ordinary answer.",
+      "preheader": "Day 14 · Inner Work. There may be more behind a simple answer.",
+      "paragraphs": [
+        "Someone asks how the day went, and you say, 'Fine.' Behind that answer might be a small disappointment, a funny encounter, or a thought you haven't finished. An ordinary reply can leave much of the day unspoken.",
+        "Inner Work offers a little room for those private details. You might be curious about what you kept to yourself and why. A thought can stay mixed, unfinished, or private while you take a closer look at it."
+      ],
+      "notice": "Is there more behind an answer you've given recently?",
+      "writing_prompt": "Write what someone says aloud and what they leave unsaid, placing both in the same ordinary scene."
+    },
+    {
+      "day": 15,
+      "title": "Healing",
+      "phase": "Trough",
+      "core_point": "Care can be noticed in a concrete gesture and in how the person receiving it experiences that moment.",
+      "diagnosis": "The old subtitle promises restoration and the body associates the trough with physical and emotional recovery. Preserve Healing as the canonical title while keeping the invitation with ordinary care and making no claim about recovery or health.",
+      "subtitle": "Care in an ordinary moment.",
+      "preheader": "Day 15 · Healing. A small gesture, seen by the person receiving it.",
+      "paragraphs": [
+        "A meal left at a door. A chair pulled closer. Someone willing to wait while another person finds the words. Care often has these ordinary details, which can look different from the side of the person receiving it.",
+        "For Healing, you might consider one such moment and what the gesture meant to you. Perhaps it was welcome, awkward, or difficult to describe. There is room for your account of it, including what was still unresolved afterward."
+      ],
+      "notice": "What does a small gesture of care look like from the receiving side?",
+      "writing_prompt": "Show someone receiving a small kindness through the detail they remember after the moment has passed."
+    },
+    {
+      "day": 16,
+      "title": "Preparation",
+      "phase": "Trough",
+      "core_point": "Getting ready for one upcoming occasion shows both what we expect and what we cannot yet know.",
+      "diagnosis": "The old copy makes preparation a response to returning energy and overlaps with Foundation's practical setup. Keep Preparation specific to one occasion, with its objects, expectations, and remaining unknowns.",
+      "subtitle": "Getting ready for something you haven't met yet.",
+      "preheader": "Day 16 · Preparation. What we gather can tell a story about what we expect.",
+      "paragraphs": [
+        "A bag waits by the door with a notebook, a spare layer, and an address folded into a pocket. Each item says something about what its owner expects. There will still be things they could not have packed for.",
+        "Preparation invites a look at the time before an occasion. You might consider what you gather, what you rehearse, or which question you hope to ask. The details can show both your expectations and the uncertainty you take along."
+      ],
+      "notice": "What do your preparations suggest about what you're expecting?",
+      "writing_prompt": "Describe three things someone packs for an unfamiliar occasion and one question they carry out the door."
+    },
+    {
+      "day": 17,
+      "title": "Foundation",
+      "phase": "Emerging",
+      "core_point": "An ordinary day rests on dependable people, places, or arrangements that can be easy to overlook.",
+      "diagnosis": "The old email repeats Preparation's routines and setup while invoking emerging energy. Make Foundation about continuing support that is already part of daily life, rather than readiness for a single upcoming event.",
+      "subtitle": "What you count on in an ordinary day.",
+      "preheader": "Day 17 · Foundation. A familiar day has support you may rarely notice.",
+      "paragraphs": [
+        "The spare key is where it always is. Someone opens the shop each morning. A friend knows the story without needing the beginning again. These familiar arrangements can become so much a part of a day that they are easy to overlook.",
+        "Foundation invites attention to something dependable in your life and how it came to be. It may have taken time, care, or repeated effort from someone. Looking closely can bring that person or history into view."
+      ],
+      "notice": "What do you regularly count on, and who or what keeps it there?",
+      "writing_prompt": "Follow something dependable through an ordinary day, showing who relies on it and who keeps it there."
+    },
+    {
+      "day": 18,
+      "title": "Culmination",
+      "phase": "Emerging",
+      "core_point": "The end of a defined stretch gives us a place to look at what happened and what remains, without requiring a lesson.",
+      "diagnosis": "The old email blends completion, celebration, understanding, and renewed beginnings. Keep Culmination at the end of one identifiable stretch, where the reader can look at its traces as a whole; Day 9 remains inside an unfolding change.",
+      "subtitle": "Looking at what remains when something ends.",
+      "preheader": "Day 18 · Culmination. At the end of a stretch, what stays with you?",
+      "paragraphs": [
+        "After the guests leave, the room holds the remains of an evening: a glass on the sill, a moved chair, something someone said. The gathering has ended, and those details offer a way to look at the whole occasion.",
+        "Day 18 closes this set of themes. Culmination invites a similar look at a stretch of your own life, large or small. You might name where it began, where it ended, and one thing that stays with you."
+      ],
+      "notice": "What detail stays with you from something that has ended?",
+      "writing_prompt": "Write the last scene of a visit, project, or journey, letting one remaining detail recall its beginning."
+    }
+  ]
+}
