@@ -23,7 +23,7 @@ npm run test:daily-email-copy:browser
 
 The generator reads the immutable `20260924` baseline and writes these 18 HTML/plain-text pairs plus the hash manifest. It fails if required sections are absent or duplicated. Do not hand-edit the generated files, mutate historical snapshots, or run the unrelated premium-calendar generator for mailers.
 
-Open `preview.html` through the repository's local static server to review every day at 320, 375, or 520 pixels. The automated browser check uses installed Playwright Chromium, or the explicit `MAILER_BROWSER_EXECUTABLE` path, and writes its screenshots/report to `/tmp/sineday-daily-copy-preview` by default (`--output` selects another folder). Its 108 renders cover all 18 days at three widths in light/dark preference, plus 18 image-blocked checks. All requests are intercepted and the existing official image bytes are read locally; it sends nothing to production.
+The temporary hosted viewer has been removed. Use the automated offline browser check to review every day at 320, 375, or 520 pixels. The automated browser check uses installed Playwright Chromium, or the explicit `MAILER_BROWSER_EXECUTABLE` path, and writes its screenshots/report to `/tmp/sineday-daily-copy-preview` by default (`--output` selects another folder). Its 108 renders cover all 18 days at three widths in light/dark preference, plus 18 image-blocked checks. All requests are intercepted and the existing official image bytes are read locally; it sends nothing to production.
 
 ## Publication gate
 

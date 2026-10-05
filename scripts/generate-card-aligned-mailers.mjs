@@ -127,7 +127,7 @@ export function reviseCardAlignedTemplate({ html, text, day, copy }) {
   return { html: revisedHtml, text: revisedText };
 }
 
-function previewHtml(copy, outputs) {
+export function previewHtml(copy, outputs) {
   // Only preview srcdoc image paths are localised. Production HTML stays exact.
   const frames = Object.fromEntries(copy.days.map(({ day }) => [day, outputs.find(([name]) => name === `day-${String(day).padStart(2, '0')}.html`)[1].replace(/https:\/\/sineday\.app\/assets\//g, '../../../assets/')]));
   const payload = JSON.stringify({ days: copy.days, frames }).replace(/</g, '\\u003c');
@@ -163,7 +163,7 @@ export async function generateCardAlignedMailers({ check = false, outputDirector
     manifest.push({ day, alias: previous.alias, template_id: previous.template_id, template_identity_source: previous.template_identity_source, subject: previous.subject, html: `${stem}.html`, html_sha256: sha256(revised.html), text: `${stem}.txt`, text_sha256: sha256(revised.text), previous_snapshot: '20261005', previous_html_sha256: sha256(html), previous_text_sha256: sha256(text), hero_url: previous.hero_url, blog_url: previous.blog_url, card_source: CARD_SOURCE, card_source_sha256: sha256(sourceBytes), provenance: 'source-provenance.json' });
     provenance.push({ day, title: entry.title, phase: entry.phase, website_phase: DAY_DATA.find((record) => record.day === day).phase, alias: previous.alias, template_id: previous.template_id, source: CARD_SOURCE, source_sha256: sha256(sourceBytes), subtitle: { selector: `DAY_DATA.find(day === ${day}).description`, line: lineOf(entry.subtitle), value: entry.subtitle }, paragraph: { selector: `DAY_DETAILS[${day}].paragraph`, line: lineOf(entry.paragraph), value: entry.paragraph }, bullets: entry.bullets.map((value, index) => ({ selector: `DAY_DETAILS[${day}].bullets[${index}]`, line: lineOf(value), value })), question: { source: 'copy.json', selector: `days.find(day === ${day}).question`, value: entry.question, relationship: 'New reader question; not presented as verbatim website text' } });
   }
-  outputs.push(['template-manifest.json', `${JSON.stringify(manifest, null, 2)}\n`], ['source-provenance.json', `${JSON.stringify(provenance, null, 2)}\n`], ['preview.html', previewHtml(copy, outputs)]);
+  outputs.push(['template-manifest.json', `${JSON.stringify(manifest, null, 2)}\n`], ['source-provenance.json', `${JSON.stringify(provenance, null, 2)}\n`]);
   if (!check) await mkdir(outputDirectory, { recursive: true });
   const names = await readdir(outputDirectory);
   if (names.some((name) => /^day-.*\.(?:html|txt)$/.test(name) && !outputs.some(([expected]) => expected === name))) throw new Error('Unexpected extra day output identity');
@@ -179,5 +179,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (process.argv.slice(2).some((argument) => argument !== '--check')) throw new Error('Only --check is supported');
   const check = process.argv.includes('--check');
   const manifest = await generateCardAlignedMailers({ check });
-  console.log(`${check ? 'Verified' : 'Generated'} ${manifest.length} exact-card HTML/text pairs, provenance and local preview. No live changes.`);
+  console.log(`${check ? 'Verified' : 'Generated'} ${manifest.length} exact-card HTML/text pairs and provenance. No live changes.`);
 }

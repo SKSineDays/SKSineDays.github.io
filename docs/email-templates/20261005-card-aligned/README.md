@@ -1,6 +1,6 @@
 # SineDay website-card mailer review · 2026-10-05
 
-This additive snapshot contains the corrected daily mailers and a static review preview. Generating these files does not update live Resend templates or send email. Website card source and all previous dated snapshots, generators and tests remain intact.
+This additive snapshot contains the corrected daily mailers and an offline browser verifier. Generating these files does not update live Resend templates or send email. Website card source and all previous dated snapshots, generators and tests remain intact.
 
 ## Content contract
 
@@ -52,7 +52,7 @@ No dependency versions or lockfile changes are required.
 
 ## Preview
 
-`preview.html` is a static local side-by-side viewer: the exact website card appears next to the selected mailer. It offers all 18 days and 320, 375 and 520 pixel mailer widths. Open it directly from disk or use the repository's existing static-only server. The preview substitutes local checked-in image URLs only inside its preview frame; the deliverable HTML retains every production image URL unchanged. The source card in the preview is read-only.
+The hosted review viewer has been removed. The offline browser verifier builds the side-by-side viewer entirely in memory for its 18-day and width-control tests; the generator does not write a viewer into the static site. Production email HTML and image URLs remain unchanged.
 
 ## Verification
 

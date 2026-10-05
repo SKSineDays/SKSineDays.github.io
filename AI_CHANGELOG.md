@@ -240,3 +240,15 @@ Each entry includes:
 **Notes:** Adds a deterministic HTML and plain-text snapshot, manifest, provenance and responsive preview. All 300 tests and all three snapshot generation checks pass. New list items declare explicit inline typography for email compatibility. Website source, historical snapshots, email identities, images, destinations and delivery behavior remain unchanged. Hosted browser checks are required before publication.
 
 ---
+
+## 2026-10-05T16:47:29.666Z
+
+**Files:** docs/email-templates/20261004/preview.html, docs/email-templates/20261005/preview.html, docs/email-templates/20261005-card-aligned/preview.html, scripts/generate-card-aligned-mailers.mjs, scripts/verify-card-aligned-mailers.mjs, test/card-aligned-mailers.test.mjs, docs/email-templates/20261004/README.md, docs/email-templates/20261005/README.md, docs/email-templates/20261005-card-aligned/README.md
+
+**Summary:** Remove temporary hosted email review viewers
+
+**Rationale:** The review is finished; remove all three temporary viewer entrypoints while preserving actual email templates and delivery.
+
+**Notes:** The generator no longer writes preview.html. Offline browser tests construct the viewer in memory. Email HTML/TXT, manifests, IDs, aliases, public image assets, app code and cron are byte-identical. Three snapshot checks pass. Browser launch is blocked by this executor socket sandbox.
+
+---

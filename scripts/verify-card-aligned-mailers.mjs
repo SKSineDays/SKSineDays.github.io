@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { previewHtml } from './generate-card-aligned-mailers.mjs';
 import { DAY_DATA, DAY_DETAILS } from '../js/sineday-engine.js';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIRECTORY = 'docs/email-templates/20261005-card-aligned';
@@ -15,6 +16,12 @@ const makePdfs = args.includes('--pdf');
 await mkdir(OUTPUT, { recursive: true });
 if (makePdfs) await mkdir(PDF_OUTPUT, { recursive: true });
 const copy = JSON.parse(await readFile(join(ROOT, DIRECTORY, 'copy.json'), 'utf8'));
+// Build the review viewer only in memory; never write it into the hosted site.
+const previewOutputs = await Promise.all(copy.days.map(async ({ day }) => {
+  const name = `day-${String(day).padStart(2, '0')}.html`;
+  return [name, await readFile(join(ROOT, DIRECTORY, name), 'utf8')];
+}));
+const localPreview = previewHtml(copy, previewOutputs);
 const browser = await chromium.launch({ executablePath: process.env.MAILER_BROWSER_EXECUTABLE || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
 const checks = [], blockedChecks = [], previewChecks = [], pdfs = [];
 const intercepted = new Set(), rejected = new Set();
@@ -22,7 +29,8 @@ async function offlineRoute(route) {
   const url = new URL(route.request().url());
   const pathname = url.pathname.slice(1);
   intercepted.add(url.href);
-  if (url.hostname === 'mailer.test' && new RegExp(`^${DIRECTORY}/(?:day-\\d{2}|preview)\\.html$`).test(pathname)) return route.fulfill({ contentType: 'text/html', body: await readFile(join(ROOT, pathname)) });
+  if (url.hostname === 'mailer.test' && pathname === `${DIRECTORY}/preview.html`) return route.fulfill({ contentType: 'text/html', body: localPreview });
+  if (url.hostname === 'mailer.test' && new RegExp(`^${DIRECTORY}/day-\\d{2}\\.html$`).test(pathname)) return route.fulfill({ contentType: 'text/html', body: await readFile(join(ROOT, pathname)) });
   if (['sineday.app', 'mailer.test'].includes(url.hostname) && /^assets\/email\/(?:20260924\/scenes\/SineDayScene\d{1,2}|20260911\/wave-\d{2})\.png$/.test(pathname)) return route.fulfill({ contentType: 'image/png', body: await readFile(join(ROOT, pathname)) });
   rejected.add(url.href);
   return route.abort('blockedbyclient');
