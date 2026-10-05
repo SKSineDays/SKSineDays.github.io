@@ -192,3 +192,15 @@ Each entry includes:
 **Notes:** Focused copy, placement, daily-email and SineDuck source checks pass (11 tests). UI and auth JavaScript are unchanged. Cloud browser could not open the local preview (ERR_BLOCKED_BY_CLIENT); browser layout and live OAuth were not verified.
 
 ---
+
+## 2026-10-04T23:58:30.706Z
+
+**Files:** scripts/generate-daily-email-copy.mjs, scripts/verify-daily-email-copy.mjs, docs/email-templates/20261004, package.json, test/daily-email-copy.test.mjs
+
+**Summary:** Prepare all 18 daily mailers with a shorter mySine reflection and a secondary SineDay blog invitation
+
+**Rationale:** Reduce repeated reading burden while preserving each day’s own reflection question and keeping daily guidance primary
+
+**Notes:** Draft only: historical snapshot and all live Resend aliases remain unchanged. Shared copy regenerates all HTML/text pairs. Exact preservation, parity, hashes and contrast covered by tests. Browser/inbox rendering requires separate verification before live publication.
+
+---

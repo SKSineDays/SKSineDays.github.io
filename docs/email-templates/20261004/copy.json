@@ -1,0 +1,85 @@
+{
+  "reflection_label": "Your Sine, through your eyes",
+  "reflection_caveat": "Your experience may echo the theme, differ from it, or show no pattern. There is room for all of it.",
+  "reply_prefix": "Reply here or email",
+  "reply_address": "mysine@sineday.app",
+  "reply_suffix": "One sentence is enough.",
+  "blog_heading": "A little more room to reflect",
+  "blog_invitation": "Small observations and open questions from the SineDay Journal.",
+  "blog_link_text": "Explore the SineDay blog",
+  "blog_url": "https://www.sineday.blog/",
+  "days": [
+    {
+      "day": 1,
+      "question": "What patterns keep showing up when your wave begins again?"
+    },
+    {
+      "day": 2,
+      "question": "What seems to gather momentum at this point in your wave?"
+    },
+    {
+      "day": 3,
+      "question": "What patterns show up around Creativity in your wave?"
+    },
+    {
+      "day": 4,
+      "question": "What patterns of connection keep showing up in your wave?"
+    },
+    {
+      "day": 5,
+      "question": "What patterns of completion or focus show up here?"
+    },
+    {
+      "day": 6,
+      "question": "What patterns of balance or imbalance show up here?"
+    },
+    {
+      "day": 7,
+      "question": "What kinds of clarity keep returning at this point in your wave?"
+    },
+    {
+      "day": 8,
+      "question": "What patterns of resistance or resolve show up here?"
+    },
+    {
+      "day": 9,
+      "question": "What patterns tell you your wave is turning?"
+    },
+    {
+      "day": 10,
+      "question": "What patterns reveal themselves during Reflection?"
+    },
+    {
+      "day": 11,
+      "question": "What patterns of settling, rest, or understanding show up here?"
+    },
+    {
+      "day": 12,
+      "question": "What patterns of adjustment keep showing up here?"
+    },
+    {
+      "day": 13,
+      "question": "What patterns of letting go show up in your wave?"
+    },
+    {
+      "day": 14,
+      "question": "What patterns surface in the quietest part of your wave?"
+    },
+    {
+      "day": 15,
+      "question": "What patterns of care, repair, or recovery show up here?"
+    },
+    {
+      "day": 16,
+      "question": "What patterns of readiness show up near the end of your trough?"
+    },
+    {
+      "day": 17,
+      "question": "What foundations seem to repeat at this point in your wave?"
+    },
+    {
+      "day": 18,
+      "question": "What pattern became visible when you looked at the whole wave?"
+    }
+  ]
+}
