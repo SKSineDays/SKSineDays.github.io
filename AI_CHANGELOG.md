@@ -204,3 +204,15 @@ Each entry includes:
 **Notes:** Draft only: historical snapshot and all live Resend aliases remain unchanged. Shared copy regenerates all HTML/text pairs. Exact preservation, parity, hashes and contrast covered by tests. Browser/inbox rendering requires separate verification before live publication.
 
 ---
+
+## 2026-10-05T00:47:05.915Z
+
+**Files:** scripts/generate-daily-editorial-copy.mjs, scripts/verify-daily-email-copy.mjs, docs/email-templates/20261005, package.json, test/daily-editorial-copy.test.mjs
+
+**Summary:** Prepare a coherent perspective and writing invitation for every daily SineDay email
+
+**Rationale:** Give each canonical day one clear point across subtitle, preheader, narrative, observation and writing, with ordinary scenes and room for real or imagined stories
+
+**Notes:** Review only. All 18 HTML/text pairs generated from the immutable 20261004 published baseline. mySine stays 39–43 words; titles, phases, assets, wave, subjects, aliases, CTA, blog, privacy and unsubscribe remain intact. All 274 tests pass with zero skips, both snapshot checks pass, and all 54 WeasyPrint static renders at 320/375/520px show full copy without text overflow. All 18 mobile preview pages visually inspected. Browser and native inbox rendering have not been run for this revision. No push, merge, hosted preview, Resend update or email send is included.
+
+---

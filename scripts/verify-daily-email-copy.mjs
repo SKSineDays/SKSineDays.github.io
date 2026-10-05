@@ -9,7 +9,10 @@ import { chromium } from "playwright";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outputIndex = process.argv.indexOf("--output");
 const OUTPUT = resolve(outputIndex < 0 ? "/tmp/sineday-daily-copy-preview" : process.argv[outputIndex + 1]);
-const DIRECTORY = "docs/email-templates/20261004";
+const directoryIndex = process.argv.indexOf("--directory");
+const snapshot = directoryIndex < 0 ? "20261004" : process.argv[directoryIndex + 1];
+assert.match(snapshot ?? "", /^\d{8}$/, "--directory requires an eight-digit snapshot date");
+const DIRECTORY = `docs/email-templates/${snapshot}`;
 await mkdir(OUTPUT, { recursive: true });
 const browser = await chromium.launch({
   ...(process.env.MAILER_BROWSER_EXECUTABLE ? { executablePath: process.env.MAILER_BROWSER_EXECUTABLE } : {}),
