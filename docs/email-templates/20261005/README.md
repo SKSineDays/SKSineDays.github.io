@@ -17,7 +17,9 @@ The generator reads the immutable `20261004` HTML/text snapshot and changes only
 - “Notice today” question
 - mySine writing prompt and shared caveat
 
-Canonical titles, phase labels, subjects, aliases, archived template IDs, day order, scene and wave image tags, all attributes/styles, dashboard CTA, blog block, reply destination, footer, privacy promise, unsubscribe URL variable, and tracking attributes remain unchanged. Every other HTML and plain-text byte is protected by regression tests. The prior `20260924` and `20261004` snapshots and original generator/tests remain intact.
+For the current Resend update contract, which excludes `<style>` elements, the generator also moves the exact existing `:root{color-scheme:light only;}` declaration from its sole style block to `<html lang="en" dir="ltr" style="color-scheme:light only;">`. This is the only shell adjustment; it fails closed if the expected root/style block is missing, duplicated, or accompanied by an unexpected style element. The existing body and meta canvas locks remain byte-identical.
+
+Canonical titles, phase labels, subjects, aliases, archived template IDs, day order, scene and wave image tags, all other attributes/styles, dashboard CTA, blog block, reply destination, footer, privacy promise, unsubscribe URL variable, and tracking attributes remain unchanged. Every other HTML and plain-text byte is protected by regression tests. The compatibility move changes no reader copy or plain-text file. The prior `20260924` and `20261004` snapshots and original generator/tests remain intact.
 
 `template-manifest.json` records canonical alias/subject, archived template identity, generated HTML/text SHA-256 hashes, and corresponding `20261004` baseline hashes. The template IDs come from the `20260924` archive, not a new live-service audit.
 
@@ -54,9 +56,9 @@ The new tests cover complete visible HTML/plain-text parity, unchanged protected
 
 ### Verification for this draft
 
-- Both snapshot generation checks pass; the complete test suite passes 274/274, including all 23 new editorial tests.
+- Both snapshot generation checks pass; the complete test suite passes 275/275, including all 24 new editorial tests and the root-style compatibility guard.
 - The full suite was run in an isolated temporary copy with the unchanged tracked dependency tree plus the previously verified dependency set. No tracked dependency or lockfile changes were made.
-- WeasyPrint 70 static rendering passes all 54 day/width combinations (18 days at 320, 375, and 520 pixels), with every new copy section and preserved footer visible and no text overflow.
+- WeasyPrint 70 static rendering passes all 54 day/width combinations (18 days at 320, 375, and 520 pixels), with every new copy section and preserved footer visible and no text overflow. After the root-style compatibility adjustment, all 54 renders pass again and all 18 newly rendered mobile PNGs are pixel-and-byte identical to the pre-change previews.
 - Chromium/browser rendering and native Gmail/Apple Mail/Outlook inbox verification remain unrun for this draft. Static rendering does not certify those clients or their dark-mode/image-blocking behavior.
 
 ## Publication gate

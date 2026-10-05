@@ -216,3 +216,15 @@ Each entry includes:
 **Notes:** Review only. All 18 HTML/text pairs generated from the immutable 20261004 published baseline. mySine stays 39–43 words; titles, phases, assets, wave, subjects, aliases, CTA, blog, privacy and unsubscribe remain intact. All 274 tests pass with zero skips, both snapshot checks pass, and all 54 WeasyPrint static renders at 320/375/520px show full copy without text overflow. All 18 mobile preview pages visually inspected. Browser and native inbox rendering have not been run for this revision. No push, merge, hosted preview, Resend update or email send is included.
 
 ---
+
+## 2026-10-05T01:07:48.687Z
+
+**Files:** scripts/generate-daily-editorial-copy.mjs, test/daily-editorial-copy.test.mjs, docs/email-templates/20261005/README.md, docs/email-templates/20261005/day-01.html, docs/email-templates/20261005/day-02.html, docs/email-templates/20261005/day-03.html, docs/email-templates/20261005/day-04.html, docs/email-templates/20261005/day-05.html, docs/email-templates/20261005/day-06.html, docs/email-templates/20261005/day-07.html, docs/email-templates/20261005/day-08.html, docs/email-templates/20261005/day-09.html, docs/email-templates/20261005/day-10.html, docs/email-templates/20261005/day-11.html, docs/email-templates/20261005/day-12.html, docs/email-templates/20261005/day-13.html, docs/email-templates/20261005/day-14.html, docs/email-templates/20261005/day-15.html, docs/email-templates/20261005/day-16.html, docs/email-templates/20261005/day-17.html, docs/email-templates/20261005/day-18.html, docs/email-templates/20261005/template-manifest.json
+
+**Summary:** Move the daily editorial root canvas lock inline for Resend template compatibility
+
+**Rationale:** The current template update contract excludes style elements; retain the existing light-only declaration on the same HTML root without changing reader copy or other shell bytes
+
+**Notes:** All 18 HTML files differ only by removal of the exact inherited root style block and insertion of its declaration on the html element. Source copy, all text alternatives, body/meta locks, identities, assets, links, and historical snapshots remain byte-identical. Missing, duplicate, or unexpected style/root markup fails closed. Both generation checks and all 275 tests pass with zero skips. No push, commit, merge, publish or email send performed by this compatibility patch. Compatibility static QA passes all 54 day/width renders; all 18 new mobile PNGs are pixel-and-byte identical to the pre-change previews.
+
+---

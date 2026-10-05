@@ -20,6 +20,12 @@ const words = (value) => value.trim().split(/\s+/).length;
 const normalizeSpace = (value) => value.replace(/\s+/g, " ").trim();
 const row = (name) => new RegExp(`<tr><td data-sineday-surface="${name}"[^>]*>[\\s\\S]*?<\\/td><\\/tr>`);
 const read = (directory, day, extension) => readFileSync(join(directory, `day-${String(day).padStart(2, "0")}.${extension}`), "utf8");
+const rootStyle = '<style type="text/css">:root{color-scheme:light only;}</style>';
+const originalRoot = '<html lang="en" dir="ltr">';
+const inlineRoot = '<html lang="en" dir="ltr" style="color-scheme:light only;">';
+// The sole permitted shell equivalence is this exact declaration on the same
+// root element. Nothing else is normalized or removed by the comparison.
+const compatibleShell = (html) => html.replace(rootStyle, "").replace(originalRoot, inlineRoot);
 
 // Independent visible-copy comparison: ignore head/style, hidden preheader and
 // image alt text. Plain text spells out the same three web/opt-out hrefs.
@@ -87,9 +93,12 @@ for (let day = 1; day <= 18; day += 1) {
     assert.equal(record.previous_text_sha256, hash(oldText));
     assert.deepEqual(validateDailyTemplate({ ...record, html, status: "published" }, day, record.alias), []);
     assert.equal(visibleHtml(html), visibleText(text), "Complete visible HTML must equal the complete plain-text alternative");
-    assert.equal(maskHtml(html), maskHtml(oldHtml), "All bytes outside authorized copy interiors must be preserved");
+    assert.doesNotMatch(html, /<\/?style\b/i);
+    assert.equal((html.match(/<html\b[^>]*>/g) || []).length, 1);
+    assert.ok(html.includes(inlineRoot), "The exact original canvas lock must be inline on the HTML root");
+    assert.equal(maskHtml(html), maskHtml(compatibleShell(oldHtml)), "All bytes outside authorized copy interiors and the exact root style move must be preserved");
     assert.equal(maskText(text), maskText(oldText), "All plain-text content outside authorized blocks must be preserved");
-    assert.deepEqual(html.match(/<[^>]+>/g), oldHtml.match(/<[^>]+>/g), "Every tag, style and attribute remains byte-identical");
+    assert.deepEqual(html.match(/<[^>]+>/g), compatibleShell(oldHtml).match(/<[^>]+>/g), "Every other tag, style and attribute remains byte-identical");
     assert.deepEqual(html.match(/<img\b[^>]*>/g), oldHtml.match(/<img\b[^>]*>/g));
     assert.deepEqual(html.match(/href="[^"]*"/g), oldHtml.match(/href="[^"]*"/g));
     assert.deepEqual(html.match(/\{\{\{[^}]+\}\}\}/g), oldHtml.match(/\{\{\{[^}]+\}\}\}/g));
@@ -165,12 +174,30 @@ test("dollar tokens stay literal, all editable HTML is escaped, and output canno
   const html = read(EDITORIAL_BASE_DIR, 1, "html");
   const text = read(EDITORIAL_BASE_DIR, 1, "txt");
   const result = reviseDailyEditorialTemplate({ html, text, day: 1, copy: altered });
-  assert.deepEqual(result.html.match(/<[^>]+>/g), html.match(/<[^>]+>/g));
-  assert.equal(maskHtml(result.html), maskHtml(html));
+  assert.deepEqual(result.html.match(/<[^>]+>/g), compatibleShell(html).match(/<[^>]+>/g));
+  assert.equal(maskHtml(result.html), maskHtml(compatibleShell(html)));
   assert.equal(maskText(result.text), maskText(text));
   assert.equal((result.html.match(/&lt;img src=x onerror=alert\(1\)&gt;/g) || []).length, 7);
   assert.ok(result.html.includes("$&amp; $` $&#39;"));
   assert.equal(visibleHtml(result.html), visibleText(result.text));
+});
+
+test("root canvas compatibility fails closed on missing, duplicate or unexpected shell styles", () => {
+  const html = read(EDITORIAL_BASE_DIR, 1, "html");
+  const text = read(EDITORIAL_BASE_DIR, 1, "txt");
+  for (const changed of [
+    html.replace(originalRoot, ""),
+    html.replace(originalRoot, originalRoot + originalRoot),
+    html.replace(originalRoot, '<html lang="en" dir="ltr" class="unexpected">'),
+    html.replace(rootStyle, ""),
+    html.replace(rootStyle, rootStyle + rootStyle),
+    html.replace(rootStyle, '<style type="text/css">:root{color-scheme:dark;}</style>'),
+    html.replace(rootStyle, rootStyle + '<style>body{color:red}</style>'),
+    html.replace(rootStyle, rootStyle + '</style>'),
+    html.replace(rootStyle, rootStyle + '<STYLE>body{color:red}</STYLE>')
+  ]) {
+    assert.throws(() => reviseDailyEditorialTemplate({ html: changed, text, day: 1, copy }), /matching section/);
+  }
 });
 
 test("check mode detects stale outputs without repairing them", async () => {

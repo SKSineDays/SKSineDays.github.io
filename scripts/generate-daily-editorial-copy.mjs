@@ -15,7 +15,11 @@ const FIXED_SHARED_FIELDS = ["reflection_label", "reply_prefix", "reply_address"
 const DAY_FIELDS = ["day", "title", "phase", "core_point", "diagnosis", "subtitle", "preheader", "paragraphs", "notice", "writing_prompt"];
 
 // Each expression captures the opening tag, its text interior, and closing tag.
-// No tags or attributes are regenerated: the surrounding email stays byte-exact.
+// Apart from the explicit root canvas-lock move below, no tags or attributes
+// are regenerated: the surrounding email stays byte-exact.
+const ROOT_CANVAS_STYLE = '<style type="text/css">:root{color-scheme:light only;}</style>';
+const ORIGINAL_HTML_ROOT = '<html lang="en" dir="ltr">';
+const INLINE_HTML_ROOT = '<html lang="en" dir="ltr" style="color-scheme:light only;">';
 const PREHEADER = /(<p style="display:none;[^">]*">)([^<]*)(<\/p>)/g;
 const SUBTITLE = /(<p style="[^">]*font-family:Georgia, Times New Roman, serif;font-size:17px;[^">]*">)([^<]*)(<\/p>)/g;
 const BODY_PARAGRAPH = /(<p style="[^">]*font-size:17px;line-height:1\.65;color:#E8ECF7;">)([^<]*)(<\/p>)/g;
@@ -56,6 +60,16 @@ function replaceLiteralOnce(source, target, value, label) {
   if (count !== 1) throw new Error(`${label}: expected 1 matching section, found ${count}`);
   // A callback preserves literal replacement tokens such as $&, $` and $'.
   return source.replace(target, () => value);
+}
+
+function inlineRootCanvasLock(html, day) {
+  // Resend's current update contract excludes style elements. Move only the
+  // existing :root declaration to the same root element; keep all other locks.
+  matchesExactly(html, /<html\b[^>]*>/gi, 1, `Day ${day} HTML root`);
+  matchesExactly(html, /<style\b[^>]*>/gi, 1, `Day ${day} canvas style element`);
+  matchesExactly(html, /<\/style\s*>/gi, 1, `Day ${day} canvas style closing tag`);
+  const withoutStyle = replaceLiteralOnce(html, ROOT_CANVAS_STYLE, "", `Day ${day} exact root canvas style`);
+  return replaceLiteralOnce(withoutStyle, ORIGINAL_HTML_ROOT, INLINE_HTML_ROOT, `Day ${day} exact HTML root`);
 }
 
 function nonemptyText(value, label) {
@@ -114,7 +128,8 @@ export function reviseDailyEditorialTemplate({ html, text, day, copy }) {
   if (!html.includes(`>${headerText}</p>`) || !text.startsWith(`${headerText}\n\n${entry.title}\n\n`)) {
     throw new Error(`Day ${day}: source identity does not match canonical title/phase`);
   }
-  let revisedHtml = replaceTextInteriors(html, PREHEADER, [entry.preheader], `Day ${day} preheader`);
+  let revisedHtml = inlineRootCanvasLock(html, day);
+  revisedHtml = replaceTextInteriors(revisedHtml, PREHEADER, [entry.preheader], `Day ${day} preheader`);
   revisedHtml = replaceTextInteriors(revisedHtml, SUBTITLE, [entry.subtitle], `Day ${day} subtitle`);
   revisedHtml = replaceTextInteriors(revisedHtml, BODY_PARAGRAPH, entry.paragraphs, `Day ${day} body paragraphs`);
   const revisedNotice = replaceTextInteriors(notice, NOTICE, [entry.notice], `Day ${day} notice`);
