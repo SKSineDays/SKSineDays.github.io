@@ -228,3 +228,15 @@ Each entry includes:
 **Notes:** All 18 HTML files differ only by removal of the exact inherited root style block and insertion of its declaration on the html element. Source copy, all text alternatives, body/meta locks, identities, assets, links, and historical snapshots remain byte-identical. Missing, duplicate, or unexpected style/root markup fails closed. Both generation checks and all 275 tests pass with zero skips. No push, commit, merge, publish or email send performed by this compatibility patch. Compatibility static QA passes all 54 day/width renders; all 18 new mobile PNGs are pixel-and-byte identical to the pre-change previews.
 
 ---
+
+## 2026-10-05T16:16:09.255Z
+
+**Files:** docs/email-templates/20261005-card-aligned, scripts/generate-card-aligned-mailers.mjs, scripts/verify-card-aligned-mailers.mjs, test/card-aligned-mailers.test.mjs, package.json
+
+**Summary:** Align all 18 daily mailers exactly with the website cards and add personal wave questions
+
+**Rationale:** Preserve the canonical card subtitles, paragraphs and bullets in email while giving each day one focused reflection question.
+
+**Notes:** Adds a deterministic HTML and plain-text snapshot, manifest, provenance and responsive preview. All 300 tests and all three snapshot generation checks pass. New list items declare explicit inline typography for email compatibility. Website source, historical snapshots, email identities, images, destinations and delivery behavior remain unchanged. Hosted browser checks are required before publication.
+
+---
