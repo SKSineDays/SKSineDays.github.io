@@ -9,6 +9,9 @@
     "gen:templates": "node scripts/generate-premium-templates.js",
     "compose:daily-email-scenes": "node scripts/compose-daily-email-scenes.mjs",
     "audit:daily-email-templates": "node scripts/audit-daily-email-templates.mjs",
+    "generate:daily-email-copy": "node scripts/generate-daily-email-copy.mjs",
+    "check:daily-email-copy": "node scripts/generate-daily-email-copy.mjs --check",
+    "test:daily-email-copy:browser": "node scripts/verify-daily-email-copy.mjs",
     "test": "node --experimental-test-module-mocks --test test/*.mjs",
     "test:globe": "node --experimental-test-module-mocks --test test/globe-*.test.mjs",
     "test:globe:browser": "node test/globe-browser-smoke.cjs && node test/globe-dashboard-smoke.cjs && node test/globe-service-worker-smoke.cjs"
