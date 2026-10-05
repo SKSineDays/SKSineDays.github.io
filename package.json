@@ -17,7 +17,10 @@
     "test:daily-editorial-copy:browser": "node scripts/verify-daily-email-copy.mjs --directory 20261005 --output /tmp/sineday-daily-editorial-preview",
     "test": "node --experimental-test-module-mocks --test test/*.mjs",
     "test:globe": "node --experimental-test-module-mocks --test test/globe-*.test.mjs",
-    "test:globe:browser": "node test/globe-browser-smoke.cjs && node test/globe-dashboard-smoke.cjs && node test/globe-service-worker-smoke.cjs"
+    "test:globe:browser": "node test/globe-browser-smoke.cjs && node test/globe-dashboard-smoke.cjs && node test/globe-service-worker-smoke.cjs",
+    "generate:card-aligned-mailers": "node scripts/generate-card-aligned-mailers.mjs",
+    "check:card-aligned-mailers": "node scripts/generate-card-aligned-mailers.mjs --check",
+    "test:card-aligned-mailers:browser": "node scripts/verify-card-aligned-mailers.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

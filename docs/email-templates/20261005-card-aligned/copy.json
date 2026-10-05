@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "source": "js/sineday-engine.js",
+  "days": [
+    {
+      "day": 1,
+      "title": "Initiation",
+      "phase": "Rising",
+      "subtitle": "Fresh beginnings call you forward",
+      "paragraph": "This is the start of the wave — a clean edge, a new chapter. Small choices have outsized power today because they set direction. Pick one meaningful beginning and give it a real first step.",
+      "bullets": [
+        "Choose one 'seed' to start (don't start five)",
+        "Set a simple intention you can act on today",
+        "Clear one obstacle or distraction from the path",
+        "Take the smallest real step that counts"
+      ],
+      "question": "What beginning feels meaningful to you at the start of this wave?"
+    },
+    {
+      "day": 2,
+      "title": "Momentum",
+      "phase": "Ascending",
+      "subtitle": "Energy builds as you push forward",
+      "paragraph": "The wave is rising and consistency becomes your advantage. What you repeat today gains speed and traction. Keep it simple, keep it moving, and let progress compound.",
+      "bullets": [
+        "Repeat yesterday's win and build on it",
+        "Use short sprints instead of perfection",
+        "Move your body to move your energy",
+        "Remove friction: simplify tools, steps, and decisions"
+      ],
+      "question": "What is gaining momentum for you as your wave rises?"
+    },
+    {
+      "day": 3,
+      "title": "Creativity",
+      "phase": "Ascending",
+      "subtitle": "Imagination flows and ideas spark",
+      "paragraph": "Creative current is strong — new angles appear and possibilities open up. It's a day for exploration and playful experimentation. Capture ideas quickly, then shape one into something tangible.",
+      "bullets": [
+        "Brainstorm freely before you edit",
+        "Try a new approach, format, or environment",
+        "Capture ideas immediately (notes > memory)",
+        "Turn one idea into a quick prototype"
+      ],
+      "question": "What ideas or possibilities are catching your attention on this rising part of your wave?"
+    },
+    {
+      "day": 4,
+      "title": "Connection",
+      "phase": "Ascending",
+      "subtitle": "Social energy draws you outward",
+      "paragraph": "Connection comes easier now — conversations can unlock clarity and opportunity. Share what you're building and let relationships refine it. The right exchange today can save you weeks later.",
+      "bullets": [
+        "Reach out: one meaningful message or call",
+        "Collaborate, ask for feedback, or offer help",
+        "Share your current direction in one sentence",
+        "Strengthen trust: follow through on a small promise"
+      ],
+      "question": "What connections feel meaningful to you on this ascending day?"
+    },
+    {
+      "day": 5,
+      "title": "Productivity",
+      "phase": "Ascending",
+      "subtitle": "Focus sharpens, tasks find completion",
+      "paragraph": "This is a strong execution day — the wave supports doing and finishing. You'll feel best when you ship something real. Choose priority work, protect your time, and close loops.",
+      "bullets": [
+        "Pick the top 1–3 outcomes and ignore the rest",
+        "Batch tasks and reduce context switching",
+        "Finish and deliver (completion over expansion)",
+        "Clean up loose ends: replies, files, next steps"
+      ],
+      "question": "What feels ready for your focus or completion as your wave rises?"
+    },
+    {
+      "day": 6,
+      "title": "Balance",
+      "phase": "Peak",
+      "subtitle": "Harmony emerges in all you do",
+      "paragraph": "At the peak, you can see the whole system — what's aligned and what's pulling you off-center. It's a day to stabilize, refine, and make adjustments that create ease. Balance isn't doing less; it's choosing what fits.",
+      "bullets": [
+        "Rebalance effort: work, health, relationships, rest",
+        "Adjust priorities to match what matters now",
+        "Create a rhythm you can sustain",
+        "Choose clean boundaries over overcommitment"
+      ],
+      "question": "What feels aligned in your life at this peak, and what is pulling you off-center?"
+    },
+    {
+      "day": 7,
+      "title": "Insight",
+      "phase": "Peak",
+      "subtitle": "Clarity arrives, intuition guides",
+      "paragraph": "Insight cuts through noise today. Patterns become obvious, and the 'real issue' is easier to name. Listen closely, write it down, and let truth simplify your next move.",
+      "bullets": [
+        "Journal for 5 minutes: 'What's actually going on?'",
+        "Look for the pattern beneath the problem",
+        "Decide one thing you will stop tolerating",
+        "Choose the simplest next step that honors clarity"
+      ],
+      "question": "What are you seeing more clearly at this point in your wave?"
+    },
+    {
+      "day": 8,
+      "title": "Challenge",
+      "phase": "Peak",
+      "subtitle": "Strength tested, resolve fortified",
+      "paragraph": "This is the edge of the peak — the day that builds durability. Resistance shows where you're growing. Meet the hard thing directly, and you'll come out stronger and clearer.",
+      "bullets": [
+        "Tackle the most avoided task first",
+        "Hold a boundary you've been bending",
+        "Use friction as feedback, not failure",
+        "Choose courage in one specific action"
+      ],
+      "question": "What is testing your resolve at this edge of the peak?"
+    },
+    {
+      "day": 9,
+      "title": "Transition",
+      "phase": "Crest",
+      "subtitle": "The wave turns, reflection begins",
+      "paragraph": "The crest is a turning point — the energy shifts from outward push to inward refinement. This is a perfect day to review, re-aim, and change course with intention. Let the wave turn without forcing it.",
+      "bullets": [
+        "Review wins, lessons, and what changed",
+        "Decide what continues and what ends",
+        "Make one clean adjustment to direction",
+        "Slow down enough to feel what's true"
+      ],
+      "question": "What is changing for you as your wave turns?"
+    },
+    {
+      "day": 10,
+      "title": "Reflection",
+      "phase": "Descending",
+      "subtitle": "Looking inward reveals growth",
+      "paragraph": "Reflection deepens and perspective expands. You can learn more from the past cycle now than you could while rushing through it. Notice what worked, what didn't, and why.",
+      "bullets": [
+        "Ask: 'What did this cycle teach me?'",
+        "Name one pattern to reinforce and one to retire",
+        "Practice gratitude for the progress you missed",
+        "Clarify what 'better' looks like next time"
+      ],
+      "question": "Looking back over this wave, what are you seeing more clearly now?"
+    },
+    {
+      "day": 11,
+      "title": "Integration",
+      "phase": "Descending",
+      "subtitle": "Rest allows wisdom to settle",
+      "paragraph": "Integration is where growth becomes real. When you pause, your mind and body process what you've lived. Give yourself space — the system consolidates and strengthens here.",
+      "bullets": [
+        "Prioritize sleep, recovery, and simplicity",
+        "Organize what you've learned into one takeaway",
+        "Reduce inputs: less noise, fewer demands",
+        "Let your next move emerge instead of forcing it"
+      ],
+      "question": "What is beginning to settle for you in this quieter part of the wave?"
+    },
+    {
+      "day": 12,
+      "title": "Recalibration",
+      "phase": "Descending",
+      "subtitle": "Adjust your course with care",
+      "paragraph": "This day supports fine-tuning. Small adjustments now prevent bigger corrections later. Be gentle and precise — tweak the plan so it matches reality and your energy.",
+      "bullets": [
+        "Edit your goals to fit the season you're in",
+        "Reduce scope without reducing commitment",
+        "Fix one habit at the root (not the symptom)",
+        "Realign schedule, tools, and expectations"
+      ],
+      "question": "How well do your plans fit your energy on this descending part of the wave?"
+    },
+    {
+      "day": 13,
+      "title": "Release",
+      "phase": "Descending",
+      "subtitle": "Let go what no longer serves",
+      "paragraph": "Release clears space for the next rise. What you're holding that's outdated becomes heavier now. Letting go is not loss — it's making room for what fits.",
+      "bullets": [
+        "Declutter one area: mind, desk, inbox, calendar",
+        "Close an open loop you've been carrying",
+        "Say 'no' to something misaligned",
+        "Forgive, simplify, and lighten your load"
+      ],
+      "question": "What feels ready to be released as your wave moves toward the trough?"
+    },
+    {
+      "day": 14,
+      "title": "Inner Work",
+      "phase": "Trough",
+      "subtitle": "Dive deep into self-discovery",
+      "paragraph": "The trough is quiet power — deeper truths surface when the outside gets quieter. This is a day for honesty, insight, and inner alignment. The work here changes everything upstream.",
+      "bullets": [
+        "Choose solitude or a slower pace",
+        "Ask: 'What am I avoiding feeling or admitting?'",
+        "Do one grounding practice (walk, breath, prayer, journal)",
+        "Reconnect to your core values and direction"
+      ],
+      "question": "What are you discovering about yourself in the quiet of the trough?"
+    },
+    {
+      "day": 15,
+      "title": "Healing",
+      "phase": "Trough",
+      "subtitle": "Gentle care restores vitality",
+      "paragraph": "Healing is active restoration. Your system responds best to softness today — nourishment, safety, and patient care. Treat recovery like progress, because it is.",
+      "bullets": [
+        "Give your body what it's been asking for",
+        "Choose gentler movement over intensity",
+        "Receive support: ask, share, or rest",
+        "Repair one relationship — with yourself or another"
+      ],
+      "question": "What kind of care feels most restorative to you in this part of the trough?"
+    },
+    {
+      "day": 16,
+      "title": "Preparation",
+      "phase": "Trough",
+      "subtitle": "Gather strength for the rise ahead",
+      "paragraph": "The next rise is forming — preparation turns intention into readiness. Quiet structure now creates momentum later. Set the stage so Day 1 feels clean and powerful.",
+      "bullets": [
+        "Organize tools, space, and priorities",
+        "Build buffers: time, food, sleep, resources",
+        "Plan the first steps of the next cycle",
+        "Remove one blocker before it becomes a problem"
+      ],
+      "question": "What would help you feel ready for the next rise of your wave?"
+    },
+    {
+      "day": 17,
+      "title": "Foundation",
+      "phase": "Emerging",
+      "subtitle": "Lay groundwork for new action",
+      "paragraph": "The wave begins to lift again. This is foundation energy — practical, steady, and forward-facing. Build the structure that will carry the next cycle: routines, systems, and commitments that hold.",
+      "bullets": [
+        "Create or refresh one daily rhythm",
+        "Outline the next project in simple steps",
+        "Do the 'setup work' you usually skip",
+        "Commit to consistency over intensity"
+      ],
+      "question": "What feels steady enough to build on as your wave begins to lift?"
+    },
+    {
+      "day": 18,
+      "title": "Culmination",
+      "phase": "Emerging",
+      "subtitle": "Cycle completes, renewal awaits",
+      "paragraph": "Culmination is completion with meaning. You're closing the loop — gather what you learned, finish what matters, and mark the end with intention. Then let renewal be real, not rushed.",
+      "bullets": [
+        "Finish one key thing and call it complete",
+        "Celebrate progress (even if it's imperfect)",
+        "Capture the lesson: 'Next cycle, I will…'",
+        "Reset: clear space for Day 1 to feel new"
+      ],
+      "question": "What feels complete to you at the end of this wave?"
+    }
+  ]
+}

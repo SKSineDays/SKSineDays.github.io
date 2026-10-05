@@ -1,0 +1,866 @@
+[
+  {
+    "day": 1,
+    "title": "Initiation",
+    "phase": "Rising",
+    "website_phase": "RISING • INITIATION",
+    "alias": "day01risinginitiation-1",
+    "template_id": "45691cf1-b5a7-459d-b170-5481717ff1f6",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 1).description",
+      "line": 23,
+      "value": "Fresh beginnings call you forward"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[1].paragraph",
+      "line": 173,
+      "value": "This is the start of the wave — a clean edge, a new chapter. Small choices have outsized power today because they set direction. Pick one meaningful beginning and give it a real first step."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[1].bullets[0]",
+        "line": 175,
+        "value": "Choose one 'seed' to start (don't start five)"
+      },
+      {
+        "selector": "DAY_DETAILS[1].bullets[1]",
+        "line": 176,
+        "value": "Set a simple intention you can act on today"
+      },
+      {
+        "selector": "DAY_DETAILS[1].bullets[2]",
+        "line": 177,
+        "value": "Clear one obstacle or distraction from the path"
+      },
+      {
+        "selector": "DAY_DETAILS[1].bullets[3]",
+        "line": 178,
+        "value": "Take the smallest real step that counts"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 1).question",
+      "value": "What beginning feels meaningful to you at the start of this wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 2,
+    "title": "Momentum",
+    "phase": "Ascending",
+    "website_phase": "ASCENDING • MOMENTUM",
+    "alias": "day02ascendingmomentum-1",
+    "template_id": "b1a20190-dcbb-4b3f-a43f-7470b34e9546",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 2).description",
+      "line": 31,
+      "value": "Energy builds as you push forward"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[2].paragraph",
+      "line": 183,
+      "value": "The wave is rising and consistency becomes your advantage. What you repeat today gains speed and traction. Keep it simple, keep it moving, and let progress compound."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[2].bullets[0]",
+        "line": 185,
+        "value": "Repeat yesterday's win and build on it"
+      },
+      {
+        "selector": "DAY_DETAILS[2].bullets[1]",
+        "line": 186,
+        "value": "Use short sprints instead of perfection"
+      },
+      {
+        "selector": "DAY_DETAILS[2].bullets[2]",
+        "line": 187,
+        "value": "Move your body to move your energy"
+      },
+      {
+        "selector": "DAY_DETAILS[2].bullets[3]",
+        "line": 188,
+        "value": "Remove friction: simplify tools, steps, and decisions"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 2).question",
+      "value": "What is gaining momentum for you as your wave rises?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 3,
+    "title": "Creativity",
+    "phase": "Ascending",
+    "website_phase": "ASCENDING • CREATIVITY",
+    "alias": "day03ascendingcreativity",
+    "template_id": "43a3ebe9-1492-4bcb-b411-d46d8dc8b6d4",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 3).description",
+      "line": 39,
+      "value": "Imagination flows and ideas spark"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[3].paragraph",
+      "line": 193,
+      "value": "Creative current is strong — new angles appear and possibilities open up. It's a day for exploration and playful experimentation. Capture ideas quickly, then shape one into something tangible."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[3].bullets[0]",
+        "line": 195,
+        "value": "Brainstorm freely before you edit"
+      },
+      {
+        "selector": "DAY_DETAILS[3].bullets[1]",
+        "line": 196,
+        "value": "Try a new approach, format, or environment"
+      },
+      {
+        "selector": "DAY_DETAILS[3].bullets[2]",
+        "line": 197,
+        "value": "Capture ideas immediately (notes > memory)"
+      },
+      {
+        "selector": "DAY_DETAILS[3].bullets[3]",
+        "line": 198,
+        "value": "Turn one idea into a quick prototype"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 3).question",
+      "value": "What ideas or possibilities are catching your attention on this rising part of your wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 4,
+    "title": "Connection",
+    "phase": "Ascending",
+    "website_phase": "ASCENDING • CONNECTION",
+    "alias": "day04ascendingconnection-1",
+    "template_id": "d8e150f9-4fd8-4607-947f-22723f341673",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 4).description",
+      "line": 47,
+      "value": "Social energy draws you outward"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[4].paragraph",
+      "line": 203,
+      "value": "Connection comes easier now — conversations can unlock clarity and opportunity. Share what you're building and let relationships refine it. The right exchange today can save you weeks later."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[4].bullets[0]",
+        "line": 205,
+        "value": "Reach out: one meaningful message or call"
+      },
+      {
+        "selector": "DAY_DETAILS[4].bullets[1]",
+        "line": 206,
+        "value": "Collaborate, ask for feedback, or offer help"
+      },
+      {
+        "selector": "DAY_DETAILS[4].bullets[2]",
+        "line": 207,
+        "value": "Share your current direction in one sentence"
+      },
+      {
+        "selector": "DAY_DETAILS[4].bullets[3]",
+        "line": 208,
+        "value": "Strengthen trust: follow through on a small promise"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 4).question",
+      "value": "What connections feel meaningful to you on this ascending day?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 5,
+    "title": "Productivity",
+    "phase": "Ascending",
+    "website_phase": "ASCENDING • PRODUCTIVITY",
+    "alias": "day05ascendingproductivity-1",
+    "template_id": "4ef10889-22c5-46dd-aef0-b6d5a32cf148",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 5).description",
+      "line": 55,
+      "value": "Focus sharpens, tasks find completion"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[5].paragraph",
+      "line": 213,
+      "value": "This is a strong execution day — the wave supports doing and finishing. You'll feel best when you ship something real. Choose priority work, protect your time, and close loops."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[5].bullets[0]",
+        "line": 215,
+        "value": "Pick the top 1–3 outcomes and ignore the rest"
+      },
+      {
+        "selector": "DAY_DETAILS[5].bullets[1]",
+        "line": 216,
+        "value": "Batch tasks and reduce context switching"
+      },
+      {
+        "selector": "DAY_DETAILS[5].bullets[2]",
+        "line": 217,
+        "value": "Finish and deliver (completion over expansion)"
+      },
+      {
+        "selector": "DAY_DETAILS[5].bullets[3]",
+        "line": 218,
+        "value": "Clean up loose ends: replies, files, next steps"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 5).question",
+      "value": "What feels ready for your focus or completion as your wave rises?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 6,
+    "title": "Balance",
+    "phase": "Peak",
+    "website_phase": "PEAK • BALANCE",
+    "alias": "day06peakbalance",
+    "template_id": "7db82367-0c11-4a46-af6f-c79e8bfea07a",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 6).description",
+      "line": 63,
+      "value": "Harmony emerges in all you do"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[6].paragraph",
+      "line": 223,
+      "value": "At the peak, you can see the whole system — what's aligned and what's pulling you off-center. It's a day to stabilize, refine, and make adjustments that create ease. Balance isn't doing less; it's choosing what fits."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[6].bullets[0]",
+        "line": 225,
+        "value": "Rebalance effort: work, health, relationships, rest"
+      },
+      {
+        "selector": "DAY_DETAILS[6].bullets[1]",
+        "line": 226,
+        "value": "Adjust priorities to match what matters now"
+      },
+      {
+        "selector": "DAY_DETAILS[6].bullets[2]",
+        "line": 227,
+        "value": "Create a rhythm you can sustain"
+      },
+      {
+        "selector": "DAY_DETAILS[6].bullets[3]",
+        "line": 228,
+        "value": "Choose clean boundaries over overcommitment"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 6).question",
+      "value": "What feels aligned in your life at this peak, and what is pulling you off-center?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 7,
+    "title": "Insight",
+    "phase": "Peak",
+    "website_phase": "PEAK • INSIGHT",
+    "alias": "day07peakinsight-1",
+    "template_id": "5f724020-2ddc-469e-bf07-63827d3f784d",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 7).description",
+      "line": 71,
+      "value": "Clarity arrives, intuition guides"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[7].paragraph",
+      "line": 233,
+      "value": "Insight cuts through noise today. Patterns become obvious, and the 'real issue' is easier to name. Listen closely, write it down, and let truth simplify your next move."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[7].bullets[0]",
+        "line": 235,
+        "value": "Journal for 5 minutes: 'What's actually going on?'"
+      },
+      {
+        "selector": "DAY_DETAILS[7].bullets[1]",
+        "line": 236,
+        "value": "Look for the pattern beneath the problem"
+      },
+      {
+        "selector": "DAY_DETAILS[7].bullets[2]",
+        "line": 237,
+        "value": "Decide one thing you will stop tolerating"
+      },
+      {
+        "selector": "DAY_DETAILS[7].bullets[3]",
+        "line": 238,
+        "value": "Choose the simplest next step that honors clarity"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 7).question",
+      "value": "What are you seeing more clearly at this point in your wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 8,
+    "title": "Challenge",
+    "phase": "Peak",
+    "website_phase": "PEAK • CHALLENGE",
+    "alias": "day08peakchallenge-1",
+    "template_id": "e1ec3ddd-b383-4eb7-b4b0-a560b10b9252",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 8).description",
+      "line": 79,
+      "value": "Strength tested, resolve fortified"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[8].paragraph",
+      "line": 243,
+      "value": "This is the edge of the peak — the day that builds durability. Resistance shows where you're growing. Meet the hard thing directly, and you'll come out stronger and clearer."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[8].bullets[0]",
+        "line": 245,
+        "value": "Tackle the most avoided task first"
+      },
+      {
+        "selector": "DAY_DETAILS[8].bullets[1]",
+        "line": 246,
+        "value": "Hold a boundary you've been bending"
+      },
+      {
+        "selector": "DAY_DETAILS[8].bullets[2]",
+        "line": 247,
+        "value": "Use friction as feedback, not failure"
+      },
+      {
+        "selector": "DAY_DETAILS[8].bullets[3]",
+        "line": 248,
+        "value": "Choose courage in one specific action"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 8).question",
+      "value": "What is testing your resolve at this edge of the peak?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 9,
+    "title": "Transition",
+    "phase": "Crest",
+    "website_phase": "CREST • TRANSITION",
+    "alias": "day09cresttransition",
+    "template_id": "ee2cb2b5-0da9-4df6-ac9e-c88acd8326d0",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 9).description",
+      "line": 87,
+      "value": "The wave turns, reflection begins"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[9].paragraph",
+      "line": 253,
+      "value": "The crest is a turning point — the energy shifts from outward push to inward refinement. This is a perfect day to review, re-aim, and change course with intention. Let the wave turn without forcing it."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[9].bullets[0]",
+        "line": 255,
+        "value": "Review wins, lessons, and what changed"
+      },
+      {
+        "selector": "DAY_DETAILS[9].bullets[1]",
+        "line": 256,
+        "value": "Decide what continues and what ends"
+      },
+      {
+        "selector": "DAY_DETAILS[9].bullets[2]",
+        "line": 257,
+        "value": "Make one clean adjustment to direction"
+      },
+      {
+        "selector": "DAY_DETAILS[9].bullets[3]",
+        "line": 258,
+        "value": "Slow down enough to feel what's true"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 9).question",
+      "value": "What is changing for you as your wave turns?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 10,
+    "title": "Reflection",
+    "phase": "Descending",
+    "website_phase": "DESCENDING • REFLECTION",
+    "alias": "day10descendingreflection",
+    "template_id": "a41d7eb6-f2b5-4b39-9999-7ce587ea9feb",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 10).description",
+      "line": 95,
+      "value": "Looking inward reveals growth"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[10].paragraph",
+      "line": 263,
+      "value": "Reflection deepens and perspective expands. You can learn more from the past cycle now than you could while rushing through it. Notice what worked, what didn't, and why."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[10].bullets[0]",
+        "line": 265,
+        "value": "Ask: 'What did this cycle teach me?'"
+      },
+      {
+        "selector": "DAY_DETAILS[10].bullets[1]",
+        "line": 266,
+        "value": "Name one pattern to reinforce and one to retire"
+      },
+      {
+        "selector": "DAY_DETAILS[10].bullets[2]",
+        "line": 267,
+        "value": "Practice gratitude for the progress you missed"
+      },
+      {
+        "selector": "DAY_DETAILS[10].bullets[3]",
+        "line": 268,
+        "value": "Clarify what 'better' looks like next time"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 10).question",
+      "value": "Looking back over this wave, what are you seeing more clearly now?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 11,
+    "title": "Integration",
+    "phase": "Descending",
+    "website_phase": "DESCENDING • INTEGRATION",
+    "alias": "day11descendingintegration-1",
+    "template_id": "adf13d1c-8220-451e-ba0f-b59fe2aab212",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 11).description",
+      "line": 103,
+      "value": "Rest allows wisdom to settle"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[11].paragraph",
+      "line": 273,
+      "value": "Integration is where growth becomes real. When you pause, your mind and body process what you've lived. Give yourself space — the system consolidates and strengthens here."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[11].bullets[0]",
+        "line": 275,
+        "value": "Prioritize sleep, recovery, and simplicity"
+      },
+      {
+        "selector": "DAY_DETAILS[11].bullets[1]",
+        "line": 276,
+        "value": "Organize what you've learned into one takeaway"
+      },
+      {
+        "selector": "DAY_DETAILS[11].bullets[2]",
+        "line": 277,
+        "value": "Reduce inputs: less noise, fewer demands"
+      },
+      {
+        "selector": "DAY_DETAILS[11].bullets[3]",
+        "line": 278,
+        "value": "Let your next move emerge instead of forcing it"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 11).question",
+      "value": "What is beginning to settle for you in this quieter part of the wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 12,
+    "title": "Recalibration",
+    "phase": "Descending",
+    "website_phase": "DESCENDING • RECALIBRATION",
+    "alias": "day12descendingrecalibration-1",
+    "template_id": "c563a15d-3731-4777-8a42-c86d5193d26a",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 12).description",
+      "line": 111,
+      "value": "Adjust your course with care"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[12].paragraph",
+      "line": 283,
+      "value": "This day supports fine-tuning. Small adjustments now prevent bigger corrections later. Be gentle and precise — tweak the plan so it matches reality and your energy."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[12].bullets[0]",
+        "line": 285,
+        "value": "Edit your goals to fit the season you're in"
+      },
+      {
+        "selector": "DAY_DETAILS[12].bullets[1]",
+        "line": 286,
+        "value": "Reduce scope without reducing commitment"
+      },
+      {
+        "selector": "DAY_DETAILS[12].bullets[2]",
+        "line": 287,
+        "value": "Fix one habit at the root (not the symptom)"
+      },
+      {
+        "selector": "DAY_DETAILS[12].bullets[3]",
+        "line": 288,
+        "value": "Realign schedule, tools, and expectations"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 12).question",
+      "value": "How well do your plans fit your energy on this descending part of the wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 13,
+    "title": "Release",
+    "phase": "Descending",
+    "website_phase": "DESCENDING • RELEASE",
+    "alias": "day13descendingrelease",
+    "template_id": "3093a65e-c3da-455d-82ca-877b47e50bd0",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 13).description",
+      "line": 119,
+      "value": "Let go what no longer serves"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[13].paragraph",
+      "line": 293,
+      "value": "Release clears space for the next rise. What you're holding that's outdated becomes heavier now. Letting go is not loss — it's making room for what fits."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[13].bullets[0]",
+        "line": 295,
+        "value": "Declutter one area: mind, desk, inbox, calendar"
+      },
+      {
+        "selector": "DAY_DETAILS[13].bullets[1]",
+        "line": 296,
+        "value": "Close an open loop you've been carrying"
+      },
+      {
+        "selector": "DAY_DETAILS[13].bullets[2]",
+        "line": 297,
+        "value": "Say 'no' to something misaligned"
+      },
+      {
+        "selector": "DAY_DETAILS[13].bullets[3]",
+        "line": 298,
+        "value": "Forgive, simplify, and lighten your load"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 13).question",
+      "value": "What feels ready to be released as your wave moves toward the trough?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 14,
+    "title": "Inner Work",
+    "phase": "Trough",
+    "website_phase": "TROUGH • INNER WORK",
+    "alias": "day14troughinnerwork",
+    "template_id": "5436c6d8-4db6-440f-aa64-6c4e01d56ba3",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 14).description",
+      "line": 127,
+      "value": "Dive deep into self-discovery"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[14].paragraph",
+      "line": 303,
+      "value": "The trough is quiet power — deeper truths surface when the outside gets quieter. This is a day for honesty, insight, and inner alignment. The work here changes everything upstream."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[14].bullets[0]",
+        "line": 305,
+        "value": "Choose solitude or a slower pace"
+      },
+      {
+        "selector": "DAY_DETAILS[14].bullets[1]",
+        "line": 306,
+        "value": "Ask: 'What am I avoiding feeling or admitting?'"
+      },
+      {
+        "selector": "DAY_DETAILS[14].bullets[2]",
+        "line": 307,
+        "value": "Do one grounding practice (walk, breath, prayer, journal)"
+      },
+      {
+        "selector": "DAY_DETAILS[14].bullets[3]",
+        "line": 308,
+        "value": "Reconnect to your core values and direction"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 14).question",
+      "value": "What are you discovering about yourself in the quiet of the trough?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 15,
+    "title": "Healing",
+    "phase": "Trough",
+    "website_phase": "TROUGH • HEALING",
+    "alias": "day15troughhealing-1",
+    "template_id": "8de1ccdd-0ce5-4efc-9f2c-a5eb6761f16f",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 15).description",
+      "line": 135,
+      "value": "Gentle care restores vitality"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[15].paragraph",
+      "line": 313,
+      "value": "Healing is active restoration. Your system responds best to softness today — nourishment, safety, and patient care. Treat recovery like progress, because it is."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[15].bullets[0]",
+        "line": 315,
+        "value": "Give your body what it's been asking for"
+      },
+      {
+        "selector": "DAY_DETAILS[15].bullets[1]",
+        "line": 316,
+        "value": "Choose gentler movement over intensity"
+      },
+      {
+        "selector": "DAY_DETAILS[15].bullets[2]",
+        "line": 317,
+        "value": "Receive support: ask, share, or rest"
+      },
+      {
+        "selector": "DAY_DETAILS[15].bullets[3]",
+        "line": 318,
+        "value": "Repair one relationship — with yourself or another"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 15).question",
+      "value": "What kind of care feels most restorative to you in this part of the trough?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 16,
+    "title": "Preparation",
+    "phase": "Trough",
+    "website_phase": "TROUGH • PREPARATION",
+    "alias": "day16troughpreparation-1",
+    "template_id": "961698c0-e8bb-448a-b327-182dc093aca8",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 16).description",
+      "line": 143,
+      "value": "Gather strength for the rise ahead"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[16].paragraph",
+      "line": 323,
+      "value": "The next rise is forming — preparation turns intention into readiness. Quiet structure now creates momentum later. Set the stage so Day 1 feels clean and powerful."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[16].bullets[0]",
+        "line": 325,
+        "value": "Organize tools, space, and priorities"
+      },
+      {
+        "selector": "DAY_DETAILS[16].bullets[1]",
+        "line": 326,
+        "value": "Build buffers: time, food, sleep, resources"
+      },
+      {
+        "selector": "DAY_DETAILS[16].bullets[2]",
+        "line": 327,
+        "value": "Plan the first steps of the next cycle"
+      },
+      {
+        "selector": "DAY_DETAILS[16].bullets[3]",
+        "line": 328,
+        "value": "Remove one blocker before it becomes a problem"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 16).question",
+      "value": "What would help you feel ready for the next rise of your wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 17,
+    "title": "Foundation",
+    "phase": "Emerging",
+    "website_phase": "EMERGING • FOUNDATION",
+    "alias": "day17emergingfoundation",
+    "template_id": "50144103-eaa0-4efc-91dd-b6392b9ba127",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 17).description",
+      "line": 151,
+      "value": "Lay groundwork for new action"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[17].paragraph",
+      "line": 333,
+      "value": "The wave begins to lift again. This is foundation energy — practical, steady, and forward-facing. Build the structure that will carry the next cycle: routines, systems, and commitments that hold."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[17].bullets[0]",
+        "line": 335,
+        "value": "Create or refresh one daily rhythm"
+      },
+      {
+        "selector": "DAY_DETAILS[17].bullets[1]",
+        "line": 336,
+        "value": "Outline the next project in simple steps"
+      },
+      {
+        "selector": "DAY_DETAILS[17].bullets[2]",
+        "line": 337,
+        "value": "Do the 'setup work' you usually skip"
+      },
+      {
+        "selector": "DAY_DETAILS[17].bullets[3]",
+        "line": 338,
+        "value": "Commit to consistency over intensity"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 17).question",
+      "value": "What feels steady enough to build on as your wave begins to lift?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  },
+  {
+    "day": 18,
+    "title": "Culmination",
+    "phase": "Emerging",
+    "website_phase": "EMERGING • CULMINATION",
+    "alias": "day18emergingculmination",
+    "template_id": "13dfb78b-c760-4bf8-863f-2796b57d6325",
+    "source": "js/sineday-engine.js",
+    "source_sha256": "495e1ae8c806495822081bc84824cef9a9d0c6e2c20d8a8601072ee1a092ff1d",
+    "subtitle": {
+      "selector": "DAY_DATA.find(day === 18).description",
+      "line": 159,
+      "value": "Cycle completes, renewal awaits"
+    },
+    "paragraph": {
+      "selector": "DAY_DETAILS[18].paragraph",
+      "line": 343,
+      "value": "Culmination is completion with meaning. You're closing the loop — gather what you learned, finish what matters, and mark the end with intention. Then let renewal be real, not rushed."
+    },
+    "bullets": [
+      {
+        "selector": "DAY_DETAILS[18].bullets[0]",
+        "line": 345,
+        "value": "Finish one key thing and call it complete"
+      },
+      {
+        "selector": "DAY_DETAILS[18].bullets[1]",
+        "line": 346,
+        "value": "Celebrate progress (even if it's imperfect)"
+      },
+      {
+        "selector": "DAY_DETAILS[18].bullets[2]",
+        "line": 347,
+        "value": "Capture the lesson: 'Next cycle, I will…'"
+      },
+      {
+        "selector": "DAY_DETAILS[18].bullets[3]",
+        "line": 348,
+        "value": "Reset: clear space for Day 1 to feel new"
+      }
+    ],
+    "question": {
+      "source": "copy.json",
+      "selector": "days.find(day === 18).question",
+      "value": "What feels complete to you at the end of this wave?",
+      "relationship": "New reader question; not presented as verbatim website text"
+    }
+  }
+]
