@@ -49,6 +49,11 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
       assert.ok(metrics.fields.every(f => f.font >= 16 && f.height >= 44));
       assert.equal(await page.locator('#affiliate-public-success').isVisible(), false);
       assert.equal(await page.locator('#affiliate-public-error').isVisible(), false);
+      const arrows = await page.locator('.affiliate-public__arrow:visible').evaluateAll(icons => icons.map(icon => ({ width: icon.getBoundingClientRect().width, height: icon.getBoundingClientRect().height, pathLength: icon.querySelector('path').getTotalLength(), hidden: icon.getAttribute('aria-hidden'), focusable: icon.getAttribute('focusable') })));
+      assert.equal(arrows.length, 4);
+      assert.ok(arrows.every(icon => icon.width === 16 && icon.height === 16 && icon.pathLength > 0 && icon.hidden === 'true' && icon.focusable === 'false'));
+      assert.equal(await page.getByRole('link', { name: 'How it works', exact: true }).getAttribute('href'), '#how-it-works');
+      assert.equal(await page.getByRole('link', { name: 'Get in touch', exact: true }).getAttribute('href'), '/contact.html');
       await page.screenshot({ path: path.join(OUTPUT, `affiliate-${width}.png`), fullPage: true });
       await page.getByRole('link', { name: 'Become an affiliate' }).click();
       assert.ok(page.url().endsWith('#apply'));
@@ -77,6 +82,7 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
     await page.getByRole('button', { name: 'Send application' }).click();
     await page.waitForFunction(() => document.querySelector('[type="submit"]').disabled);
     assert.equal(await page.getByRole('button', { name: 'Sending application…' }).isDisabled(), true);
+    assert.equal(await page.locator('.affiliate-public__submit-arrow').isVisible(), false);
     const currentPosts = posts;
     await page.locator('form').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
     assert.equal(posts, currentPosts);
