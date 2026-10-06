@@ -20,7 +20,7 @@ test("public affiliate page keeps success and error states semantically hidden",
   );
   assert.match(
     html,
-    /<p id="affiliate-public-error" class="affiliate-public__error" role="alert" hidden><\/p>/,
+    /<p id="affiliate-public-error" class="affiliate-public__error" role="alert" tabindex="-1" hidden><\/p>/,
   );
   assert.match(html, /<form id="affiliate-public-form" class="affiliate-public__form" novalidate>/);
 });
@@ -48,7 +48,10 @@ test("public affiliate editorial copy keeps program terms and journal identity",
   assert.match(editorialMain, /sharing link and approved SineDay assets/);
   assert.match(editorialMain, /secure payout setup through Stripe/);
   assert.match(editorialMain, /receive Premium while your Affiliate account is active/);
-  assert.match(editorialMain, /earn \$1 from each eligible, successful monthly renewal/);
+  assert.match(editorialMain, /Earn \$1 for each eligible paid monthly Premium invoice/);
+  assert.match(editorialMain, /including the first qualifying payment and later renewals/);
+  assert.match(editorialMain, /Payouts are currently U.S.-only/);
+  assert.match(editorialMain, /30-day hold/);
   assert.match(editorialMain, /href="\/affiliate-terms\.html">Affiliate Terms<\/a>/);
   assert.match(editorialMain, /<h3 tabindex="-1">Application received<\/h3>/);
   assert.doesNotMatch(editorialMain, /Application accepted|You're in|Welcome to the Affiliate Program/);
@@ -77,4 +80,24 @@ test("affiliate application script still reveals success only after a successful
   assert.match(applicationJs, /form\.hidden = true/);
   assert.match(applicationJs, /successEl\.hidden = false/);
   assert.match(applicationJs, /heading\?\.focus\?\.\(\)/);
+});
+
+
+test("affiliate invitation has one descriptive primary heading and a direct application anchor", () => {
+  assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1);
+  assert.match(html, /<h1 id="affiliate-public-title">Share a different way to/);
+  assert.match(html, /<section id="apply" class="affiliate-public__card"/);
+  assert.match(html, /href="#apply">Become an affiliate/);
+  assert.match(html, /href="\/css\/affiliate-public.css"/);
+  assert.match(html, /src="\/assets\/sineducks\/SineDuckFinale8.svg"/);
+});
+
+test("application guidance and progress are associated with fields", () => {
+  assert.equal((html.match(/<fieldset/g) || []).length, 3);
+  assert.match(html, /aria-describedby="affiliate-public-email-help"/);
+  assert.match(html, /aria-describedby="affiliate-public-social-help"/);
+  assert.match(html, /aria-describedby="affiliate-public-intro-help affiliate-public-intro-limit"/);
+  assert.match(html, /id="affiliate-public-intro-count"[^>]*aria-hidden="true"/);
+  assert.match(html, /id="affiliate-public-status"[^>]*role="status"/);
+  assert.match(html, /<span data-submit-label>Send application<\/span>/);
 });
