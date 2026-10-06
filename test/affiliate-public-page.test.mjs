@@ -101,3 +101,20 @@ test("application guidance and progress are associated with fields", () => {
   assert.match(html, /id="affiliate-public-status"[^>]*role="status"/);
   assert.match(html, /<span data-submit-label>Send application<\/span>/);
 });
+
+
+test("affiliate decorative arrows render independently of installed fonts", () => {
+  const arrows = [...html.matchAll(/<svg class="affiliate-public__arrow(?: affiliate-public__submit-arrow)?"[^>]*>[\s\S]*?<\/svg>/g)].map(([svg]) => svg);
+  assert.equal(arrows.length, 5);
+  for (const arrow of arrows) {
+    assert.match(arrow, /aria-hidden="true"/);
+    assert.match(arrow, /focusable="false"/);
+    assert.match(arrow, /width="16" height="16" viewBox="0 0 16 16" fill="none"/);
+    assert.match(arrow, /<path d="[^"]+" stroke="currentColor"/);
+    assert.doesNotMatch(arrow, /tabindex|<text|<use|<image/);
+  }
+  assert.doesNotMatch(html, /[↗↓]/);
+  assert.match(html, /<svg class="affiliate-public__arrow affiliate-public__submit-arrow"/);
+  const pageCss = readFileSync(join(root, "css/affiliate-public.css"), "utf8");
+  assert.match(pageCss, /\.affiliate-public__button\[aria-busy="true"\] \.affiliate-public__submit-arrow\s*\{\s*display:\s*none;/);
+});

@@ -264,3 +264,15 @@ Each entry includes:
 **Notes:** Official SineDuck asset unchanged; commission wording now includes first qualifying paid monthly invoice as already defined in terms. No dashboard, backend, legal terms, or global style changes.
 
 ---
+
+## 2026-10-06T18:33:27.375Z
+
+**Files:** affiliate.html, css/affiliate-public.css, test/affiliate-public-page.test.mjs, test/affiliate-public-browser-smoke.cjs
+
+**Summary:** Replace font-dependent affiliate arrow glyphs with decorative inline SVGs.
+
+**Rationale:** Prevent missing-glyph boxes in browsers whose installed fonts omit the arrow characters.
+
+**Notes:** All five arrows are 16px, aria-hidden and non-focusable; labels, destinations, keyboard focus, submit loading behavior and API code stay unchanged. Syntax and 83 affiliate / 317 full tests pass with declared dependencies. Offline browser assertions cover icon geometry and pending-submit hiding but Chromium launch remains blocked by the executor socket sandbox, including after reviewed escalation. Draft-only follow-up; no merge or manual deployment.
+
+---

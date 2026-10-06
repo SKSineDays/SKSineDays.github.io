@@ -92,6 +92,7 @@
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
 }
+.affiliate-public__arrow { flex: none; }
 .affiliate-public__button:hover { background: #d0dfff; border-color: #d0dfff; }
 .affiliate-public__button:disabled { cursor: wait; background: #93abcF; border-color: #93abcf; }
 .affiliate-public__button--secondary { background: transparent; border-color: #5c708f; color: var(--affiliate-ink); box-shadow: none; }
