@@ -276,3 +276,15 @@ Each entry includes:
 **Notes:** All five arrows are 16px, aria-hidden and non-focusable; labels, destinations, keyboard focus, submit loading behavior and API code stay unchanged. Syntax and 83 affiliate / 317 full tests pass with declared dependencies. Offline browser assertions cover icon geometry and pending-submit hiding but Chromium launch remains blocked by the executor socket sandbox, including after reviewed escalation. Draft-only follow-up; no merge or manual deployment.
 
 ---
+
+## 2026-10-06T18:56:00.825Z
+
+**Files:** affiliate.html, css/affiliate-public.css, test/affiliate-public-page.test.mjs, test/affiliate-public-browser-smoke.cjs
+
+**Summary:** Make the affiliate page concise and information-first, removing decorative microheaders and promotional framing.
+
+**Rationale:** Apply the request for a restrained, detailed and informative application page.
+
+**Notes:** Program facts and disclosures are retained. No application JavaScript, backend, legal terms, shared styles, or artwork changes. Form is first in mobile reading order; official artwork is small and unframed on desktop.
+
+---

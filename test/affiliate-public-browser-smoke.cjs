@@ -52,10 +52,10 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
       const arrows = await page.locator('.affiliate-public__arrow:visible').evaluateAll(icons => icons.map(icon => ({ width: icon.getBoundingClientRect().width, height: icon.getBoundingClientRect().height, pathLength: icon.querySelector('path').getTotalLength(), hidden: icon.getAttribute('aria-hidden'), focusable: icon.getAttribute('focusable') })));
       assert.equal(arrows.length, 4);
       assert.ok(arrows.every(icon => icon.width === 16 && icon.height === 16 && icon.pathLength > 0 && icon.hidden === 'true' && icon.focusable === 'false'));
-      assert.equal(await page.getByRole('link', { name: 'How it works', exact: true }).getAttribute('href'), '#how-it-works');
+      assert.equal(await page.getByRole('link', { name: 'Program details', exact: true }).getAttribute('href'), '#how-it-works');
       assert.equal(await page.getByRole('link', { name: 'Get in touch', exact: true }).getAttribute('href'), '/contact.html');
       await page.screenshot({ path: path.join(OUTPUT, `affiliate-${width}.png`), fullPage: true });
-      await page.getByRole('link', { name: 'Become an affiliate' }).click();
+      await page.getByRole('link', { name: 'Start application' }).click();
       assert.ok(page.url().endsWith('#apply'));
       assert.ok(await page.locator('#apply').evaluate(e => Math.abs(e.getBoundingClientRect().top) <= 32));
       await page.getByRole('button', { name: 'Send application' }).click();
