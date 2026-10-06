@@ -85,9 +85,9 @@ test("affiliate application script still reveals success only after a successful
 
 test("affiliate invitation has one descriptive primary heading and a direct application anchor", () => {
   assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1);
-  assert.match(html, /<h1 id="affiliate-public-title">Share a different way to/);
+  assert.match(html, /<h1 id="affiliate-public-title">SineDay Affiliate Program<\/h1>/);
   assert.match(html, /<section id="apply" class="affiliate-public__card"/);
-  assert.match(html, /href="#apply">Become an affiliate/);
+  assert.match(html, /href="#apply">Start application/);
   assert.match(html, /href="\/css\/affiliate-public.css"/);
   assert.match(html, /src="\/assets\/sineducks\/SineDuckFinale8.svg"/);
 });
@@ -117,4 +117,14 @@ test("affiliate decorative arrows render independently of installed fonts", () =
   assert.match(html, /<svg class="affiliate-public__arrow affiliate-public__submit-arrow"/);
   const pageCss = readFileSync(join(root, "css/affiliate-public.css"), "utf8");
   assert.match(pageCss, /\.affiliate-public__button\[aria-busy="true"\] \.affiliate-public__submit-arrow\s*\{\s*display:\s*none;/);
+});
+
+
+test("affiliate information uses direct headings without decorative microheaders", () => {
+  assert.doesNotMatch(html, /affiliate-public__(?:eyebrow|benefit-mark|art-kicker|art-note|step-number)/);
+  assert.doesNotMatch(html, /A thoughtful introduction|Your voice\. A shared daily ritual|Make it your own|A little less for them|A thank-you for you|A few details, a place to find you|A few sentences is plenty/);
+  for (const heading of ["Program details", "Commission", "Customer discount", "Sharing tools", "Dashboard and Premium", "Who can apply", "What happens next", "Apply to become an affiliate"]) assert.ok(html.includes(`>${heading}</`));
+  assert.ok(html.indexOf('id="apply"') < html.indexOf('<aside class="affiliate-public__guide"'), "The form comes before supporting guidance in mobile reading order");
+  assert.match(html, /<legend>Your details<\/legend>/);
+  assert.match(html, /<legend>Profiles and website<\/legend>/);
 });
