@@ -255,7 +255,7 @@ Each entry includes:
 
 ## 2026-10-06T18:16:45.242Z
 
-**Files:** affiliate.html, css/affiliate-public.css, js/affiliate-application.js, test/affiliate-public-page.test.mjs, test/affiliate-application-feedback.test.mjs
+**Files:** affiliate.html, css/affiliate-public.css, js/affiliate-application.js, test/affiliate-public-page.test.mjs, test/affiliate-application-feedback.test.mjs, test/affiliate-public-browser-smoke.cjs
 
 **Summary:** Refine the affiliate invitation and application experience with a page-scoped editorial layout, clearer program copy, and accessible submission feedback.
 
