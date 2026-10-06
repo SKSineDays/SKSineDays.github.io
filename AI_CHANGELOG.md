@@ -252,3 +252,15 @@ Each entry includes:
 **Notes:** The generator no longer writes preview.html. Offline browser tests construct the viewer in memory. Email HTML/TXT, manifests, IDs, aliases, public image assets, app code and cron are byte-identical. Three snapshot checks pass. Browser launch is blocked by this executor socket sandbox.
 
 ---
+
+## 2026-10-06T18:16:45.242Z
+
+**Files:** affiliate.html, css/affiliate-public.css, js/affiliate-application.js, test/affiliate-public-page.test.mjs, test/affiliate-application-feedback.test.mjs
+
+**Summary:** Refine the affiliate invitation and application experience with a page-scoped editorial layout, clearer program copy, and accessible submission feedback.
+
+**Rationale:** Make the working anonymous affiliate application easier to understand and use while preserving API, validation, approval, payout, and legal behavior.
+
+**Notes:** Official SineDuck asset unchanged; commission wording now includes first qualifying paid monthly invoice as already defined in terms. No dashboard, backend, legal terms, or global style changes.
+
+---

@@ -18,18 +18,20 @@
   <meta property="og:url" content="https://sineday.app/affiliate.html">
   <meta property="og:image" content="https://sineday.app/assets/og-hero.png">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/css/affiliate-public.css">
   <script type="module" src="/js/vercel-analytics.js"></script>
 </head>
 <body class="legal-page affiliate-public">
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="top-bar">
     <div class="top-bar-content">
-      <h1 class="top-bar-brand-heading">
+      <div class="top-bar-brand-heading">
         <a class="top-bar-brand" href="/" aria-label="SineDay home">
           <img class="top-bar-wordmark" src="/assets/brand/sineday-wordmark.svg" alt="SineDay" width="700" height="190">
         </a>
-      </h1>
+      </div>
       <div class="top-bar-actions">
+        <a class="affiliate-public__nav-link" href="#apply">Apply</a>
         <a class="icon-btn" href="/" aria-label="Back to Home" title="Back to Home" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
           <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -39,96 +41,151 @@
     </div>
   </header>
 
-  <main id="main-content" class="main-content legal-main">
-    <section class="affiliate-public__hero">
-      <p class="affiliate-public__eyebrow">SineDay Affiliate</p>
-      <h2>Share a different way to remember the day.</h2>
-      <p>SineDay is a journal for people who notice that no two days feel quite the same. An 18-day personal wave gives each day a perspective, SineDuck gives it a face, and the journal gives the memory a place to stay.</p>
-      <p>SineDay doesn't predict the future or tell people what to do. It helps people notice what they're already experiencing — and remember their days differently.</p>
-      <p>If that idea feels worth sharing with your community, we'd like to hear from you.</p>
-    </section>
-
-    <section class="affiliate-public__story" aria-label="About the SineDay Affiliate Program">
-      <article class="affiliate-public__story-block">
-        <p class="affiliate-public__eyebrow">How the program works</p>
-        <h2>Share SineDay in your own voice.</h2>
-        <p>Apply with a little about yourself, where you share, and why SineDay feels relevant to your community. No SineDay account is required.</p>
-        <p>If approved, you'll choose your Affiliate Code, receive your sharing link and approved SineDay assets, complete secure payout setup through Stripe, and receive Premium while your Affiliate account is active.</p>
-        <p>When someone uses your Affiliate Code at Stripe Checkout, you earn $1 from each eligible, successful monthly renewal while that membership remains connected to you.</p>
-        <p class="affiliate-public__disclosure">Earnings vary and are not guaranteed. <a href="/affiliate-terms.html">Affiliate Terms</a> apply.</p>
-      </article>
-
-      <article class="affiliate-public__story-block">
-        <p class="affiliate-public__eyebrow">Who we'd like to hear from</p>
-        <h2>People who believe reflection matters.</h2>
-        <p>SineDay may be a natural fit for creators and communities centered on journaling, reflection, creativity, mindfulness, personal growth, daily ritual, or simply paying closer attention to life.</p>
-      </article>
-    </section>
-
-    <section class="affiliate-public__card" aria-labelledby="affiliate-public-form-title">
-      <h2 id="affiliate-public-form-title" class="affiliate-public__form-title">Apply to SineDay Affiliate</h2>
-      <p class="affiliate-public__form-copy">Tell us who you are, where you connect with people, and how you'd introduce SineDay to your community.</p>
-      <p class="affiliate-public__form-note">Applications are reviewed before Affiliate Code and payout setup are unlocked.</p>
-
-      <div id="affiliate-public-success" class="affiliate-public__success" hidden>
-        <h3 tabindex="-1">Application received</h3>
-        <p>Thanks for introducing yourself. We'll review your application before Affiliate setup is opened.</p>
-        <p>If approved, use this same email for your SineDay account and setup will appear under Affiliate in your dashboard.</p>
-        <p class="affiliate-public__dashboard-note">Already have a SineDay account?</p>
-        <a class="hero-btn hero-btn--secondary" href="/dashboard.html">Open Dashboard</a>
+  <main id="main-content" class="main-content legal-main" tabindex="-1">
+    <section class="affiliate-public__intro" aria-labelledby="affiliate-public-title">
+      <div class="affiliate-public__intro-copy">
+        <p class="affiliate-public__eyebrow">An invitation to share SineDay</p>
+        <h1 id="affiliate-public-title">Share a different way to <em>remember the day.</em></h1>
+        <p class="affiliate-public__lead">For people and creators who make room for reflection. If SineDay feels worth sharing with your community, we'd love to hear from you.</p>
+        <div class="affiliate-public__intro-actions">
+          <a class="affiliate-public__button" href="#apply">Become an affiliate <span aria-hidden="true">↗</span></a>
+          <a class="affiliate-public__text-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="affiliate-public__account-note">No SineDay account is required to apply.</p>
       </div>
-
-      <form id="affiliate-public-form" class="affiliate-public__form" novalidate>
-        <p id="affiliate-public-error" class="affiliate-public__error" role="alert" hidden></p>
-
-        <div class="affiliate-public__honeypot" aria-hidden="true">
-          <label for="affiliate-public-company">Company</label>
-          <input id="affiliate-public-company" name="company" type="text" tabindex="-1" autocomplete="off">
-        </div>
-
-        <div class="affiliate-public__field">
-          <label for="affiliate-public-name">Name / creator name *</label>
-          <input id="affiliate-public-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" required>
-        </div>
-
-        <div class="affiliate-public__field">
-          <label for="affiliate-public-email">Email *</label>
-          <input id="affiliate-public-email" name="email" type="email" maxlength="254" autocomplete="email" required>
-        </div>
-
-        <div class="affiliate-public__social-grid">
-          <div class="affiliate-public__field">
-            <label for="affiliate-public-instagram">Instagram</label>
-            <input id="affiliate-public-instagram" name="instagram" type="text" maxlength="300" autocomplete="off">
-          </div>
-          <div class="affiliate-public__field">
-            <label for="affiliate-public-tiktok">TikTok</label>
-            <input id="affiliate-public-tiktok" name="tiktok" type="text" maxlength="300" autocomplete="off">
-          </div>
-          <div class="affiliate-public__field">
-            <label for="affiliate-public-youtube">YouTube</label>
-            <input id="affiliate-public-youtube" name="youtube" type="text" maxlength="300" autocomplete="off">
-          </div>
-          <div class="affiliate-public__field">
-            <label for="affiliate-public-website">Website</label>
-            <input id="affiliate-public-website" name="website" type="text" maxlength="300" autocomplete="url">
-          </div>
-        </div>
-
-        <div class="affiliate-public__field">
-          <label for="affiliate-public-other">Other social / profile</label>
-          <input id="affiliate-public-other" name="otherSocial" type="text" maxlength="300" autocomplete="off">
-        </div>
-
-        <div class="affiliate-public__field affiliate-public__field--full">
-          <label for="affiliate-public-intro">What should we know about you and how you'd like to share SineDay? *</label>
-          <textarea id="affiliate-public-intro" name="introduction" minlength="20" maxlength="1000" rows="6" required></textarea>
-        </div>
-
-        <p class="affiliate-public__hint">At least one social, profile, or website field is required.</p>
-        <button class="hero-btn hero-btn--primary" type="submit">Apply to SineDay Affiliate</button>
-      </form>
+      <figure class="affiliate-public__art">
+        <p class="affiliate-public__art-kicker">No two days feel quite the same.</p>
+        <img src="/assets/sineducks/SineDuckFinale8.svg" alt="SineDuck, the SineDay character" width="1920" height="1080" fetchpriority="high">
+        <figcaption><span>Notice.</span> <span>Reflect.</span> <span>Remember.</span></figcaption>
+        <p class="affiliate-public__art-note">A little space for the day you actually had.</p>
+      </figure>
     </section>
+
+    <section id="how-it-works" class="affiliate-public__program" aria-labelledby="affiliate-public-program-title">
+      <div class="affiliate-public__section-heading">
+        <p class="affiliate-public__eyebrow">A thoughtful introduction goes a long way</p>
+        <h2 id="affiliate-public-program-title">Your voice. A shared daily ritual.</h2>
+        <p>SineDay brings together an 18-day personal wave, SineDuck, and a journal for what you notice. It doesn't predict the future. It gives people a perspective for reflection and a place to remember.</p>
+      </div>
+      <div class="affiliate-public__benefits">
+        <article>
+          <span class="affiliate-public__benefit-mark" aria-hidden="true">01 / Share</span>
+          <h3>Make it your own.</h3>
+          <p>If approved, choose your Affiliate Code and get a sharing link and approved SineDay assets. Introduce SineDay in the way that feels natural to you.</p>
+        </article>
+        <article>
+          <span class="affiliate-public__benefit-mark" aria-hidden="true">02 / Give</span>
+          <h3>A little less for them.</h3>
+          <p>Your community gets $1 off monthly Premium when they use your code at checkout, while the promotion remains valid.</p>
+        </article>
+        <article>
+          <span class="affiliate-public__benefit-mark" aria-hidden="true">03 / Earn</span>
+          <h3>A thank-you for you.</h3>
+          <p>Earn $1 for each eligible paid monthly Premium invoice linked to your active Affiliate Code, including the first qualifying payment and later renewals.</p>
+        </article>
+      </div>
+      <p class="affiliate-public__program-note">Earnings vary and are not guaranteed. Payouts are currently U.S.-only, and commissions have a 30-day hold. <a href="/affiliate-terms.html">Affiliate Terms</a> apply.</p>
+    </section>
+
+    <div class="affiliate-public__application-layout">
+      <aside class="affiliate-public__guide" aria-labelledby="affiliate-public-guide-title">
+        <p class="affiliate-public__eyebrow">Start with an introduction</p>
+        <h2 id="affiliate-public-guide-title">People who believe reflection matters.</h2>
+        <p>You might share journaling prompts, make things, build a daily ritual, or help others pay closer attention to life. We'd like to hear what connects you to SineDay.</p>
+        <h3>What happens next</h3>
+        <ol class="affiliate-public__steps">
+          <li><span class="affiliate-public__step-number" aria-hidden="true">1</span><div><strong>We review your application.</strong><p>Tell us a little about yourself and where you'd share SineDay.</p></div></li>
+          <li><span class="affiliate-public__step-number" aria-hidden="true">2</span><div><strong>If approved, make it yours.</strong><p>Use the same email for your SineDay account, choose your code, and complete secure payout setup through Stripe.</p></div></li>
+          <li><span class="affiliate-public__step-number" aria-hidden="true">3</span><div><strong>Share and follow along.</strong><p>Your Affiliate dashboard brings your link, approved assets, supporters, and earnings together. You'll receive Premium while your Affiliate account is active.</p></div></li>
+        </ol>
+        <p class="affiliate-public__guide-question">A question before you apply?<br><a href="/contact.html">Get in touch <span aria-hidden="true">↗</span></a></p>
+      </aside>
+
+      <section id="apply" class="affiliate-public__card" aria-labelledby="affiliate-public-form-title">
+        <div class="affiliate-public__form-heading">
+          <p class="affiliate-public__eyebrow">Your application</p>
+          <h2 id="affiliate-public-form-title" class="affiliate-public__form-title">Tell us a little about yourself.</h2>
+          <p class="affiliate-public__form-copy">A few details, a place to find you, and your own words.</p>
+          <p class="affiliate-public__form-note">Required fields are marked <span aria-hidden="true">*</span><span class="sr-only">with an asterisk</span>. Add at least one profile or website.</p>
+        </div>
+
+        <div id="affiliate-public-success" class="affiliate-public__success" hidden>
+          <span class="affiliate-public__success-mark" aria-hidden="true">✓</span>
+          <h3 tabindex="-1">Application received</h3>
+          <p>Thanks for introducing yourself. We'll review your application before affiliate setup opens.</p>
+          <p>If approved, use this same email for your SineDay account, then open Affiliate in your dashboard to continue setup.</p>
+          <p class="affiliate-public__dashboard-note">Already have a SineDay account?</p>
+          <a class="affiliate-public__button affiliate-public__button--secondary" href="/dashboard.html">Open Dashboard <span aria-hidden="true">↗</span></a>
+        </div>
+
+        <form id="affiliate-public-form" class="affiliate-public__form" novalidate>
+          <p id="affiliate-public-error" class="affiliate-public__error" role="alert" tabindex="-1" hidden></p>
+
+          <div class="affiliate-public__honeypot" aria-hidden="true">
+            <label for="affiliate-public-company">Company</label>
+            <input id="affiliate-public-company" name="company" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <fieldset class="affiliate-public__fieldset">
+            <legend><span aria-hidden="true">01</span> About you</legend>
+            <div class="affiliate-public__field">
+              <label for="affiliate-public-name">Name or creator name <span aria-hidden="true">*</span></label>
+              <input id="affiliate-public-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" aria-describedby="affiliate-public-name-help" required>
+              <p id="affiliate-public-name-help" class="affiliate-public__hint">The name you'd like us to know you by. 2–80 characters.</p>
+            </div>
+            <div class="affiliate-public__field">
+              <label for="affiliate-public-email">Email <span aria-hidden="true">*</span></label>
+              <input id="affiliate-public-email" name="email" type="email" maxlength="254" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" aria-describedby="affiliate-public-email-help" required>
+              <p id="affiliate-public-email-help" class="affiliate-public__hint">If approved, use this same email for your SineDay account.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="affiliate-public__fieldset" aria-describedby="affiliate-public-social-help">
+            <legend><span aria-hidden="true">02</span> Where you share</legend>
+            <p id="affiliate-public-social-help" class="affiliate-public__hint affiliate-public__group-hint">At least one social, profile, or website field is required. Leave the others blank.</p>
+            <div class="affiliate-public__social-grid">
+              <div class="affiliate-public__field">
+                <label for="affiliate-public-instagram">Instagram</label>
+                <input id="affiliate-public-instagram" name="instagram" type="text" maxlength="300" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="@yourname or profile link" aria-describedby="affiliate-public-social-help">
+              </div>
+              <div class="affiliate-public__field">
+                <label for="affiliate-public-tiktok">TikTok</label>
+                <input id="affiliate-public-tiktok" name="tiktok" type="text" maxlength="300" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="@yourname or profile link" aria-describedby="affiliate-public-social-help">
+              </div>
+              <div class="affiliate-public__field">
+                <label for="affiliate-public-youtube">YouTube</label>
+                <input id="affiliate-public-youtube" name="youtube" type="text" maxlength="300" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Channel name or link" aria-describedby="affiliate-public-social-help">
+              </div>
+              <div class="affiliate-public__field">
+                <label for="affiliate-public-website">Website</label>
+                <input id="affiliate-public-website" name="website" type="text" maxlength="300" autocomplete="url" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="yourwebsite.com" aria-describedby="affiliate-public-social-help">
+              </div>
+            </div>
+            <div class="affiliate-public__field">
+              <label for="affiliate-public-other">Another profile or community</label>
+              <input id="affiliate-public-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" placeholder="A newsletter, podcast, or other link" aria-describedby="affiliate-public-social-help">
+            </div>
+          </fieldset>
+
+          <fieldset class="affiliate-public__fieldset">
+            <legend><span aria-hidden="true">03</span> In your own words</legend>
+            <div class="affiliate-public__field">
+              <label for="affiliate-public-intro">How would you like to share SineDay? <span aria-hidden="true">*</span></label>
+              <p id="affiliate-public-intro-help" class="affiliate-public__hint">Tell us about your community, what interests you about SineDay, and how you'd introduce it. A few sentences is plenty.</p>
+              <textarea id="affiliate-public-intro" name="introduction" minlength="20" maxlength="1000" rows="5" aria-describedby="affiliate-public-intro-help affiliate-public-intro-limit" required></textarea>
+              <div class="affiliate-public__field-meta"><p id="affiliate-public-intro-limit" class="affiliate-public__hint">20–1,000 characters</p><span id="affiliate-public-intro-count" class="affiliate-public__hint" aria-hidden="true">0 / 1,000</span></div>
+            </div>
+          </fieldset>
+
+          <div class="affiliate-public__submit-area">
+            <p class="affiliate-public__review-note">Every application is reviewed. Affiliate Code and payout setup become available only after approval.</p>
+            <button class="affiliate-public__button" type="submit"><span class="affiliate-public__spinner" aria-hidden="true"></span><span data-submit-label>Send application</span><span class="affiliate-public__submit-arrow" aria-hidden="true">↗</span></button>
+            <p id="affiliate-public-status" class="affiliate-public__status" role="status" aria-live="polite"></p>
+            <p class="affiliate-public__privacy-note">Read our <a href="/affiliate-terms.html">Affiliate Terms</a> and <a href="/privacy.html">Privacy Policy</a>.</p>
+          </div>
+        </form>
+      </section>
+    </div>
   </main>
 
   <footer class="site-footer site-footer--legal">
