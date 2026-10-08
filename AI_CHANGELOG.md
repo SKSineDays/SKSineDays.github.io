@@ -288,3 +288,15 @@ Each entry includes:
 **Notes:** Program facts and disclosures are retained. No application JavaScript, backend, legal terms, shared styles, or artwork changes. Form is first in mobile reading order; official artwork is small and unframed on desktop.
 
 ---
+
+## 2026-10-08T03:34:49.009Z
+
+**Files:** accessibility.html, affiliate-terms.html, affiliate.html, contact.html, daily-confirm.html, daily.html, dashboard.html, index.html, login.html, privacy.html, refunds.html, terms.html, unsubscribe.html, test/footer-blog-link.test.mjs
+
+**Summary:** Add SineDay Blog to existing website footer navigation
+
+**Rationale:** Make the blog discoverable from sineday.app while preserving existing footer links and styles.
+
+**Notes:** Added the canonical https://www.sineday.blog/ link to all 13 existing page footers. Focused footer, homepage invitation, and SineDuck tests passed (18 tests). Full suite and visual browser QA not run.
+
+---
