@@ -1462,6 +1462,10 @@ body {
 .input-container.visible {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: none;
+}
+
+.input-container.visible .input-card {
   pointer-events: auto;
 }
 
@@ -2254,6 +2258,11 @@ body.loading {
 .site-footer {
   padding: 24px 16px calc(24px + var(--safe-area-bottom));
   margin-top: 28px;
+}
+
+/* Let homepage links scroll above the fixed birthdate card while it is visible. */
+body:has(.input-container.visible) .site-footer {
+  padding-bottom: calc(264px + var(--safe-area-bottom));
 }
 
 .site-footer--legal {
