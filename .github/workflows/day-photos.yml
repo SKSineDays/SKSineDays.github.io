@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -29,6 +31,20 @@ jobs:
       - run: npm test
       - run: npm run check:day-photos
       - run: npx playwright install --with-deps chromium
+      - name: Verify installed PWA upgrade from the PR base
+        run: |
+          git fetch --no-tags --depth=1 origin "$GLOBE_BASE_REF"
+          if [ "$(git rev-parse "$GLOBE_BASE_REF:service-worker.js")" = "$(git rev-parse "HEAD:service-worker.js")" ]; then
+            echo "Service worker is byte-identical to the PR base; no cache migration to test."
+          else
+            GLOBE_BASE_CACHE="$(git show "$GLOBE_BASE_REF:service-worker.js" | node -e 'const source = require("node:fs").readFileSync(0, "utf8"); const match = source.match(/const\s+CACHE_NAME\s*=\s*([\x27"])([^\x27"]+)\1/); if (!match) throw new Error("PR base worker must declare a literal CACHE_NAME"); process.stdout.write(match[2]);')"
+            export GLOBE_BASE_CACHE
+            node test/globe-service-worker-smoke.cjs
+            mkdir -p artifacts/day-photos
+            cp docs/globe/pwa-results.json artifacts/day-photos/pwa-results.json
+          fi
+        env:
+          GLOBE_BASE_REF: ${{ github.event.pull_request.base.sha }}
       - run: npm run test:day-photos:browser
         env:
           PHOTO_QA_REAL_IMAGES: '1'
