@@ -232,7 +232,8 @@ async function showHomeDay(page, day) {
 async function showDashboardDay(page, day) {
   await page.evaluate(birthdate => window.__dayPhotoQA.renderDashboardDay(birthdate), births[day]);
   await page.locator('#explore-today-wave').click();
-  await page.locator(DASH_IMAGE).scrollIntoViewIfNeeded();
+  // Neutral fallback intentionally hides the image, but its copy stays visible.
+  await page.locator('#today-day-details-section').scrollIntoViewIfNeeded();
 }
 async function waitPhoto(page, selector, day) {
   await page.waitForFunction(({ selector, ids }) => {
@@ -582,8 +583,9 @@ async function realPhotoContactSheet(browser) {
       <style>
         html, body { width: 2160px; max-width: none; overflow: visible; }
         body { margin: 0; padding: 16px; display: block; background: #07111c; color: #edf3ff; }
-        #qa-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 12px; }
-        #qa-grid > figure { margin: 0; min-width: 0; }
+        #qa-grid { display: grid; gap: 12px; }
+        #qa-grid > .qa-day-row { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 12px; }
+        #qa-grid .qa-day-row > figure { margin: 0; min-width: 0; }
         #qa-grid .qa-label { margin: 0 0 6px; font: 12px/1.4 system-ui, sans-serif; }
         #qa-grid .day-photo-credit { font-size: 10px; padding: 7px; min-height: 44px; }
         #qa-title { margin: 0 0 16px; font: 20px/1.4 system-ui, sans-serif; }
@@ -594,6 +596,11 @@ async function realPhotoContactSheet(browser) {
       const { duckPlacementOnDayArtwork, duckSvgUrlFromSinedayNumber } = await import('/js/sineducks.js');
       const grid = document.getElementById('qa-grid');
       for (let day = 1; day <= 18; day++) {
+        const row = document.createElement('section');
+        row.className = 'qa-day-row';
+        row.id = `qa-day-${day}`;
+        row.setAttribute('aria-label', `Day ${day}: all ten approved photographs`);
+        grid.append(row);
         for (const [index, photo] of DAY_PHOTOS[day].entries()) {
           const figure = document.createElement('figure');
           figure.dataset.qaDay = String(day);
@@ -625,11 +632,17 @@ async function realPhotoContactSheet(browser) {
           credit.className = 'day-photo-credit';
           renderPhotoCredit(credit, photo);
           figure.append(label, frame, credit);
-          grid.append(figure);
+          row.append(figure);
         }
       }
     });
     await page.waitForFunction(() => [...document.querySelectorAll('#qa-grid img')].every(image => image.complete), null, { timeout: 120_000 });
+    // complete/naturalWidth only prove download and metadata availability. Await
+    // decode explicitly for photos AND SVG ducks before asking Chromium to paint.
+    await page.locator('#qa-grid img').evaluateAll(async items => {
+      await Promise.all(items.map(image => image.decode()));
+      await document.fonts.ready;
+    });
     const images = await page.locator('#qa-grid .day-full-image').evaluateAll(items => items.map(image => ({
       id: image.dataset.photoId, naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight,
       alt: image.alt, fit: getComputedStyle(image).objectFit, src: image.currentSrc,
@@ -647,9 +660,89 @@ async function realPhotoContactSheet(browser) {
     })));
     assert.equal(ducks.length, 180);
     assert.ok(ducks.every(duck => duck.loaded && duck.fit === 'contain'));
-    await screenshot(page, 'all-180-real-composition-contact-sheet');
+    const { default: sharp } = await import('sharp');
+    const rows = [];
+    const paintChecks = [];
+    for (const day of DAYS) {
+      const row = page.locator(`#qa-day-${day}`);
+      // Paint every row in the real viewport, rather than relying on a very tall
+      // full-page capture to decode/raster offscreen async images on its own.
+      await row.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await row.scrollIntoViewIfNeeded();
+      await row.locator('img').evaluateAll(async items => {
+        await Promise.all(items.map(image => image.decode()));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      const boxes = await row.evaluate(element => {
+        const rowBox = element.getBoundingClientRect();
+        return [...element.querySelectorAll('figure')].map(figure => {
+          const image = figure.querySelector('.day-full-image');
+          const frame = figure.querySelector('.day-image-content');
+          const box = image.getBoundingClientRect();
+          const duckBox = figure.querySelector('.day-artwork-duck').getBoundingClientRect();
+          const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight);
+          const width = image.naturalWidth * scale;
+          const height = image.naturalHeight * scale;
+          return {
+            id: image.dataset.photoId,
+            photo: { x: box.x - rowBox.x + (box.width - width) / 2, y: box.y - rowBox.y + (box.height - height) / 2, width, height },
+            duck: { x: duckBox.x - rowBox.x, y: duckBox.y - rowBox.y, width: duckBox.width, height: duckBox.height },
+            background: getComputedStyle(frame).backgroundColor.match(/[\d.]+/g).slice(0, 3).map(Number),
+          };
+        });
+      });
+      const name = `all-180-real-day-${String(day).padStart(2, '0')}-row.png`;
+      const bytes = await row.screenshot({ path: resolve(OUTPUT, name), animations: 'disabled', scale: 'css' });
+      report.screenshots.push(name);
+      const { data, info } = await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+      assert.equal(boxes.length, 10, `Day ${day} screenshot must contain ten photos`);
+      for (const box of boxes) {
+        let samples = 0;
+        let paintedSamples = 0;
+        // Sample across the contained photograph itself, not the neutral bars,
+        // rounded corners, labels, border or duck. Four non-background samples
+        // are sufficient even for a very dark, minimal approved composition.
+        for (let y = 1; y <= 16; y++) {
+          for (let x = 1; x <= 16; x++) {
+            const px = Math.floor(box.photo.x + box.photo.width * (0.08 + 0.84 * x / 17));
+            const py = Math.floor(box.photo.y + box.photo.height * (0.08 + 0.84 * y / 17));
+            if (px >= box.duck.x - 2 && px <= box.duck.x + box.duck.width + 2
+              && py >= box.duck.y - 2 && py <= box.duck.y + box.duck.height + 2) continue;
+            assert.ok(px >= 0 && py >= 0 && px < info.width && py < info.height, `Photo ${box.id} fell outside its row screenshot`);
+            const offset = (py * info.width + px) * info.channels;
+            samples++;
+            if (box.background.some((value, channel) => Math.abs(data[offset + channel] - value) > 10)) paintedSamples++;
+          }
+        }
+        assert.ok(samples >= 16, `Insufficient unobscured image pixels for ${box.id}`);
+        assert.ok(paintedSamples >= 4, `Decoded photo ${box.id} is blank/unpainted in its visible row screenshot (${paintedSamples}/${samples} non-background samples)`);
+        paintChecks.push({ day, id: box.id, samples, paintedSamples, screenshot: name });
+      }
+      rows.push({ bytes, width: info.width, height: info.height });
+    }
+    assert.equal(paintChecks.length, 180);
+    // Keep the native full-page capture for diagnosing browser raster behavior.
+    // The primary review sheet is composed from the verified viewport captures,
+    // so offscreen texture eviction cannot silently erase some photographs.
+    await screenshot(page, 'all-180-real-browser-full-page');
+    const gap = 12;
+    const width = Math.max(...rows.map(row => row.width));
+    const height = rows.reduce((total, row) => total + row.height, 0) + gap * (rows.length - 1);
+    let top = 0;
+    const composites = rows.map(row => {
+      const item = { input: row.bytes, left: 0, top };
+      top += row.height + gap;
+      return item;
+    });
+    const sheetName = 'all-180-real-composition-contact-sheet.png';
+    await sharp({ create: { width, height, channels: 3, background: '#07111c' } })
+      .composite(composites).png().toFile(resolve(OUTPUT, sheetName));
+    report.screenshots.push(sheetName);
     await writeFile(resolve(OUTPUT, 'all-180-real-images.json'), JSON.stringify(images, null, 2) + '\n');
+    await writeFile(resolve(OUTPUT, 'all-180-real-paint-checks.json'), JSON.stringify(paintChecks, null, 2) + '\n');
     report.realPhotosDecoded = images.length;
+    report.realPhotosPainted = paintChecks.length;
+    report.contactSheetSource = '18 individually decoded, viewport-painted and pixel-checked day-row screenshots';
   });
 }
 
