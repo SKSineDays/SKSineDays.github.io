@@ -37,7 +37,7 @@ const photoModules = ['day-photo-collection', 'day-photo-selection', 'day-photo-
     try {
       const file = pathname === '/' ? 'index.html' : pathname.slice(1);
       const body = !current
-        ? execFileSync('git', ['show', `${baseRef}:${file}`], { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
+        ? execFileSync('git', ['show', `${baseRef}:${file}`], { cwd: root, maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] })
         : fs.readFileSync(path.join(root, file));
       res.setHeader('Content-Type', types[path.extname(file)] || 'application/octet-stream');
       res.end(body);
