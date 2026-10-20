@@ -54,7 +54,8 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
   assert.doesNotMatch(html, /sineduck-plate/);
   assert.match(html, /class="daily-email-banner__duck"\s+src="\/assets\/sineducks\/SineDuckFinale17\.svg"/);
   assert.match(html, /class="day-artwork-duck"[\s\S]*id="dayImageDuck"/);
-  assert.match(ui, /const natureArtworkUrl = result\.imageAvifUrl \|\| result\.imageUrl/);
+  assert.match(ui, /presentDayPhoto\(\{/);
+  assert.match(ui, /day-photo-view\.js/);
   assert.match(ui, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(ui, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
   assert.match(styles, /\.daily-email-banner\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(296px,\s*0\.72fr\)/);
@@ -80,7 +81,7 @@ test('dashboard identity surfaces use individual SineDucks while Explore layers 
   assert.match(hero, /fallbackUrl:\s*fallbackDuckUrl/);
   assert.doesNotMatch(hero, /mailerArtworkUrlFromSinedayNumber/);
   assert.match(details, /resolveDayImageUrl\(result\.imageAvifUrl \|\| result\.imageUrl\)/);
-  assert.match(details, /resolveDayImageUrl\(result\.imageUrl\)/);
+  assert.match(details, /presentDayPhoto\(\{/);
   assert.match(details, /duckSvgUrlFromSinedayNumber\(result\.day\)/);
   assert.match(details, /duckPlacementOnDayArtwork\(result\.day\)/);
   assert.match(details, /class="day-artwork-duck today-wave-details__duck"/);
@@ -184,7 +185,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v35']);
+  assert.deepEqual(await caches.keys(), ['sineday-v37']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -196,7 +197,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v35');
+  const active = stores.get('sineday-v37');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');

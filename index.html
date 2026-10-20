@@ -207,7 +207,7 @@
         </div>
 
         <!-- Day Image Card -->
-        <div id="day-image-card" class="day-image-card" role="region">
+        <div id="day-image-card" class="day-image-card" role="region" aria-label="Today’s scene" inert>
             <div class="day-image-content">
                 <picture>
                     <img id="dayImage" class="day-full-image" alt="" width="752" height="752" decoding="async" fetchpriority="high" />
@@ -216,6 +216,7 @@
                     <img id="dayImageDuck" alt="" width="576" height="324" decoding="async" />
                 </div>
             </div>
+            <p id="day-photo-credit" class="day-photo-credit" hidden></p>
         </div>
 
         <!-- Day Details Card (Paragraph + Bullets) -->

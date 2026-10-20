@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v36';
+const CACHE_NAME = 'sineday-v37';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -15,6 +15,9 @@ const ASSETS_TO_CACHE = [
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',
+  '/js/day-photo-collection.js',
+  '/js/day-photo-selection.js',
+  '/js/day-photo-view.js',
   '/js/sineducks.js',
   '/js/sineduck-intro-animation.js',
   '/assets/sineducks/SineDuck%20Celebrity.svg',

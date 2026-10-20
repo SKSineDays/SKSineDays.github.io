@@ -29,6 +29,7 @@ import {
   duckPngUrlFromSinedayNumber,
 } from "./sineducks.js";
 import { CalendarsPdfUI } from "./calendars-pdf-ui.js";
+import { presentDayPhoto } from "./day-photo-view.js";
 import { JournalUI } from "./journal-ui.js";
 import { JournalHistoryUI } from "./journal-history-ui.js";
 import { calculateSineDayForTimezone, getDayDetails } from "./sineday-engine.js";
@@ -1337,7 +1338,6 @@ function renderTodayDayDetailsSection(result) {
 
   const details = getDayDetails(result.day);
   const artworkUrl = resolveDayImageUrl(result.imageAvifUrl || result.imageUrl);
-  const fallbackUrl = resolveDayImageUrl(result.imageUrl);
   const duckUrl = resolveDayImageUrl(duckSvgUrlFromSinedayNumber(result.day));
   const duckPlacement = duckPlacementOnDayArtwork(result.day);
   if (!artworkUrl && !details) {
@@ -1357,11 +1357,11 @@ function renderTodayDayDetailsSection(result) {
       ${
         artworkUrl
           ? `
-        <div class="today-wave-details__media" data-artwork-shell>
+        <figure class="today-wave-details__figure" data-artwork-shell>
+        <div class="today-wave-details__media">
           <img
             class="today-wave-details__image"
-            src="${escapeHtml(artworkUrl)}"
-            alt="${escapeHtml(result.imageAlt || `Nature study for SineDay ${result.day}`)}"
+            alt=""
             width="752"
             height="752"
             decoding="async"
@@ -1378,6 +1378,8 @@ function renderTodayDayDetailsSection(result) {
             >
           </div>
         </div>
+        <figcaption class="day-photo-credit" hidden></figcaption>
+        </figure>
       `
           : ""
       }
@@ -1397,12 +1399,16 @@ function renderTodayDayDetailsSection(result) {
   `;
 
   const artwork = section.querySelector('.today-wave-details__image');
-  bindArtworkFallback(artwork, {
-    fallbackUrl,
-    fallbackAlt: result.imageAlt || `Nature study for SineDay ${result.day}`,
-    fallbackClass: "is-landscape-fallback",
+  presentDayPhoto({
+    image: artwork,
+    credit: section.querySelector('.day-photo-credit'),
+    result,
+    sizes: '(max-width: 760px) calc(100vw - 40px), (max-width: 1200px) 44vw, 540px',
     onUnavailable: () => {
-      section.querySelector(".today-wave-details")?.classList.add("today-wave-details--without-artwork");
+      // A detached image from an earlier auth/profile render cannot hide the new card.
+      if (!section.contains(artwork)) return;
+      artwork.closest('[data-artwork-shell]')?.setAttribute('hidden', '');
+      section.querySelector('.today-wave-details')?.classList.add('today-wave-details--without-artwork');
     },
   });
 

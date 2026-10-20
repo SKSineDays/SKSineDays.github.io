@@ -88,8 +88,8 @@ const types = { '.js': 'application/javascript', '.css': 'text/css', '.html': 't
       return false;
     });
     assert.equal(cachedApi, false);
-    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v35'));
-    const result = { checks: 'Passed: v34→v35 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation.' };
+    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v37'));
+    const result = { checks: 'Passed: v34→v37 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation.' };
     fs.writeFileSync(path.join(root, 'docs/globe/pwa-results.json'), JSON.stringify(result, null, 2) + '\n');
     console.log(JSON.stringify(result));
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

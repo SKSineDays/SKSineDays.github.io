@@ -2751,3 +2751,22 @@ body.discover-story-open {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* Credits sit on a solid surface, never on a varying photograph or duck. */
+.day-photo-credit {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 460px;
+  padding: 10px 14px;
+  background: #0b1420;
+  color: #dce4ef;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.day-photo-credit[hidden] { display: none; }
+.day-photo-credit a { color: #dce4ef; text-decoration: underline; text-underline-offset: 3px; }
+.day-photo-credit a:focus-visible { outline: 2px solid #a9c5ff; outline-offset: 3px; }
+/* Keep every approved portrait/landscape composition intact inside the stable frame. */
+.day-full-image[data-photo-id],
+.today-wave-details__image[data-photo-id] { object-fit: contain; }

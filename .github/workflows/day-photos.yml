@@ -1,0 +1,41 @@
+name: Day photo checks
+on:
+  pull_request:
+    paths:
+      - 'js/**'
+      - 'index.html'
+      - 'dashboard.html'
+      - 'styles.css'
+      - 'css/dashboard.css'
+      - 'service-worker.js'
+      - 'test/**'
+      - 'docs/art-direction/day-photo*'
+      - 'scripts/generate-day-photo-collection.mjs'
+      - 'package*.json'
+      - '.github/workflows/day-photos.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run check:day-photos
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:day-photos:browser
+        env:
+          PHOTO_QA_REAL_IMAGES: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: day-photo-review
+          path: artifacts/day-photos/
+          retention-days: 7
+          if-no-files-found: warn

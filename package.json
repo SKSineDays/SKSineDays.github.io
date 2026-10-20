@@ -20,7 +20,10 @@
     "test:globe:browser": "node test/globe-browser-smoke.cjs && node test/globe-dashboard-smoke.cjs && node test/globe-service-worker-smoke.cjs",
     "generate:card-aligned-mailers": "node scripts/generate-card-aligned-mailers.mjs",
     "check:card-aligned-mailers": "node scripts/generate-card-aligned-mailers.mjs --check",
-    "test:card-aligned-mailers:browser": "node scripts/verify-card-aligned-mailers.mjs"
+    "test:card-aligned-mailers:browser": "node scripts/verify-card-aligned-mailers.mjs",
+    "generate:day-photos": "node scripts/generate-day-photo-collection.mjs",
+    "check:day-photos": "node scripts/generate-day-photo-collection.mjs --check",
+    "test:day-photos:browser": "node test/day-photo-browser-smoke.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

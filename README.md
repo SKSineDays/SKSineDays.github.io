@@ -211,3 +211,10 @@ This project is open source. Feel free to use, modify, and share.
 ---
 
 **Enjoy your SineDay journey! 🌊**
+
+## Day-photo collection
+
+The website day scenes use ten approved photographs per SineDay, with one still
+photo per visit. See [rotation behavior, provenance and release checks](docs/art-direction/day-photo-rotation.md).
+Run `npm run check:day-photos` to verify the full 180-photo collection, and
+`npm run test:day-photos:browser` for responsive homepage/dashboard checks.

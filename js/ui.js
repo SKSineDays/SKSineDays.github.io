@@ -11,6 +11,7 @@
 
 import { calculateSineDayForTimezone, getDayDetails } from './sineday-engine.js';
 import { WaveCanvas } from './wave-canvas.js';
+import { presentDayPhoto, cancelDayPhoto } from './day-photo-view.js';
 import {
   duckPlacementOnDayArtwork,
   duckSvgUrlFromSinedayNumber
@@ -62,6 +63,7 @@ export class SineDayUI {
       infoBtn: document.getElementById('info-btn'),
       dayImageCard: document.getElementById('day-image-card'),
       dayImage: document.getElementById('dayImage'),
+      dayPhotoCredit: document.getElementById('day-photo-credit'),
       dayImageDuckLayer: document.getElementById('dayImageDuckLayer'),
       dayImageDuck: document.getElementById('dayImageDuck'),
       dayDetailsCard: document.getElementById('day-details-card'),
@@ -294,36 +296,18 @@ export class SineDayUI {
       this.elements.dayDescription.textContent = result.description;
     }
 
-    // Update day image card
-    if (this.elements.dayImage) {
-      const dayImage = this.elements.dayImage;
-      const natureArtworkUrl = result.imageAvifUrl || result.imageUrl;
-      dayImage.style.opacity = '0';
-      dayImage.alt = result.imageAlt || `Nature study for SineDay ${result.day}`;
-
-      // Preserve the approved JPEG fallback for browsers without AVIF support.
-      dayImage.onerror = () => {
-        if (this.currentDay !== result) return;
-        if (!dayImage.src.endsWith(result.imageUrl)) {
-          dayImage.src = result.imageUrl;
-          return;
-        }
-        dayImage.style.opacity = '0';
-        this.clearBackgroundImage();
-      };
-
-      dayImage.onload = async () => {
-        try {
-          await dayImage.decode();
-        } catch {
-          // A loaded image can still be displayed when explicit decoding is unavailable.
-        }
-        if (this.currentDay !== result || !dayImage.naturalWidth) return;
-        dayImage.style.opacity = '1';
-        this.updateBackgroundImage(dayImage.currentSrc || natureArtworkUrl);
-      };
-      dayImage.src = natureArtworkUrl;
-    }
+    // Select once per visit. Recalculations and dashboard navigation keep it still.
+    presentDayPhoto({
+      image: this.elements.dayImage,
+      credit: this.elements.dayPhotoCredit,
+      result,
+      onLoad: (url) => {
+        if (this.currentDay === result) this.updateBackgroundImage(url);
+      },
+      onUnavailable: () => {
+        if (this.currentDay === result) this.clearBackgroundImage();
+      },
+    });
 
     if (this.elements.dayImageDuck && this.elements.dayImageDuckLayer) {
       const dayImageDuck = this.elements.dayImageDuck;
@@ -436,7 +420,8 @@ export class SineDayUI {
    * Update background image with crossfade
    */
   updateBackgroundImage(imageUrl) {
-    if (!this.elements.backgroundImage) return;
+    if (!this.elements.backgroundImage || this._backgroundImageUrl === imageUrl) return;
+    this._backgroundImageUrl = imageUrl;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Remove hero-mode class to ensure day images show properly
@@ -479,6 +464,7 @@ export class SineDayUI {
    * Clear background image with fade out
    */
   clearBackgroundImage() {
+    this._backgroundImageUrl = null;
     if (!this.elements.backgroundImage) return;
 
     const layers = this.elements.backgroundImage.querySelectorAll('.background-image-layer');
@@ -514,6 +500,7 @@ export class SineDayUI {
   showDayImageCard() {
     if (!this.elements.dayImageCard) return;
 
+    this.elements.dayImageCard.removeAttribute('inert');
     this.elements.dayImageCard.classList.add('visible');
   }
 
@@ -523,6 +510,8 @@ export class SineDayUI {
   hideDayImageCard() {
     if (!this.elements.dayImageCard) return;
 
+    cancelDayPhoto(this.elements.dayImage, this.elements.dayPhotoCredit);
+    this.elements.dayImageCard.setAttribute('inert', '');
     this.elements.dayImageCard.classList.remove('visible');
   }
 
@@ -1074,6 +1063,7 @@ export class SineDayUI {
    * Cleanup
    */
   destroy() {
+    cancelDayPhoto(this.elements.dayImage, this.elements.dayPhotoCredit);
     if (this.waveRenderer) {
       this.waveRenderer.destroy();
     }
