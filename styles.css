@@ -2767,6 +2767,6 @@ body.discover-story-open {
 .day-photo-credit[hidden] { display: none; }
 .day-photo-credit a { color: #dce4ef; text-decoration: underline; text-underline-offset: 3px; }
 .day-photo-credit a:focus-visible { outline: 2px solid #a9c5ff; outline-offset: 3px; }
-/* Keep every approved portrait/landscape composition intact inside the stable frame. */
+/* Fill the stable scene edge to edge, cropping proportionally without stretching. */
 .day-full-image[data-photo-id],
-.today-wave-details__image[data-photo-id] { object-fit: contain; }
+.today-wave-details__image[data-photo-id] { object-fit: cover; object-position: center; }

@@ -33,7 +33,7 @@ const TODAY = FIXED_TIME.slice(0, 10);
 const HOME_IMAGE = '#dayImage';
 const DASH_IMAGE = '.today-wave-details__image';
 const DAYS = Array.from({ length: 18 }, (_, index) => index + 1);
-const SAMPLES = new Set([1, 6, 12, 18]);
+const SAMPLES = new Set([1, 6, 7, 10, 12, 18]);
 const TYPES = {
   '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript',
   '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
@@ -255,7 +255,7 @@ async function assertPhoto(page, { selector, creditSelector, day, homepage = fal
   assert.equal(new URL(data.src).pathname, photoPath(photo));
   assert.equal(new URL(data.src).hostname, 'images.unsplash.com');
   assert.equal(data.alt, photo.alt);
-  assert.equal(data.objectFit, 'contain', 'Selected photographs must preserve their full portrait/landscape composition');
+  assert.equal(data.objectFit, 'cover', 'Selected photographs must fill the frame without letterboxing or stretching');
   assert.ok(Math.abs(data.width - data.height) < 3, 'The containing photo frame should remain square');
   assert.ok(data.width > 150 && data.left >= -1 && data.right <= page.viewportSize().width + 1, 'Photo must fit its viewport');
   for (const width of [480, 768, 960, 1440]) assert.ok(data.srcset.includes(` ${width}w`));
@@ -589,7 +589,7 @@ async function realPhotoContactSheet(browser) {
         #qa-grid .qa-label { margin: 0 0 6px; font: 12px/1.4 system-ui, sans-serif; }
         #qa-grid .day-photo-credit { font-size: 10px; padding: 7px; min-height: 44px; }
         #qa-title { margin: 0 0 16px; font: 20px/1.4 system-ui, sans-serif; }
-      </style></head><body><h1 id="qa-title">Approved collection: 18 day rows × 10 photograph columns. Full composition, official duck overlay.</h1><main id="qa-grid"></main></body></html>`);
+      </style></head><body><h1 id="qa-title">Approved collection: 18 day rows × 10 photograph columns. Edge-to-edge crops, official duck overlay.</h1><main id="qa-grid"></main></body></html>`);
     await page.evaluate(async () => {
       const { DAY_PHOTOS } = await import('/js/day-photo-collection.js');
       const { photoImageUrl, renderPhotoCredit } = await import('/js/day-photo-view.js');
@@ -651,7 +651,7 @@ async function realPhotoContactSheet(browser) {
     for (const image of images) {
       const photo = Object.values(collection).flat().find(photo => photo.id === image.id);
       assert.ok(image.naturalWidth > 0 && image.naturalHeight > 0, `Real photo did not decode: ${image.id} ${image.src}`);
-      assert.equal(image.fit, 'contain');
+      assert.equal(image.fit, 'cover');
       assert.equal(image.alt, photo.alt);
       assert.ok(Math.abs(image.naturalWidth / image.naturalHeight - photo.width / photo.height) < 0.02, `CDN delivery unexpectedly cropped ${image.id}`);
     }
@@ -680,12 +680,11 @@ async function realPhotoContactSheet(browser) {
           const frame = figure.querySelector('.day-image-content');
           const box = image.getBoundingClientRect();
           const duckBox = figure.querySelector('.day-artwork-duck').getBoundingClientRect();
-          const scale = Math.min(box.width / image.naturalWidth, box.height / image.naturalHeight);
-          const width = image.naturalWidth * scale;
-          const height = image.naturalHeight * scale;
+          const width = box.width;
+          const height = box.height;
           return {
             id: image.dataset.photoId,
-            photo: { x: box.x - rowBox.x + (box.width - width) / 2, y: box.y - rowBox.y + (box.height - height) / 2, width, height },
+            photo: { x: box.x - rowBox.x, y: box.y - rowBox.y, width, height },
             duck: { x: duckBox.x - rowBox.x, y: duckBox.y - rowBox.y, width: duckBox.width, height: duckBox.height },
             background: getComputedStyle(frame).backgroundColor.match(/[\d.]+/g).slice(0, 3).map(Number),
           };
@@ -699,7 +698,7 @@ async function realPhotoContactSheet(browser) {
       for (const box of boxes) {
         let samples = 0;
         let paintedSamples = 0;
-        // Sample across the contained photograph itself, not the neutral bars,
+        // Sample across the cover-filled photograph, avoiding
         // rounded corners, labels, border or duck. Four non-background samples
         // are sufficient even for a very dark, minimal approved composition.
         for (let y = 1; y <= 16; y++) {
