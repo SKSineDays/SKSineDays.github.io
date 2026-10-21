@@ -31,9 +31,11 @@ blog article is replaced.
 
 ## Delivery, failure and attribution
 
-The square scene frame uses contain-fit for the new photos, preserving the full
-portrait or landscape composition without stretching or cutting it away. The
-decorative ambient backdrop may cover/crop as before.
+The square scene frame uses centered cover-fit for the selected photos, filling
+the frame edge to edge without letterboxing or stretching. Portrait and landscape
+photos are cropped proportionally within the existing frame; official SineDuck
+geometry and the separate credit strip remain unchanged. The decorative ambient
+backdrop continues to cover/crop as before.
 
 The browser loads only the selected image, with responsive widths, through the
 original Unsplash image hotlink. Its ixid is preserved; the service worker does

@@ -103,9 +103,9 @@ const photoModules = ['day-photo-collection', 'day-photo-selection', 'day-photo-
       return false;
     });
     assert.equal(cachedApi, false);
-    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v37'));
+    assert.ok((await page.evaluate(async()=>caches.keys())).includes('sineday-v38'));
     const cachedModules = await page.evaluate(async urls => {
-      const cache = await caches.open('sineday-v37');
+      const cache = await caches.open('sineday-v38');
       return Promise.all(urls.map(async url => ({
         url, cached: await (await cache.match(url))?.text(), fetched: await (await fetch(url)).text()
       })));
@@ -115,7 +115,7 @@ const photoModules = ['day-photo-collection', 'day-photo-selection', 'day-photo-
       assert.equal(module.cached, source, `${module.url} was not installed with current bytes`);
       assert.equal(module.fetched, source, `${module.url} came from a retired cache`);
     }
-    assert.equal(await page.evaluate(async () => Boolean(await (await caches.open('sineday-v37')).match('/Day1.avif?v=20260910'))), false, 'Installation must not preload daily artwork');
+    assert.equal(await page.evaluate(async () => Boolean(await (await caches.open('sineday-v38')).match('/Day1.avif?v=20260910'))), false, 'Installation must not preload daily artwork');
     const showFallback = () => page.evaluate(async () => {
       const { presentDayPhoto } = await import('/js/day-photo-view.js');
       const { calculateSineDayForYmd } = await import('/js/sineday-engine.js');
@@ -152,7 +152,7 @@ const photoModules = ['day-photo-collection', 'day-photo-selection', 'day-photo-
       return entries;
     });
     assert.deepEqual(externalCacheEntries, [], 'External photo URLs must never enter the worker cache');
-    const result = { baseRef, baseCache, checks: `Passed: ${baseCache}→sineday-v37 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation, all three current photo modules precached, viewed local AVIF/JPEG offline fallback, no external photo cache entries.` };
+    const result = { baseRef, baseCache, checks: `Passed: ${baseCache}→sineday-v38 worker update, matching earth-2 carousel/CSS, local native-module dependency, retired-cache isolation, API bypass, optional Earth/city assets do not block worker installation, all three current photo modules precached, viewed local AVIF/JPEG offline fallback, no external photo cache entries.` };
     fs.writeFileSync(path.join(root, 'docs/globe/pwa-results.json'), JSON.stringify(result, null, 2) + '\n');
     console.log(JSON.stringify(result));
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
