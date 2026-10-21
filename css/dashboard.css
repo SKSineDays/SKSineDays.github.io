@@ -8269,3 +8269,7 @@ textarea.journal-entry-field-light:focus {
 .origin-globe-dialog .origin-globe-note { font-size: .75rem; }
 .origin-globe-dialog [data-message] { min-height: 1.6em; }
 .origin-globe-dialog button[hidden] { display: none; }
+
+.today-wave-details__figure { min-width: 0; margin: 0; align-self: start; }
+.today-wave-details__figure[hidden] { display: none; }
+.today-wave-details__figure .day-photo-credit { max-width: none; border-radius: 0 0 12px 12px; margin: 8px 0 0; }
