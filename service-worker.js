@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v38';
+const CACHE_NAME = 'sineday-v39';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -138,7 +138,7 @@ self.addEventListener('fetch', (event) => {
 
   // Confirmation pages can be opened with a token fragment. Never serve or
   // persist these visits from the service-worker cache.
-  if (url.pathname === '/daily/confirm' || url.pathname === '/daily-confirm.html') {
+  if (url.pathname === '/auth/callback.html' || url.pathname === '/daily/confirm' || url.pathname === '/daily-confirm.html') {
     event.respondWith(
       fetch(request, { cache: 'no-store' }).catch(() => new Response('Offline', {
         status: 503,

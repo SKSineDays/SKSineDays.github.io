@@ -219,6 +219,12 @@
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
+    .container { box-sizing: border-box; min-width: 0; }
+    .btn:focus-visible { outline: 2px solid #A0C4FF; outline-offset: 3px; }
+    #email-signin-btn, #signin-email { min-height: 48px; }
+    #signin-email { font-size: 16px; }
+    .email-help { color: rgba(245, 247, 255, 0.68); font-size: 13px; line-height: 1.5; margin: -8px 0 16px; }
+
     .form-group {
       margin-bottom: 20px;
     }
@@ -484,7 +490,7 @@
 
     <div class="login-copy">
       <strong>Welcome to SineDay</strong>
-      <span>New here or returning? Sign in with Google or Apple to open your dashboard.</span>
+      <span>New here or returning? Sign in with Google, Apple, or email to open your dashboard.</span>
     </div>
 
     <div class="provider-grid" aria-label="Sign in options">
@@ -509,6 +515,18 @@
         <span class="provider-text">Apple</span>
       </button>
     </div>
+
+    <div class="divider">or continue with email</div>
+    <form id="email-signin-form" novalidate>
+      <div class="form-group">
+        <label for="signin-email">Email address</label>
+        <input id="signin-email" type="email" autocomplete="email"
+          inputmode="email" autocapitalize="none" spellcheck="false" required disabled
+          aria-describedby="email-signin-help login-status" placeholder="you@example.com">
+      </div>
+      <p id="email-signin-help" class="email-help">Use the email on your existing SineDay account. If you use Apple’s Hide My Email, continue with Apple.</p>
+      <button id="email-signin-btn" class="btn btn-primary" type="submit" disabled>Email me a sign-in link</button>
+    </form>
 
     <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
 
