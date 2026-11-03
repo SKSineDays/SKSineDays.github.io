@@ -55,6 +55,8 @@ export async function getSupabaseClient() {
   }
 
   const config = await fetchConfig();
+  // Concurrent callers may have initialized the shared client while awaiting config.
+  if (supabaseClient) return supabaseClient;
 
   // Import Supabase from CDN
   const { createClient } = window.supabase;
@@ -63,7 +65,8 @@ export async function getSupabaseClient() {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      // The callback owns URL consumption, so a one-time code is exchanged once.
+      detectSessionInUrl: window.location.pathname !== '/auth/callback.html'
     }
   });
 
@@ -112,6 +115,25 @@ function buildAuthCallbackUrl(config, params = {}) {
   }
 
   return url.toString();
+}
+
+/** Send a magic link through the existing Supabase email provider. */
+export async function signInWithEmail(email) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    throw new Error('Enter a valid email address.');
+  }
+  const client = await getSupabaseClient();
+  const config = await fetchConfig();
+  const { data, error } = await client.auth.signInWithOtp({
+    email: normalizedEmail,
+    options: {
+      emailRedirectTo: buildAuthCallbackUrl(config),
+      shouldCreateUser: true
+    }
+  });
+  if (error) throw error;
+  return data;
 }
 
 /**

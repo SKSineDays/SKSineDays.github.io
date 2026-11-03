@@ -1,10 +1,10 @@
 /**
  * Login Page Logic
  *
- * Handles sign-in with Google and Apple.
+ * Handles sign-in with Google, Apple, and email magic links.
  */
 
-import { getCurrentSession, signInWithApple, signInWithGoogle } from './supabase-client.js';
+import { getCurrentSession, signInWithApple, signInWithGoogle, signInWithEmail } from './supabase-client.js';
 
 /**
  * Initialize login page
@@ -25,7 +25,7 @@ function showStoredAuthError() {
   const params = new URLSearchParams(window.location.search);
   const hasAuthError = params.has('auth_error');
 
-  if (!stored && !hasAuthError) return;
+  if (!stored && !hasAuthError) return false;
 
   const description =
     stored?.description ||
@@ -39,29 +39,38 @@ function showStoredAuthError() {
     const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`;
     window.history.replaceState({}, document.title, cleanUrl);
   }
+  return true;
 }
 
 async function init() {
   console.log('Initializing login page...');
 
-  showStoredAuthError();
+  const hasAuthError = showStoredAuthError();
 
-  // Check if already logged in
-  const session = await getCurrentSession();
-  if (session) {
+  // Bind before awaiting configuration so a slow connection cannot submit email
+  // through the browser's default form navigation.
+  setupEventListeners();
+  let session = null;
+  try { session = await getCurrentSession(); } catch (_) {
+    // Keep sign-in controls usable; each attempt can retry configuration.
+  }
+  if (session && !hasAuthError) {
     console.log('[Login] Already logged in, redirecting to dashboard');
     window.location.href = '/dashboard.html';
     return;
   }
 
-  // Set up event listeners
-  setupEventListeners();
 }
 
 /**
  * Set up event listeners
  */
 function setupEventListeners() {
+  document.getElementById('email-signin-form')?.addEventListener('submit', handleEmailSignIn);
+  const emailInput = document.getElementById('signin-email');
+  const emailButton = document.getElementById('email-signin-btn');
+  if (emailInput) emailInput.disabled = false;
+  if (emailButton) emailButton.disabled = false;
   // Google sign-in button
   const googleBtn = document.getElementById('google-signin-btn');
   if (googleBtn) {
@@ -72,6 +81,47 @@ function setupEventListeners() {
   const appleBtn = document.getElementById('apple-signin-btn');
   if (appleBtn) {
     appleBtn.addEventListener('click', handleAppleSignIn);
+  }
+}
+
+/** Request only once while in flight; never display provider details or account status. */
+async function handleEmailSignIn(e) {
+  e.preventDefault();
+  const form = document.getElementById('email-signin-form');
+  const input = document.getElementById('signin-email');
+  const button = document.getElementById('email-signin-btn');
+  const status = document.getElementById('login-status');
+  if (!input || !button || form?.dataset.sending === '1') return;
+  input.value = input.value.trim().toLowerCase();
+  const valid = input.checkValidity() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+  input.setAttribute('aria-invalid', String(!valid));
+  status.style.display = 'block';
+  if (!valid) {
+    status.className = 'status-message error';
+    status.textContent = 'Enter a valid email address.';
+    input.focus();
+    return;
+  }
+  form.dataset.sending = '1';
+  form.setAttribute('aria-busy', 'true');
+  button.disabled = true;
+  button.textContent = 'Sending…';
+  status.className = 'status-message info';
+  status.textContent = 'Requesting your sign-in link…';
+  try {
+    await signInWithEmail(input.value);
+    status.className = 'status-message success';
+    status.textContent = 'Check your inbox. We sent you a secure sign-in link. Open the email and select Sign in to SineDay to continue.';
+  } catch (error) {
+    status.className = 'status-message error';
+    status.textContent = error?.status === 429 || error?.code === 'over_email_send_rate_limit'
+      ? 'Please wait a minute before requesting another sign-in link.'
+      : 'We couldn’t send a sign-in link right now. Please try again shortly.';
+  } finally {
+    form.dataset.sending = '0';
+    form.setAttribute('aria-busy', 'false');
+    button.disabled = false;
+    button.textContent = 'Email me a sign-in link';
   }
 }
 

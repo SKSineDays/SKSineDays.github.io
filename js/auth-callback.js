@@ -1,112 +1,65 @@
 import { getSupabaseClient } from './supabase-client.js';
 
-function readAuthError(url) {
-  const hashParams = new URLSearchParams(url.hash.substring(1));
-  const searchParams = new URLSearchParams(url.search);
+const SIGN_IN_ERROR = {
+  error: 'sign_in_failed',
+  description: 'This sign-in link may have expired or already been used. Please request a new link or try Google or Apple again.'
+};
 
-  const error =
-    searchParams.get('error') ||
-    hashParams.get('error') ||
-    searchParams.get('error_code') ||
-    hashParams.get('error_code');
-
-  const description =
-    searchParams.get('error_description') ||
-    hashParams.get('error_description') ||
-    searchParams.get('error_message') ||
-    hashParams.get('error_message');
-
-  if (!error && !description) return null;
-
-  return {
-    error: error || 'auth_error',
-    description: description || 'Authentication failed before a SineDay session could be created.'
-  };
-}
-
-function redirectToLoginWithError(authError) {
+function redirectToLoginWithError() {
   try {
-    sessionStorage.setItem('sineday_auth_error', JSON.stringify(authError));
+    // Never retain raw provider errors, codes, or tokens in storage or the UI.
+    sessionStorage.setItem('sineday_auth_error', JSON.stringify(SIGN_IN_ERROR));
   } catch (_) {
-    // Ignore storage failures.
+    // The login query flag still provides a friendly fallback without storage.
   }
-
-  const params = new URLSearchParams({
-    auth_error: authError.error || 'auth_error'
-  });
-
-  window.location.replace(`/login.html?${params.toString()}`);
+  window.location.replace('/login.html?auth_error=sign_in_failed');
 }
 
-function redirectToDashboard(params = {}) {
+function redirectToDashboard(identityLink) {
   const url = new URL('/dashboard.html', window.location.origin);
-
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== '') {
-      url.searchParams.set(key, value);
-    }
+  if (identityLink === 'apple') {
+    try { sessionStorage.setItem('sineday_identity_link_success', 'apple'); } catch (_) {}
+    url.searchParams.set('linked', 'apple');
   }
-
   window.location.replace(url.toString());
 }
 
 (async function () {
+  // Snapshot before initialization. This page alone owns callback consumption.
+  const url = new URL(window.location.href);
+  const hash = new URLSearchParams(url.hash.substring(1));
+  const search = url.searchParams;
+  const identityLink = search.get('identity_link');
   try {
+    window.history.replaceState({}, document.title, url.pathname);
+    if (['error', 'error_code', 'error_description', 'error_message'].some(key => search.has(key) || hash.has(key))) {
+      redirectToLoginWithError();
+      return;
+    }
+
     const client = await getSupabaseClient();
-    const url = new URL(window.location.href);
-    const hashParams = new URLSearchParams(url.hash.substring(1));
-    const searchParams = new URLSearchParams(url.search);
-
-    const providerError = readAuthError(url);
-    if (providerError) {
-      redirectToLoginWithError(providerError);
+    const access_token = hash.get('access_token');
+    const refresh_token = hash.get('refresh_token');
+    const code = search.get('code');
+    let result;
+    if (access_token && refresh_token && !code) {
+      result = await client.auth.setSession({ access_token, refresh_token });
+    } else if (code && !access_token && !refresh_token) {
+      result = await client.auth.exchangeCodeForSession(code);
+    } else if (!code && !access_token && !refresh_token && !identityLink) {
+      // A clean callback revisit may reuse an already established session.
+      result = await client.auth.getSession();
+    } else {
+      redirectToLoginWithError();
       return;
     }
-
-    const identityLink = searchParams.get('identity_link');
-    const access_token = hashParams.get('access_token');
-    const refresh_token = hashParams.get('refresh_token');
-
-    if (access_token && refresh_token) {
-      const { error } = await client.auth.setSession({ access_token, refresh_token });
-      if (error) throw error;
-
-      if (identityLink === 'apple') {
-        sessionStorage.setItem('sineday_identity_link_success', 'apple');
-        redirectToDashboard({ linked: 'apple' });
-        return;
-      }
-
-      redirectToDashboard();
+    if (result.error || !result.data?.session) {
+      redirectToLoginWithError();
       return;
     }
-
-    const code = searchParams.get('code');
-
-    if (code) {
-      const { error } = await client.auth.exchangeCodeForSession(window.location.href);
-      if (error) throw error;
-
-      if (identityLink === 'apple') {
-        sessionStorage.setItem('sineday_identity_link_success', 'apple');
-        redirectToDashboard({ linked: 'apple' });
-        return;
-      }
-
-      redirectToDashboard();
-      return;
-    }
-
-    redirectToLoginWithError({
-      error: 'missing_auth_payload',
-      description: 'No auth code or session tokens were returned from the provider.'
-    });
-  } catch (error) {
-    console.error('[Auth Callback] Failed:', error);
-
-    redirectToLoginWithError({
-      error: 'callback_exchange_failed',
-      description: error?.message || 'Unable to complete sign in.'
-    });
+    redirectToDashboard(identityLink);
+  } catch (_) {
+    // SDK/provider error messages can contain sensitive callback details.
+    redirectToLoginWithError();
   }
 })();
