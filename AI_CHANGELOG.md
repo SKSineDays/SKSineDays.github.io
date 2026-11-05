@@ -300,3 +300,15 @@ Each entry includes:
 **Notes:** Added the canonical https://www.sineday.blog/ link to all 13 existing page footers. Focused footer, homepage invitation, and SineDuck tests passed (18 tests). Full suite and visual browser QA not run.
 
 ---
+
+## 2026-11-05T21:10:27.184Z
+
+**Files:** index.html, accessibility.html, affiliate.html, affiliate-terms.html, contact.html, daily.html, dashboard.html, login.html, privacy.html, refunds.html, terms.html, robots.txt, sitemap.xml, test/canonical-host.test.mjs
+
+**Summary:** Align canonical, sitemap, social and structured-data URLs with the live www host.
+
+**Rationale:** Production redirects sineday.app to www.sineday.app, so metadata should consistently identify the final serving host rather than the redirecting apex.
+
+**Notes:** Preserves all existing paths, eight sitemap entries, private-page noindex directives, robots exclusions, authentication behavior and Vercel configuration. Five focused regressions pass. Full suite retains the same seven failures verified on untouched main; no DNS, deployment or host-redirect changes.
+
+---
