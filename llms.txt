@@ -1,0 +1,26 @@
+# SineDay
+
+> SineDay is a journal and daily reflection app built around an 18-day rhythm and its SineDuck characters.
+
+This domain is the product home. The SineDay Journal at sineday.blog is its editorial companion, with philosophical essays and practical journaling resources. The rhythm is a framework for reflection, not medical advice or a clinical assessment.
+
+The homepage introduces the daily wave and dashboard. Journal, History and Print require Premium. The daily email is free and does not require an account. Consult the linked product pages for current features and terms.
+
+## Product and reflection
+
+- [SineDay](https://www.sineday.app/): Product introduction, daily wave and access to the dashboard.
+- [Daily SineDay email](https://www.sineday.app/daily): A SineDuck and a moment to reflect, delivered by email.
+- [SineDay Journal](https://www.sineday.blog/): The companion publication for essays and journaling resources.
+
+## Policies and contact
+
+- [Contact](https://www.sineday.app/contact.html): Official contact information.
+- [Privacy](https://www.sineday.app/privacy.html): Current privacy policy.
+- [Terms](https://www.sineday.app/terms.html): Current terms of use.
+- [Refunds](https://www.sineday.app/refunds.html): Current refund policy.
+- [Accessibility](https://www.sineday.app/accessibility.html): Accessibility information.
+
+## Optional
+
+- [Sitemap](https://www.sineday.app/sitemap.xml): Public URLs on this domain.
+
