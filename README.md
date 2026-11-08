@@ -218,3 +218,14 @@ The website day scenes use ten approved photographs per SineDay, with one still
 photo per visit. See [rotation behavior, provenance and release checks](docs/art-direction/day-photo-rotation.md).
 Run `npm run check:day-photos` to verify the full 180-photo collection, and
 `npm run test:day-photos:browser` for responsive homepage/dashboard checks.
+
+## Public llms.txt guide
+
+`/llms.txt` is a concise, public-only orientation to the app and its companion
+blog. Keep its feature boundaries and links aligned with the public pages when
+those change. It is not a crawler permission file, a full article archive, or a
+promise of indexing or AI citations. The homepage uses a standard `describedby`
+link; the XML sitemap includes the guide as a normal public textual URL. Keep
+`robots.txt`'s `Sitemap:` directive pointing only to the XML sitemap.
+
+Run `node --test test/llms-guide.test.mjs test/canonical-host.test.mjs` after changes.

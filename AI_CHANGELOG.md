@@ -312,3 +312,15 @@ Each entry includes:
 **Notes:** Preserves all existing paths, eight sitemap entries, private-page noindex directives, robots exclusions, authentication behavior and Vercel configuration. Five focused regressions pass. Full suite retains the same seven failures verified on untouched main; no DNS, deployment or host-redirect changes.
 
 ---
+
+## 2026-11-08T00:22:06.091Z
+
+**Files:** llms.txt, index.html, sitemap.xml, README.md, test/llms-guide.test.mjs, test/canonical-host.test.mjs
+
+**Summary:** Add concise public llms.txt guide and sitemap discovery.
+
+**Rationale:** Help readers and agents identify SineDay product, companion blog and public policies.
+
+**Notes:** Public-only content; no crawler permission or indexing guarantees. Focused guide and canonical tests pass. No full application suite run in this partial checkout.
+
+---
