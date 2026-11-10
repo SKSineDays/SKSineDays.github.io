@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v39';
+const CACHE_NAME = 'sineday-v40';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -112,6 +112,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Let the browser/CDN handle video byte ranges; never put large media in Cache Storage.
+  if (request.destination === 'video' || url.pathname.startsWith('/assets/video/')) {
     return;
   }
 
