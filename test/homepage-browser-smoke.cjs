@@ -9,7 +9,7 @@ const { mkdir } = require('node:fs/promises');
     for (let i=0; i<40; i++) { try { if ((await fetch('http://127.0.0.1:4189')).ok) break; } catch {} await new Promise(r=>setTimeout(r,100)); }
     browser = await chromium.launch();
     await mkdir('artifacts/homepage',{recursive:true});
-    for (const { width, reducedMotion } of [{ width: 375, reducedMotion: 'no-preference' }, { width: 1440, reducedMotion: 'reduce' }]) {
+    for (const { width, reducedMotion } of [{ width: 375, reducedMotion: 'no-preference' }, { width: 768, reducedMotion: 'no-preference' }, { width: 1440, reducedMotion: 'reduce' }]) {
       const page=await browser.newPage({viewport:{width,height:900},reducedMotion,serviceWorkers:'block'});
       const errors=[],media=[];
       page.on('pageerror',e=>errors.push(e.message));
@@ -32,6 +32,8 @@ const { mkdir } = require('node:fs/promises');
       assert.match(background.image,/og-hero\.png/);
       assert.equal(background.size,'cover');
       assert.ok(Math.abs((canvas.x+(canvas.width/2))-(width/2))<=1,'wave must remain centered');
+      const landingOffset = await page.locator('.wave-container').evaluate(e => new DOMMatrix(getComputedStyle(e).transform).m42);
+      assert.ok(landingOffset >= 72 && landingOffset <= 120, 'landing wave should sit lower beneath the artwork title');
       assert.ok(copy.x>=0 && copy.x+copy.width<=width,'hero copy must stay in the viewport');
       if (width === 375) assert.ok(copy.y>450,'mobile copy must sit below the artwork focal point');
       if (width === 1440) assert.ok(copy.x+copy.width<width/2,'desktop copy must leave the centered focal point clear');
@@ -62,6 +64,8 @@ const { mkdir } = require('node:fs/promises');
       await page.locator('#calculate-btn').click();
       await page.locator('.result-card.visible').waitFor();
       assert.equal(await page.locator('#wave-intro.bottom-placement').count(),1);
+      await page.waitForFunction(() => getComputedStyle(document.querySelector('.wave-container')).transform === 'none');
+      assert.equal(await page.locator('.wave-container').evaluate(e => getComputedStyle(e).transform), 'none', 'calculated wave must retain its original position');
       await page.locator('#home-find-wave').click();
       await page.locator('#input-container.visible').waitFor();
       assert.equal(await page.locator('#wave-intro.bottom-placement').count(),0);
