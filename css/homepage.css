@@ -12,9 +12,10 @@
 .homepage .icon-btn { width: 44px; height: 44px; background: #ffffff08; border: 1px solid #ffffff0c; }
 .homepage .main-content { padding-top: 0; padding-bottom: 0; width: 100%; max-width: none; min-height: auto; margin: 0; overflow: visible; }
 .homepage .wave-container { width: min(760px, 94vw); height: 96px; min-height: 96px; max-height: 96px; flex: none; margin: 8px auto -4px; opacity: 1; }
-/* Lower the decorative landing wave beneath the artwork wordmark without
-   moving the introduction or changing the calculated-day chart. */
-.homepage:not(:has(.result-card.visible)) .wave-container { transform: translateY(clamp(72px, 12svh, 120px)); }
+/* Align the landing wave's center with the wings meeting the shaft at ~49.5%
+   of the 1024x1536 artwork. Match its cover crop, scale and transform origin.
+   The subtraction removes the header, margin and half-canvas height; no flow moves. */
+.homepage:not(:has(.result-card.visible)) .wave-container { transform: translateY(calc(62.3vh - max(12.8vh, 19.2vw) - 124px)); }
 .homepage .wave-intro { width: 100%; max-width: none; padding: 0; margin: 0; }
 .home-hero { min-height: calc(100svh - 165px); display: flex; align-items: center; padding: 52px max(28px, calc((100vw - 1080px) / 2)) 76px; }
 .home-hero__content { width: min(440px, calc(50vw - 54px)); min-width: 0; text-align: left; }
@@ -95,6 +96,7 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
 /* The card clips its artwork, so keep the watch link's focus ring inside it. */
 .homepage .home-film__watch:focus-visible { outline-offset: -4px; border-radius: 20px 20px 0 0; }
 @media(max-width: 800px) {
+  .homepage:not(:has(.result-card.visible)) .wave-container { transform: translateY(calc(48vh - max(.52vh, .78vw) - 124px)); }
   .homepage .background-image-container.hero-mode::before { background-position: center 50%; transform: translate3d(0, var(--hero-depth), 0) scale(1.04); transform-origin: center bottom; }
   .homepage .background-image-container.hero-mode::after { background: linear-gradient(180deg, #080e181f 0%, #080e1814 43%, #080e18c7 60%, #080e18 82%); }
   .home-hero { min-height: calc(100svh + 150px - 129px); align-items: flex-end; padding: 54vh 24px 58px; }
@@ -104,6 +106,7 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
   .homepage .wave-intro.bottom-placement .home-hero { padding: 54px 24px; }
 }
 @media(max-width: 640px) {
+  .homepage:not(:has(.result-card.visible)) .wave-container { transform: translateY(calc(48vh - max(.52vh, .78vw) - 100px)); }
   .homepage .top-bar-content { padding: 8px 18px; }
   .home-brand img { width: 108px; }
   .homepage .top-bar-actions { gap: 5px; }
