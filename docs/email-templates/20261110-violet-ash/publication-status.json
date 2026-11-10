@@ -1,0 +1,125 @@
+{
+  "date": "2026-11-10",
+  "published": [
+    {
+      "alias": "day01risinginitiation-1",
+      "id": "45691cf1-b5a7-459d-b170-5481717ff1f6",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_01_RISING_INITIATION\nID: 45691cf1-b5a7-459d-b170-5481717ff1f6\nStatus: published\nAlias: day01risinginitiation-1\nSubject: Your SineDay — Day 1: Initiation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:14.591358+00\nUpdated at: 2026-11-10 16:25:50.328+00\nPublished at: 2026-11-10 16:25:50.325+00"
+    },
+    {
+      "alias": "day02ascendingmomentum-1",
+      "id": "b1a20190-dcbb-4b3f-a43f-7470b34e9546",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_02_ASCENDING_MOMENTUM\nID: b1a20190-dcbb-4b3f-a43f-7470b34e9546\nStatus: published\nAlias: day02ascendingmomentum-1\nSubject: Your SineDay — Day 2: Momentum\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:15.971922+00\nUpdated at: 2026-11-10 16:25:52.491+00\nPublished at: 2026-11-10 16:25:52.487+00"
+    },
+    {
+      "alias": "day03ascendingcreativity",
+      "id": "43a3ebe9-1492-4bcb-b411-d46d8dc8b6d4",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_03_ASCENDING_CREATIVITY\nID: 43a3ebe9-1492-4bcb-b411-d46d8dc8b6d4\nStatus: published\nAlias: day03ascendingcreativity\nSubject: Your SineDay — Day 3: Creativity\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:17.470898+00\nUpdated at: 2026-11-10 16:25:54.976+00\nPublished at: 2026-11-10 16:25:54.974+00"
+    },
+    {
+      "alias": "day04ascendingconnection-1",
+      "id": "d8e150f9-4fd8-4607-947f-22723f341673",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_04_ASCENDING_CONNECTION\nID: d8e150f9-4fd8-4607-947f-22723f341673\nStatus: published\nAlias: day04ascendingconnection-1\nSubject: Your SineDay — Day 4: Connection\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:18.822387+00\nUpdated at: 2026-11-10 16:25:57.735+00\nPublished at: 2026-11-10 16:25:57.732+00"
+    },
+    {
+      "alias": "day05ascendingproductivity-1",
+      "id": "4ef10889-22c5-46dd-aef0-b6d5a32cf148",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_05_ASCENDING_PRODUCTIVITY\nID: 4ef10889-22c5-46dd-aef0-b6d5a32cf148\nStatus: published\nAlias: day05ascendingproductivity-1\nSubject: Your SineDay — Day 5: Productivity\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:20.203129+00\nUpdated at: 2026-11-10 16:25:59.901+00\nPublished at: 2026-11-10 16:25:59.898+00"
+    },
+    {
+      "alias": "day06peakbalance",
+      "id": "7db82367-0c11-4a46-af6f-c79e8bfea07a",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_06_PEAK_BALANCE\nID: 7db82367-0c11-4a46-af6f-c79e8bfea07a\nStatus: published\nAlias: day06peakbalance\nSubject: Your SineDay — Day 6: Balance\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:21.684515+00\nUpdated at: 2026-11-10 16:26:02.126+00\nPublished at: 2026-11-10 16:26:02.122+00"
+    },
+    {
+      "alias": "day07peakinsight-1",
+      "id": "5f724020-2ddc-469e-bf07-63827d3f784d",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_07_PEAK_INSIGHT\nID: 5f724020-2ddc-469e-bf07-63827d3f784d\nStatus: published\nAlias: day07peakinsight-1\nSubject: Your SineDay — Day 7: Insight\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:23.109141+00\nUpdated at: 2026-11-10 16:26:03.911+00\nPublished at: 2026-11-10 16:26:03.908+00"
+    },
+    {
+      "alias": "day08peakchallenge-1",
+      "id": "e1ec3ddd-b383-4eb7-b4b0-a560b10b9252",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_08_PEAK_CHALLENGE\nID: e1ec3ddd-b383-4eb7-b4b0-a560b10b9252\nStatus: published\nAlias: day08peakchallenge-1\nSubject: Your SineDay — Day 8: Challenge\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:24.541922+00\nUpdated at: 2026-11-10 16:26:05.9+00\nPublished at: 2026-11-10 16:26:05.897+00"
+    },
+    {
+      "alias": "day09cresttransition",
+      "id": "ee2cb2b5-0da9-4df6-ac9e-c88acd8326d0",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_09_CREST_TRANSITION\nID: ee2cb2b5-0da9-4df6-ac9e-c88acd8326d0\nStatus: published\nAlias: day09cresttransition\nSubject: Your SineDay — Day 9: Transition\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:26.005944+00\nUpdated at: 2026-11-10 16:26:08.382+00\nPublished at: 2026-11-10 16:26:08.379+00"
+    },
+    {
+      "alias": "day10descendingreflection",
+      "id": "a41d7eb6-f2b5-4b39-9999-7ce587ea9feb",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_10_DESCENDING_REFLECTION\nID: a41d7eb6-f2b5-4b39-9999-7ce587ea9feb\nStatus: published\nAlias: day10descendingreflection\nSubject: Your SineDay — Day 10: Reflection\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:27.344634+00\nUpdated at: 2026-11-10 16:26:10.643+00\nPublished at: 2026-11-10 16:26:10.639+00"
+    },
+    {
+      "alias": "day11descendingintegration-1",
+      "id": "adf13d1c-8220-451e-ba0f-b59fe2aab212",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_11_DESCENDING_INTEGRATION\nID: adf13d1c-8220-451e-ba0f-b59fe2aab212\nStatus: published\nAlias: day11descendingintegration-1\nSubject: Your SineDay — Day 11: Integration\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:28.72876+00\nUpdated at: 2026-11-10 16:26:12.953+00\nPublished at: 2026-11-10 16:26:12.947+00"
+    },
+    {
+      "alias": "day12descendingrecalibration-1",
+      "id": "c563a15d-3731-4777-8a42-c86d5193d26a",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_12_DESCENDING_RECALIBRATION\nID: c563a15d-3731-4777-8a42-c86d5193d26a\nStatus: published\nAlias: day12descendingrecalibration-1\nSubject: Your SineDay — Day 12: Recalibration\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:30.080405+00\nUpdated at: 2026-11-10 16:26:16.035+00\nPublished at: 2026-11-10 16:26:16.032+00"
+    },
+    {
+      "alias": "day13descendingrelease",
+      "id": "3093a65e-c3da-455d-82ca-877b47e50bd0",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_13_DESCENDING_RELEASE\nID: 3093a65e-c3da-455d-82ca-877b47e50bd0\nStatus: published\nAlias: day13descendingrelease\nSubject: Your SineDay — Day 13: Release\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:31.352254+00\nUpdated at: 2026-11-10 16:26:18.264+00\nPublished at: 2026-11-10 16:26:18.261+00"
+    },
+    {
+      "alias": "day14troughinnerwork",
+      "id": "5436c6d8-4db6-440f-aa64-6c4e01d56ba3",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_14_TROUGH_INNER_WORK\nID: 5436c6d8-4db6-440f-aa64-6c4e01d56ba3\nStatus: published\nAlias: day14troughinnerwork\nSubject: Your SineDay — Day 14: Inner Work\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:32.657396+00\nUpdated at: 2026-11-10 16:26:20.43+00\nPublished at: 2026-11-10 16:26:20.426+00"
+    },
+    {
+      "alias": "day15troughhealing-1",
+      "id": "8de1ccdd-0ce5-4efc-9f2c-a5eb6761f16f",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_15_TROUGH_HEALING\nID: 8de1ccdd-0ce5-4efc-9f2c-a5eb6761f16f\nStatus: published\nAlias: day15troughhealing-1\nSubject: Your SineDay — Day 15: Healing\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:34.000304+00\nUpdated at: 2026-11-10 16:26:22.55+00\nPublished at: 2026-11-10 16:26:22.547+00"
+    },
+    {
+      "alias": "day16troughpreparation-1",
+      "id": "961698c0-e8bb-448a-b327-182dc093aca8",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_16_TROUGH_PREPARATION\nID: 961698c0-e8bb-448a-b327-182dc093aca8\nStatus: published\nAlias: day16troughpreparation-1\nSubject: Your SineDay — Day 16: Preparation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:35.399873+00\nUpdated at: 2026-11-10 16:26:24.574+00\nPublished at: 2026-11-10 16:26:24.572+00"
+    },
+    {
+      "alias": "day17emergingfoundation",
+      "id": "50144103-eaa0-4efc-91dd-b6392b9ba127",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_17_EMERGING_FOUNDATION\nID: 50144103-eaa0-4efc-91dd-b6392b9ba127\nStatus: published\nAlias: day17emergingfoundation\nSubject: Your SineDay — Day 17: Foundation\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:36.996926+00\nUpdated at: 2026-11-10 16:26:27.102+00\nPublished at: 2026-11-10 16:26:27.098+00"
+    },
+    {
+      "alias": "day18emergingculmination",
+      "id": "13dfb78b-c760-4bf8-863f-2796b57d6325",
+      "outcome": "published and verified",
+      "metadata": "Name: Day_18_EMERGING_CULMINATION\nID: 13dfb78b-c760-4bf8-863f-2796b57d6325\nStatus: published\nAlias: day18emergingculmination\nSubject: Your SineDay — Day 18: Culmination\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:38.38883+00\nUpdated at: 2026-11-10 16:26:29.417+00\nPublished at: 2026-11-10 16:26:29.414+00"
+    },
+    {
+      "alias": "welcomeemail",
+      "id": "0fc64c37-ef2b-4e15-849a-58620e4448b9",
+      "outcome": "published and verified",
+      "metadata": "Name: Welcome_Email\nID: 0fc64c37-ef2b-4e15-849a-58620e4448b9\nStatus: published\nAlias: welcomeemail\nSubject: Welcome to Your SineDay 🌊\nFrom: Daily <daily@daily.sineday.app>\nReply-to: mysine@sineday.app\nCreated at: 2026-03-12 02:39:39.65184+00\nUpdated at: 2026-11-10 16:26:31.714+00\nPublished at: 2026-11-10 16:26:31.711+00"
+    }
+  ],
+  "confirmation": {
+    "id": "88d5b233-dc13-453b-9bdb-9d48eab007c2",
+    "alias": "dailyemailconfirmation",
+    "status": "Violet Ash saved in original TipTap editor draft, not live. Publish returned 422 because editor draft has not rendered to HTML. Browser dashboard requires sign-in; original live HTML remains unchanged."
+  },
+  "notes": "No email sends or delivery settings changed. README describes preparation; this file records later rollout status."
+}
