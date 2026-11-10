@@ -12,6 +12,9 @@
 .homepage .icon-btn { width: 44px; height: 44px; background: #ffffff08; border: 1px solid #ffffff0c; }
 .homepage .main-content { padding-top: 0; padding-bottom: 0; width: 100%; max-width: none; min-height: auto; margin: 0; overflow: visible; }
 .homepage .wave-container { width: min(760px, 94vw); height: 96px; min-height: 96px; max-height: 96px; flex: none; margin: 8px auto -4px; opacity: 1; }
+/* Lower the decorative landing wave beneath the artwork wordmark without
+   moving the introduction or changing the calculated-day chart. */
+.homepage:not(:has(.result-card.visible)) .wave-container { transform: translateY(clamp(72px, 12svh, 120px)); }
 .homepage .wave-intro { width: 100%; max-width: none; padding: 0; margin: 0; }
 .home-hero { min-height: calc(100svh - 165px); display: flex; align-items: center; padding: 52px max(28px, calc((100vw - 1080px) / 2)) 76px; }
 .home-hero__content { width: min(440px, calc(50vw - 54px)); min-width: 0; text-align: left; }
