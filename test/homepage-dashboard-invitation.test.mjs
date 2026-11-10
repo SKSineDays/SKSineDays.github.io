@@ -48,3 +48,11 @@ test("login welcomes new and returning users while retaining both providers", ()
   assert.match(login, /id="login-status"[^>]*role="status"/);
   assert.match(login, /src="\/js\/login\.js"/);
 });
+
+
+test("homepage preserves the original hero art with a separate readable copy area", () => {
+  assert.match(index, /class="home-hero__art" aria-hidden="true"/);
+  assert.match(index, /class="home-hero__content"/);
+  const css = readFileSync(new URL("../css/homepage.css", import.meta.url), "utf8");
+  assert.match(css, /og-hero\.png/);
+});
