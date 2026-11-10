@@ -35,7 +35,7 @@ test('all existing page canonicals use the live www origin without changing rout
 
 test('sitemap keeps the eight public pages and adds the public llms guide', () => {
   const locations = [...read('sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, url]) => url);
-  assert.deepEqual(locations, [...publicPages.values(), '/llms.txt'].map(path => `${origin}${path}`));
+  assert.deepEqual(locations, [...publicPages.values(), '/llms.txt', '/video-transcripts.html'].map(path => `${origin}${path}`));
   assert.equal(new Set(locations).size, locations.length, 'Sitemap must not contain duplicate URLs');
   for (const [file, path] of publicPages) {
     assert.ok(read(file).includes(`rel="canonical" href="${origin}${path}"`), file);

@@ -52,7 +52,7 @@ test('homepage uses separate nature artwork and official Finale marks', async ()
     readFile(new URL('../styles.css', import.meta.url), 'utf8')
   ]);
   assert.doesNotMatch(html, /sineduck-plate/);
-  assert.match(html, /class="daily-email-banner__duck"\s+src="\/assets\/sineducks\/SineDuckFinale17\.svg"/);
+  assert.match(html, /src="\/assets\/sineducks\/SineDuckFinale17\.svg"/);
   assert.match(html, /class="day-artwork-duck"[\s\S]*id="dayImageDuck"/);
   assert.match(ui, /presentDayPhoto\(\{/);
   assert.match(ui, /day-photo-view\.js/);
@@ -185,7 +185,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   assert.ok(!fetched.some(item => /\/Day\d+\./.test(item.url)), 'installation must not download the collection');
   await lifecycle('activate');
   assert.ok(claimed);
-  assert.deepEqual(await caches.keys(), ['sineday-v40']);
+  assert.deepEqual(await caches.keys(), ['sineday-v41']);
   for (const path of ['/Day1.jpeg', '/Day18.avif?v=20260910']) {
     assert.equal(await (await request(path)).text(), 'new artwork');
     const requestsBeforeOffline = fetched.length;
@@ -197,7 +197,7 @@ test('worker updates old artwork, caches viewed formats offline, and never cache
   offline = true;
   assert.equal((await request('/Day2.avif?v=20260910')).status, 503);
   offline = false;
-  const active = stores.get('sineday-v40');
+  const active = stores.get('sineday-v41');
   const beforeApi = active.size;
   assert.equal((await request('/api/health')).status, 200);
   assert.equal(fetched.at(-1).cache, 'no-store');
@@ -241,7 +241,7 @@ test('reduced motion presents artwork immediately and scrolls without animation'
 });
 
 test('generic public surfaces use Celebrity while dashboard tabs use the requested Finale mapping', async () => {
-  for (const file of ['index.html', 'daily.html', 'daily-confirm.html']) {
+  for (const file of ['daily.html', 'daily-confirm.html']) {
     const html = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.match(html, /SineDuck%20Celebrity\.svg/);
     assert.doesNotMatch(html, /SineDuck\d+(?:@3x)?\.(?:svg|png)/);

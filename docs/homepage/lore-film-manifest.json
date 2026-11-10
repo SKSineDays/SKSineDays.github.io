@@ -1,0 +1,141 @@
+{
+  "title": "The story of SineDay",
+  "duration": 117.49999999999997,
+  "fps": 24,
+  "size": [
+    1080,
+    1920
+  ],
+  "silent": true,
+  "source": "Current Discover More narrative in index.html; official SineDuckFinale17.svg rasterization",
+  "scenes": [
+    {
+      "start": 0,
+      "end": 5.5,
+      "label": "DISCOVER SINEDAY",
+      "title": "What is\na SineDay?",
+      "caption": "A SineDay is your place in\nan 18-day personal rhythm.",
+      "visual": "cycle"
+    },
+    {
+      "start": 4.8,
+      "end": 13.3,
+      "label": "A REFLECTIVE FRAMEWORK",
+      "title": "An inner wave.",
+      "caption": "A way to reflect on energy,\nfeeling, and awareness.\nYour cycle is counted from birth.\nNot a scientific measurement.",
+      "visual": "wave"
+    },
+    {
+      "start": 12.6,
+      "end": 21.1,
+      "label": "RHYTHM",
+      "title": "Your inner power\nhas a rhythm.",
+      "caption": "Some days rise. Some days soften.\nSome days ask you to listen\nbefore you move.",
+      "visual": "wave"
+    },
+    {
+      "start": 20.4,
+      "end": 29.9,
+      "label": "PERSPECTIVE",
+      "title": "Notice the wave\nwithin you.",
+      "caption": "SineDay gives you a simple way\nto notice the wave within you,\nwithout forcing it into\na rule or prediction.",
+      "visual": "cycle"
+    },
+    {
+      "start": 29.2,
+      "end": 36.7,
+      "label": "AWARENESS",
+      "title": "Awareness changes\nthe moment.",
+      "caption": "When you know the shape of\ntoday\u2019s wave, the day becomes\neasier to meet.",
+      "visual": "wave"
+    },
+    {
+      "start": 36.0,
+      "end": 45.5,
+      "label": "A CLEARER MIRROR",
+      "title": "Meet your day\nas it is.",
+      "caption": "Not because SineDay tells you\nwhat to do, but because it gives\nyou a clearer mirror for what\nyou are already feeling.",
+      "visual": "wave"
+    },
+    {
+      "start": 44.8,
+      "end": 56.3,
+      "label": "DAILY REFLECTION",
+      "title": "Journal from your\ninherent power.",
+      "caption": "SineDay turns daily reflection\ninto a ritual. Today\u2019s Wave,\nToday\u2019s Duck, and Today\u2019s Thoughts\nhelp you write from the energy\nof the day.",
+      "visual": "pages"
+    },
+    {
+      "start": 55.6,
+      "end": 62.1,
+      "label": "YOUR DAY, IN WORDS",
+      "title": "Remember\nwhat mattered.",
+      "caption": "So you can remember\nwhat happened, what moved you,\nand what mattered.",
+      "visual": "pages"
+    },
+    {
+      "start": 61.4,
+      "end": 68.9,
+      "label": "MEET SINEDUCK",
+      "title": "Hello, I\u2019m\nSineDuck.",
+      "caption": "I\u2019m here to help you notice\nthe wave already moving\nthrough your days.",
+      "visual": "duck"
+    },
+    {
+      "start": 68.2,
+      "end": 73.7,
+      "label": "MOVEMENT",
+      "title": "Some moments rise.",
+      "caption": "Some moments rise, while others\nsoften and carry you inward.",
+      "visual": "duck"
+    },
+    {
+      "start": 73.0,
+      "end": 82.5,
+      "label": "ALIGNMENT",
+      "title": "Alignment\nCreates Lift.",
+      "caption": "That movement is why SineDay says:\nAlignment Creates Lift.\nBut lift doesn\u2019t mean staying\nat the top of the wave.",
+      "visual": "wave"
+    },
+    {
+      "start": 81.8,
+      "end": 89.3,
+      "label": "WITHIN",
+      "title": "See the\nnatural flow.",
+      "caption": "It begins with seeing the natural\nflow already moving within you.\nSineDay doesn\u2019t create that flow.",
+      "visual": "wave"
+    },
+    {
+      "start": 88.6,
+      "end": 100.1,
+      "label": "PERSPECTIVE",
+      "title": "Already yours.",
+      "caption": "It gives you a perspective\nfor noticing what is already yours.\nWhen you can meet the movement\nas it is, you don\u2019t have to fight\nevery high or low.",
+      "visual": "cycle"
+    },
+    {
+      "start": 99.4,
+      "end": 106.9,
+      "label": "AWARENESS",
+      "title": "That awareness\nis lift.",
+      "caption": "You can experience the moment\nwith more awareness,\nand that awareness is lift.",
+      "visual": "wave"
+    },
+    {
+      "start": 106.2,
+      "end": 113.7,
+      "label": "YOUR COMPANION",
+      "title": "Highs or lows,\nI\u2019m always here.",
+      "caption": "Highs or lows, I\u2019m always here,\noffering a perspective\nfree of judgment.",
+      "visual": "duck"
+    },
+    {
+      "start": 113.0,
+      "end": 117.5,
+      "label": "SINEDAY",
+      "title": "Discover\nyour SineDay.",
+      "caption": "Explore sineday.app",
+      "visual": "duck"
+    }
+  ]
+}
