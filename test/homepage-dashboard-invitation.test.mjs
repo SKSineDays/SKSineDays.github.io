@@ -36,7 +36,7 @@ test("existing result and reset flows relocate the same intro and invitation", (
 
 test("login welcomes new and returning users while retaining both providers", () => {
   assert.match(login, /<strong>Welcome to SineDay<\/strong>/);
-  assert.match(login, /New here or returning\? Sign in with Google or Apple to open your dashboard\./);
+  assert.match(login, /New here or returning\? Sign in with Google, Apple, or email to open your dashboard\./);
   assert.doesNotMatch(login, /Welcome back|Sign in to continue your SineDay journal\./);
   for (const provider of ["google", "apple"]) {
     assert.match(login, new RegExp(`<button id="${provider}-signin-btn"[^>]*type="button"`));

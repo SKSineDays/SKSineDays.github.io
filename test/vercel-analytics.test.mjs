@@ -21,9 +21,9 @@ const publicHtmlFiles = [
   "affiliate.html",
   "affiliate-terms.html",
   "unsubscribe.html",
-  "auth/callback.html",
 ];
 const trackerFreeHtmlFiles = [
+  "auth/callback.html",
   "daily.html",
   "daily-confirm.html",
 ];
@@ -60,10 +60,10 @@ test("repo HTML pages are all covered by the analytics mount list", () => {
       `${file} is not covered by the analytics policy`,
     );
   }
-  assert.ok(publicHtmlFiles.includes("auth/callback.html"));
+  assert.ok(trackerFreeHtmlFiles.includes("auth/callback.html"));
 });
 
-test("email signup and confirmation pages stay tracker-free", () => {
+test("authentication callback, email signup and confirmation pages stay tracker-free", () => {
   for (const file of trackerFreeHtmlFiles) {
     const html = readFileSync(join(root, file), "utf8");
     assert.doesNotMatch(html, /vercel-analytics|_vercel\/insights/i, file);
@@ -71,7 +71,7 @@ test("email signup and confirmation pages stay tracker-free", () => {
 });
 
 test("service worker lets Vercel insights traffic bypass the cache", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v38'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v39'/);
   assert.match(
     serviceWorker,
     /if \(url\.pathname\.startsWith\('\/_vercel\/'\)\) \{\s*return;\s*\}/,
