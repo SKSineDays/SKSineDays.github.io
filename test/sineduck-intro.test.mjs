@@ -11,7 +11,7 @@ test("the SineDay story is an explicit video choice, not the retired scroll show
   assert.match(html, /href="\/assets\/video\/sineday-story-2026-11-10\.mp4"[^>]*data-home-video/);
   assert.match(html, /data-video-title="The SineDay story"/);
   assert.match(html, /data-video-transcript="\/video-transcripts\.html#story"/);
-  assert.match(html, /src="\/assets\/video\/sineday-story-2026-11-10\.jpg"[^>]*loading="lazy"/);
+  assert.match(html, /src="\/assets\/video\/sineday-story-card\.jpg"[^>]*decoding="async"/);
   assert.doesNotMatch(html, /id="discover-story"|discover-story-scroller|data-sineduck-phrase/);
   assert.doesNotMatch(ui, /import[^;]*sineduck-intro-animation|new SineDuckIntroAnimation/);
   assert.doesNotMatch(html, /src="[^\"]*sineduck-intro-animation/);
