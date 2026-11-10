@@ -29,7 +29,7 @@ test("linked story text retains the meaning and explains the silent visuals", ()
 });
 
 test("homepage cache advances for the controller change without preloading video or retired animation", () => {
-  assert.match(sw, /CACHE_NAME = 'sineday-v41'/);
+  assert.match(sw, /CACHE_NAME = 'sineday-v42'/);
   const assets = sw.slice(sw.indexOf('const ASSETS_TO_CACHE'), sw.indexOf('const OPTIONAL_ASSETS'));
   assert.match(assets, /'\/styles\.css'/);
   assert.match(assets, /'\/js\/ui\.js'/);
