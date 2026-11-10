@@ -7,6 +7,8 @@ on:
       - 'dashboard.html'
       - 'styles.css'
       - 'css/dashboard.css'
+      - 'css/homepage.css'
+      - 'video-transcripts.html'
       - 'service-worker.js'
       - 'test/**'
       - 'docs/art-direction/day-photo*'
@@ -31,6 +33,7 @@ jobs:
       - run: npm test
       - run: npm run check:day-photos
       - run: npx playwright install --with-deps chromium
+      - run: node test/homepage-browser-smoke.cjs
       - name: Verify installed PWA upgrade from the PR base
         run: |
           git fetch --no-tags --depth=1 origin "$GLOBE_BASE_REF"
@@ -52,6 +55,8 @@ jobs:
         if: always()
         with:
           name: day-photo-review
-          path: artifacts/day-photos/
+          path: |
+            artifacts/day-photos/
+            artifacts/homepage/
           retention-days: 7
           if-no-files-found: warn

@@ -16,7 +16,6 @@ import {
   duckPlacementOnDayArtwork,
   duckSvgUrlFromSinedayNumber
 } from './sineducks.js';
-import { SineDuckIntroAnimation } from './sineduck-intro-animation.js';
 
 function capturePendingAffiliateCode() {
   try {
@@ -69,13 +68,6 @@ export class SineDayUI {
       dayDetailsCard: document.getElementById('day-details-card'),
       dayDetailsParagraph: document.getElementById('day-details-paragraph'),
       dayDetailsBullets: document.getElementById('day-details-bullets'),
-      discoverStory: document.getElementById('discover-story'),
-      discoverMoreBtn: document.getElementById('discover-more-btn'),
-      discoverStoryClose: document.getElementById('discover-story-close'),
-      discoverStoryBackdrop: document.querySelector('#discover-story .discover-story__backdrop'),
-      discoverScroller: document.getElementById('discover-story-scroller'),
-      discoverMySinedayBtn: document.getElementById('discover-my-sineday-btn'),
-      discoverSineDuckSlide: document.querySelector('[data-discover-sineduck-slide]'),
       infoModal: document.getElementById('info-modal'),
       infoModalClose: document.getElementById('info-modal-close'),
       infoModalBackdrop: document.querySelector('#info-modal .sd-modal-backdrop'),
@@ -86,7 +78,6 @@ export class SineDayUI {
     // State
     this.currentDay = null;
     this.waveRenderer = null;
-    this.sineDuckIntroAnimation = null;
     this.isCardVisible = false;
 
     // Touch gesture state
@@ -99,14 +90,6 @@ export class SineDayUI {
     this._lastFocus = null;
     this._modalFocusables = [];
     this._boundModalKeydown = null;
-
-    // Discover story overlay
-    this._discoverStoryOpen = false;
-    this._lastDiscoverFocus = null;
-    this._discoverFocusables = [];
-    this._boundDiscoverKeydown = null;
-    this._onDiscoverScroll = null;
-    this._discoverScrollRaf = 0;
 
     // Initialize
     this.init();
@@ -121,12 +104,6 @@ export class SineDayUI {
       this.waveRenderer = new WaveCanvas(this.elements.waveCanvas, {
         accentColor: '#7AA7FF'
       });
-    }
-
-    if (this.elements.discoverSineDuckSlide) {
-      this.sineDuckIntroAnimation = new SineDuckIntroAnimation(
-        this.elements.discoverSineDuckSlide
-      );
     }
 
     // Bind event listeners
@@ -150,23 +127,16 @@ export class SineDayUI {
    * Bind event listeners
    */
   bindEvents() {
+    document.getElementById('home-find-wave')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.hideResultCard();
+      this.hideDayImageCard();
+      this.resetToInput();
+      this.elements.birthdateInput?.focus({ preventScroll: true });
+    });
     // Calculate button
     if (this.elements.calculateBtn) {
       this.elements.calculateBtn.addEventListener('click', () => this.handleCalculate());
-    }
-
-    // Discover More story
-    if (this.elements.discoverMoreBtn) {
-      this.elements.discoverMoreBtn.addEventListener('click', () => this.openDiscoverStory());
-    }
-    if (this.elements.discoverStoryClose) {
-      this.elements.discoverStoryClose.addEventListener('click', () => this.closeDiscoverStory());
-    }
-    if (this.elements.discoverStoryBackdrop) {
-      this.elements.discoverStoryBackdrop.addEventListener('click', () => this.closeDiscoverStory());
-    }
-    if (this.elements.discoverMySinedayBtn) {
-      this.elements.discoverMySinedayBtn.addEventListener('click', () => this.handleDiscoverMySineday());
     }
 
     // Enter key on input
@@ -199,11 +169,6 @@ export class SineDayUI {
 
     this._boundGlobalKeydown = (e) => {
       if (e.key !== 'Escape') return;
-      if (this._discoverStoryOpen) {
-        e.preventDefault();
-        this.closeDiscoverStory();
-        return;
-      }
       if (this._modalOpen) {
         e.preventDefault();
         this.closeInfoModal();
@@ -482,6 +447,7 @@ export class SineDayUI {
 
     this.elements.resultCard.classList.add('visible');
     this.isCardVisible = true;
+    this.waveRenderer?.resize?.();
   }
 
   /**
@@ -492,6 +458,7 @@ export class SineDayUI {
 
     this.elements.resultCard.classList.remove('visible');
     this.isCardVisible = false;
+    this.waveRenderer?.resize?.();
   }
 
   /**
@@ -901,175 +868,12 @@ export class SineDayUI {
   }
 
   /**
-   * Discover story: scroll-driven slide emphasis
-   */
-  updateDiscoverSlideScrollFx() {
-    const root = this.elements.discoverScroller;
-    const story = this.elements.discoverStory;
-    if (!root || !story || !story.classList.contains('is-open')) return;
-
-    const slides = root.querySelectorAll('.discover-slide');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const r = root.getBoundingClientRect();
-    const focalY = r.top + r.height * 0.42;
-    const span = Math.max(r.height * 0.52, 240);
-    let sineDuckProgress = 0;
-
-    slides.forEach((slide) => {
-      const sr = slide.getBoundingClientRect();
-      const center = sr.top + sr.height * 0.5;
-      const dist = Math.abs(center - focalY);
-      const p = Math.max(0, Math.min(1, 1 - dist / span));
-      slide.style.setProperty('--scroll-progress', String(reduceMotion ? 1 : p));
-      if (slide === this.elements.discoverSineDuckSlide) {
-        sineDuckProgress = p;
-      }
-    });
-
-    this.sineDuckIntroAnimation?.setFocusProgress(sineDuckProgress);
-    story.classList.toggle('discover-story--final-slide', sineDuckProgress >= 0.55);
-  }
-
-  bindDiscoverScrollListeners() {
-    const el = this.elements.discoverScroller;
-    if (!el || this._onDiscoverScroll) return;
-
-    this._onDiscoverScroll = () => {
-      if (this._discoverScrollRaf) return;
-      this._discoverScrollRaf = requestAnimationFrame(() => {
-        this._discoverScrollRaf = 0;
-        this.updateDiscoverSlideScrollFx();
-        if (this.elements.discoverStory && this.elements.discoverScroller) {
-          this.elements.discoverStory.classList.toggle(
-            'discover-story--scrolled',
-            this.elements.discoverScroller.scrollTop > 48
-          );
-        }
-      });
-    };
-
-    el.addEventListener('scroll', this._onDiscoverScroll, { passive: true });
-    this.updateDiscoverSlideScrollFx();
-  }
-
-  unbindDiscoverScrollListeners() {
-    const el = this.elements.discoverScroller;
-    if (el && this._onDiscoverScroll) {
-      el.removeEventListener('scroll', this._onDiscoverScroll);
-    }
-    this._onDiscoverScroll = null;
-    if (this._discoverScrollRaf) {
-      cancelAnimationFrame(this._discoverScrollRaf);
-      this._discoverScrollRaf = 0;
-    }
-  }
-
-  handleDiscoverKeydown(e) {
-    if (!this._discoverStoryOpen) return;
-    if (e.key !== 'Tab') return;
-
-    const focusables = this._discoverFocusables || [];
-    if (!focusables.length) return;
-
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  }
-
-  openDiscoverStory() {
-    const story = this.elements.discoverStory;
-    if (!story || this._discoverStoryOpen) return;
-
-    if (this._modalOpen) {
-      this.closeInfoModal();
-    }
-
-    this._lastDiscoverFocus = document.activeElement;
-    this._discoverStoryOpen = true;
-
-    document.body.classList.add('discover-story-open');
-    story.classList.remove('discover-story--scrolled');
-    story.classList.remove('discover-story--final-slide');
-    story.classList.add('is-open');
-    story.setAttribute('aria-hidden', 'false');
-
-    if (this.elements.discoverScroller) {
-      this.elements.discoverScroller.scrollTop = 0;
-    }
-
-    this.setAppInert(true);
-
-    const panel = story.querySelector('.discover-story__panel');
-    this._discoverFocusables = this.getFocusableElements(panel);
-
-    this._boundDiscoverKeydown = (e) => this.handleDiscoverKeydown(e);
-    document.addEventListener('keydown', this._boundDiscoverKeydown);
-
-    this.bindDiscoverScrollListeners();
-
-    const focusTarget = this.elements.discoverStoryClose || this._discoverFocusables[0];
-    if (focusTarget) focusTarget.focus();
-  }
-
-  /**
-   * @param {HTMLElement | null} [focusOverride]
-   */
-  closeDiscoverStory(focusOverride = null) {
-    const story = this.elements.discoverStory;
-    if (!story || !this._discoverStoryOpen) return;
-
-    this._discoverStoryOpen = false;
-
-    document.body.classList.remove('discover-story-open');
-    story.classList.remove('is-open');
-    story.classList.remove('discover-story--scrolled');
-    story.classList.remove('discover-story--final-slide');
-    story.setAttribute('aria-hidden', 'true');
-
-    this.unbindDiscoverScrollListeners();
-    this.sineDuckIntroAnimation?.reset();
-
-    if (this._boundDiscoverKeydown) {
-      document.removeEventListener('keydown', this._boundDiscoverKeydown);
-      this._boundDiscoverKeydown = null;
-    }
-
-    this.setAppInert(false);
-
-    const refocus = focusOverride || this._lastDiscoverFocus;
-    if (refocus && typeof refocus.focus === 'function') {
-      refocus.focus();
-    } else if (this.elements.discoverMoreBtn) {
-      this.elements.discoverMoreBtn.focus();
-    }
-  }
-
-  handleDiscoverMySineday() {
-    this.closeDiscoverStory(this.elements.birthdateInput || null);
-    requestAnimationFrame(() => {
-      const input = this.elements.birthdateInput;
-      if (input) input.focus();
-    });
-  }
-
-  /**
    * Cleanup
    */
   destroy() {
     cancelDayPhoto(this.elements.dayImage, this.elements.dayPhotoCredit);
     if (this.waveRenderer) {
       this.waveRenderer.destroy();
-    }
-    if (this.sineDuckIntroAnimation) {
-      this.sineDuckIntroAnimation.destroy();
-      this.sineDuckIntroAnimation = null;
     }
     if (this._onScroll) {
       window.removeEventListener('scroll', this._onScroll);
@@ -1078,15 +882,7 @@ export class SineDayUI {
       document.removeEventListener('keydown', this._boundGlobalKeydown);
       this._boundGlobalKeydown = null;
     }
-    if (this._discoverStoryOpen) {
-      this.closeDiscoverStory();
-    } else {
-      this.unbindDiscoverScrollListeners();
-    }
-    if (this._boundDiscoverKeydown) {
-      document.removeEventListener('keydown', this._boundDiscoverKeydown);
-      this._boundDiscoverKeydown = null;
-    }
+
   }
 }
 

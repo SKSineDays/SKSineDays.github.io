@@ -3,12 +3,15 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v40';
+const CACHE_NAME = 'sineday-v41';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/styles.css',
+  '/css/homepage.css',
+  '/js/home-video.js',
+  '/video-transcripts.html',
   '/assets/og-hero.png',
   '/assets/brand/sineday-wordmark.svg',
   '/assets/brand/sineday-wordmark-light.png',
@@ -19,8 +22,6 @@ const ASSETS_TO_CACHE = [
   '/js/day-photo-selection.js',
   '/js/day-photo-view.js',
   '/js/sineducks.js',
-  '/js/sineduck-intro-animation.js',
-  '/assets/sineducks/SineDuck%20Celebrity.svg',
   '/site.webmanifest?v=2',
   '/apple-touch-icon.png?v=2',
   '/assets/app-icon/apple-touch-icon-180.png?v=2',

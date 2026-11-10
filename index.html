@@ -35,7 +35,7 @@
       "url": "https://www.sineday.app/",
       "applicationCategory": "LifestyleApplication",
       "operatingSystem": "All",
-      "description": "SineDay reveals your Intrinsic Power Rhythm — a natural 18-day personal power rhythm cycle that has moved with you since birth."
+      "description": "SineDay is a journal built around an 18-day reflection framework, with daily SineDucks, journal history and printable pages."
     }
     </script>
 
@@ -43,6 +43,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/css/homepage.css">
 
     <!-- Icons -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
@@ -64,7 +65,7 @@
 
     <script type="module" src="/js/vercel-analytics.js"></script>
 </head>
-<body>
+<body class="homepage">
     <!-- Skip Link -->
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
@@ -74,6 +75,7 @@
     <!-- Top Bar -->
     <header class="top-bar">
         <div class="top-bar-content">
+            <a class="home-brand" href="/" aria-label="SineDay home"><img src="/assets/brand/sineday-wordmark-light.png" alt="SineDay" width="150" height="42"></a>
             <div class="top-bar-actions">
                 <button id="info-btn" class="icon-btn" aria-label="Information" title="About SineDay">
                     <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -115,90 +117,60 @@
             </p>
         </div>
 
-        <!-- Wave Intro (Pre-journey) -->
-        <section id="wave-intro" class="wave-intro" aria-label="SineDay introduction">
-          <p class="site-subtitle">Alignment Creates Lift</p>
-          <h1 class="seo-h1">Discover Your Daily Wave</h1>
-
-          <div class="wave-intro-card wave-intro-card--journal">
-            <p class="intro-kicker">
-              SineDay is a daily wave journal built around your natural 18-day rhythm.
-            </p>
-            <div class="journal-hero-lines" aria-label="SineDay journal introduction">
-              <p>SineDay is for the reflectors.</p>
-              <p>The journal writers.</p>
-              <p>The people who can feel that every day carries its own energy.</p>
-              <p>Your wave changes.</p>
-              <p>SineDay helps you notice it.</p>
+        <!-- A concise introduction, followed by two opt-in films. -->
+        <section id="wave-intro" class="wave-intro" aria-label="Welcome to SineDay">
+          <div class="home-hero">
+            <p class="site-subtitle">Alignment Creates Lift</p>
+            <h1>A journal<br>with character.</h1>
+            <p class="home-hero__lead">Notice your day. Write what matters.<br>Come back to yourself.</p>
+            <div class="dashboard-invitation">
+              <div class="hero-action-row">
+                <a href="/login.html" class="hero-btn hero-btn--primary">Open my dashboard <span aria-hidden="true">↗</span></a>
+                <a id="home-find-wave" href="#input-container" class="hero-btn hero-btn--secondary">Find my wave</a>
+              </div>
+              <p class="dashboard-invitation__note">Journal, History and Print are part of Premium.</p>
             </div>
           </div>
 
-          <div class="dashboard-invitation">
-            <h2>Welcome to your daily space.</h2>
-            <p class="dashboard-invitation__description">Open your dashboard to meet your Origin Duck and explore SineDay’s journal, memory calendar, and printable journal pages.</p>
-            <div class="hero-action-row">
-              <a href="/login.html" class="hero-btn hero-btn--secondary">Explore my dashboard</a>
-              <button type="button" id="discover-more-btn" class="hero-btn hero-btn--primary">Discover More</button>
+          <section id="watch-sineday" class="home-films" aria-labelledby="home-films-title">
+            <div class="home-section-heading"><h2 id="home-films-title">Meet SineDay.</h2><span>Two ways in.</span></div>
+            <div class="home-film-grid">
+              <article class="home-film">
+                <a class="home-film__watch" href="/assets/video/sineday-story-2026-11-10.mp4" data-home-video data-video-title="The SineDay story" data-video-transcript="/video-transcripts.html#story" data-video-poster="/assets/video/sineday-story-2026-11-10.jpg" aria-haspopup="dialog">
+                  <div class="home-film__visual home-film__visual--story">
+                    <img src="/assets/video/sineday-story-2026-11-10.jpg" alt="" width="1080" height="1920" loading="lazy" decoding="async">
+                    <span class="home-film__play" aria-hidden="true">▶</span>
+                    <span class="home-film__duration">2:38</span>
+                  </div>
+                  <div class="home-film__caption"><span class="home-film__eyebrow">The idea</span><h3>The SineDay story <span aria-hidden="true">↗</span></h3></div>
+                </a>
+                <div class="home-film__meta"><p>A wave. A little perspective. A way back to you.</p><a href="/video-transcripts.html#story">Read video<span class="sr-only">: The SineDay story</span></a></div>
+              </article>
+              <article class="home-film">
+                <a class="home-film__watch" href="/assets/video/sineday-intro-2026-11-09.mp4" data-home-video data-video-title="SineDay in action" data-video-transcript="/video-transcripts.html#in-action" data-video-poster="/assets/video/sineday-intro-2026-11-09.jpg" aria-haspopup="dialog">
+                  <div class="home-film__visual home-film__visual--app">
+                    <img src="/assets/video/sineday-app-preview.jpg" alt="" width="540" height="960" loading="lazy" decoding="async">
+                    <span class="home-film__play" aria-hidden="true">▶</span>
+                    <span class="home-film__duration">1:38</span>
+                  </div>
+                  <div class="home-film__caption"><span class="home-film__eyebrow">The experience</span><h3>SineDay in action <span aria-hidden="true">↗</span></h3></div>
+                </a>
+                <div class="home-film__meta"><p>From today's thoughts to pages worth keeping.</p><a href="/video-transcripts.html#in-action">Read video<span class="sr-only">: SineDay in action</span></a></div>
+              </article>
             </div>
-            <p class="dashboard-invitation__note">Sign in with Google or Apple. Journal, History and Print require Premium.</p>
-          </div>
-
-
-          <section id="watch-sineday" class="intro-video" aria-labelledby="intro-video-title">
-            <div class="intro-video__copy">
-              <h2 id="intro-video-title">See your daily space in action.</h2>
-              <p>A short look at Profiles, Explore Wave, your journal, History and printable pages.</p>
-              <p class="intro-video__note">Silent video with text cards. Journal, History and Print require Premium.</p>
-            </div>
-            <details class="intro-video__player" data-intro-video>
-              <summary>
-                <img src="/assets/video/sineday-intro-2026-11-09.jpg" alt="" width="540" height="960" loading="lazy" decoding="async">
-                <span>Watch SineDay in action <span aria-hidden="true">▶</span><small>1:38 · Tap to open</small></span>
-              </summary>
-              <video controls playsinline preload="none" width="1080" height="1920" poster="/assets/video/sineday-intro-2026-11-09.jpg" aria-label="SineDay app demonstration" aria-describedby="intro-video-transcript">
-                <source src="/assets/video/sineday-intro-2026-11-09.mp4" type="video/mp4">
-                Your browser cannot play this video. <a href="/assets/video/sineday-intro-2026-11-09.mp4">Open the MP4</a>.
-              </video>
-              <p><a href="/assets/video/sineday-intro-2026-11-09.mp4">Open video directly</a> · Close the panel above to pause.</p>
-            </details>
-            <details id="intro-video-transcript" class="intro-video__transcript"><summary>Read the video transcript</summary><p>This 1 minute 38 second silent demonstration uses text cards and an iPhone screen recording.</p>
-<ol>
-<li>“Ever feel like your days are blending together?” Then: “Try journaling.” The camera moves toward the SineDay app icon.</li>
-<li>“A simple place to write about your day. Make it your own, with character.” SineDuck 17 appears, followed by the app dashboard.</li>
-<li>“Explore today’s wave. A little perspective for your day.” The Explore Wave view opens.</li>
-<li>“Create profiles for yourself and family. Explore each person’s SineDay wave.” The profile chooser opens.</li>
-<li>“A moment to remember. A thought on your mind. Your day, in your own words.” A journal entry is written and saved.</li>
-<li>“Choose the SineDuck that reflects how your day felt.” The SineDuck selection is shown.</li>
-<li>“Look back at the days you have saved. Your journal, alongside your wave.” The History view opens.</li>
-<li>“Print pages for all your profiles. Share paper pages with your family.” Printable pages are previewed. Journal, History and Printables are labeled as available with Premium.</li>
-<li>“Come see your SineDay. sineday.app.”</li>
-</ol></details>
+            <p class="home-films__note">Silent films with text cards. Play when you're ready.</p>
           </section>
 
-          <aside class="daily-email-banner" aria-labelledby="daily-email-banner-title">
-            <div class="daily-email-banner__copy">
-              <p class="daily-email-banner__eyebrow">Daily SineDay · A morning ritual</p>
-              <h2 id="daily-email-banner-title">Let SineDay meet you each morning.</h2>
-              <p class="daily-email-banner__description">Today's SineDuck and a moment to reflect, delivered to your inbox.</p>
-              <div class="daily-email-banner__action">
-                <a class="daily-email-banner__cta" href="/daily?source=homepage-banner">
-                  Get my daily SineDay <span aria-hidden="true">→</span>
-                </a>
-                <p class="daily-email-banner__note">Free. No account required.</p>
-              </div>
-            </div>
-            <div class="daily-email-banner__art" aria-hidden="true">
-              <img class="daily-email-banner__duck" src="/assets/sineducks/SineDuckFinale17.svg" alt="" width="576" height="324" loading="lazy" decoding="async">
-              <svg class="daily-email-banner__wave" viewBox="0 0 400 100" preserveAspectRatio="none" focusable="false">
-                <path d="M-20 50 C50 -4 120 -4 190 50 S330 104 420 50"></path>
-              </svg>
-              <p class="daily-email-banner__caption">A little space to notice.</p>
-            </div>
+          <aside class="home-daily" aria-labelledby="daily-email-banner-title">
+            <img src="/assets/sineducks/SineDuckFinale17.svg" alt="" width="112" height="63" loading="lazy">
+            <div><p class="home-film__eyebrow">A morning ritual</p><h2 id="daily-email-banner-title">A little SineDay in your inbox.</h2><p>Today's SineDuck and a moment to reflect.</p></div>
+            <div class="home-daily__action"><a href="/daily?source=homepage-banner">Get the daily email <span aria-hidden="true">↗</span></a><span>Free · No account needed</span></div>
           </aside>
         </section>
 
         <!-- Input Container (Collapsible, initially visible) -->
-        <div id="input-container" class="input-container visible">
+        <section id="input-container" class="input-container visible" aria-labelledby="wave-input-title">
+            <div class="home-input-heading"><p class="home-film__eyebrow">Your daily perspective</p><h2 id="wave-input-title">Where are you on the wave?</h2><p>Explore SineDay’s 18-day reflection framework.</p></div>
             <div class="input-card">
                 <label for="birthdate-input" class="input-label">Enter your birthdate</label>
                 <input
@@ -212,7 +184,7 @@
                     Show my wave
                 </button>
             </div>
-        </div>
+        </section>
 
         <!-- Result Card -->
         <div id="result-card" class="result-card" role="region" aria-live="polite" aria-labelledby="day-number">
@@ -261,108 +233,11 @@
         </div>
     </main>
 
-    <!-- Discover More: full-screen scroll story (same page) -->
-    <div id="discover-story" class="discover-story" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="discover-story-label">
-      <div class="discover-story__backdrop" data-discover-close tabindex="-1" aria-hidden="true"></div>
-      <div class="discover-story__panel">
-        <div class="discover-story__topbar">
-          <p id="discover-story-label" class="discover-story__label">Discover SineDay</p>
-          <button type="button" id="discover-story-close" class="discover-story__close" aria-label="Close story">
-            <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <div id="discover-story-scroller" class="discover-story__scroller">
-          <article class="discover-slide discover-slide--bg-1">
-            <div class="discover-slide__visual" aria-hidden="true"></div>
-            <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">What is a SineDay?</h2>
-              <p class="discover-slide__body">A SineDay is your place in an 18-day personal rhythm — an inner wave of energy, feeling, and awareness that has moved with you since birth.</p>
-            </div>
-          </article>
-          <article class="discover-slide discover-slide--bg-2">
-            <div class="discover-slide__visual" aria-hidden="true"></div>
-            <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">Your inner power has a rhythm.</h2>
-              <p class="discover-slide__body">Some days rise. Some days soften. Some days ask you to listen before you move. SineDay gives you a simple way to notice the wave within you — without forcing it into a rule or prediction.</p>
-            </div>
-          </article>
-          <article class="discover-slide discover-slide--bg-3">
-            <div class="discover-slide__visual" aria-hidden="true"></div>
-            <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">Awareness changes the moment.</h2>
-              <p class="discover-slide__body">When you know the shape of today's wave, the day becomes easier to meet. Not because SineDay tells you what to do, but because it gives you a clearer mirror for what you are already feeling.</p>
-            </div>
-          </article>
-          <article class="discover-slide discover-slide--bg-4">
-            <div class="discover-slide__visual" aria-hidden="true"></div>
-            <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">Journal from your inherent power.</h2>
-              <p class="discover-slide__body">SineDay turns daily reflection into a ritual. Today's Wave, Today's Duck, and Today's Thoughts help you write from the energy of the day — so you can remember what happened, what moved you, and what mattered.</p>
-            </div>
-          </article>
-          <article class="discover-slide discover-slide--bg-5 discover-slide--sineduck" data-discover-sineduck-slide>
-            <div class="discover-slide__visual" aria-hidden="true"></div>
-            <div class="discover-slide__content">
-              <h2 class="discover-slide__heading">Meet SineDuck.</h2>
-              <div class="discover-sineduck">
-                <div class="discover-sineduck__stage" data-sineduck-stage aria-hidden="true">
-                  <div class="discover-sineduck__stars" aria-hidden="true"></div>
-                  <svg class="discover-sineduck__wave" viewBox="0 0 600 180" preserveAspectRatio="none" focusable="false">
-                    <path
-                      class="discover-sineduck__wave-glow"
-                      data-sineduck-wave-glow
-                      d="M0 114 C100 60 200 60 300 114 C400 168 500 168 600 114"
-                    />
-                    <path
-                      class="discover-sineduck__wave-line"
-                      data-sineduck-wave-main
-                      d="M0 114 C100 60 200 60 300 114 C400 168 500 168 600 114"
-                    />
-                  </svg>
-                  <div class="discover-sineduck__duck-ride">
-                    <div class="discover-sineduck__duck-shell">
-                      <img
-                        class="discover-sineduck__duck"
-                        src="/assets/sineducks/SineDuck%20Celebrity.svg"
-                        width="176"
-                        height="99"
-                        alt=""
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="discover-sineduck__message">
-                  <div class="discover-sineduck__phrases" aria-hidden="true">
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="hello">Hello, I’m SineDuck.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="wave">I’m here to help you notice the wave already moving through your days.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="movement">Some moments rise, while others soften and carry you inward.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="alignment">That movement is why SineDay says: Alignment Creates Lift.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="not-top">But lift doesn’t mean staying at the top of the wave.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="within">It begins with seeing the natural flow already moving within you.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="perspective">SineDay doesn’t create that flow — it gives you a perspective for noticing what is already yours.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="meeting">When you can meet the movement as it is, you don’t have to fight every high or low.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="awareness">You can experience the moment with more awareness — and that awareness is lift.</p>
-                    <p class="discover-sineduck__phrase" data-sineduck-phrase="companion">Highs or lows, I’m always here — offering a perspective free of judgment.</p>
-                  </div>
-                  <p class="discover-sineduck__fallback">Highs or lows, I’m always here — offering a perspective free of judgment.</p>
-                  <p class="sr-only">SineDuck rides the changing wave as a reminder to notice your natural flow without judging the highs or lows.</p>
-                </div>
-              </div>
-              <div class="discover-slide__actions">
-                <button type="button" id="discover-my-sineday-btn" class="hero-btn hero-btn--primary">Discover My SineDay</button>
-                <a href="/login.html" class="hero-btn hero-btn--secondary">Login to your Dashboard</a>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="discover-scroll-cue" aria-hidden="true">
-          <span>Scroll</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-      </div>
-    </div>
+    <dialog id="home-video-dialog" class="home-video-dialog" aria-labelledby="home-video-title">
+      <div class="home-video-dialog__bar"><h2 id="home-video-title">SineDay</h2><button type="button" data-video-close aria-label="Close video">Close <span aria-hidden="true">×</span></button></div>
+      <video id="home-video-player" controls playsinline preload="none" width="1080" height="1920" aria-labelledby="home-video-title" aria-describedby="home-video-help"></video>
+      <p id="home-video-help">Silent video. <a id="home-video-text" href="/video-transcripts.html">Read the text version</a> · <a id="home-video-direct" href="/assets/video/sineday-intro-2026-11-09.mp4">Open video directly</a></p>
+    </dialog>
 
     <!-- Load Supabase from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -389,7 +264,7 @@
       })();
     </script>
 
-    <script type="module" src="/js/intro-video.js"></script>
+    <script type="module" src="/js/home-video.js"></script>
 
     <!-- Load JavaScript as modules -->
     <script type="module" src="js/ui.js"></script>
@@ -409,32 +284,9 @@
         </div>
 
         <div class="sd-modal-body">
-          <p><strong>SineDay reflects an ancient truth:</strong><br>all living energy moves in waves.</p>
-
-          <p>
-            Across civilizations, observers of nature recognized that life rises, peaks, and rests in repeating cycles.
-            This rhythm is not external—it is the inner power wave of every living soul.
-          </p>
-
-          <p><strong>The 18-day SineDay cycle</strong> reveals where you are on that wave today.</p>
-
-          <p><strong>Some days naturally support:</strong></p>
-          <ul class="sd-modal-list">
-            <li>Initiation</li>
-            <li>Growth</li>
-            <li>Expression</li>
-            <li>Integration</li>
-            <li>Rest</li>
-          </ul>
-
-          <p>This is not belief—it is observation.</p>
-
-          <p>
-            SineDay does not tell you what to do.<br>
-            It shows you where you are.
-          </p>
-
-          <p><strong>There is no failure in rhythm.</strong><br>Only alignment.</p>
+          <p>SineDay brings a little perspective to daily reflection through an 18-day wave, a SineDuck, and your own words.</p>
+          <p>Use the wave as a starting point, not a prediction. Your experience of the day belongs to you.</p>
+          <p>Explore your wave here, or open your dashboard. Journal, History and Print are part of Premium.</p>
         </div>
       </div>
     </div>

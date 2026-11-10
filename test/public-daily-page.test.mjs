@@ -59,11 +59,11 @@ test("confirmation page is explicit, tracker-free, noindex, and fragment-based",
 test("homepage banner stays inside wave intro after the hero actions", () => {
   const introStart = index.indexOf('id="wave-intro"');
   const heroActions = index.indexOf('class="hero-action-row"', introStart);
-  const banner = index.indexOf('class="daily-email-banner"', heroActions);
+  const banner = index.indexOf('class="home-daily"', heroActions);
   const introEnd = index.indexOf("</section>", banner);
   assert.ok(introStart >= 0 && heroActions > introStart && banner > heroActions);
   assert.ok(introEnd > banner);
-  assert.match(index, /Let SineDay meet you each morning\./);
+  assert.match(index, /A little SineDay in your inbox\./);
   assert.match(index, /href="\/daily\?source=homepage-banner"/);
 });
 
@@ -86,7 +86,7 @@ test("Vercel keeps cron and vCard behavior while adding targeted daily rewrites"
 });
 
 test("service worker bypasses APIs and never caches confirmation visits", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v40'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v41'/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(serviceWorker, /url\.pathname === '\/daily\/confirm'/);
   assert.match(serviceWorker, /url\.pathname === '\/daily-confirm\.html'/);
