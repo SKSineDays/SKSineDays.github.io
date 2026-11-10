@@ -4,12 +4,12 @@
 /* One sharp, full-bleed artwork layer remains compatible with the calculated-day crossfade. */
 .homepage .background-image-container.hero-mode::before { content: ''; background-image: url('/assets/og-hero.png'); background-size: cover; background-position: center 62%; background-repeat: no-repeat; opacity: 1; filter: none; transform: translate3d(0, var(--hero-depth), 0) scale(1.025); transform-origin: center; }
 .homepage .background-image-container.hero-mode::after { content: ''; background: linear-gradient(90deg, #080e18ed 0%, #080e18a6 36%, #080e1826 59%, #080e184d 100%), linear-gradient(180deg, #080e1814 0%, #080e1859 72%, #080e18 100%); opacity: 1; }
-.homepage .top-bar { position: sticky; background: #080e18c7; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid #ffffff14; }
+.homepage .top-bar { position: sticky; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid #ffffff24; }
 .homepage .top-bar-content { justify-content: space-between; max-width: 1080px; margin: auto; padding: 12px 28px; }
 .home-brand { display: inline-flex; align-items: center; min-height: 44px; }
-.home-brand img { width: 124px; height: auto; max-height: 36px; object-fit: contain; }
+.home-brand img { filter: drop-shadow(0 1px 3px #080e18); width: 124px; height: auto; max-height: 36px; object-fit: contain; }
 .homepage .top-bar-actions { gap: 8px; }
-.homepage .icon-btn { width: 44px; height: 44px; background: #ffffff08; border: 1px solid #ffffff0c; }
+.homepage .icon-btn { width: 44px; height: 44px; background: #080e18c7; color: #e7edf1; border: 1px solid #ffffff24; }
 .homepage .main-content { padding-top: 0; padding-bottom: 0; width: 100%; max-width: none; min-height: auto; margin: 0; overflow: visible; }
 .homepage .wave-container { width: min(760px, 94vw); height: 96px; min-height: 96px; max-height: 96px; flex: none; margin: 8px auto -4px; opacity: 1; }
 /* Align the landing wave's center with the wings meeting the shaft at ~49.5%
