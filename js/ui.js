@@ -103,7 +103,7 @@ export class SineDayUI {
     // Initialize wave canvas
     if (this.elements.waveCanvas) {
       this.waveRenderer = new WaveCanvas(this.elements.waveCanvas, {
-        accentColor: '#7AA7FF'
+        accentColor: '#C8B7DC'
       });
     }
 
@@ -412,7 +412,7 @@ export class SineDayUI {
   showError(message) {
     // Add visual feedback to the input field
     if (this.elements.birthdateInput) {
-      this.elements.birthdateInput.style.borderColor = '#FF6B6B';
+      this.elements.birthdateInput.style.borderColor = '#FFC0C4';
       this.elements.birthdateInput.style.animation = 'shake 0.3s ease';
 
       // Reset border color after 2 seconds

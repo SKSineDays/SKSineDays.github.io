@@ -1,12 +1,12 @@
 :root {
-  --daily-bg: #05060a;
-  --daily-surface: rgba(13, 17, 27, 0.88);
-  --daily-surface-soft: rgba(18, 24, 38, 0.68);
-  --daily-border: rgba(122, 167, 255, 0.24);
-  --daily-text: #f5f7ff;
-  --daily-text-soft: #c3cee1;
-  --daily-text-muted: #98a5bc;
-  --daily-accent: #7aa7ff;
+  --daily-bg: #24232C;
+  --daily-surface: #3B3948;
+  --daily-surface-soft: #302E3B;
+  --daily-border: #9790AA;
+  --daily-text: #F6EEDF;
+  --daily-text-soft: #D2C4D4;
+  --daily-text-muted: #C7C2D1;
+  --daily-accent: #EDAC9E;
   --daily-error: #ff9b9b;
   --daily-success: #a9e4c4;
   --daily-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
@@ -32,8 +32,8 @@ body.daily-page {
   color: var(--daily-text);
   font-family: var(--daily-font);
   background:
-    radial-gradient(circle at 50% -5%, rgba(122, 167, 255, 0.18), transparent 35rem),
-    radial-gradient(circle at 95% 42%, rgba(74, 92, 170, 0.12), transparent 30rem),
+    radial-gradient(circle at 50% -5%, rgba(200, 183, 220, 0.18), transparent 35rem),
+    radial-gradient(circle at 95% 42%, rgba(237, 172, 158, 0.12), transparent 30rem),
     var(--daily-bg);
   -webkit-font-smoothing: antialiased;
 }
@@ -110,7 +110,7 @@ body.daily-page {
 .daily-eyebrow,
 .daily-preview__label {
   margin: 0 0 12px;
-  color: #9bb9ff;
+  color: #C8B7DC;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -149,8 +149,8 @@ body.daily-page {
   padding: 9px 13px;
   border: 1px solid var(--daily-border);
   border-radius: 999px;
-  color: #dce6fb;
-  background: rgba(122, 167, 255, 0.08);
+  color: #F6EEDF;
+  background: rgba(200, 183, 220, 0.08);
   font-size: 0.88rem;
   font-weight: 650;
 }
@@ -160,11 +160,11 @@ body.daily-page {
   min-height: 330px;
   isolation: isolate;
   overflow: hidden;
-  border: 1px solid rgba(122, 167, 255, 0.14);
+  border: 1px solid rgba(200, 183, 220, 0.14);
   border-radius: 34px;
   background:
-    linear-gradient(180deg, rgba(122, 167, 255, 0.09), rgba(5, 6, 10, 0.22)),
-    rgba(5, 6, 10, 0.38);
+    linear-gradient(180deg, rgba(200, 183, 220, 0.09), rgba(28, 27, 35, 0.22)),
+    rgba(28, 27, 35, 0.38);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
 }
 
@@ -172,7 +172,7 @@ body.daily-page {
   position: absolute;
   inset: 20% 12%;
   border-radius: 50%;
-  background: rgba(122, 167, 255, 0.22);
+  background: rgba(200, 183, 220, 0.22);
   filter: blur(60px);
 }
 
@@ -189,9 +189,9 @@ body.daily-page {
 
 .daily-duck-stage__wave path {
   fill: none;
-  stroke: rgba(122, 167, 255, 0.78);
+  stroke: rgba(200, 183, 220, 0.78);
   stroke-width: 3;
-  filter: drop-shadow(0 0 10px rgba(122, 167, 255, 0.65));
+  filter: drop-shadow(0 0 10px rgba(200, 183, 220, 0.65));
 }
 
 .daily-duck-stage > img {
@@ -250,7 +250,7 @@ body.daily-page {
 }
 
 .daily-field > label {
-  color: #e8ecf7;
+  color: #F6EEDF;
   font-size: 0.92rem;
   font-weight: 650;
 }
@@ -259,11 +259,11 @@ body.daily-page {
   width: 100%;
   min-height: 52px;
   padding: 13px 14px;
-  border: 1px solid rgba(155, 185, 255, 0.3);
+  border: 1px solid #9790AA;
   border-radius: 12px;
   outline: 0;
   color: var(--daily-text);
-  background: rgba(5, 6, 10, 0.72);
+  background: rgba(28, 27, 35, 0.72);
   font: inherit;
   font-size: 16px;
   transition: border-color 160ms ease, box-shadow 160ms ease;
@@ -273,7 +273,7 @@ body.daily-page {
 
 .daily-field input:focus {
   border-color: var(--daily-accent);
-  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.18);
+  box-shadow: 0 0 0 3px #C8B7DC;
 }
 
 .daily-field input[aria-invalid="true"] {
@@ -327,11 +327,11 @@ body.daily-page {
   width: 100%;
   min-height: 54px;
   padding: 14px 18px;
-  border: 1px solid rgba(155, 185, 255, 0.52);
+  border: 1px solid #EDAC9E;
   border-radius: 13px;
-  color: #05060a;
-  background: linear-gradient(135deg, #9bb9ff, #6d98f7);
-  box-shadow: 0 14px 36px rgba(78, 121, 220, 0.28);
+  color: #2E2429;
+  background: linear-gradient(135deg, #EDAC9E, #E6B6B0);
+  box-shadow: 0 14px 36px rgba(237, 172, 158, 0.28);
   cursor: pointer;
   font: inherit;
   font-size: 1rem;
@@ -340,7 +340,7 @@ body.daily-page {
 }
 
 .daily-submit:hover {
-  box-shadow: 0 16px 42px rgba(78, 121, 220, 0.36);
+  box-shadow: 0 16px 42px rgba(237, 172, 158, 0.36);
   transform: translateY(-1px);
 }
 
@@ -386,9 +386,9 @@ body.daily-page {
 
 .daily-email-example {
   overflow: hidden;
-  border: 1px solid rgba(122, 167, 255, 0.2);
+  border: 1px solid rgba(200, 183, 220, 0.2);
   border-radius: 22px;
-  background: #0d111b;
+  background: #3B3948;
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.42);
 }
 
@@ -403,12 +403,12 @@ body.daily-page {
 }
 
 .daily-email-example__header {
-  background: #0a0d14;
+  background: #1C1B23;
 }
 
 .daily-email-example__header > p:first-child {
   margin: 0 0 12px;
-  color: #9bb9ff;
+  color: #C8B7DC;
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.14em;
@@ -425,7 +425,7 @@ body.daily-page {
 
 .daily-email-example__theme {
   margin: 16px 0 0;
-  color: #9bb9ff;
+  color: #C8B7DC;
   font-size: 0.72rem;
   letter-spacing: 0.12em;
 }
@@ -434,7 +434,7 @@ body.daily-page {
   display: grid;
   min-height: 220px;
   place-items: center;
-  background: radial-gradient(ellipse at center, rgba(122, 167, 255, 0.1), transparent 75%);
+  background: radial-gradient(ellipse at center, rgba(200, 183, 220, 0.1), transparent 75%);
 }
 
 .daily-email-example__duck img {
@@ -474,7 +474,7 @@ body.daily-page {
   min-height: calc(86px + env(safe-area-inset-bottom));
   padding-top: 24px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(122, 167, 255, 0.12);
+  border-top: 1px solid rgba(200, 183, 220, 0.12);
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -597,14 +597,14 @@ body.daily-page {
 }
 
 .daily-confirm-fresh a {
-  color: #afc9ff;
+  color: #C8B7DC;
 }
 
 .daily-submit:focus-visible,
 .daily-consent input:focus-visible,
 .daily-header a:focus-visible,
 .daily-footer a:focus-visible {
-  outline: 3px solid rgba(155, 185, 255, 0.72);
+  outline: 3px solid #C8B7DC;
   outline-offset: 3px;
 }
 

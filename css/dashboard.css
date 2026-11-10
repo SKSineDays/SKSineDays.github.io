@@ -45,9 +45,9 @@ body {
     inset: 0;
     background: linear-gradient(
       135deg,
-      rgba(5, 6, 10, 0.85) 0%,
-      rgba(9, 11, 18, 0.75) 50%,
-      rgba(5, 6, 10, 0.85) 100%
+      rgba(36, 35, 44, 0.85) 0%,
+      rgba(28, 27, 35, 0.75) 50%,
+      rgba(36, 35, 44, 0.85) 100%
     );
     z-index: -1;
     pointer-events: none;
@@ -125,8 +125,8 @@ body {
   background:
     linear-gradient(
       180deg,
-      rgba(27, 30, 40, 0.86),
-      rgba(12, 14, 21, 0.78)
+      rgba(59, 57, 72, 0.86),
+      rgba(28, 27, 35, 0.78)
     );
   box-shadow:
     0 14px 38px rgba(0, 0, 0, 0.38),
@@ -160,7 +160,7 @@ body {
   border: 0;
   border-radius: 19px;
   background: transparent;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -172,7 +172,7 @@ body {
 }
 
 .dashboard-tab.is-active {
-  color: #F5F7FF;
+  color: var(--va-text);
   background:
     linear-gradient(
       180deg,
@@ -182,7 +182,7 @@ body {
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.13),
-    0 0 0 1px rgba(122, 167, 255, 0.18);
+    0 0 0 1px rgba(200, 183, 220, 0.18);
   transform: translateY(-1px);
 }
 
@@ -191,14 +191,14 @@ body {
 }
 
 .dashboard-tab:focus-visible {
-  outline: 2px solid #7AA7FF;
+  outline: 2px solid var(--va-action);
   outline-offset: 2px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .dashboard-tab:not(.is-active):hover {
     background: rgba(255, 255, 255, 0.06);
-    color: rgba(245, 247, 255, 0.9);
+    color: rgba(246, 238, 223, 0.9);
   }
 }
 
@@ -220,7 +220,7 @@ body {
   justify-content: center;
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.28),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.08);
   overflow: hidden;
   flex: 0 0 auto;
   transition: transform 180ms ease, box-shadow 180ms ease;
@@ -245,7 +245,7 @@ body {
   transform: scale(1.07);
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.3),
-    0 0 0 2px rgba(122, 167, 255, 0.26);
+    0 0 0 2px rgba(200, 183, 220, 0.26);
 }
 
 .dashboard-tab__label {
@@ -360,7 +360,7 @@ body {
   border-radius: 22px;
   text-align: center;
   background:
-    radial-gradient(circle at 50% 0%, rgba(122, 167, 255, 0.18), transparent 42%),
+    radial-gradient(circle at 50% 0%, rgba(200, 183, 220, 0.18), transparent 42%),
     rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
@@ -386,20 +386,20 @@ body {
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(122, 167, 255, 0.9);
+  color: rgba(200, 183, 220, 0.9);
 }
 
 .premium-lock-card__title {
   margin: 0;
   font-size: clamp(24px, 4vw, 34px);
   line-height: 1.05;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .premium-lock-card__body {
   max-width: 560px;
   margin: 0;
-  color: rgba(245, 247, 255, 0.76);
+  color: var(--va-muted);
   font-size: 15px;
   line-height: 1.55;
 }
@@ -676,7 +676,7 @@ select {
 
 input[type="email"]::placeholder,
 input[type="text"]::placeholder {
-  color: rgba(245, 247, 255, 0.4);
+  color: var(--va-muted);
 }
 
 input:focus,
@@ -1080,7 +1080,7 @@ option {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(0, 0, 0, 0.30);
-  color: rgba(245, 247, 255, 0.92);
+  color: rgba(246, 238, 223, 0.92);
   font-size: 26px;
   line-height: 0;
   cursor: pointer;
@@ -1248,9 +1248,9 @@ option {
   justify-content: center;
   text-align: center;
   border-radius: 14px;
-  border: 1px solid rgba(122, 167, 255, 0.24);
-  background: rgba(122, 167, 255, 0.06);
-  color: #F5F7FF;
+  border: 1px solid rgba(200, 183, 220, 0.24);
+  background: rgba(200, 183, 220, 0.06);
+  color: var(--va-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -1258,8 +1258,8 @@ option {
 }
 
 .account-actions--secondary .btn-ghost:hover {
-  background: rgba(122, 167, 255, 0.14);
-  border-color: rgba(122, 167, 255, 0.36);
+  background: rgba(200, 183, 220, 0.14);
+  border-color: rgba(200, 183, 220, 0.36);
 }
 
 .account-actions--secondary .btn-ghost:disabled {
@@ -1269,7 +1269,7 @@ option {
 
 .account-sync-note {
   margin-top: 10px;
-  color: rgba(245, 247, 255, 0.68);
+  color: var(--va-muted);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -1353,7 +1353,7 @@ option {
   border: 1px solid rgba(255, 255, 255, 0.10);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
-    radial-gradient(circle at 50% 20%, rgba(122, 167, 255, 0.10), transparent 42%),
+    radial-gradient(circle at 50% 20%, rgba(200, 183, 220, 0.10), transparent 42%),
     rgba(255, 255, 255, 0.03);
   overflow: hidden;
   isolation: isolate;
@@ -1365,7 +1365,7 @@ option {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(5, 6, 10, 0.92) 0%, rgba(5, 6, 10, 0) 12%, rgba(5, 6, 10, 0) 88%, rgba(5, 6, 10, 0.92) 100%);
+    linear-gradient(90deg, rgba(36, 35, 44, 0.92) 0%, rgba(36, 35, 44, 0) 12%, rgba(36, 35, 44, 0) 88%, rgba(36, 35, 44, 0.92) 100%);
   z-index: 2;
 }
 
@@ -1381,7 +1381,7 @@ option {
   opacity: 0.96;
   filter:
     drop-shadow(0 36px 90px rgba(0, 0, 0, 0.54))
-    drop-shadow(0 0 84px rgba(122, 167, 255, 0.18));
+    drop-shadow(0 0 84px rgba(200, 183, 220, 0.18));
 }
 
 .duck-ring__sphere img {
@@ -1402,7 +1402,7 @@ option {
   border-radius: 50%;
   pointer-events: none;
   background:
-    radial-gradient(circle at 34% 34%, rgba(150, 202, 255, 0.18), rgba(122, 167, 255, 0) 18%),
+    radial-gradient(circle at 34% 34%, rgba(150, 202, 255, 0.18), rgba(200, 183, 220, 0) 18%),
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 42%, rgba(7, 10, 18, 0.10) 64%, rgba(3, 5, 10, 0.34) 100%);
 }
 
@@ -1468,7 +1468,7 @@ option {
   width: 100%;
   margin: 0 0 14px;
   overflow: hidden;
-  color: rgba(245, 247, 255, 0.96);
+  color: rgba(246, 238, 223, 0.96);
   font-size: 1.16rem;
   font-weight: 800;
   letter-spacing: -0.025em;
@@ -1515,7 +1515,7 @@ option {
   line-height: 1.35;
   opacity: 0.92;
   text-align: center;
-  text-shadow: 0 0 10px rgba(122, 167, 255, 0.28);
+  text-shadow: 0 0 10px rgba(200, 183, 220, 0.28);
   text-transform: uppercase;
   user-select: none;
   transition: opacity 220ms ease;
@@ -1583,7 +1583,7 @@ option {
 .duck-ring__nav:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.64);
   border-color: rgba(255, 255, 255, 0.30);
-  color: #fff;
+  color: var(--va-paper);
   transform: translateY(-50%) scale(1.08);
 }
 
@@ -1823,7 +1823,7 @@ option {
 
 .account-data-export__copy {
   margin: 0;
-  color: rgba(245, 247, 255, 0.68);
+  color: var(--va-muted);
   font-size: 13px;
   line-height: 1.55;
   max-width: 36rem;
@@ -1839,7 +1839,7 @@ option {
   min-height: 1.25em;
   font-size: 12px;
   line-height: 1.45;
-  color: rgba(245, 247, 255, 0.55);
+  color: var(--va-muted);
 }
 
 .account-data-export__status.is-success {
@@ -1854,10 +1854,12 @@ option {
    Premium Calendars UI (white paper card, UI + print)
    ───────────────────────────── */
 .sdcal {
+  --color-accent: var(--va-paper-accent);
+  --color-accent-rgb: 101, 74, 115;
   display: grid;
   gap: 14px;
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 16px;
@@ -1881,7 +1883,7 @@ option {
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-weight: 700;
 }
@@ -1889,7 +1891,7 @@ option {
 .sdcal__tab.is-active {
   border-color: rgba(var(--color-accent-rgb), 0.5);
   background: rgba(var(--color-accent-rgb), 0.12);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .sdcal__filter {
@@ -1899,15 +1901,15 @@ option {
 
 .sdcal__label {
   font-size: 12px;
-  color: #555;
+  color: #675B6C;
 }
 
 .sdcal__select {
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
 }
 
 .sdcal__nav {
@@ -1923,7 +1925,7 @@ option {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-size: 18px;
   font-weight: 900;
@@ -1934,7 +1936,7 @@ option {
   letter-spacing: -0.01em;
   text-align: center;
   min-width: 180px;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .sdcal__actions {
@@ -1947,7 +1949,7 @@ option {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-weight: 700;
 }
@@ -1961,7 +1963,7 @@ option {
 .sdcal__viewer {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
-  background: #fff;
+  background: var(--va-paper);
   overflow: hidden;
   min-height: 400px;
 }
@@ -1980,7 +1982,7 @@ option {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.9);
-  color: #555;
+  color: #675B6C;
   font-weight: 600;
 }
 
@@ -1989,7 +1991,7 @@ option {
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(0, 0, 0, 0.02);
-  color: #555;
+  color: #675B6C;
 }
 
 /* Month */
@@ -2009,7 +2011,7 @@ option {
 
 .sdcal__weekday {
   font-size: 12px;
-  color: #555;
+  color: #675B6C;
   text-align: center;
 }
 
@@ -2024,7 +2026,7 @@ option {
   min-height: 76px;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  background: var(--va-paper);
   padding: 9px 10px;
   display: grid;
   gap: 4px;
@@ -2038,14 +2040,14 @@ option {
   background: transparent;
 }
 .sdcal__month::-webkit-scrollbar-thumb {
-  background: rgba(122, 167, 255, 0.28);
+  background: rgba(200, 183, 220, 0.28);
   border-radius: 999px;
-  border: 2px solid #fff;
+  border: 2px solid var(--va-paper);
 }
 
 .sdcal__cell.is-out {
   opacity: 0.35;
-  background: #fafafa;
+  background: var(--va-paper);
 }
 
 .sdcal__celltop {
@@ -2057,7 +2059,7 @@ option {
 .sdcal__num {
   font-weight: 900;
   font-size: 12px;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .sdcal__ducks {
@@ -2110,7 +2112,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .sdcal__dayrow {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  background: var(--va-paper);
   padding: 14px;
   display: grid;
   gap: 10px;
@@ -2118,13 +2120,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .sdcal__dayhead {
   font-weight: 900;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .sdcal__notes {
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #fff;
+  background: var(--va-paper);
   min-height: 120px;
   position: relative;
   overflow: hidden;
@@ -2395,14 +2397,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
    ───────────────────────────── */
 
 .daily-email-setup-sheet.sheet {
-  background: #05060A;
-  color: #F5F7FF;
-  border-color: rgba(122, 167, 255, 0.18);
+  background: var(--va-canvas);
+  color: var(--va-text);
+  border-color: rgba(200, 183, 220, 0.18);
   padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
 }
 
 .daily-email-setup-sheet .sheet__handle {
-  background: rgba(122, 167, 255, 0.35);
+  background: rgba(200, 183, 220, 0.35);
 }
 
 .daily-email-setup-sheet .sheet__content {
@@ -2412,7 +2414,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .daily-email-setup-sheet h2 {
   margin: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1.45rem;
   line-height: 1.15;
 }
@@ -2421,13 +2423,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .daily-email-setup-sheet__helper,
 .daily-email-setup-sheet__privacy {
   margin: 0;
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   font-size: 0.95rem;
   line-height: 1.55;
 }
 
 .daily-email-setup-sheet__privacy {
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.86rem;
 }
 
@@ -2436,7 +2438,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .daily-email-setup-sheet label {
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .daily-email-setup-sheet input[type="date"],
@@ -2447,9 +2449,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .daily-email-setup-preview {
   margin: 2px 0 0;
   padding: 12px 14px;
-  border: 1px solid rgba(122, 167, 255, 0.22);
+  border: 1px solid rgba(200, 183, 220, 0.22);
   border-radius: 14px;
-  background: #101725;
+  background: var(--va-deep);
   color: #E8ECF7;
   font-size: 0.88rem;
   line-height: 1.55;
@@ -2462,7 +2464,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .daily-email-setup-permanence {
   margin: 0;
-  color: rgba(245, 247, 255, 0.52);
+  color: var(--va-muted);
   font-size: 0.8rem;
   line-height: 1.5;
 }
@@ -2470,7 +2472,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .daily-email-setup-sheet__status {
   min-height: 1.2em;
   margin: 0;
-  color: rgba(245, 247, 255, 0.7);
+  color: var(--va-muted);
   font-size: 0.86rem;
   line-height: 1.45;
 }
@@ -2492,12 +2494,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .daily-email-icon-btn--needs-setup {
-  color: #7AA7FF;
-  border-color: rgba(122, 167, 255, 0.42);
+  color: var(--va-action);
+  border-color: rgba(200, 183, 220, 0.42);
   background:
     radial-gradient(
       circle at 50% 45%,
-      rgba(122, 167, 255, 0.2),
+      rgba(200, 183, 220, 0.2),
       rgba(255, 255, 255, 0.04) 68%
     );
 }
@@ -2528,7 +2530,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
    =========================== */
 
 .planner-frame {
-  background: #fff;
+  --color-accent: var(--va-paper-accent);
+  --color-accent-rgb: 101, 74, 115;
+  background: var(--va-paper);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 20px 16px;
@@ -2550,7 +2554,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner-frame__title {
   font-size: 18px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   letter-spacing: -0.01em;
 }
 
@@ -2566,7 +2570,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-size: 18px;
   font-weight: 900;
@@ -2589,7 +2593,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
@@ -2611,7 +2615,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner-frame__range {
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   text-align: center;
   min-width: 180px;
 }
@@ -2621,7 +2625,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(0, 0, 0, 0.02);
-  color: #555;
+  color: #675B6C;
   text-align: center;
 }
 
@@ -2653,7 +2657,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner-frame.is-week-view .planner-mount::-webkit-scrollbar-thumb {
-  background: rgba(122, 167, 255, 0.24);
+  background: rgba(200, 183, 220, 0.24);
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.96);
 }
@@ -2715,7 +2719,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner__day-label {
   font-weight: 900;
   font-size: 15px;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .planner__duck-wrap {
@@ -2733,7 +2737,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner__duck-label {
   font-size: 13px;
   font-weight: 700;
-  color: #555;
+  color: #675B6C;
   white-space: nowrap;
 }
 
@@ -2743,11 +2747,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 12px;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  background: var(--va-paper);
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   resize: vertical;
   transition: border-color 0.15s ease;
 }
@@ -2764,7 +2768,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__save-indicator {
   font-size: 11px;
-  color: #555;
+  color: #675B6C;
   text-align: right;
   min-height: 16px;
   opacity: 0;
@@ -2789,6 +2793,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 #planner-section > .planner-frame {
+  --color-accent: var(--va-paper-accent);
+  --color-accent-rgb: 101, 74, 115;
   flex: 1 1 auto;
 }
 
@@ -2824,7 +2830,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__tasks-pane {
   align-self: start;
-  background: #fff;
+  background: var(--va-paper);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 12px;
@@ -2851,7 +2857,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .planner__tasks-title {
   font-size: 13px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   letter-spacing: 0.02em;
 }
 
@@ -2860,7 +2866,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
@@ -2881,7 +2887,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .planner__task-empty {
   font-size: 12px;
-  color: #888;
+  color: #675B6C;
   padding: 8px 4px;
   line-height: 1.4;
 }
@@ -2934,7 +2940,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  background: var(--va-paper);
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -2954,8 +2960,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner__task-title::placeholder {
-  color: #888;
-  -webkit-text-fill-color: #888;
+  color: #675B6C;
+  -webkit-text-fill-color: #675B6C;
 }
 
 .planner__task-title:-webkit-autofill,
@@ -2986,7 +2992,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
   font-size: 16px;
   font-weight: 700;
@@ -3015,9 +3021,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .planner-repeat-sheet.sheet {
-  background: #fff;
+  background: var(--va-paper);
   border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
@@ -3031,7 +3037,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-size: 18px;
   font-weight: 800;
   margin-bottom: 6px;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .planner-repeat-sheet__group {
@@ -3058,7 +3064,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   gap: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   cursor: pointer;
 }
 
@@ -3103,7 +3109,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   background: rgba(0, 0, 0, 0.03);
   font-size: 11px;
   font-weight: 700;
-  color: #333;
+  color: var(--va-paper-ink);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -3133,7 +3139,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   background: rgba(0, 0, 0, 0.04);
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 @media (max-width: 768px) {
@@ -3207,7 +3213,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   align-items: center;
   justify-content: center;
   padding: 0;
-  color: rgba(245, 247, 255, 0.56);
+  color: var(--va-muted);
   background:
     linear-gradient(
       180deg,
@@ -3257,7 +3263,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .daily-email-icon-btn:focus-visible {
-  outline: 2px solid #7AA7FF;
+  outline: 2px solid var(--va-action);
   outline-offset: 2px;
 }
 
@@ -3358,7 +3364,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal-frame,
 .wcal-frame button,
 .wcal-frame input {
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .wcal-frame input,
@@ -3376,21 +3382,21 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__picker-row-label,
 .wcal__config-heading,
 .wcal__config-input {
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .wcal__config-input {
-  caret-color: #1a1a1a;
+  caret-color: var(--va-paper-ink);
 }
 
 .wcal__config-desc,
 .wcal__picker-date,
 .wcal__weekday {
-  color: #555;
+  color: #675B6C;
 }
 
 .wcal-frame {
-  background: #fff;
+  background: var(--va-paper);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 20px 16px;
@@ -3406,7 +3412,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(0, 0, 0, 0.03);
-  color: #888;
+  color: #675B6C;
   cursor: pointer;
   font-size: 16px;
   display: flex;
@@ -3418,7 +3424,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .wcal-frame__gear:hover {
   background: rgba(0, 0, 0, 0.07);
-  color: #555;
+  color: #675B6C;
 }
 
 .wcal-mount {
@@ -3437,7 +3443,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   text-align: center;
   font-size: 11px;
   font-weight: 700;
-  color: #888;
+  color: #675B6C;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 4px 0 8px;
@@ -3461,18 +3467,18 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .wcal__cell:hover {
-  border-color: rgba(122, 167, 255, 0.34);
-  background: rgba(122, 167, 255, 0.045);
-  box-shadow: 0 8px 20px rgba(122, 167, 255, 0.08);
+  border-color: rgba(200, 183, 220, 0.34);
+  background: rgba(200, 183, 220, 0.045);
+  box-shadow: 0 8px 20px rgba(200, 183, 220, 0.08);
 }
 
 .wcal__cell--today {
-  box-shadow: inset 0 0 0 1px rgba(122, 167, 255, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(200, 183, 220, 0.5);
 }
 
 .wcal__cell.is-picker-open {
-  border-color: rgba(122, 167, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.14);
+  border-color: rgba(200, 183, 220, 0.55);
+  box-shadow: 0 0 0 3px rgba(200, 183, 220, 0.14);
 }
 
 .wcal__cell--empty {
@@ -3503,13 +3509,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__day-num {
   font-size: 12px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   line-height: 1;
   align-self: flex-start;
 }
 
 .wcal__cell--today .wcal__day-num {
-  color: #7AA7FF;
+  color: var(--va-action);
 }
 
 /* SineDuck image — preserve original wide shape */
@@ -3535,7 +3541,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__tag-display {
   font-size: 10px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -3554,8 +3560,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__picker {
   position: absolute;
   z-index: 100;
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 10px;
@@ -3574,7 +3580,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__picker-date {
   font-size: 12px;
   font-weight: 700;
-  color: #555;
+  color: #675B6C;
   padding: 0 4px 4px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   margin-bottom: 2px;
@@ -3618,7 +3624,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__picker-row-label {
   font-size: 13px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .wcal__picker-row--clear {
@@ -3628,7 +3634,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .wcal__picker .wcal__picker-row--clear .wcal__picker-row-label {
-  color: #888;
+  color: #675B6C;
   font-weight: 500;
 }
 
@@ -3652,8 +3658,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .wcal__config-panel {
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   border-radius: 14px;
   padding: 24px 20px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
@@ -3666,7 +3672,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 /* Force dark text on all config children — overrides inherited white from body */
 .wcal__config-panel, .wcal__config-panel * {
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 @keyframes wcalSlideUp {
@@ -3677,12 +3683,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .wcal__config-heading {
   font-size: 16px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .wcal__config-desc {
   font-size: 13px;
-  color: #888;
+  color: #675B6C;
   line-height: 1.4;
   margin-top: -8px;
 }
@@ -3712,14 +3718,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 8px 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #1a1a1a;
-  background: #fff;
+  color: var(--va-paper-ink);
+  background: var(--va-paper);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .wcal__config-input:focus {
-  border-color: rgba(122, 167, 255, 0.5);
+  border-color: rgba(200, 183, 220, 0.5);
 }
 
 .wcal__config-input::placeholder {
@@ -3730,8 +3736,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
-  background: #1a1a1a;
-  color: #fff;
+  background: var(--va-paper-ink);
+  color: var(--va-paper);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -3740,8 +3746,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .wcal__config-panel .wcal__config-done:hover {
-  background: #333;
-  color: #fff;
+  background: var(--va-paper-accent);
+  color: var(--va-paper);
 }
 
 .wcal__empty {
@@ -3749,7 +3755,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 14px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(0, 0, 0, 0.02);
-  color: #555;
+  color: #675B6C;
   text-align: center;
 }
 
@@ -3877,23 +3883,23 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .dash-head__icon-btn.is-unread {
-  border-color: rgba(122, 167, 255, 0.35);
+  border-color: rgba(200, 183, 220, 0.35);
 }
 
 .dash-head__icon-btn--install {
   background:
-    radial-gradient(circle at 30% 20%, rgba(122, 167, 255, 0.18), transparent 58%),
+    radial-gradient(circle at 30% 20%, rgba(200, 183, 220, 0.18), transparent 58%),
     rgba(0, 0, 0, 0.30);
-  border-color: rgba(122, 167, 255, 0.18);
-  color: #f5f7ff;
+  border-color: rgba(200, 183, 220, 0.18);
+  color: var(--va-text);
 }
 
 .dash-head__icon-btn--install:hover {
   background:
-    radial-gradient(circle at 30% 20%, rgba(122, 167, 255, 0.24), transparent 58%),
+    radial-gradient(circle at 30% 20%, rgba(200, 183, 220, 0.24), transparent 58%),
     rgba(255, 255, 255, 0.08);
-  border-color: rgba(122, 167, 255, 0.32);
-  box-shadow: 0 10px 28px rgba(122, 167, 255, 0.16);
+  border-color: rgba(200, 183, 220, 0.32);
+  box-shadow: 0 10px 28px rgba(200, 183, 220, 0.16);
 }
 
 .dash-head__icon-btn--install[hidden] {
@@ -3914,8 +3920,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: #7aa7ff;
-  color: #05060a;
+  background: var(--va-action);
+  color: var(--va-canvas);
   font-size: 10px;
   font-weight: 800;
   display: inline-flex;
@@ -3952,8 +3958,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .notification-item.is-unread {
-  border-color: rgba(122, 167, 255, 0.32);
-  background: rgba(122, 167, 255, 0.08);
+  border-color: rgba(200, 183, 220, 0.32);
+  background: rgba(200, 183, 220, 0.08);
 }
 
 .notification-item__title {
@@ -3963,12 +3969,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .notification-item__copy {
   margin: 0 0 6px;
-  color: rgba(245, 247, 255, 0.82);
+  color: rgba(246, 238, 223, 0.82);
 }
 
 .notification-item__meta {
   font-size: 12px;
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
 }
 
 .notification-item__actions {
@@ -3982,11 +3988,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-frame button,
 .social-frame input,
 .social-frame textarea {
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .social-frame {
-  background: #fff;
+  background: var(--va-paper);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 20px 16px;
@@ -4008,13 +4014,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #675B6C;
 }
 
 .social-frame__title {
   font-size: 24px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
 }
 
 .social-frame__actions {
@@ -4071,7 +4077,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(circle at top right, rgba(122, 167, 255, 0.14), transparent 42%),
+    radial-gradient(circle at top right, rgba(200, 183, 220, 0.14), transparent 42%),
     linear-gradient(180deg, rgba(14, 18, 28, 0.98) 0%, rgba(9, 11, 17, 0.96) 100%);
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.28),
@@ -4094,7 +4100,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-calendar-card__title {
   font-size: 18px;
   font-weight: 800;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-calendar-card__badge {
@@ -4106,15 +4112,15 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  background: rgba(122, 167, 255, 0.14);
-  border: 1px solid rgba(122, 167, 255, 0.22);
-  color: rgba(245, 247, 255, 0.92);
+  background: rgba(200, 183, 220, 0.14);
+  border: 1px solid rgba(200, 183, 220, 0.22);
+  color: rgba(246, 238, 223, 0.92);
 }
 
 .social-calendar-card__meta {
   margin-top: 8px;
   font-size: 13px;
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
 }
 
 .social-calendar-card__actions {
@@ -4126,14 +4132,14 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .social-calendar-card__delete {
-  color: #fff;
+  color: var(--va-paper);
   border: 1px solid rgba(255, 107, 107, 0.32);
   background: rgba(255, 107, 107, 0.14);
 }
 
 .social-calendar-card__delete:hover,
 .social-calendar-card__delete:focus-visible {
-  color: #fff;
+  color: var(--va-paper);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.22);
 }
@@ -4142,7 +4148,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-size: 13px;
   font-weight: 700;
   margin-bottom: 8px;
-  color: #333;
+  color: var(--va-paper-ink);
 }
 
 .social-create-friends__list {
@@ -4170,7 +4176,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #555;
+  color: #675B6C;
   margin-bottom: 8px;
 }
 
@@ -4188,7 +4194,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(circle at top right, rgba(122, 167, 255, 0.08), transparent 42%),
+    radial-gradient(circle at top right, rgba(200, 183, 220, 0.08), transparent 42%),
     linear-gradient(180deg, rgba(14, 18, 28, 0.55) 0%, rgba(9, 11, 17, 0.45) 100%);
   padding: 12px 14px;
 }
@@ -4201,12 +4207,12 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-member-row__name {
   font-weight: 700;
   font-size: 15px;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-member-row__meta {
   font-size: 12px;
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   word-break: break-all;
 }
 
@@ -4220,17 +4226,17 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-member-row__actions .btn,
 .social-member-row__actions .btn.btn-ghost,
 .social-member-row__actions .btn.btn-sm {
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-member-row__actions .btn {
-  border-color: rgba(245, 247, 255, 0.2);
+  border-color: rgba(246, 238, 223, 0.2);
 }
 
 .social-member-row__actions .btn:hover,
 .social-member-row__actions .btn:focus-visible {
-  color: #F5F7FF;
-  border-color: rgba(245, 247, 255, 0.38);
+  color: var(--va-text);
+  border-color: rgba(246, 238, 223, 0.38);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -4257,7 +4263,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: #555;
+  color: #675B6C;
   padding-bottom: 4px;
 }
 
@@ -4267,7 +4273,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(0, 0, 0, 0.02);
   padding: 10px;
-  color: #1a1a1a;
+  color: var(--va-paper-ink);
   text-align: left;
   cursor: pointer;
 }
@@ -4294,11 +4300,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-friend-row__name {
   font-weight: 800;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-friend-row__meta {
-  color: rgba(245, 247, 255, 0.78);
+  color: var(--va-muted);
   overflow-wrap: anywhere;
 }
 
@@ -4313,17 +4319,17 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-friend-row__actions .btn,
 .social-friend-row__actions .btn.btn-ghost,
 .social-friend-row__actions .btn.btn-sm {
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-friend-row__actions .btn {
-  border-color: rgba(245, 247, 255, 0.22);
+  border-color: rgba(246, 238, 223, 0.22);
 }
 
 .social-friend-row__actions .btn:hover,
 .social-friend-row__actions .btn:focus-visible {
-  color: #F5F7FF;
-  border-color: rgba(245, 247, 255, 0.4);
+  color: var(--va-text);
+  border-color: rgba(246, 238, 223, 0.4);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -4332,8 +4338,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .social-frame__cell.is-today {
-  border-color: rgba(122, 167, 255, 0.34);
-  box-shadow: 0 0 0 1px rgba(122, 167, 255, 0.16) inset;
+  border-color: rgba(200, 183, 220, 0.34);
+  box-shadow: 0 0 0 1px rgba(200, 183, 220, 0.16) inset;
 }
 
 .social-frame__cell-top {
@@ -4350,7 +4356,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #7aa7ff;
+  background: var(--va-action);
 }
 
 .social-frame__member-stack {
@@ -4378,7 +4384,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   border-radius: 16px;
   background: linear-gradient(
     180deg,
-    #ffffff 0%,
+    var(--va-paper) 0%,
     #f4f7ff 100%
   );
   box-shadow:
@@ -4389,7 +4395,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-day-card {
   display: grid;
   gap: 16px;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .social-day-card__header,
@@ -4420,11 +4426,11 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-day-card__meta,
 .social-day-card__savehint {
-  color: rgba(245, 247, 255, 0.74);
+  color: var(--va-muted);
 }
 
 .social-day-card__label {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-weight: 700;
   letter-spacing: 0.01em;
   font-size: 12px;
@@ -4441,18 +4447,18 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   width: 100%;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #ffffff !important;
-  color: #111111 !important;
-  caret-color: #111111;
+  background: var(--va-paper) !important;
+  color: var(--va-paper-ink) !important;
+  caret-color: var(--va-paper-ink);
   font: inherit;
   padding: 12px;
-  -webkit-text-fill-color: #111111;
-  box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: var(--va-paper-ink);
+  box-shadow: 0 0 0 1000px var(--va-paper) inset;
 }
 
 .social-day-card__taskinput::placeholder,
 .social-day-card__note::placeholder {
-  color: #6b7280;
+  color: #675B6C;
   opacity: 1;
 }
 
@@ -4464,7 +4470,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .social-day-card__readbox {
   border-radius: 12px;
-  color: #F5F7FF;
+  color: var(--va-text);
   background: rgba(255, 255, 255, 0.08);
   padding: 14px;
   line-height: 1.55;
@@ -4473,16 +4479,16 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 /* Collaborator notes: match own-card planner / textarea (paper field, not dark glass) */
 .social-day-card.is-readonly .social-day-card__readbox {
-  background: #ffffff;
-  color: #111111;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   border: 1px solid rgba(0, 0, 0, 0.12);
-  -webkit-text-fill-color: #111111;
-  box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: var(--va-paper-ink);
+  box-shadow: 0 0 0 1000px var(--va-paper) inset;
 }
 
 .social-day-card.is-readonly .social-day-card__readbox .text-muted {
-  color: #6b7280;
-  -webkit-text-fill-color: #6b7280;
+  color: #675B6C;
+  -webkit-text-fill-color: #675B6C;
 }
 
 .social-day-card__tasks {
@@ -4514,7 +4520,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   line-height: 1.45;
 }
 
@@ -4588,8 +4594,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   min-height: 24px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--va-paper);
+  color: var(--va-ink);
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.16);
@@ -4615,7 +4621,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   opacity: 0;
   transition: opacity 0.2s ease;
   text-align: right;
-  color: rgba(245, 247, 255, 0.74);
+  color: var(--va-muted);
 }
 
 .social-day-card__save-indicator.is-visible {
@@ -4623,7 +4629,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .social-day-card__save-indicator.is-pending {
-  color: rgba(245, 247, 255, 0.86);
+  color: rgba(246, 238, 223, 0.86);
 }
 
 .social-day-card__save-indicator.is-saved {
@@ -4657,7 +4663,7 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 .social-task-row__archive {
   border: 0;
   background: transparent;
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   cursor: pointer;
 }
 
@@ -4758,13 +4764,13 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 }
 
 .journal__actual-label {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.82rem;
   font-weight: 800;
 }
 
 .journal__actual-phase {
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -4777,8 +4783,8 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
   padding: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 24px;
-  background: rgba(5, 6, 10, 0.42);
-  color: #F5F7FF;
+  background: rgba(36, 35, 44, 0.42);
+  color: var(--va-text);
   font: inherit;
   font-size: 1rem;
   line-height: 1.65;
@@ -4788,9 +4794,9 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .journal-entry-card-light,
 .journal-entry-field-light {
-  background: #ffffff;
-  color: #111827;
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
+  border: 1px solid rgba(51, 45, 59, 0.12);
   box-shadow:
     0 18px 42px rgba(0, 0, 0, 0.28),
     inset 0 0 0 1px rgba(255, 255, 255, 0.8);
@@ -4803,30 +4809,30 @@ html[dir="rtl"] .sdcal__month .sdcal__weekdays {
 
 .journal-entry-card-light textarea,
 textarea.journal-entry-field-light {
-  background: #ffffff;
-  color: #111827;
-  caret-color: #111827;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
+  caret-color: var(--va-paper-ink);
 }
 
 .journal-entry-card-light textarea::placeholder,
 textarea.journal-entry-field-light::placeholder {
-  color: rgba(17, 24, 39, 0.52);
+  color: #675B6C;
 }
 
 textarea.journal-entry-field-light:focus {
-  border-color: rgba(122, 167, 255, 0.62);
+  border-color: rgba(200, 183, 220, 0.62);
   box-shadow:
     0 18px 42px rgba(0, 0, 0, 0.28),
-    0 0 0 4px rgba(122, 167, 255, 0.14);
+    0 0 0 4px rgba(200, 183, 220, 0.14);
 }
 
 .journal__textarea:focus {
-  border-color: rgba(122, 167, 255, 0.62);
-  box-shadow: 0 0 0 4px rgba(122, 167, 255, 0.14);
+  border-color: rgba(200, 183, 220, 0.62);
+  box-shadow: 0 0 0 4px rgba(200, 183, 220, 0.14);
 }
 
 .journal__textarea::placeholder {
-  color: rgba(245, 247, 255, 0.46);
+  color: var(--va-muted);
 }
 
 .journal__image {
@@ -4856,15 +4862,15 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
-  color: rgba(245, 247, 255, 0.78);
+  color: var(--va-muted);
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
 .journal__duck-choice:hover,
 .journal__duck-choice:focus-visible {
-  border-color: rgba(122, 167, 255, 0.45);
-  background: rgba(122, 167, 255, 0.1);
+  border-color: rgba(200, 183, 220, 0.45);
+  background: rgba(200, 183, 220, 0.1);
 }
 
 .journal__duck-choice:active {
@@ -4872,9 +4878,9 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal__duck-choice.is-selected {
-  border-color: rgba(122, 167, 255, 0.86);
-  background: rgba(122, 167, 255, 0.18);
-  box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.12);
+  border-color: rgba(200, 183, 220, 0.86);
+  background: rgba(200, 183, 220, 0.18);
+  box-shadow: 0 0 0 3px rgba(200, 183, 220, 0.12);
 }
 
 .journal__duck-choice img {
@@ -4898,9 +4904,9 @@ textarea.journal-entry-field-light:focus {
   margin-top: 14px;
   padding: 12px;
   border-radius: 16px;
-  border: 1px dashed rgba(122, 167, 255, 0.38);
-  background: rgba(5, 6, 10, 0.35);
-  color: rgba(245, 247, 255, 0.78);
+  border: 1px dashed rgba(200, 183, 220, 0.38);
+  background: rgba(36, 35, 44, 0.35);
+  color: var(--va-muted);
 }
 
 .journal__image-preview {
@@ -4908,7 +4914,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal__image-empty {
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.9rem;
 }
 
@@ -4923,7 +4929,7 @@ textarea.journal-entry-field-light:focus {
 
 .journal__save-indicator {
   min-height: 22px;
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.86rem;
   font-weight: 800;
   opacity: 0;
@@ -4950,7 +4956,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(245, 247, 255, 0.82);
+  color: rgba(246, 238, 223, 0.82);
   font-weight: 800;
   cursor: pointer;
 }
@@ -4964,8 +4970,8 @@ textarea.journal-entry-field-light:focus {
 .journal-history__loading {
   padding: 18px;
   border-radius: 20px;
-  background: #F8FAFC;
-  color: #344054;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   font-size: 0.9rem;
   font-weight: 800;
   text-align: center;
@@ -4976,12 +4982,12 @@ textarea.journal-entry-field-light:focus {
   padding: 18px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.055);
-  color: rgba(245, 247, 255, 0.75);
+  color: var(--va-muted);
 }
 
 .journal-history__empty {
-  background: #F8FAFC;
-  color: #344054;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -4998,12 +5004,12 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-history-scroll::-webkit-scrollbar-track {
-  background: rgba(17, 24, 39, 0.08);
+  background: rgba(51, 45, 59, 0.08);
   border-radius: 999px;
 }
 
 .journal-history-scroll::-webkit-scrollbar-thumb {
-  background: rgba(122, 167, 255, 0.55);
+  background: rgba(200, 183, 220, 0.55);
   border-radius: 999px;
 }
 
@@ -5016,7 +5022,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-history__weekday {
-  color: #5B6370;
+  color: #675B6C;
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -5039,7 +5045,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 16px;
   background: #FFFFFF;
-  color: #1A1A1A;
+  color: var(--va-paper-ink);
   cursor: pointer;
   overflow: hidden;
 }
@@ -5050,16 +5056,16 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-history__cell--today {
-  border-color: rgba(122, 167, 255, 0.54);
+  border-color: rgba(200, 183, 220, 0.54);
 }
 
 .journal-history__cell--has-entry {
-  background: rgba(122, 167, 255, 0.14);
+  background: rgba(200, 183, 220, 0.14);
 }
 
 .journal-history__day-num {
   justify-self: start;
-  color: #111827;
+  color: var(--va-paper-ink);
   font-size: 0.82rem;
   font-weight: 900;
 }
@@ -5076,7 +5082,7 @@ textarea.journal-entry-field-light:focus {
   gap: 4px;
   padding: 2px 7px 2px 3px;
   border-radius: 999px;
-  background: rgba(245, 247, 255, 0.96);
+  background: rgba(246, 238, 223, 0.96);
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
@@ -5142,7 +5148,7 @@ textarea.journal-entry-field-light:focus {
   --feature-radius-section: 24px;
   --feature-radius-control: 18px;
   --feature-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .feature-screen__content {
@@ -5170,7 +5176,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.75rem, 7vw, 3.4rem);
   line-height: 1.02;
   letter-spacing: -0.045em;
@@ -5179,7 +5185,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-hero__subtitle {
   margin: var(--feature-space-2) 0 0;
-  color: rgba(245, 247, 255, 0.76);
+  color: var(--va-muted);
   font-size: clamp(0.98rem, 2.8vw, 1.1rem);
   line-height: 1.55;
 }
@@ -5194,7 +5200,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.35rem, 4vw, 1.8rem);
   line-height: 1.12;
   letter-spacing: -0.025em;
@@ -5207,7 +5213,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: var(--feature-radius-control);
   background: rgba(255, 255, 255, 0.07);
-  color: #F5F7FF;
+  color: var(--va-text);
   font: inherit;
   font-size: 0.92rem;
   font-weight: 780;
@@ -5233,16 +5239,16 @@ textarea.journal-entry-field-light:focus {
   justify-content: center;
   gap: 8px;
   padding: 0 18px;
-  background: #F5F7FF;
-  border-color: #F5F7FF;
-  color: #0B0E16;
+  background: var(--va-text);
+  border-color: var(--va-text);
+  color: var(--va-ink);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
 }
 
 .feature-floating-action--secondary {
   background: rgba(255, 255, 255, 0.065);
   border-color: rgba(255, 255, 255, 0.14);
-  color: #F5F7FF;
+  color: var(--va-text);
   box-shadow: none;
 }
 
@@ -5253,7 +5259,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen :is(button, select, textarea, input, [tabindex]):focus-visible,
 .add-profile-sheet :is(button, select, input, [tabindex]):focus-visible {
-  outline: 2px solid #7AA7FF;
+  outline: 2px solid var(--va-action);
   outline-offset: 3px;
 }
 
@@ -5269,7 +5275,7 @@ textarea.journal-entry-field-light:focus {
   padding: var(--feature-space-6) var(--feature-space-5);
   border-radius: var(--feature-radius-section);
   background: rgba(255, 255, 255, 0.04);
-  color: rgba(245, 247, 255, 0.66);
+  color: var(--va-muted);
   text-align: center;
 }
 
@@ -5279,7 +5285,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-empty-state__title {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-weight: 800;
 }
 
@@ -5294,8 +5300,8 @@ textarea.journal-entry-field-light:focus {
 @media (hover: hover) and (pointer: fine) {
   .feature-icon-button:hover,
   .feature-floating-action--secondary:hover {
-    border-color: rgba(122, 167, 255, 0.44);
-    background: rgba(122, 167, 255, 0.13);
+    border-color: rgba(200, 183, 220, 0.44);
+    background: rgba(200, 183, 220, 0.13);
   }
 
   .feature-floating-action:not(.feature-floating-action--secondary):hover {
@@ -5320,11 +5326,11 @@ textarea.journal-entry-field-light:focus {
   justify-content: space-between;
   gap: var(--feature-space-5);
   padding: clamp(22px, 5vw, 42px);
-  border: 1px solid rgba(122, 167, 255, 0.17);
+  border: 1px solid rgba(200, 183, 220, 0.17);
   background:
-    radial-gradient(circle at 79% 39%, rgba(122, 167, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 79% 39%, rgba(200, 183, 220, 0.18), transparent 34%),
     radial-gradient(circle at 12% 0%, rgba(128, 105, 221, 0.11), transparent 42%),
-    linear-gradient(145deg, rgba(18, 22, 34, 0.97), rgba(5, 6, 10, 0.98));
+    linear-gradient(145deg, rgba(18, 22, 34, 0.97), rgba(36, 35, 44, 0.98));
   box-shadow:
     0 28px 74px rgba(0, 0, 0, 0.38),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
@@ -5337,11 +5343,11 @@ textarea.journal-entry-field-light:focus {
   bottom: -35%;
   width: min(72vw, 560px);
   aspect-ratio: 1;
-  border: 1px solid rgba(122, 167, 255, 0.13);
+  border: 1px solid rgba(200, 183, 220, 0.13);
   border-radius: 50%;
   box-shadow:
-    0 0 0 32px rgba(122, 167, 255, 0.025),
-    0 0 0 86px rgba(122, 167, 255, 0.02);
+    0 0 0 32px rgba(200, 183, 220, 0.025),
+    0 0 0 86px rgba(200, 183, 220, 0.02);
 }
 
 .today-wave-hero__top {
@@ -5353,7 +5359,7 @@ textarea.journal-entry-field-light:focus {
 
 .today-wave-hero__date {
   margin: 0;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -5367,7 +5373,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.09);
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.78rem;
   font-weight: 850;
   letter-spacing: 0.04em;
@@ -5423,7 +5429,7 @@ textarea.journal-entry-field-light:focus {
   font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1.5;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .today-wave-hero__actions {
@@ -5464,10 +5470,10 @@ textarea.journal-entry-field-light:focus {
   align-self: start;
   overflow: hidden;
   border-radius: clamp(22px, 4vw, 32px);
-  background: #0B101A;
+  background: var(--va-deep);
   box-shadow:
     0 30px 72px rgba(0, 0, 0, 0.42),
-    0 0 52px rgba(122, 167, 255, 0.12);
+    0 0 52px rgba(200, 183, 220, 0.12);
 }
 
 .today-wave-details__image {
@@ -5487,7 +5493,7 @@ textarea.journal-entry-field-light:focus {
 
 .today-wave-details__paragraph {
   margin: var(--feature-space-3) 0 var(--feature-space-4);
-  color: rgba(245, 247, 255, 0.84);
+  color: rgba(246, 238, 223, 0.84);
   font-size: 0.98rem;
   line-height: 1.68;
 }
@@ -5503,7 +5509,7 @@ textarea.journal-entry-field-light:focus {
 .today-wave-details__bullets li {
   position: relative;
   padding-left: var(--feature-space-4);
-  color: rgba(245, 247, 255, 0.68);
+  color: var(--va-muted);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -5516,8 +5522,8 @@ textarea.journal-entry-field-light:focus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7AA7FF;
-  box-shadow: 0 0 10px rgba(122, 167, 255, 0.55);
+  background: var(--va-action);
+  box-shadow: 0 0 10px rgba(200, 183, 220, 0.55);
 }
 
 .origin-identity {
@@ -5538,7 +5544,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.8rem, 6vw, 2.8rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
@@ -5553,13 +5559,13 @@ textarea.journal-entry-field-light:focus {
   border: 0;
   border-radius: var(--feature-radius-major);
   background:
-    radial-gradient(circle at 50% 44%, rgba(122, 167, 255, 0.11), transparent 36%),
+    radial-gradient(circle at 50% 44%, rgba(200, 183, 220, 0.11), transparent 36%),
     radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.035), transparent 66%);
 }
 
 .feature-screen--origin .duck-ring__scene::before {
   background:
-    linear-gradient(90deg, #05060A 0%, rgba(5, 6, 10, 0) 12%, rgba(5, 6, 10, 0) 88%, #05060A 100%);
+    linear-gradient(90deg, var(--va-canvas) 0%, rgba(36, 35, 44, 0) 12%, rgba(36, 35, 44, 0) 88%, var(--va-canvas) 100%);
 }
 
 .feature-screen--origin .duck-ring__sphere {
@@ -5567,7 +5573,7 @@ textarea.journal-entry-field-light:focus {
   filter:
     saturate(0.72)
     drop-shadow(0 24px 74px rgba(0, 0, 0, 0.44))
-    drop-shadow(0 0 64px rgba(122, 167, 255, 0.1));
+    drop-shadow(0 0 64px rgba(200, 183, 220, 0.1));
 }
 
 .feature-screen--origin .duck-stack {
@@ -5589,8 +5595,8 @@ textarea.journal-entry-field-light:focus {
   place-items: center;
   padding: 0 9px;
   border-radius: 999px;
-  background: rgba(5, 6, 10, 0.55);
-  color: rgba(245, 247, 255, 0.62);
+  background: rgba(36, 35, 44, 0.55);
+  color: var(--va-muted);
   font-size: 0.72rem;
   font-weight: 800;
   transform: translateX(-50%);
@@ -5626,7 +5632,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1.55rem;
   line-height: 1.1;
 }
@@ -5642,14 +5648,14 @@ textarea.journal-entry-field-light:focus {
 
 .add-profile-sheet__intro {
   margin: var(--feature-space-2) 0 0;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
 
 .origin-manage-sheet__intro {
   margin: var(--feature-space-2) 0 var(--feature-space-5);
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -5695,14 +5701,14 @@ textarea.journal-entry-field-light:focus {
 
 .origin-profile-row__identity strong {
   margin-bottom: 3px;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.98rem;
 }
 
 .origin-profile-row__identity .text-muted {
   display: block;
   overflow: hidden;
-  color: rgba(245, 247, 255, 0.55);
+  color: var(--va-muted);
   font-size: 0.76rem;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5735,10 +5741,10 @@ textarea.journal-entry-field-light:focus {
 .origin-profile-row__edit {
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid rgba(122, 167, 255, 0.28);
+  border: 1px solid rgba(200, 183, 220, 0.28);
   border-radius: 14px;
-  background: rgba(122, 167, 255, 0.08);
-  color: #F5F7FF;
+  background: rgba(200, 183, 220, 0.08);
+  color: var(--va-text);
   font: inherit;
   font-size: 0.8rem;
   font-weight: 780;
@@ -5759,8 +5765,8 @@ textarea.journal-entry-field-light:focus {
   }
 
   .origin-profile-row__edit:hover {
-    background: rgba(122, 167, 255, 0.16);
-    border-color: rgba(122, 167, 255, 0.44);
+    background: rgba(200, 183, 220, 0.16);
+    border-color: rgba(200, 183, 220, 0.44);
   }
 }
 
@@ -5889,7 +5895,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.45rem, 5vw, 2rem);
   line-height: 1.08;
   letter-spacing: -0.035em;
@@ -5898,7 +5904,7 @@ textarea.journal-entry-field-light:focus {
 .journal-date-bar__date {
   margin: 0;
   overflow: hidden;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.84rem;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -5912,10 +5918,10 @@ textarea.journal-entry-field-light:focus {
   align-items: center;
   margin-top: 3px;
   padding: 0 10px;
-  border: 1px solid rgba(122, 167, 255, 0.24);
+  border: 1px solid rgba(200, 183, 220, 0.24);
   border-radius: 999px;
-  background: rgba(122, 167, 255, 0.08);
-  color: #AFC6FF;
+  background: rgba(200, 183, 220, 0.08);
+  color: var(--va-detail);
   font: inherit;
   font-size: 0.7rem;
   font-weight: 800;
@@ -5950,7 +5956,7 @@ textarea.journal-entry-field-light:focus {
   border-radius: 16px;
   box-shadow:
     0 8px 20px rgba(0, 0, 0, 0.26),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.08);
 }
 
 .journal-day-context__copy {
@@ -5960,7 +5966,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--journal .journal__actual-label {
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -5968,7 +5974,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen--journal .journal__actual-phase {
   overflow: hidden;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.01em;
@@ -5990,28 +5996,28 @@ textarea.journal-entry-field-light:focus {
   border: 0;
   border-radius: 30px;
   outline: none;
-  background: #FFFFFF;
-  color: #11131A;
-  caret-color: #11131A;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
+  caret-color: var(--va-paper-ink);
   font-family: inherit;
   font-size: 1.06rem;
   line-height: 1.68;
-  -webkit-text-fill-color: #11131A;
+  -webkit-text-fill-color: var(--va-paper-ink);
   box-shadow:
     0 24px 58px rgba(0, 0, 0, 0.34),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.07);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.07);
 }
 
 .feature-screen--journal textarea.journal-entry-field-light::placeholder {
-  color: rgba(17, 19, 26, 0.4);
-  -webkit-text-fill-color: rgba(17, 19, 26, 0.4);
+  color: #675B6C;
+  -webkit-text-fill-color: #675B6C;
 }
 
 .feature-screen--journal textarea.journal-entry-field-light:focus {
   box-shadow:
     0 28px 64px rgba(0, 0, 0, 0.38),
-    0 0 0 3px rgba(122, 167, 255, 0.26),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.07);
+    0 0 0 3px rgba(200, 183, 220, 0.26),
+    inset 0 0 0 1px rgba(36, 35, 44, 0.07);
 }
 
 .feature-screen--journal .journal__save-indicator {
@@ -6024,8 +6030,8 @@ textarea.journal-entry-field-light:focus {
   gap: 7px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(17, 19, 26, 0.06);
-  color: rgba(17, 19, 26, 0.56);
+  background: rgba(51, 45, 59, 0.06);
+  color: rgba(51, 45, 59, 0.56);
   font-size: 0.72rem;
   font-weight: 780;
   opacity: 0;
@@ -6039,7 +6045,7 @@ textarea.journal-entry-field-light:focus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7AA7FF;
+  background: var(--va-action);
 }
 
 .feature-screen--journal .journal__save-indicator[data-state="saving"]::before {
@@ -6081,7 +6087,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.05);
-  color: #F5F7FF;
+  color: var(--va-text);
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -6104,10 +6110,10 @@ textarea.journal-entry-field-light:focus {
   overflow: hidden;
   border-radius: 14px;
   background: #FFFFFF;
-  color: #11131A;
+  color: var(--va-paper-ink);
   font-size: 1.35rem;
   font-weight: 500;
-  box-shadow: inset 0 0 0 1px rgba(5, 6, 10, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(36, 35, 44, 0.07);
 }
 
 .journal-tool-button__visual img {
@@ -6130,19 +6136,19 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal-tool-button__copy strong {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.86rem;
 }
 
 .journal-tool-button__copy small {
-  color: rgba(245, 247, 255, 0.52);
+  color: var(--va-muted);
   font-size: 0.68rem;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .journal-tool-button:hover {
-    border-color: rgba(122, 167, 255, 0.38);
-    background: rgba(122, 167, 255, 0.1);
+    border-color: rgba(200, 183, 220, 0.38);
+    background: rgba(200, 183, 220, 0.1);
   }
 }
 
@@ -6165,14 +6171,14 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1.55rem;
   line-height: 1.1;
 }
 
 .journal-feeling-sheet__help {
   margin: var(--feature-space-2) 0 var(--feature-space-4);
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.86rem;
   line-height: 1.5;
 }
@@ -6212,7 +6218,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .journal__image-heading {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.88rem;
   font-weight: 800;
 }
@@ -6303,7 +6309,7 @@ textarea.journal-entry-field-light:focus {
   background:
     radial-gradient(circle at 12% 20%, rgba(243, 212, 154, 0.12), transparent 48%),
     rgba(255, 255, 255, 0.035);
-  color: #F3D49A;
+  color: var(--va-action);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -6324,14 +6330,14 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-toggle__label {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.9rem;
   font-weight: 760;
 }
 
 .affiliate-toggle__chevron {
   margin-left: auto;
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 1.35rem;
   line-height: 1;
 }
@@ -6382,8 +6388,8 @@ textarea.journal-entry-field-light:focus {
   margin: 0 0 8px auto;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  background: rgba(5, 6, 10, 0.9);
-  color: #F5F7FF;
+  background: rgba(36, 35, 44, 0.9);
+  color: var(--va-text);
   font: inherit;
   font-size: 1.4rem;
   cursor: pointer;
@@ -6402,7 +6408,7 @@ textarea.journal-entry-field-light:focus {
 .affiliate-sheet__hero h2,
 .affiliate-active-head h2 {
   margin-bottom: 12px;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.7rem, 5vw, 2.65rem);
   line-height: 1.05;
   letter-spacing: -0.035em;
@@ -6411,13 +6417,13 @@ textarea.journal-entry-field-light:focus {
 .affiliate-sheet__hero p:last-child,
 .affiliate-active-head p,
 .affiliate-dashboard-note {
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   line-height: 1.58;
 }
 
 .affiliate-sheet__eyebrow {
   margin-bottom: 9px;
-  color: #F3D49A;
+  color: var(--va-action);
   font-size: 0.72rem;
   font-weight: 850;
   letter-spacing: 0.16em;
@@ -6429,9 +6435,9 @@ textarea.journal-entry-field-light:focus {
 .affiliate-payout-status {
   margin-bottom: 20px;
   padding: clamp(17px, 4vw, 24px);
-  border: 1px solid rgba(122, 167, 255, 0.18);
+  border: 1px solid rgba(200, 183, 220, 0.18);
   border-radius: 18px;
-  background: #0D111B;
+  background: var(--va-card);
 }
 
 .affiliate-support-card form,
@@ -6446,7 +6452,7 @@ textarea.journal-entry-field-light:focus {
 .affiliate-apply-form label,
 .affiliate-application-form label,
 .affiliate-share-card label {
-  color: rgba(245, 247, 255, 0.75);
+  color: var(--va-muted);
   font-size: 0.82rem;
   font-weight: 720;
 }
@@ -6458,8 +6464,8 @@ textarea.journal-entry-field-light:focus {
   padding: 11px 13px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  background: #090C14;
-  color: #F5F7FF;
+  background: var(--va-deep);
+  color: var(--va-text);
   font: inherit;
   text-transform: uppercase;
 }
@@ -6471,8 +6477,8 @@ textarea.journal-entry-field-light:focus {
   padding: 11px 13px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  background: #090C14;
-  color: #F5F7FF;
+  background: var(--va-deep);
+  color: var(--va-text);
   font: inherit;
   text-transform: none;
 }
@@ -6484,8 +6490,8 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-application-form input[readonly] {
-  color: rgba(245, 247, 255, 0.78);
-  background: #070910;
+  color: var(--va-muted);
+  background: var(--va-deep);
 }
 
 .affiliate-application-form__social {
@@ -6505,14 +6511,14 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-application-summary dt {
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.78rem;
   font-weight: 720;
 }
 
 .affiliate-application-summary dd {
   margin: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1rem;
 }
 
@@ -6520,8 +6526,8 @@ textarea.journal-entry-field-light:focus {
 .affiliate-apply-form input:focus,
 .affiliate-application-form input:focus,
 .affiliate-application-form textarea:focus {
-  border-color: #7AA7FF;
-  outline: 3px solid rgba(122, 167, 255, 0.24);
+  border-color: var(--va-action);
+  outline: 3px solid rgba(200, 183, 220, 0.24);
   outline-offset: 1px;
 }
 
@@ -6542,18 +6548,18 @@ textarea.journal-entry-field-light:focus {
   padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 16px;
-  background: #0D111B;
+  background: var(--va-card);
 }
 
 .affiliate-benefit-grid strong,
 .affiliate-stat-card strong {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1.08rem;
 }
 
 .affiliate-benefit-grid span,
 .affiliate-stat-card span {
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.78rem;
 }
 
@@ -6576,12 +6582,12 @@ textarea.journal-entry-field-light:focus {
   width: 20px;
   height: 20px;
   margin: 0;
-  accent-color: #7AA7FF;
+  accent-color: var(--va-action);
 }
 
 .affiliate-disclosure {
   margin: 14px 0 0;
-  color: rgba(245, 247, 255, 0.56);
+  color: var(--va-muted);
   font-size: 0.78rem;
   line-height: 1.5;
 }
@@ -6599,15 +6605,15 @@ textarea.journal-entry-field-light:focus {
   min-height: 44px;
   padding: 12px 14px 12px 44px;
   border-radius: 13px;
-  background: #0D111B;
-  color: rgba(245, 247, 255, 0.66);
+  background: var(--va-card);
+  color: var(--va-muted);
 }
 
 .affiliate-setup-checklist li::before {
   position: absolute;
   left: 15px;
   content: "○";
-  color: rgba(245, 247, 255, 0.42);
+  color: var(--va-muted);
 }
 
 .affiliate-setup-checklist li.is-complete::before {
@@ -6628,11 +6634,11 @@ textarea.journal-entry-field-light:focus {
 
 .affiliate-code {
   margin-bottom: 4px;
-  color: #F5F7FF !important;
+  color: var(--va-text) !important;
 }
 
 .affiliate-code strong {
-  color: #F3D49A;
+  color: var(--va-action);
   letter-spacing: 0.08em;
 }
 
@@ -6661,7 +6667,7 @@ textarea.journal-entry-field-light:focus {
   border: 0;
   border-radius: 11px;
   background: transparent;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font: inherit;
   font-size: 0.86rem;
   font-weight: 760;
@@ -6669,14 +6675,14 @@ textarea.journal-entry-field-light:focus {
 }
 
 .affiliate-sheet__tab.is-active {
-  background: rgba(122, 167, 255, 0.15);
-  color: #F5F7FF;
+  background: rgba(200, 183, 220, 0.15);
+  color: var(--va-text);
 }
 
 .affiliate-sheet__tab:focus-visible,
 .affiliate-toggle:focus-visible,
 .affiliate-asset-card:focus-visible {
-  outline: 3px solid rgba(122, 167, 255, 0.7);
+  outline: 3px solid rgba(200, 183, 220, 0.7);
   outline-offset: 2px;
 }
 
@@ -6689,7 +6695,7 @@ textarea.journal-entry-field-light:focus {
   margin: 16px 0 24px;
   padding: 18px 12px 10px;
   border-radius: 16px;
-  background: #0D111B;
+  background: var(--va-card);
 }
 
 .affiliate-chart__month {
@@ -6698,7 +6704,7 @@ textarea.journal-entry-field-light:focus {
   grid-template-rows: 1fr auto;
   gap: 8px;
   align-items: end;
-  color: rgba(245, 247, 255, 0.55);
+  color: var(--va-muted);
   font-size: 0.64rem;
   text-align: center;
 }
@@ -6709,7 +6715,7 @@ textarea.journal-entry-field-light:focus {
   min-height: 4px;
   align-self: end;
   border-radius: 6px 6px 3px 3px;
-  background: linear-gradient(180deg, #F3D49A, #7AA7FF);
+  background: linear-gradient(180deg, var(--va-action), var(--va-action));
 }
 
 .affiliate-share-card {
@@ -6719,7 +6725,7 @@ textarea.journal-entry-field-light:focus {
 
 .affiliate-share-card label {
   margin-top: 8px;
-  color: #F3D49A;
+  color: var(--va-action);
 }
 
 .affiliate-assets__grid {
@@ -6734,8 +6740,8 @@ textarea.journal-entry-field-light:focus {
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 15px;
-  background: #0D111B;
-  color: #F5F7FF;
+  background: var(--va-card);
+  color: var(--va-text);
   text-decoration: none;
 }
 
@@ -6744,11 +6750,11 @@ textarea.journal-entry-field-light:focus {
   aspect-ratio: 1.25;
   object-fit: cover;
   border-radius: 10px;
-  background: #05060A;
+  background: var(--va-canvas);
 }
 
 .affiliate-asset-card span {
-  color: rgba(245, 247, 255, 0.56);
+  color: var(--va-muted);
   font-size: 0.73rem;
 }
 
@@ -6764,12 +6770,12 @@ textarea.journal-entry-field-light:focus {
   gap: 4px 12px;
   padding: 13px 14px;
   border-radius: 13px;
-  background: #0D111B;
+  background: var(--va-card);
 }
 
 .affiliate-payout-row span:last-child {
   grid-column: 1 / -1;
-  color: rgba(245, 247, 255, 0.55);
+  color: var(--va-muted);
   font-size: 0.76rem;
   text-transform: capitalize;
 }
@@ -6781,7 +6787,7 @@ textarea.journal-entry-field-light:focus {
   place-items: center;
   align-content: center;
   gap: 14px;
-  color: rgba(245, 247, 255, 0.7);
+  color: var(--va-muted);
   text-align: center;
 }
 
@@ -6890,7 +6896,7 @@ textarea.journal-entry-field-light:focus {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: #F5F7FF;
+  color: var(--va-text);
 }
 
 .feature-screen--history .journal-history-mount {
@@ -6900,7 +6906,7 @@ textarea.journal-entry-field-light:focus {
 .journal-history {
   display: grid;
   gap: var(--feature-space-4);
-  color: #F5F7FF;
+  color: var(--va-text);
   animation: historyContentIn 190ms var(--feature-ease);
 }
 
@@ -6916,7 +6922,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(2rem, 8vw, 3.8rem);
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -6932,7 +6938,7 @@ textarea.journal-entry-field-light:focus {
   height: 48px;
   padding: 0;
   border-radius: 50%;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 2rem;
   font-weight: 450;
 }
@@ -6944,10 +6950,10 @@ textarea.journal-entry-field-light:focus {
   align-items: center;
   justify-content: center;
   padding: 0 13px;
-  border: 1px solid rgba(122, 167, 255, 0.28);
+  border: 1px solid rgba(200, 183, 220, 0.28);
   border-radius: 999px;
-  background: rgba(122, 167, 255, 0.1);
-  color: #AFC6FF;
+  background: rgba(200, 183, 220, 0.1);
+  color: var(--va-detail);
   font: inherit;
   font-size: 0.76rem;
   font-weight: 800;
@@ -6965,7 +6971,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: var(--feature-radius-section);
   background:
-    radial-gradient(circle at 0% 0%, rgba(122, 167, 255, 0.12), transparent 40%),
+    radial-gradient(circle at 0% 0%, rgba(200, 183, 220, 0.12), transparent 40%),
     rgba(255, 255, 255, 0.04);
 }
 
@@ -6975,7 +6981,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .history-memory-summary__intro span {
-  color: rgba(245, 247, 255, 0.5);
+  color: var(--va-muted);
   font-size: 0.68rem;
   font-weight: 780;
   letter-spacing: 0.08em;
@@ -6983,7 +6989,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .history-memory-summary__intro strong {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 1rem;
 }
 
@@ -6992,7 +6998,7 @@ textarea.journal-entry-field-light:focus {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--feature-space-3);
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.76rem;
 }
 
@@ -7001,7 +7007,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .history-memory-summary__details strong {
-  color: #AFC6FF;
+  color: var(--va-detail);
   font-size: 0.9rem;
 }
 
@@ -7009,7 +7015,7 @@ textarea.journal-entry-field-light:focus {
   display: flex;
   flex-wrap: wrap;
   gap: var(--feature-space-3);
-  color: rgba(245, 247, 255, 0.5);
+  color: var(--va-muted);
   font-size: 0.68rem;
   font-weight: 720;
 }
@@ -7037,14 +7043,14 @@ textarea.journal-entry-field-light:focus {
   height: 10px;
   border-radius: 50%;
   background: #FFFFFF;
-  box-shadow: 0 0 0 2px rgba(122, 167, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(200, 183, 220, 0.6);
 }
 
 .history-legend__saved {
   width: 12px;
   height: 3px;
   border-radius: 999px;
-  background: #7AA7FF;
+  background: var(--va-action);
 }
 
 .journal-history-stage {
@@ -7060,7 +7066,7 @@ textarea.journal-entry-field-light:focus {
   right: 0;
   bottom: 12px;
   width: 38px;
-  background: linear-gradient(90deg, transparent, rgba(5, 6, 10, 0.86));
+  background: linear-gradient(90deg, transparent, rgba(36, 35, 44, 0.86));
   pointer-events: none;
   transition: opacity 180ms var(--feature-ease);
 }
@@ -7086,7 +7092,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen--history .journal-history-scroll:focus-visible {
   border-radius: 22px;
-  outline: 2px solid #7AA7FF;
+  outline: 2px solid var(--va-action);
   outline-offset: 3px;
 }
 
@@ -7101,8 +7107,8 @@ textarea.journal-entry-field-light:focus {
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  background: rgba(5, 6, 10, 0.72);
-  color: rgba(245, 247, 255, 0.56);
+  background: rgba(36, 35, 44, 0.72);
+  color: var(--va-muted);
   font-size: 0.65rem;
   font-weight: 780;
   pointer-events: none;
@@ -7130,7 +7136,7 @@ textarea.journal-entry-field-light:focus {
   min-height: 28px;
   display: grid;
   place-items: center;
-  color: rgba(245, 247, 255, 0.42);
+  color: var(--va-muted);
   font-size: 0.68rem;
   font-weight: 850;
   letter-spacing: 0.1em;
@@ -7154,7 +7160,7 @@ textarea.journal-entry-field-light:focus {
   border-radius: 22px;
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025));
-  color: #F5F7FF;
+  color: var(--va-text);
   text-align: left;
   cursor: pointer;
   scroll-snap-align: start;
@@ -7174,8 +7180,8 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen--history .history-month-header__nav,
 .feature-screen--history .history-current-month {
-  color: #F5F7FF;
-  -webkit-text-fill-color: #F5F7FF;
+  color: var(--va-text);
+  -webkit-text-fill-color: var(--va-text);
 }
 
 .feature-screen--history .journal-history__cell--empty {
@@ -7187,19 +7193,19 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--history .journal-history__cell--has-entry {
-  border-color: rgba(122, 167, 255, 0.34);
+  border-color: rgba(200, 183, 220, 0.34);
   background:
-    radial-gradient(circle at 50% 100%, rgba(122, 167, 255, 0.15), transparent 52%),
+    radial-gradient(circle at 50% 100%, rgba(200, 183, 220, 0.15), transparent 52%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.035));
   box-shadow:
-    inset 0 -3px 0 rgba(122, 167, 255, 0.56),
+    inset 0 -3px 0 rgba(200, 183, 220, 0.56),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .feature-screen--history .journal-history__cell--today {
-  border-color: rgba(122, 167, 255, 0.78);
+  border-color: rgba(200, 183, 220, 0.78);
   box-shadow:
-    0 0 0 2px rgba(122, 167, 255, 0.16),
+    0 0 0 2px rgba(200, 183, 220, 0.16),
     0 12px 28px rgba(40, 75, 150, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -7212,7 +7218,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--history .journal-history__day-num {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.8rem;
   font-weight: 850;
 }
@@ -7223,8 +7229,8 @@ textarea.journal-entry-field-light:focus {
   align-items: center;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(122, 167, 255, 0.18);
-  color: #C7D7FF;
+  background: rgba(200, 183, 220, 0.18);
+  color: var(--va-detail);
   font-size: 0.55rem;
   font-weight: 850;
   letter-spacing: 0.04em;
@@ -7235,8 +7241,8 @@ textarea.journal-entry-field-light:focus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7AA7FF;
-  box-shadow: 0 0 9px rgba(122, 167, 255, 0.7);
+  background: var(--va-action);
+  box-shadow: 0 0 9px rgba(200, 183, 220, 0.7);
 }
 
 .journal-history__actual {
@@ -7250,7 +7256,7 @@ textarea.journal-entry-field-light:focus {
   background: #FFFFFF;
   box-shadow:
     0 10px 22px rgba(0, 0, 0, 0.28),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.06);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.06);
   overflow: hidden;
 }
 
@@ -7274,7 +7280,7 @@ textarea.journal-entry-field-light:focus {
   display: grid;
   place-items: center;
   padding: 0;
-  border: 2px solid #111520;
+  border: 2px solid var(--va-canvas);
   border-radius: 50%;
   background: #FFFFFF;
   box-shadow: 0 7px 16px rgba(0, 0, 0, 0.32);
@@ -7298,19 +7304,19 @@ textarea.journal-entry-field-light:focus {
   padding: var(--feature-space-6);
   border-radius: var(--feature-radius-major);
   background:
-    radial-gradient(circle at 50% 40%, rgba(122, 167, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 50% 40%, rgba(200, 183, 220, 0.12), transparent 32%),
     rgba(255, 255, 255, 0.035);
-  color: rgba(245, 247, 255, 0.58);
+  color: var(--va-muted);
   font-size: 0.84rem;
 }
 
 .journal-history__loading-orb {
   width: 48px;
   height: 48px;
-  border: 1px solid rgba(122, 167, 255, 0.3);
+  border: 1px solid rgba(200, 183, 220, 0.3);
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.16), rgba(122, 167, 255, 0.05));
-  box-shadow: 0 0 30px rgba(122, 167, 255, 0.16);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.16), rgba(200, 183, 220, 0.05));
+  box-shadow: 0 0 30px rgba(200, 183, 220, 0.16);
   animation: historyLoadingPulse 1.3s ease-in-out infinite;
 }
 
@@ -7321,9 +7327,9 @@ textarea.journal-entry-field-light:focus {
 @media (hover: hover) and (pointer: fine) {
   .feature-screen--history .journal-history__cell:not(.journal-history__cell--empty):hover {
     transform: translateY(-2px);
-    border-color: rgba(122, 167, 255, 0.5);
+    border-color: rgba(200, 183, 220, 0.5);
     background:
-      radial-gradient(circle at 50% 100%, rgba(122, 167, 255, 0.16), transparent 52%),
+      radial-gradient(circle at 50% 100%, rgba(200, 183, 220, 0.16), transparent 52%),
       linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.045));
   }
 }
@@ -7392,13 +7398,15 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--print .sdcal {
+  --color-accent: var(--va-paper-accent);
+  --color-accent-rgb: 101, 74, 115;
   display: grid;
   gap: var(--feature-space-4);
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #F5F7FF;
+  color: var(--va-text);
   box-shadow: none;
 }
 
@@ -7410,7 +7418,7 @@ textarea.journal-entry-field-light:focus {
   margin: 0;
   border: 0;
   padding: 0;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(2rem, 8vw, 3.8rem);
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -7419,7 +7427,7 @@ textarea.journal-entry-field-light:focus {
 .print-hero__copy {
   max-width: 560px;
   margin: var(--feature-space-2) 0 0;
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
   font-size: 0.95rem;
   line-height: 1.55;
 }
@@ -7428,7 +7436,7 @@ textarea.journal-entry-field-light:focus {
   margin: var(--feature-space-2) 0 calc(var(--feature-space-2) * -1);
   border: 0;
   padding: 0;
-  color: rgba(245, 247, 255, 0.66);
+  color: var(--va-muted);
   font-size: 0.78rem;
   font-weight: 820;
   letter-spacing: 0.06em;
@@ -7455,7 +7463,7 @@ textarea.journal-entry-field-light:focus {
   border-radius: var(--feature-radius-section);
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025));
-  color: #F5F7FF;
+  color: var(--va-text);
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -7472,14 +7480,14 @@ textarea.journal-entry-field-light:focus {
 }
 
 .feature-screen--print .sdcal__tab.is-active {
-  border-color: rgba(122, 167, 255, 0.72);
+  border-color: rgba(200, 183, 220, 0.72);
   background:
-    radial-gradient(circle at 78% 0%, rgba(122, 167, 255, 0.2), transparent 46%),
-    linear-gradient(155deg, rgba(122, 167, 255, 0.15), rgba(255, 255, 255, 0.04));
-  color: #F5F7FF;
+    radial-gradient(circle at 78% 0%, rgba(200, 183, 220, 0.2), transparent 46%),
+    linear-gradient(155deg, rgba(200, 183, 220, 0.15), rgba(255, 255, 255, 0.04));
+  color: var(--va-text);
   box-shadow:
     0 14px 32px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(122, 167, 255, 0.12);
+    inset 0 0 0 1px rgba(200, 183, 220, 0.12);
   transform: translateY(-2px);
 }
 
@@ -7495,7 +7503,7 @@ textarea.journal-entry-field-light:focus {
   background: #FFFFFF;
   box-shadow:
     0 9px 20px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.08);
   transform: rotate(-2deg);
 }
 
@@ -7503,7 +7511,7 @@ textarea.journal-entry-field-light:focus {
   display: block;
   height: 2px;
   border-radius: 999px;
-  background: rgba(17, 19, 26, 0.18);
+  background: rgba(51, 45, 59, 0.18);
 }
 
 .sdcal__format-page--month {
@@ -7527,7 +7535,7 @@ textarea.journal-entry-field-light:focus {
 .sdcal__format-page--day i:first-child {
   width: 52%;
   height: 4px;
-  background: rgba(122, 167, 255, 0.7);
+  background: rgba(200, 183, 220, 0.7);
 }
 
 .sdcal__format-copy {
@@ -7537,12 +7545,12 @@ textarea.journal-entry-field-light:focus {
 }
 
 .sdcal__format-copy strong {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.92rem;
 }
 
 .sdcal__format-copy small {
-  color: rgba(245, 247, 255, 0.5);
+  color: var(--va-muted);
   font-size: 0.68rem;
   line-height: 1.25;
 }
@@ -7556,8 +7564,8 @@ textarea.journal-entry-field-light:focus {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #7AA7FF;
-  color: #08101F;
+  background: var(--va-action);
+  color: var(--va-ink);
   font-size: 0.7rem;
   font-weight: 950;
   opacity: 0;
@@ -7572,8 +7580,8 @@ textarea.journal-entry-field-light:focus {
 
 @media (hover: hover) and (pointer: fine) {
   .feature-screen--print .sdcal__tab:not(.is-active):hover {
-    border-color: rgba(122, 167, 255, 0.34);
-    background: rgba(122, 167, 255, 0.08);
+    border-color: rgba(200, 183, 220, 0.34);
+    background: rgba(200, 183, 220, 0.08);
   }
 }
 
@@ -7595,7 +7603,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen--print .sdcal__label {
   margin: 0;
-  color: rgba(245, 247, 255, 0.52);
+  color: var(--va-muted);
   font-size: 0.7rem;
   font-weight: 780;
   letter-spacing: 0.06em;
@@ -7611,7 +7619,7 @@ textarea.journal-entry-field-light:focus {
   padding: 5px 7px;
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 17px;
-  background: rgba(5, 6, 10, 0.36);
+  background: rgba(36, 35, 44, 0.36);
 }
 
 .sdcal__profile-avatar {
@@ -7634,7 +7642,7 @@ textarea.journal-entry-field-light:focus {
   border: 0;
   border-radius: 12px;
   background-color: transparent;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.9rem;
   font-weight: 760;
   box-shadow: none;
@@ -7660,7 +7668,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 2rem;
   font-weight: 450;
   cursor: pointer;
@@ -7671,7 +7679,7 @@ textarea.journal-entry-field-light:focus {
 .feature-screen--print .sdcal__title {
   min-width: 0;
   overflow: hidden;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.9rem;
   font-weight: 820;
   line-height: 1.3;
@@ -7694,8 +7702,8 @@ textarea.journal-entry-field-light:focus {
   border-radius: var(--feature-radius-major);
   background:
     radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.1), transparent 32%),
-    radial-gradient(circle at 50% 44%, rgba(122, 167, 255, 0.1), transparent 48%),
-    #080A10;
+    radial-gradient(circle at 50% 44%, rgba(200, 183, 220, 0.1), transparent 48%),
+    var(--va-deep);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 22px 58px rgba(0, 0, 0, 0.32);
@@ -7720,7 +7728,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .sdcal__preview-eyebrow {
-  color: rgba(245, 247, 255, 0.44);
+  color: var(--va-muted);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -7728,7 +7736,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .sdcal__preview-title {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.9rem;
 }
 
@@ -7740,7 +7748,7 @@ textarea.journal-entry-field-light:focus {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(245, 247, 255, 0.8);
+  color: rgba(246, 238, 223, 0.8);
   font-size: 0.74rem;
   font-weight: 760;
   text-decoration: none;
@@ -7776,7 +7784,7 @@ textarea.journal-entry-field-light:focus {
 .feature-screen--print .sineday-copyright-footer {
   position: static;
   padding: 0 var(--feature-space-1);
-  color: rgba(245, 247, 255, 0.42);
+  color: var(--va-muted);
   font-size: 10px;
   line-height: 1.4;
   text-align: left;
@@ -7792,9 +7800,9 @@ textarea.journal-entry-field-light:focus {
   gap: var(--feature-space-3);
   border-radius: 18px;
   background:
-    radial-gradient(circle at 50% 42%, rgba(122, 167, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 50% 42%, rgba(200, 183, 220, 0.14), transparent 30%),
     rgba(8, 10, 16, 0.94);
-  color: rgba(245, 247, 255, 0.68);
+  color: var(--va-muted);
   font-size: 0.82rem;
   font-weight: 720;
   text-align: center;
@@ -7808,7 +7816,7 @@ textarea.journal-entry-field-light:focus {
   background: rgba(255, 255, 255, 0.92);
   box-shadow:
     0 16px 34px rgba(0, 0, 0, 0.32),
-    inset 0 0 0 1px rgba(5, 6, 10, 0.08);
+    inset 0 0 0 1px rgba(36, 35, 44, 0.08);
   animation: printPageBreathe 1.2s ease-in-out infinite;
 }
 
@@ -7847,7 +7855,7 @@ textarea.journal-entry-field-light:focus {
 
 .print-download-bar__format {
   overflow: hidden;
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: 0.86rem;
   font-weight: 820;
   text-overflow: ellipsis;
@@ -7855,7 +7863,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .print-download-bar__status {
-  color: rgba(245, 247, 255, 0.5);
+  color: var(--va-muted);
   font-size: 0.68rem;
 }
 
@@ -7865,8 +7873,8 @@ textarea.journal-entry-field-light:focus {
   padding: 0 18px;
   border: 0;
   border-radius: 17px;
-  background: #F5F7FF;
-  color: #0B0E16;
+  background: var(--va-text);
+  color: var(--va-ink);
   font: inherit;
   font-size: 0.84rem;
   font-weight: 850;
@@ -7878,7 +7886,7 @@ textarea.journal-entry-field-light:focus {
 
 .feature-screen--print .sdcal__action:disabled {
   background: rgba(255, 255, 255, 0.11);
-  color: rgba(245, 247, 255, 0.44);
+  color: var(--va-muted);
   box-shadow: none;
 }
 
@@ -7886,9 +7894,9 @@ textarea.journal-entry-field-light:focus {
   min-height: 360px;
   border-color: rgba(255, 255, 255, 0.09);
   background:
-    radial-gradient(circle at 50% 20%, rgba(122, 167, 255, 0.1), transparent 36%),
+    radial-gradient(circle at 50% 20%, rgba(200, 183, 220, 0.1), transparent 36%),
     rgba(255, 255, 255, 0.035);
-  color: rgba(245, 247, 255, 0.62);
+  color: var(--va-muted);
 }
 
 @keyframes printPageBreathe {
@@ -7985,10 +7993,10 @@ textarea.journal-entry-field-light:focus {
 .feature-screen .premium-lock-card {
   min-height: 280px;
   padding: var(--feature-space-6) var(--feature-space-5);
-  border-color: rgba(122, 167, 255, 0.18);
+  border-color: rgba(200, 183, 220, 0.18);
   border-radius: var(--feature-radius-major);
   background:
-    radial-gradient(circle at 50% 0%, rgba(122, 167, 255, 0.16), transparent 42%),
+    radial-gradient(circle at 50% 0%, rgba(200, 183, 220, 0.16), transparent 42%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
 }
 
@@ -7996,9 +8004,9 @@ textarea.journal-entry-field-light:focus {
   width: 58px;
   height: 58px;
   border-radius: 19px;
-  color: #AFC6FF;
-  background: rgba(122, 167, 255, 0.1);
-  border-color: rgba(122, 167, 255, 0.22);
+  color: var(--va-detail);
+  background: rgba(200, 183, 220, 0.1);
+  border-color: rgba(200, 183, 220, 0.22);
 }
 
 .feature-screen .premium-lock-card__icon svg {
@@ -8030,8 +8038,8 @@ textarea.journal-entry-field-light:focus {
   border-color: rgba(255, 255, 255, 0.08);
   border-radius: var(--feature-radius-major);
   background:
-    radial-gradient(circle at 50% 25%, rgba(122, 167, 255, 0.13), transparent 36%),
-    #080A10;
+    radial-gradient(circle at 50% 25%, rgba(200, 183, 220, 0.13), transparent 36%),
+    var(--va-deep);
 }
 
 .premium-lock-preview__media--journal {
@@ -8045,7 +8053,7 @@ textarea.journal-entry-field-light:focus {
   display: flex;
   align-items: center;
   gap: var(--feature-space-2);
-  color: rgba(245, 247, 255, 0.72);
+  color: var(--va-muted);
   font-size: 0.78rem;
   font-weight: 780;
 }
@@ -8065,7 +8073,7 @@ textarea.journal-entry-field-light:focus {
   gap: 13px;
   padding: var(--feature-space-5);
   border-radius: 25px;
-  background: #FFFFFF;
+  background: var(--va-paper);
   box-shadow: 0 26px 58px rgba(0, 0, 0, 0.42);
 }
 
@@ -8073,7 +8081,7 @@ textarea.journal-entry-field-light:focus {
   display: block;
   height: 7px;
   border-radius: 999px;
-  background: rgba(17, 19, 26, 0.1);
+  background: rgba(51, 45, 59, 0.1);
 }
 
 .premium-preview-journal__paper i:nth-child(2) {
@@ -8095,7 +8103,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .premium-preview-history__heading {
-  color: #F5F7FF;
+  color: var(--va-text);
   font-size: clamp(1.1rem, 4vw, 1.6rem);
   font-weight: 820;
   letter-spacing: -0.025em;
@@ -8118,8 +8126,8 @@ textarea.journal-entry-field-light:focus {
 }
 
 .premium-preview-history__grid span:nth-child(3n + 1) {
-  border-color: rgba(122, 167, 255, 0.32);
-  box-shadow: inset 0 -2px 0 rgba(122, 167, 255, 0.5);
+  border-color: rgba(200, 183, 220, 0.32);
+  box-shadow: inset 0 -2px 0 rgba(200, 183, 220, 0.5);
 }
 
 .premium-lock-preview__media--print {
@@ -8135,8 +8143,8 @@ textarea.journal-entry-field-light:focus {
   gap: 16px;
   padding: var(--feature-space-5);
   border-radius: 7px;
-  background: #FFFFFF;
-  color: #11131A;
+  background: var(--va-paper);
+  color: var(--va-paper-ink);
   box-shadow:
     0 34px 72px rgba(0, 0, 0, 0.52),
     0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -8144,7 +8152,7 @@ textarea.journal-entry-field-light:focus {
 }
 
 .premium-preview-print__page span {
-  color: #315AAB;
+  color: var(--va-paper-accent);
   font-size: 0.74rem;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -8152,7 +8160,7 @@ textarea.journal-entry-field-light:focus {
 
 .premium-preview-print__page i {
   height: 2px;
-  background: rgba(17, 19, 26, 0.12);
+  background: rgba(51, 45, 59, 0.12);
 }
 
 @media (max-width: 560px) {
@@ -8232,40 +8240,40 @@ textarea.journal-entry-field-light:focus {
   padding: 10px 16px;
   border: 1px solid rgba(164, 191, 226, .26);
   border-radius: 999px;
-  background: #121d2b;
-  color: #e1eafa;
+  background: var(--va-card);
+  color: var(--va-text);
   font: inherit;
   font-size: .8rem;
   cursor: pointer;
 }
 .origin-globe-controls button:disabled, .origin-globe-dialog button:disabled { opacity: .55; cursor: default; }
-.origin-globe-controls button:focus-visible, .origin-globe-dialog :focus-visible { outline: 2px solid #a7c7ff; outline-offset: 4px; }
-.origin-globe-caption, .origin-globe-status { color: #acbacb; font-size: .72rem; line-height: 1.6; margin: 10px 0 0; }
+.origin-globe-controls button:focus-visible, .origin-globe-dialog :focus-visible { outline: 2px solid var(--va-detail); outline-offset: 4px; }
+.origin-globe-caption, .origin-globe-status { color: var(--va-muted); font-size: .72rem; line-height: 1.6; margin: 10px 0 0; }
 .origin-globe-status { min-height: 2.5em; margin-top: 4px; }
-.origin-globe-credit { color: #9aacbf; font-size: .63rem; text-decoration: underline; text-underline-offset: 3px; }
+.origin-globe-credit { color: var(--va-muted); font-size: .63rem; text-decoration: underline; text-underline-offset: 3px; }
 .origin-globe-dialog {
   width: min(440px, calc(100vw - 32px));
   max-height: calc(100dvh - 48px);
   margin: auto;
   padding: 24px;
   border-radius: 24px;
-  border: 1px solid #35435b;
-  background: #0c1421;
-  color: #edf2fc;
+  border: 1px solid var(--va-border);
+  background: var(--va-deep);
+  color: var(--va-text);
   overflow-y: auto;
 }
 .origin-globe-dialog::backdrop { background: rgba(0, 3, 10, .78); }
 .origin-globe-dialog h2 { margin: 0 0 14px; padding: 0; border: 0; font-size: 1.5rem; letter-spacing: -.035em; line-height: 1.2; }
-.origin-globe-dialog p { color: #bac7d9; line-height: 1.6; font-size: .88rem; }
+.origin-globe-dialog p { color: var(--va-secondary); line-height: 1.6; font-size: .88rem; }
 .origin-globe-dialog label { display: block; font-size: .9rem; margin: 18px 0 8px; }
-.origin-globe-dialog select, .origin-globe-dialog input[type="search"] { width: 100%; min-height: 48px; background: #152235; color: #f5f7ff; border: 1px solid #4e6380; border-radius: 10px; padding: 10px; font: inherit; font-size: 16px; }
+.origin-globe-dialog select, .origin-globe-dialog input[type="search"] { width: 100%; min-height: 48px; background: var(--va-card); color: var(--va-text); border: 1px solid var(--va-border); border-radius: 10px; padding: 10px; font: inherit; font-size: 16px; }
 .origin-globe-city-list { list-style: none; padding: 0; margin: 8px 0; max-height: min(220px, 28dvh); overflow-y: auto; overscroll-behavior: contain; }
 .origin-globe-city-list button { width: 100%; text-align: left; border-radius: 8px; }
-.origin-globe-city-list [aria-selected="true"] { background: #263f5e; border-color: #a7c7ff; }
+.origin-globe-city-list [aria-selected="true"] { background: var(--va-card); border-color: var(--va-detail); }
 .origin-globe-dialog .origin-globe-city-status { font-size: .75rem; margin: 8px 0; }
 .origin-globe-dialog input:disabled { opacity: .55; }
 .origin-globe-dialog .origin-globe-consent { display: flex; align-items: center; gap: 12px; min-height: 44px; }
-.origin-globe-consent input { width: 22px; height: 22px; accent-color: #9ebfff; }
+.origin-globe-consent input { width: 22px; height: 22px; accent-color: var(--va-action); }
 .origin-globe-dialog .origin-globe-note { font-size: .75rem; }
 .origin-globe-dialog [data-message] { min-height: 1.6em; }
 .origin-globe-dialog button[hidden] { display: none; }
@@ -8273,3 +8281,34 @@ textarea.journal-entry-field-light:focus {
 .today-wave-details__figure { min-width: 0; margin: 0; align-self: start; }
 .today-wave-details__figure[hidden] { display: none; }
 .today-wave-details__figure .day-photo-credit { max-width: none; border-radius: 0 0 12px 12px; margin: 8px 0 0; }
+
+/* Violet Ash screen treatments. Paper export and duck artwork stay unchanged. */
+@media screen {
+  .container { background: rgba(59, 57, 72, 0.96); }
+  .sdcal, .planner-frame, .wcal__config-panel {
+    --color-accent: var(--va-paper-accent);
+    --color-accent-rgb: 101, 74, 115;
+  }
+  .sdcal :is(input, select, textarea),
+  .planner-frame :is(input, select, textarea),
+  .wcal__config-input,
+  .social-day-card__note,
+  .social-day-card__taskinput,
+  .journal-entry-field-light {
+    border-color: var(--va-paper-accent);
+  }
+  .wcal__config-input::placeholder { color: #675B6C; }
+  .sdcal :is(a, button):focus-visible,
+  .planner-frame :is(a, button):focus-visible,
+  .wcal__config-input:focus,
+  .social-day-card__note:focus,
+  .social-day-card__taskinput:focus,
+  textarea.journal-entry-field-light:focus {
+    outline: 2px solid var(--va-paper-accent);
+    outline-offset: 3px;
+  }
+  .feature-screen--journal .journal__save-indicator {
+    color: var(--va-paper-ink);
+  }
+  .feature-screen--journal .journal__save-indicator.is-error { color: #A42727; }
+}
