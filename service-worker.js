@@ -115,6 +115,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Let the browser/CDN handle video byte ranges; never put large media in Cache Storage.
+  if (request.destination === 'video' || url.pathname.startsWith('/assets/video/')) {
+    return;
+  }
+
   // Never intercept Vercel Web Analytics / insights traffic.
   if (url.pathname.startsWith('/_vercel/')) {
     return;

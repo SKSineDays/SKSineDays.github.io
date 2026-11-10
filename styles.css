@@ -2770,3 +2770,22 @@ body.discover-story-open {
 /* Fill the stable scene edge to edge, cropping proportionally without stretching. */
 .day-full-image[data-photo-id],
 .today-wave-details__image[data-photo-id] { object-fit: cover; object-position: center; }
+
+/* On-demand introduction: no autoplay or video preload. */
+.intro-video { margin: 32px auto; padding: clamp(20px, 4vw, 32px); max-width: 720px; border: 1px solid rgba(180,200,230,.24); border-radius: 20px; background: rgba(12,20,33,.75); text-align: left; scroll-margin-top: 24px; }
+.intro-video h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); margin: 0 0 12px; }
+.intro-video p { line-height: 1.65; }
+.intro-video__note { font-size: .9rem; color: #bac9db; }
+.intro-video__player { margin-top: 20px; }
+.intro-video__player summary { display: flex; align-items: center; gap: 20px; cursor: pointer; padding: 12px; border: 1px solid #657c98; border-radius: 12px; color: #f2f5fa; }
+.intro-video__player summary img { width: 74px; height: 132px; object-fit: cover; border-radius: 6px; }
+.intro-video__player summary small { display: block; margin-top: 8px; font-size: .85rem; color: #bac9db; }
+.intro-video__player[open] summary img { display: none; }
+.intro-video__player[open] summary small { display: none; }
+.intro-video__player video { display: block; width: 100%; max-width: 390px; height: auto; max-height: 75svh; object-fit: contain; margin: 20px auto; background: #090d18; border-radius: 10px; }
+.intro-video a { color: #b8d6ff; }
+.intro-video__transcript { margin-top: 20px; }
+.intro-video__transcript summary { padding: 10px 0; cursor: pointer; }
+.intro-video__transcript li { margin-bottom: 12px; line-height: 1.65; }
+.intro-video summary:focus-visible, .intro-video a:focus-visible { outline: 3px solid #b8d6ff; outline-offset: 4px; }
+@media print { .intro-video__player { display: none; } }
