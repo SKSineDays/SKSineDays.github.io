@@ -64,6 +64,7 @@ const { mkdir } = require('node:fs/promises');
       await page.locator('#calculate-btn').click();
       await page.locator('.result-card.visible').waitFor();
       assert.equal(await page.locator('#wave-intro.bottom-placement').count(),1);
+      await page.waitForFunction(() => getComputedStyle(document.querySelector('.wave-container')).transform === 'none');
       assert.equal(await page.locator('.wave-container').evaluate(e => getComputedStyle(e).transform), 'none', 'calculated wave must retain its original position');
       await page.locator('#home-find-wave').click();
       await page.locator('#input-container.visible').waitFor();
