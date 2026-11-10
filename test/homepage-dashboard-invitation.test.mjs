@@ -50,9 +50,14 @@ test("login welcomes new and returning users while retaining both providers", ()
 });
 
 
-test("homepage preserves the original hero art with a separate readable copy area", () => {
-  assert.match(index, /class="home-hero__art" aria-hidden="true"/);
+test("homepage presents the original hero art once as a full-bleed readable introduction", () => {
+  assert.doesNotMatch(index, /class="home-hero__art"/);
   assert.match(index, /class="home-hero__content"/);
   const css = readFileSync(new URL("../css/homepage.css", import.meta.url), "utf8");
-  assert.match(css, /og-hero\.png/);
+  assert.match(css, /background-image:\s*url\('\/assets\/og-hero\.png'\)/);
+  assert.match(css, /background-size:\s*cover/);
+  assert.match(css, /\.home-hero\s*\{[^}]*min-height:[^}]*display:\s*flex/s);
+  assert.match(ui, /IntersectionObserver/);
+  assert.match(ui, /addEventListener\('scroll', this\._onHeroDepthScroll, \{ passive: true \}\)/);
+  assert.match(ui, /this\._heroMotionQuery\.matches/);
 });

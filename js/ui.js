@@ -56,6 +56,7 @@ export class SineDayUI {
       dayDescription: document.getElementById('day-description'),
       inputContainer: document.getElementById('input-container'),
       waveIntro: document.getElementById('wave-intro'),
+      homeHero: document.querySelector('.home-hero'),
       waveCanvas: document.getElementById('wave-canvas'),
       backgroundImage: document.getElementById('background-image'),
       shareBtn: document.getElementById('share-btn'),
@@ -108,6 +109,7 @@ export class SineDayUI {
 
     // Bind event listeners
     this.bindEvents();
+    this.initHeroDepth();
 
     // Add scroll listener to hide hint when user scrolls
     this._onScroll = () => {
@@ -121,6 +123,67 @@ export class SineDayUI {
     this.loadSavedBirthdate();
 
     this.showInput();
+  }
+
+  /**
+   * Add a restrained hero depth shift without keeping scroll work alive offscreen.
+   */
+  initHeroDepth() {
+    const hero = this.elements.homeHero;
+    const background = this.elements.backgroundImage;
+    if (!hero || !background || !('IntersectionObserver' in window)) return;
+
+    this._heroMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this._heroDepthVisible = false;
+    this._heroDepthListening = false;
+
+    this._updateHeroDepth = () => {
+      this._heroDepthFrame = null;
+      if (!this._heroDepthVisible || this._heroMotionQuery.matches) return;
+
+      const rect = hero.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const progress = Math.min(1, Math.max(0, (viewportHeight - rect.top) / (viewportHeight + rect.height)));
+      const offset = (progress - 0.5) * 14;
+      background.style.setProperty('--hero-depth', `${offset.toFixed(2)}px`);
+    };
+
+    this._onHeroDepthScroll = () => {
+      if (!this._heroDepthFrame) {
+        this._heroDepthFrame = window.requestAnimationFrame(this._updateHeroDepth);
+      }
+    };
+
+    this._syncHeroDepthListener = () => {
+      const shouldListen = this._heroDepthVisible && !this._heroMotionQuery.matches;
+      if (shouldListen === this._heroDepthListening) return;
+
+      this._heroDepthListening = shouldListen;
+      if (shouldListen) {
+        window.addEventListener('scroll', this._onHeroDepthScroll, { passive: true });
+        this._onHeroDepthScroll();
+      } else {
+        window.removeEventListener('scroll', this._onHeroDepthScroll);
+        if (this._heroDepthFrame) {
+          window.cancelAnimationFrame(this._heroDepthFrame);
+          this._heroDepthFrame = null;
+        }
+      }
+    };
+
+    this._heroDepthObserver = new IntersectionObserver(([entry]) => {
+      this._heroDepthVisible = entry.isIntersecting;
+      this._syncHeroDepthListener();
+    }, { rootMargin: '80px 0px' });
+    this._heroDepthObserver.observe(hero);
+
+    this._onHeroMotionChange = () => {
+      if (this._heroMotionQuery.matches) {
+        background.style.setProperty('--hero-depth', '0px');
+      }
+      this._syncHeroDepthListener();
+    };
+    this._heroMotionQuery.addEventListener?.('change', this._onHeroMotionChange);
   }
 
   /**
@@ -881,6 +944,15 @@ export class SineDayUI {
     if (this._boundGlobalKeydown) {
       document.removeEventListener('keydown', this._boundGlobalKeydown);
       this._boundGlobalKeydown = null;
+    }
+    this._heroDepthObserver?.disconnect();
+    this._heroMotionQuery?.removeEventListener?.('change', this._onHeroMotionChange);
+    if (this._heroDepthListening) {
+      window.removeEventListener('scroll', this._onHeroDepthScroll);
+    }
+    if (this._heroDepthFrame) {
+      window.cancelAnimationFrame(this._heroDepthFrame);
+      this._heroDepthFrame = null;
     }
 
   }
