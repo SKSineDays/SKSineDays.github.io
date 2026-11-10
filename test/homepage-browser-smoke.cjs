@@ -25,6 +25,8 @@ const { mkdir } = require('node:fs/promises');
       await page.locator('.home-daily__action a').focus();
       assert.equal(await page.locator('.home-daily__action a').evaluate(e=>getComputedStyle(e).outlineWidth),'3px');
       await page.locator('.home-brand').focus();
+      await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); });
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
       const headerStyle = await page.locator('.top-bar').evaluate(e => { const s = getComputedStyle(e); return { background: s.backgroundColor, blur: s.backdropFilter, line: s.borderBottomWidth }; });
       assert.equal(headerStyle.background, 'rgba(0, 0, 0, 0)', 'header must reveal the artwork');
