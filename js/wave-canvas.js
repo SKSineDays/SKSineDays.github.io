@@ -16,7 +16,7 @@ export class WaveCanvas {
 
     // Configuration
     this.config = {
-      accentColor: options.accentColor || '#7AA7FF',
+      accentColor: options.accentColor || '#C8B7DC',
       amplitude: options.amplitude || 0.25, // Relative to canvas height
       frequency: options.frequency || 1.5, // Number of waves across width
       breathingSpeed: options.breathingSpeed || 0.0008, // Amplitude breathing
@@ -191,7 +191,7 @@ export class WaveCanvas {
     // Inner highlight
     ctx.beginPath();
     ctx.arc(x - radius * 0.25, y - radius * 0.25, radius * 0.4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.fillStyle = 'rgba(246, 238, 223, 0.85)';
     ctx.fill();
   }
 

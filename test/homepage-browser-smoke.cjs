@@ -20,6 +20,12 @@ const { mkdir } = require('node:fs/promises');
       await page.locator('.home-film__visual img').evaluateAll(images => Promise.all(images.map(img => img.decode())));
       await page.screenshot({path:`artifacts/homepage/${width}-landing.png`,fullPage:true});
       assert.equal(media.length,0,'video must not download on arrival');
+      const theme = await page.evaluate(() => { const body=getComputedStyle(document.body); const card=getComputedStyle(document.querySelector('.home-daily')); const action=getComputedStyle(document.querySelector('.home-daily__action a')); return {canvas:body.backgroundColor,card:card.backgroundColor,action:action.backgroundColor,ink:action.color}; });
+      assert.deepEqual(theme,{canvas:'rgb(36, 35, 44)',card:'rgb(59, 57, 72)',action:'rgb(237, 172, 158)',ink:'rgb(46, 36, 41)'});
+      await page.locator('.home-daily__action a').focus();
+      assert.equal(await page.locator('.home-daily__action a').evaluate(e=>getComputedStyle(e).outlineWidth),'3px');
+      await page.locator('.home-brand').focus();
+
       const headerStyle = await page.locator('.top-bar').evaluate(e => { const s = getComputedStyle(e); return { background: s.backgroundColor, blur: s.backdropFilter, line: s.borderBottomWidth }; });
       assert.equal(headerStyle.background, 'rgba(0, 0, 0, 0)', 'header must reveal the artwork');
       assert.equal(headerStyle.blur, 'none', 'artwork text must not be blurred');

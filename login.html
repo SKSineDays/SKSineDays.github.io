@@ -19,7 +19,7 @@
   <link rel="icon" type="image/svg+xml" href="/breathingicon.svg?v=2">
 
   <link rel="manifest" href="/site.webmanifest?v=2">
-  <meta name="theme-color" content="#05060A">
+  <meta name="theme-color" content="#24232C">
   <link rel="stylesheet" href="/styles.css">
   <style>
     body {
@@ -27,8 +27,8 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
-      background: #05060A;
-      color: #F5F7FF;
+      background: #24232C;
+      color: #F6EEDF;
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
@@ -64,9 +64,9 @@
       height: 100%;
       background: linear-gradient(
         135deg,
-        rgba(5, 6, 10, 0.85) 0%,
-        rgba(9, 11, 18, 0.75) 50%,
-        rgba(5, 6, 10, 0.85) 100%
+        rgba(36, 35, 44, 0.85) 0%,
+        rgba(28, 27, 35, 0.75) 50%,
+        rgba(36, 35, 44, 0.85) 100%
       );
       z-index: -1;
       pointer-events: none;
@@ -76,7 +76,7 @@
       flex: 0 1 auto;
       display: flex;
       flex-direction: column;
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(59, 57, 72, 0.96);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
       padding: 32px;
@@ -139,14 +139,14 @@
     .login-brand__purpose {
       max-width: 360px;
       margin: 8px auto 0;
-      color: rgba(245, 247, 255, 0.68);
+      color: #C7C2D1;
       font-size: 14px;
       line-height: 1.55;
       text-align: center;
     }
 
     .back-link {
-      color: #7AA7FF;
+      color: #EDAC9E;
       text-decoration: none;
       font-weight: 600;
       padding: 10px 16px;
@@ -158,13 +158,13 @@
     }
 
     .back-link:hover {
-      background: rgba(122, 167, 255, 0.1);
-      border-color: rgba(122, 167, 255, 0.3);
+      background: rgba(200, 183, 220, 0.1);
+      border-color: rgba(200, 183, 220, 0.3);
       text-decoration: none;
     }
 
     .back-link:focus-visible {
-      outline: 2px solid #A0C4FF;
+      outline: 2px solid #C8B7DC;
       outline-offset: 2px;
     }
 
@@ -184,28 +184,28 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #7AA7FF 0%, rgba(122, 167, 255, 0.8) 100%);
-      color: #05060A;
-      box-shadow: 0 4px 20px rgba(122, 167, 255, 0.3);
+      background: linear-gradient(135deg, #EDAC9E 0%, #E6B6B0 100%);
+      color: #2E2429;
+      box-shadow: 0 4px 20px rgba(200, 183, 220, 0.3);
     }
 
     .btn-primary:hover {
-      background: linear-gradient(135deg, rgba(122, 167, 255, 0.95) 0%, rgba(122, 167, 255, 0.85) 100%);
+      background: linear-gradient(135deg, #F4C2B6 0%, #EDAC9E 100%);
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(122, 167, 255, 0.4);
+      box-shadow: 0 8px 30px rgba(200, 183, 220, 0.4);
     }
 
     .btn-primary:disabled {
       background: rgba(255, 255, 255, 0.1);
-      color: rgba(245, 247, 255, 0.3);
+      color: #C7C2D1;
       cursor: not-allowed;
       box-shadow: none;
     }
 
     .btn-google {
       background: rgba(255, 255, 255, 0.08);
-      color: #F5F7FF;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #F6EEDF;
+      border: 1px solid #9790AA;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -220,10 +220,10 @@
     }
 
     .container { box-sizing: border-box; min-width: 0; }
-    .btn:focus-visible { outline: 2px solid #A0C4FF; outline-offset: 3px; }
+    .btn:focus-visible { outline: 2px solid #C8B7DC; outline-offset: 3px; }
     #email-signin-btn, #signin-email { min-height: 48px; }
     #signin-email { font-size: 16px; }
-    .email-help { color: rgba(245, 247, 255, 0.68); font-size: 13px; line-height: 1.5; margin: -8px 0 16px; }
+    .email-help { color: #C7C2D1; font-size: 13px; line-height: 1.5; margin: -8px 0 16px; }
 
     .form-group {
       margin-bottom: 20px;
@@ -233,7 +233,7 @@
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
-      color: rgba(245, 247, 255, 0.85);
+      color: rgba(246, 238, 223, 0.85);
       font-size: 14px;
       letter-spacing: 0.01em;
     }
@@ -241,25 +241,25 @@
     input[type="email"] {
       width: 100%;
       padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid #9790AA;
       border-radius: 12px;
       font-size: 15px;
       box-sizing: border-box;
       background: rgba(255, 255, 255, 0.05);
-      color: #F5F7FF;
+      color: #F6EEDF;
       transition: all 0.3s ease;
       font-family: inherit;
     }
 
     input[type="email"]::placeholder {
-      color: rgba(245, 247, 255, 0.4);
+      color: #C7C2D1;
     }
 
     input:focus {
       outline: none;
-      border-color: #7AA7FF;
+      border-color: #EDAC9E;
       background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 0 0 3px rgba(122, 167, 255, 0.15);
+      box-shadow: 0 0 0 3px #C8B7DC;
     }
 
     .alert {
@@ -272,9 +272,9 @@
     }
 
     .alert-info {
-      background: rgba(122, 167, 255, 0.15);
-      color: #A0C4FF;
-      border-color: rgba(122, 167, 255, 0.3);
+      background: rgba(200, 183, 220, 0.15);
+      color: #C8B7DC;
+      border-color: rgba(200, 183, 220, 0.3);
     }
 
     .status-message {
@@ -298,9 +298,9 @@
     }
 
     .status-message.info {
-      background: rgba(122, 167, 255, 0.15);
-      color: #A0C4FF;
-      border-color: rgba(122, 167, 255, 0.3);
+      background: rgba(200, 183, 220, 0.15);
+      color: #C8B7DC;
+      border-color: rgba(200, 183, 220, 0.3);
     }
 
     .divider {
@@ -308,7 +308,7 @@
       align-items: center;
       text-align: center;
       margin: 24px 0;
-      color: rgba(245, 247, 255, 0.5);
+      color: #C7C2D1;
       font-size: 14px;
     }
 
@@ -334,13 +334,13 @@
       background:
         linear-gradient(135deg, rgba(255, 239, 205, 0.07), rgba(255, 255, 255, 0.035));
       border: 1px solid rgba(255, 239, 205, 0.13);
-      color: rgba(245, 247, 255, 0.84);
+      color: rgba(246, 238, 223, 0.84);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .login-copy strong {
       display: block;
-      color: #F5F7FF;
+      color: #F6EEDF;
       font-size: 16px;
       line-height: 1.25;
       margin-bottom: 5px;
@@ -350,7 +350,7 @@
       display: block;
       font-size: 14px;
       line-height: 1.45;
-      color: rgba(245, 247, 255, 0.62);
+      color: #C7C2D1;
     }
 
     .provider-grid {
@@ -370,10 +370,10 @@
       align-items: center;
       justify-content: center;
       gap: 11px;
-      color: #F5F7FF;
+      color: #F6EEDF;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.045));
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid #9790AA;
       box-shadow:
         0 16px 38px rgba(0, 0, 0, 0.28),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -383,10 +383,10 @@
       transform: translateY(-2px);
       background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
-      border-color: rgba(122, 167, 255, 0.38);
+      border-color: rgba(200, 183, 220, 0.38);
       box-shadow:
         0 18px 46px rgba(0, 0, 0, 0.36),
-        0 0 26px rgba(122, 167, 255, 0.12);
+        0 0 26px rgba(200, 183, 220, 0.12);
     }
 
     .provider-card:disabled {
@@ -414,8 +414,8 @@
     }
 
     .provider-icon--apple {
-      background: #F5F7FF;
-      color: #05060A;
+      background: #F6EEDF;
+      color: #2E2429;
       overflow: visible;
     }
     .provider-icon--apple svg {
@@ -429,7 +429,7 @@
       display: block;
       width: 100%;
       text-align: center;
-      color: #F5F7FF;
+      color: #F6EEDF;
       font-size: 15px;
       font-weight: 700;
       letter-spacing: 0.01em;
