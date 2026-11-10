@@ -34,6 +34,14 @@ jobs:
       - run: npm run check:day-photos
       - run: npx playwright install --with-deps chromium
       - run: node test/homepage-browser-smoke.cjs
+      - name: Upload homepage review
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: homepage-review
+          path: artifacts/homepage/
+          retention-days: 7
+          if-no-files-found: warn
       - name: Verify installed PWA upgrade from the PR base
         run: |
           git fetch --no-tags --depth=1 origin "$GLOBE_BASE_REF"
@@ -55,8 +63,6 @@ jobs:
         if: always()
         with:
           name: day-photo-review
-          path: |
-            artifacts/day-photos/
-            artifacts/homepage/
+          path: artifacts/day-photos/
           retention-days: 7
           if-no-files-found: warn

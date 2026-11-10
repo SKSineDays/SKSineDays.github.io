@@ -34,12 +34,12 @@
 .home-film { min-width: 0; border: 1px solid #9fbdca28; background: #131e2a; border-radius: 22px; overflow: hidden; transition: border-color 180ms ease; }
 .home-film:focus-within { border-color: #d9e8d7; }
 .home-film__watch { display: block; text-decoration: none; color: inherit; }
-.home-film__visual { aspect-ratio: 16 / 10; min-height: 200px; max-height: 300px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
+.home-film__visual { width: 100%; aspect-ratio: 16 / 10; min-height: 200px; max-height: 300px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
 .home-film__visual--story { background: radial-gradient(ellipse at 50% 100%, #324c56, #101922 75%); }
 .home-film__visual--app { background: radial-gradient(ellipse at 60% 30%, #405455, #182a31 80%); }
 .home-film__visual img { width: auto; height: 100%; object-fit: contain; transition: transform 400ms ease; }
 /* Frame the poster's illustrated wave instead of cropping through its headline. */
-.home-film__visual--story img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 58%; opacity: .95; }
+.home-film__visual--story img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .95; }
 .home-film__visual--app img { position: absolute; width: auto; height: calc(100% - 32px); border-radius: 18px; box-shadow: 0 15px 40px #0006; transform: rotate(-5deg) translateY(14px) scale(1.1); }
 .home-film__visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #07101a50, transparent 55%); pointer-events: none; }
 .home-film__watch:hover .home-film__visual img { transform: scale(1.035); }
