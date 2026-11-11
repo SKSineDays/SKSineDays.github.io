@@ -8438,3 +8438,5 @@ textarea.journal-entry-field-light:focus {
 .affiliate-pta-note h4 { margin: 0 0 10px; color: var(--va-action); }
 .affiliate-pta-note p { color: var(--va-muted); font-size: .86rem; line-height: 1.65; }
 .affiliate-pta-note a { color: var(--va-action); font-size: .85rem; }
+
+.affiliate-sheet .affiliate-group-intro h3 { color: #332D3B; }

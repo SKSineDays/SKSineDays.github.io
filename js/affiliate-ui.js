@@ -844,7 +844,7 @@ export class AffiliateUI {
         <p>${pta ? "Factual notices for a unit to review under its own policies before distribution." : "Thoughtful words for the people who make your group a community."}</p>
       </section>
       ${pta ? `<section class="affiliate-pta-note" role="note" aria-labelledby="affiliate-pta-note-title"><h4 id="affiliate-pta-note-title">Please read before sharing</h4><p>PTA rules limit commercial endorsements, so this folder uses factual, informational language. Your unit should review this referral arrangement and the materials under its state PTA and school policies before sharing.</p><p>Policies and approved arrangements vary. This is not a blanket prohibition or a statement of PTA approval. No National PTA affiliation or endorsement is implied.</p><a href="/assets/affiliate/groups/pta/READ-FIRST.txt" download="PTA-READ-FIRST.txt">Download this guidance</a></section>` : ""}
-      <details class="affiliate-group-guide" ${pta ? "open" : ""}>
+      <details class="affiliate-group-guide">
         <summary>Before your group shares</summary>
         <ul>
           <li>Use only an active affiliate account authorized for the named group. Selecting a kit does not enroll a group, change the payout recipient, or redirect an individual’s earnings.</li>

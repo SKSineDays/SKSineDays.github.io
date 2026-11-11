@@ -99,6 +99,7 @@ module.exports = function affiliateFixture() {
         view.activeTab='share';view.render();
         await click('[data-affiliate-kit="community"]');
         assert(!document.querySelector('#affiliate-group-caption'),'Unconfirmed group copy exposed');
+        assert(getComputedStyle(document.querySelector('.affiliate-group-intro h3')).color==='rgb(51, 45, 59)','Ivory intro heading has insufficient contrast');
         assert(document.querySelectorAll('[role="tab"]').length===3,'New dashboard tabs added');
         document.querySelector('#affiliate-group-name').value='River Community';document.querySelector('#affiliate-group-approved').checked=true;
         document.querySelector('[data-affiliate-form="group-kit"]').requestSubmit();await tick();
