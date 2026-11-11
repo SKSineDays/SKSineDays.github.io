@@ -1,0 +1,128 @@
+[
+  {
+    "day": 1,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene1.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 1 \u2014 Initiation nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 2,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene2.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 2 \u2014 Momentum nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 3,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene3.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 3 \u2014 Creativity nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 4,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene4.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 4 \u2014 Connection nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 5,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene5.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 5 \u2014 Productivity nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 6,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene6.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 6 \u2014 Balance nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 7,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene7.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 7 \u2014 Insight nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 8,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene8.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 8 \u2014 Challenge nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 9,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene9.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 9 \u2014 Transition nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 10,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene10.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 10 \u2014 Reflection nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 11,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene11.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 11 \u2014 Integration nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 12,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene12.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 12 \u2014 Recalibration nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 13,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene13.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 13 \u2014 Release nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 14,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene14.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 14 \u2014 Inner Work nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 15,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene15.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 15 \u2014 Healing nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 16,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene16.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 16 \u2014 Preparation nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 17,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene17.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 17 \u2014 Foundation nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  },
+  {
+    "day": 18,
+    "baselineHeroTag": "<img src=\"https://sineday.app/assets/email/20260924/scenes/SineDayScene18.png\" width=\"464\" height=\"464\" border=\"0\" alt=\"Day 18 \u2014 Culmination nature scene with SineDuck\" style=\"display:block;width:100%;max-width:464px;height:auto;border-width:0;color:#F6EEDF;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.5;\">",
+    "variables": [
+      "{{{OPT_OUT_URL}}}"
+    ]
+  }
+]
