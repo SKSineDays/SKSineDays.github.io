@@ -160,3 +160,18 @@ test("late clipboard failure cannot append a fallback into a replaced account vi
   await pending;
   assert.equal(view.mount.innerHTML, "");
 });
+
+test("tab changes align their first content below sticky controls using only the sheet scroller", (t) => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, "getComputedStyle");
+  Object.defineProperty(globalThis, "getComputedStyle", { configurable: true, value: () => ({ top: "52px", marginBottom: "22px" }) });
+  t.after(() => { if (original) Object.defineProperty(globalThis, "getComputedStyle", original); else delete globalThis.getComputedStyle; });
+  const view = ui();
+  const scroller = { scrollTop: 600, clientTop: 0, getBoundingClientRect: () => ({ top: 100 }) };
+  const tabs = { offsetHeight: 56 };
+  const panel = { getBoundingClientRect: () => ({ top: -80 }) };
+  view.activeTab = "payouts";
+  view.sheet = { querySelector: () => scroller };
+  view.mount.querySelector = selector => selector === ".affiliate-sheet__tabs" ? tabs : panel;
+  view.scrollToActivePanel();
+  assert.equal(scroller.scrollTop, 290);
+});

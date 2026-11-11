@@ -6,6 +6,25 @@ const { chromium } = require('playwright');
 const fixture = require('./helpers/affiliate-dashboard-fixture.cjs');
 const output = process.env.AFFILIATE_REVIEW_OUTPUT || 'artifacts/affiliate-dashboard';
 const root = path.resolve(__dirname, '..');
+
+async function capture(page, name, width) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  await page.screenshot({ path: path.join(output, `${name}-${width}.png`), fullPage: true, animations: 'disabled' });
+}
+
+async function revealSection(page, selector) {
+  await page.locator(selector).evaluate(section => {
+    const scroller = document.querySelector('.affiliate-sheet__content');
+    const tabs = document.querySelector('.affiliate-sheet__tabs');
+    const reserved = (parseFloat(getComputedStyle(tabs).top) || 0) + tabs.offsetHeight + 16;
+    scroller.scrollTop += section.getBoundingClientRect().top -
+      (scroller.getBoundingClientRect().top + scroller.clientTop + reserved);
+  });
+}
+
 (async () => {
   await fs.mkdir(output, { recursive: true });
   const browser = await chromium.launch({ headless: true, ...(process.env.AFFILIATE_BROWSER_EXECUTABLE ? { executablePath: process.env.AFFILIATE_BROWSER_EXECUTABLE } : {}), args: ['--no-sandbox'] });
@@ -46,13 +65,21 @@ const root = path.resolve(__dirname, '..');
           result.checks.push('All PNG and SVG downloads match their packaged files and filenames');
         }
         await page.locator('.affiliate-sheet__content').evaluate(element => { element.scrollTop = 0; });
-        await page.screenshot({ path: path.join(output, `share-${width}.png`), fullPage: true });
-        await page.locator('.affiliate-assets').scrollIntoViewIfNeeded();
-        await page.screenshot({ path: path.join(output, `assets-${width}.png`), fullPage: true });
+        await capture(page, 'share', width);
+        await page.getByRole('tab', { name: 'Share kit', exact: true }).click();
+        await capture(page, 'share-post', width);
+        await revealSection(page, '.affiliate-assets');
+        await capture(page, 'assets', width);
+        await revealSection(page, '.affiliate-asset-card:nth-child(3)');
+        await capture(page, 'assets-more', width);
         await page.getByRole('tab', { name: 'Overview', exact: true }).click();
-        await page.screenshot({ path: path.join(output, `overview-${width}.png`), fullPage: true });
+        await capture(page, 'overview', width);
+        await revealSection(page, '.affiliate-chart');
+        await capture(page, 'overview-activity', width);
         await page.getByRole('tab', { name: 'Payouts', exact: true }).click();
-        await page.screenshot({ path: path.join(output, `payouts-${width}.png`), fullPage: true });
+        await capture(page, 'payouts', width);
+        await revealSection(page, '.affiliate-payout-status');
+        await capture(page, 'payouts-details', width);
       } catch (error) {
         const fixtureResult = await page.locator('#results').textContent().catch(() => null);
         result = { ...result, status: 'failed', error: error.message, pageErrors, fixtureResult };

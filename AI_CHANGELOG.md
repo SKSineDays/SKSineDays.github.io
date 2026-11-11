@@ -348,3 +348,15 @@ Each entry includes:
 **Notes:** All existing browser tests and failure conditions remain required; no application changes.
 
 ---
+
+## 2026-11-11T16:18:35.651Z
+
+**Files:** js/affiliate-ui.js, test/affiliate-dashboard.test.mjs, test/helpers/affiliate-dashboard-fixture.cjs, test/affiliate-dashboard-browser-smoke.cjs
+
+**Summary:** Start affiliate tabs at their first content after deep asset scrolling
+
+**Rationale:** Keep balances and the beginning of each section visible below the sticky tabs while preserving keyboard focus and the background page position.
+
+**Notes:** Adds deep-scroll browser regression and explicit top/lower-content screenshots with settled paints. Focused tests and syntax checks pass; browser execution remains required in PR CI. No backend or navigation expansion.
+
+---

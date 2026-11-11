@@ -812,7 +812,8 @@ export class AffiliateUI {
     if (["overview", "share", "payouts"].includes(tab)) {
       this.activeTab = tab;
       this.render();
-      this.mount.querySelector(`[data-affiliate-tab="${tab}"]`)?.focus();
+      this.mount.querySelector(`[data-affiliate-tab="${tab}"]`)?.focus({ preventScroll: true });
+      this.scrollToActivePanel();
       return;
     }
 
@@ -866,6 +867,20 @@ export class AffiliateUI {
     const target = button.isConnected ? button :
       this.mount.querySelector('[data-affiliate-tab][aria-selected="true"], .affiliate-sheet__error button');
     target?.focus({ preventScroll: true });
+  }
+
+  scrollToActivePanel() {
+    const scroller = this.sheet.querySelector(".affiliate-sheet__content");
+    const tabs = this.mount.querySelector(".affiliate-sheet__tabs");
+    const panel = this.mount.querySelector(`#affiliate-panel-${this.activeTab}`);
+    if (!scroller || !tabs || !panel) return;
+    const style = getComputedStyle(tabs);
+    const reserved = (parseFloat(style.top) || 0) + tabs.offsetHeight +
+      (parseFloat(style.marginBottom) || 0);
+    // Only move this dialog's scroll container. A shorter tab naturally clamps
+    // at its maximum scroll while keeping its first content below the tabs.
+    scroller.scrollTop += panel.getBoundingClientRect().top -
+      (scroller.getBoundingClientRect().top + scroller.clientTop + reserved);
   }
 
   async copyText(value, label = "Text") {

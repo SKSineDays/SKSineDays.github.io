@@ -65,6 +65,24 @@ module.exports = function affiliateFixture() {
       await check('Copy failure offers selected text, never false success',async()=>{clipboardFails=true;const count=success.length;await click('[data-copy-label="Code"]');assert(success.length===count,'False copy success');assert(!document.querySelector('.affiliate-manual-copy').hidden,'No manual fallback');assert(document.activeElement.id==='affiliate-manual-copy-text','Fallback not focused');assert(document.activeElement.value===affiliate.code,'Wrong fallback');legacyCopy=true;await click('[data-copy-label="Link"]');assert(success.length===count+1,'Legacy success not reported');clipboardFails=false;legacyCopy=false;});
       await check('Native sharing includes disclosure and cancellation is quiet',async()=>{shareResult='cancel';const count=copied.length;await click('[data-affiliate-action="share"]');assert(shared.at(-1).text.startsWith(AFFILIATE_DISCLOSURE),'Native disclosure missing');assert(shared.at(-1).url===affiliate.affiliateUrl,'Native URL missing');assert(copied.length===count,'Cancelled share copied unexpectedly');shareResult='error';await click('[data-affiliate-action="share"]');assert(copied.length===count+1,'Share failure did not copy');shareResult='ok';});
       await check('Arrow, Home, End tab navigation',async()=>{const tab=document.querySelector('[data-affiliate-tab="share"]');tab.focus();tab.dispatchEvent(new KeyboardEvent('keydown',{key:'End',bubbles:true}));assert(view.activeTab==='payouts','End failed');document.activeElement.dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));assert(view.activeTab==='overview','Home failed');document.activeElement.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));assert(view.activeTab==='share','Arrow failed');});
+      await check('Switching from deep assets shows the new tab from its beginning',async()=>{
+        const scroller=document.querySelector('.affiliate-sheet__content');
+        const pageX=scrollX,pageY=scrollY;
+        for(const tab of ['overview','payouts']) {
+          await click('[data-affiliate-tab="share"]');scroller.scrollTop=scroller.scrollHeight;
+          await click('[data-affiliate-tab="'+tab+'"]');
+          const panel=document.querySelector('#affiliate-panel-'+tab).getBoundingClientRect();
+          const navigation=document.querySelector('.affiliate-sheet__tabs').getBoundingClientRect();
+          const bounds=scroller.getBoundingClientRect();
+          const close=document.querySelector('[data-affiliate-close]').getBoundingClientRect();
+          assert(panel.top>=navigation.bottom-1,'New tab starts behind sticky navigation');
+          assert(panel.top<bounds.bottom-44,'New tab beginning is below the viewport');
+          assert(close.top>=bounds.top-1 && close.bottom<=bounds.bottom,'Close control left the viewport');
+          assert(document.activeElement.dataset.affiliateTab===tab,'Tab focus was lost');
+          assert(scrollX===pageX && scrollY===pageY,'Tab switch moved the page behind the dialog');
+        }
+        await click('[data-affiliate-tab="share"]');
+      });
       await check('Repeated payout clicks create one request',async()=>{await click('[data-affiliate-tab="payouts"]');await click('[data-affiliate-action="login"]');await click('[data-affiliate-action="login"]');assert(posts===1,'Duplicate payout request');pendingResolve();await tick();assert(!document.querySelector('[data-affiliate-action="login"]').disabled,'Payout button stayed disabled');});
       await check('Summary failure leaves sharing and Stripe controls available',async()=>{summaryFails=true;await view.refresh();assert(document.querySelector('#affiliate-panel-payouts').textContent.includes('temporarily unavailable'),'Missing financial error');assert(!document.querySelector('#affiliate-panel-payouts').textContent.includes('$0.00'),'False zero balance');await click('[data-affiliate-tab="share"]');assert(document.querySelector('[data-copy-label="Full post"]'),'Sharing blocked');summaryFails=false;await view.refresh();});
       await check('Reload earnings keeps keyboard focus in the dashboard',async()=>{summaryFails=true;await view.refresh();await click('[data-affiliate-tab="overview"]');document.querySelector('#affiliate-panel-overview [data-affiliate-action="reload"]').focus();summaryFails=false;await click('#affiliate-panel-overview [data-affiliate-action="reload"]');assert(document.activeElement.id==='affiliate-tab-overview','Reload lost keyboard focus');await click('[data-affiliate-tab="share"]');});
