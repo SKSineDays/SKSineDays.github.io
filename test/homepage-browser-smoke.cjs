@@ -25,6 +25,11 @@ const { mkdir } = require('node:fs/promises');
       await page.locator('.home-daily__action a').focus();
       assert.equal(await page.locator('.home-daily__action a').evaluate(e=>getComputedStyle(e).outlineWidth),'3px');
       await page.locator('.home-brand').focus();
+      // Focusing the email action scrolls it into view; focusing the sticky
+      // brand does not reliably return to the top. Measure landing geometry
+      // in its intended viewport position, without relaxing the checks below.
+      await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
+      await page.waitForFunction(() => window.scrollY === 0 && window.scrollX === 0);
 
       const headerStyle = await page.locator('.top-bar').evaluate(e => { const s = getComputedStyle(e); return { background: s.backgroundColor, blur: s.backdropFilter, line: s.borderBottomWidth }; });
       assert.equal(headerStyle.background, 'rgba(0, 0, 0, 0)', 'header must reveal the artwork');
