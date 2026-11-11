@@ -103,3 +103,19 @@ risking duplicate events. Investigate any uncertain/rejected event and retain
 its evidence before deciding whether a retry is appropriate. One ledger/lock
 must be used for this website installation; a fresh ledger is not a retry strategy.
 Never commit the ledger, the key or execution logs to this public repository.
+
+## November 2026 elemental replacement
+
+The website pool now contains exactly the 180 newly approved elemental photographs,
+ten per SineDay: two each Earth, Water, Air, Fire and Aether/Space. This replaces
+the previous 180-photo rotation; it is not a 360-photo expansion. Existing blog
+post photographs are explicitly unchanged. No mail templates are changed by this
+website patch. Offline local fallback photographs and all layout remain unchanged.
+
+The original collection is recoverable through Git history. The manifest version
+changes so stored old-pool indices restart safely. Astronomical imagery may include
+processed photography and is not necessarily natural-eye color.
+
+Use events for these new IDs are tracked in a separate durable release ledger.
+Already confirmed new-photo events remain valid when switching the plan from
+addition to replacement: do not replay them. All180 must be confirmed before release.
