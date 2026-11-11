@@ -360,3 +360,15 @@ Each entry includes:
 **Notes:** Adds deep-scroll browser regression and explicit top/lower-content screenshots with settled paints. Focused tests and syntax checks pass; browser execution remains required in PR CI. No backend or navigation expansion.
 
 ---
+
+## 2026-11-11T23:48:45.812Z
+
+**Files:** affiliate.html, js/affiliate-ui.js, js/affiliate-application.js, api/_lib/affiliate-server.js, test/affiliate-group-invitation.test.mjs, test/affiliate-public-page.test.mjs, test/affiliate-application-feedback.test.mjs, test/affiliate-public-browser-smoke.cjs, test/affiliate-dashboard-browser-smoke.cjs, test/helpers/affiliate-dashboard-fixture.cjs
+
+**Summary:** Welcome PTA and fundraiser applications with a verified representative requirement
+
+**Rationale:** Clarify that groups can apply through an individual representative who must be verified, including their authority to act for the group, before participation.
+
+**Notes:** Copy and regression coverage only. Existing application approval gate, input validation, Stripe setup, payout routing, and terms are unchanged. No dedicated representative verification field or technical enforcement was added; reviewer verification remains a separate operational requirement. Local npm test: 509 passed, 1 optional database test skipped. Both asset checks passed. Local Chromium could not launch because the environment blocks its process socket; browser checks require CI.
+
+---

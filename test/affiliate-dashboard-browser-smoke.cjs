@@ -124,6 +124,10 @@ async function revealSection(page, selector) {
           }
         }
         result.checks.push('Community and PTA artwork, text exports and fillable PDF verified');
+        await page.evaluate(() => window.showApplicationForReview());
+        await capture(page, 'application', width);
+        await page.locator('#affiliate-applicant-intro').scrollIntoViewIfNeeded();
+        await capture(page, 'application-fields', width);
 
       } catch (error) {
         const fixtureResult = await page.locator('#results').textContent().catch(() => null);
