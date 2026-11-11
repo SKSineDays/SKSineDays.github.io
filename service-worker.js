@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v48';
+const CACHE_NAME = 'sineday-v49';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -61,7 +61,7 @@ self.addEventListener('install', (event) => {
         console.log('[SW] Caching assets');
         return cache.addAll(ASSETS_TO_CACHE.map((asset) => new Request(asset, { cache: 'reload' })))
           .then(() => Promise.allSettled(
-            OPTIONAL_ASSETS_TO_CACHE.map((asset) => cache.add(asset))
+            OPTIONAL_ASSETS_TO_CACHE.map((asset) => cache.add(new Request(asset, { cache: 'reload' })))
           ));
       })
       .then(() => {

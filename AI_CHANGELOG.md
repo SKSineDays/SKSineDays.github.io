@@ -324,3 +324,39 @@ Each entry includes:
 **Notes:** Public-only content; no crawler permission or indexing guarantees. Focused guide and canonical tests pass. No full application suite run in this partial checkout.
 
 ---
+
+## 2026-11-11T15:40:36.103Z
+
+**Files:** js/affiliate-ui.js, css/dashboard.css, assets/affiliate/assets.json, assets/affiliate/sineday-affiliate-square.png, assets/affiliate/sineday-affiliate-story.png, assets/affiliate/sineday-affiliate-landscape.png, assets/affiliate/sineday-affiliate-wordmark.svg, scripts/generate-affiliate-assets.mjs, docs/affiliate-share-kit.md, service-worker.js, test/affiliate-dashboard.test.mjs, test/affiliate-dashboard-browser-smoke.cjs, test/helpers/affiliate-dashboard-fixture.cjs, .github/workflows/affiliate-dashboard.yml, package.json
+
+**Summary:** Polish the affiliate dashboard and add a focused customer-facing share kit
+
+**Rationale:** Make approved assets and complete disclosed posts easier to use while preserving program eligibility, attribution, earnings, and Stripe behavior.
+
+**Notes:** Three existing dashboard sections retained. Adds partial-failure recovery, honest copy feedback, keyboard and lifecycle safeguards, and isolated browser regression coverage. No school/group features or backend changes.
+
+---
+
+## 2026-11-11T16:11:43.012Z
+
+**Files:** .github/workflows/affiliate-dashboard.yml, .github/workflows/day-photos.yml
+
+**Summary:** Use hosted runner browser libraries for dashboard verification
+
+**Rationale:** The first PR checks stopped at an Ubuntu mirror DNS outage before any browser tests ran. Install the pinned Playwright browser without reinstalling already available system libraries.
+
+**Notes:** All existing browser tests and failure conditions remain required; no application changes.
+
+---
+
+## 2026-11-11T16:18:35.651Z
+
+**Files:** js/affiliate-ui.js, test/affiliate-dashboard.test.mjs, test/helpers/affiliate-dashboard-fixture.cjs, test/affiliate-dashboard-browser-smoke.cjs
+
+**Summary:** Start affiliate tabs at their first content after deep asset scrolling
+
+**Rationale:** Keep balances and the beginning of each section visible below the sticky tabs while preserving keyboard focus and the background page position.
+
+**Notes:** Adds deep-scroll browser regression and explicit top/lower-content screenshots with settled paints. Focused tests and syntax checks pass; browser execution remains required in PR CI. No backend or navigation expansion.
+
+---

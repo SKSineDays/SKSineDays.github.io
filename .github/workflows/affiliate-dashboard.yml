@@ -1,0 +1,39 @@
+name: Affiliate dashboard review
+on:
+  pull_request:
+    paths:
+      - 'js/affiliate-ui.js'
+      - 'css/dashboard.css'
+      - 'assets/affiliate/**'
+      - 'scripts/generate-affiliate-assets.mjs'
+      - 'test/affiliate-dashboard*'
+      - 'test/helpers/affiliate-dashboard-fixture.cjs'
+      - '.github/workflows/affiliate-dashboard.yml'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run check:affiliate-assets
+      # GitHub-hosted Ubuntu already has Chromium system libraries. Avoid an
+      # unrelated apt mirror refresh before running the actual browser checks.
+      - run: npx playwright install chromium
+      - run: npm run test:affiliate-dashboard:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: affiliate-dashboard-review
+          path: artifacts/affiliate-dashboard/
+          retention-days: 7
+          if-no-files-found: warn
