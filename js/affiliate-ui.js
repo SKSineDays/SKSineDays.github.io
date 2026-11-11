@@ -6,6 +6,18 @@ const PENDING_CODE_KEY = "sineday_pending_affiliate_code";
 const PENDING_CODE_SAVED_AT_KEY = "sineday_pending_affiliate_code_saved_at";
 const PENDING_CODE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+export const AFFILIATE_DISCLOSURE =
+  "Disclosure: I may earn from qualifying SineDay Premium memberships connected to my link or code.";
+
+export function affiliateShareText(affiliate, { includeUrl = true } = {}) {
+  return [
+    AFFILIATE_DISCLOSURE,
+    "Make a little room for your day. SineDay is a guided journal built around an 18-day personal wave.",
+    `Use my SineDay Affiliate Code ${affiliate.code} at checkout to save $1 each month on Premium while the promotion remains valid.`,
+    includeUrl ? affiliate.affiliateUrl : "",
+  ].filter(Boolean).join("\n\n");
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -71,9 +83,9 @@ function payoutCountrySelect(id) {
 function focusableElements(root) {
   return [
     ...root.querySelectorAll(
-      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])',
     ),
-  ].filter((element) => !element.hidden && element.offsetParent !== null);
+  ].filter((element) => element.tabIndex >= 0 && !element.hidden && element.offsetParent !== null);
 }
 
 export class AffiliateUI {
@@ -104,6 +116,9 @@ export class AffiliateUI {
     this.status = null;
     this.summary = null;
     this.assets = [];
+    this.assetsError = false;
+    this.summaryError = false;
+    this.pendingActions = new Set();
     this.activeTab = "overview";
     this.loading = false;
     this.abortController = new AbortController();
@@ -126,14 +141,14 @@ export class AffiliateUI {
     this.backdrop.addEventListener("click", () => this.close(), { signal });
     this.sheet.addEventListener("keydown", (event) => {
       const currentTab = event.target.closest?.("[data-affiliate-tab]");
-      if (currentTab && ["ArrowLeft", "ArrowRight"].includes(event.key)) {
+      if (currentTab && ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
         event.preventDefault();
         const tabs = [
           ...this.sheet.querySelectorAll("[data-affiliate-tab]"),
         ];
         const direction = event.key === "ArrowRight" ? 1 : -1;
         const index = tabs.indexOf(currentTab);
-        const next = tabs[(index + direction + tabs.length) % tabs.length];
+        const next = event.key === "Home" ? tabs[0] : event.key === "End" ? tabs.at(-1) : tabs[(index + direction + tabs.length) % tabs.length];
         next?.click();
         return;
       }
@@ -177,8 +192,10 @@ export class AffiliateUI {
   }
 
   async open() {
-    if (this.isOpen()) return;
+    if (this.isOpen() || this.destroyed) return;
+    clearTimeout(this.closeTimer);
     this.toggle.setAttribute("aria-expanded", "true");
+    this.sheet.inert = false;
     this.sheet.hidden = false;
     this.backdrop.hidden = false;
     this.previousOverflow = {
@@ -204,12 +221,14 @@ export class AffiliateUI {
       this.backdrop.classList.add("is-open");
     });
     await this.reconcileStripeReturn();
+    if (this.destroyed) return;
     await this.refresh();
   }
 
   close({ restoreFocus = true } = {}) {
     if (!this.isOpen()) return;
     this.toggle.setAttribute("aria-expanded", "false");
+    this.sheet.inert = true;
     this.sheet.classList.remove("is-open");
     this.backdrop.classList.remove("is-open");
     if (this.openFrame) cancelAnimationFrame(this.openFrame);
@@ -218,15 +237,14 @@ export class AffiliateUI {
       if (this.isOpen()) return;
       this.sheet.hidden = true;
       this.backdrop.hidden = true;
-      document.documentElement.style.overflow = this.previousOverflow.html;
-      document.body.style.overflow = this.previousOverflow.body;
-      this.inertElements.forEach(({ element, inert }) => {
-        element.inert = inert;
-      });
-      this.inertElements = [];
-      if (restoreFocus) this.toggle.focus();
-      this.onClose?.();
     }, 220);
+    // Restore immediately so reopening during the closing animation starts cleanly.
+    document.documentElement.style.overflow = this.previousOverflow.html;
+    document.body.style.overflow = this.previousOverflow.body;
+    this.inertElements.forEach(({ element, inert }) => { element.inert = inert; });
+    this.inertElements = [];
+    if (restoreFocus) this.toggle.focus();
+    this.onClose?.();
   }
 
   async request(path, options = {}) {
@@ -264,6 +282,7 @@ export class AffiliateUI {
     } catch {
       // Status load will still attempt reconciliation through /api/affiliate/status.
     }
+    if (this.destroyed) return;
     params.delete("affiliate");
     const query = params.toString();
     const nextUrl =
@@ -272,31 +291,50 @@ export class AffiliateUI {
   }
 
   async loadStatus() {
-    this.status = await this.request("/api/affiliate/status");
+    const status = await this.request("/api/affiliate/status");
+    if (this.destroyed) return;
+    this.status = status;
     if (
       this.status.affiliate?.status &&
       this.status.affiliate.status !== this.entitlement?.affiliateStatus
     ) {
       await this.onEntitlementChanged?.();
     }
+    if (this.destroyed) return;
     if (this.status.affiliate?.status === "active") {
-      const [summary, assets] = await Promise.all([
+      const [summary] = await Promise.allSettled([
         this.request("/api/affiliate/summary"),
-        fetch("/assets/affiliate/assets.json", {
-          cache: "no-store",
-          signal: this.abortController.signal,
-        })
-          .then((response) => (response.ok ? response.json() : []))
-          .catch(() => []),
+        this.loadAssets(),
       ]);
-      this.summary = summary;
-      this.assets = Array.isArray(assets)
-        ? assets.filter((asset) =>
-            /^\/assets\/affiliate\/[A-Za-z0-9._-]+$/.test(asset?.path || ""),
-          )
-        : [];
+      if (this.destroyed) return;
+      this.summaryError = summary.status !== "fulfilled";
+      this.summary = this.summaryError ? null : summary.value;
     } else {
       this.summary = null;
+      this.assets = [];
+      this.summaryError = false;
+      this.assetsError = false;
+    }
+  }
+
+  async loadAssets() {
+    try {
+      const response = await fetch("/assets/affiliate/assets.json", {
+        cache: "no-store",
+        signal: this.abortController.signal,
+      });
+      if (!response.ok) throw new Error("Assets unavailable");
+      const assets = await response.json();
+      if (this.destroyed) return;
+      if (!Array.isArray(assets)) throw new Error("Invalid asset list");
+      this.assets = assets.filter((asset) =>
+        /^\/assets\/affiliate\/[A-Za-z0-9._-]+\.(png|svg|jpg|webp)$/.test(asset?.path || ""),
+      );
+      this.assetsError = this.assets.length === 0;
+    } catch {
+      if (this.destroyed) return;
+      this.assets = [];
+      this.assetsError = true;
     }
   }
 
@@ -306,10 +344,13 @@ export class AffiliateUI {
         method: "POST",
         body: JSON.stringify({}),
       });
+      if (this.destroyed) return;
       await this.loadStatus();
-      this.render();
+      if (this.destroyed) return;
+      this.renderPreservingFocus();
       this.showSuccess?.("Stripe setup status refreshed.");
     } catch (error) {
+      if (this.destroyed || error?.name === "AbortError") return;
       this.showError?.(
         error?.message || "Unable to refresh Stripe setup status.",
       );
@@ -317,7 +358,7 @@ export class AffiliateUI {
   }
 
   async refresh() {
-    if (this.loading) return;
+    if (this.loading || this.destroyed) return;
     const generation = ++this.requestGeneration;
     this.loading = true;
     this.mount.setAttribute("aria-busy", "true");
@@ -325,20 +366,32 @@ export class AffiliateUI {
     try {
       await this.loadStatus();
       if (this.destroyed || generation !== this.requestGeneration) return;
-      if (!this.destroyed && generation === this.requestGeneration) this.render();
+      this.renderPreservingFocus();
     } catch (error) {
       if (error?.name !== "AbortError" && !this.destroyed) {
         this.renderError(error.message);
       }
     } finally {
       this.loading = false;
-      this.mount.removeAttribute("aria-busy");
+      if (!this.destroyed) this.mount.removeAttribute("aria-busy");
     }
   }
 
   setEntitlement(entitlement) {
+    if (this.destroyed) return;
     this.entitlement = entitlement;
-    if (this.status) this.render();
+    if (this.status) this.renderPreservingFocus();
+  }
+
+  renderPreservingFocus() {
+    if (this.destroyed) return;
+    const hadFocus = this.mount.contains(document.activeElement);
+    this.render();
+    if (!hadFocus || !this.isOpen()) return;
+    const target = this.mount.querySelector('[data-affiliate-tab][aria-selected="true"]') ||
+      this.mount.querySelector("h2") || this.sheet.querySelector("[data-affiliate-close]");
+    if (target?.tagName === "H2") target.tabIndex = -1;
+    target?.focus({ preventScroll: true });
   }
 
   renderLoading() {
@@ -580,14 +633,13 @@ export class AffiliateUI {
   renderActive(affiliate) {
     this.mount.innerHTML = `
       <header class="affiliate-active-head">
-        <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
+        <div class="affiliate-active-head__label"><p class="affiliate-sheet__eyebrow">Your affiliate dashboard</p><span class="affiliate-state">Active</span></div>
         <h2>${escapeHtml(affiliate.displayName)}</h2>
-        <p class="affiliate-code">Your code: <strong>${escapeHtml(affiliate.code)}</strong></p>
-        <p class="affiliate-link">${escapeHtml(affiliate.affiliateUrl)}</p>
-        <div class="affiliate-sheet__actions">
-          <button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(affiliate.code)}">Copy Code</button>
-          <button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(affiliate.affiliateUrl)}">Copy Link</button>
-          <button class="btn btn-primary btn-sm" type="button" data-affiliate-action="share">Share</button>
+        <p>Share SineDay. Give someone a reason to start writing.</p>
+        <div class="affiliate-referral">
+          <div class="affiliate-referral__code"><p class="affiliate-code">Your code <strong>${escapeHtml(affiliate.code)}</strong></p><button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(affiliate.code)}" data-copy-label="Code">Copy code</button></div>
+          <label for="affiliate-referral-link">Your referral link</label>
+          <div class="affiliate-referral__link"><input id="affiliate-referral-link" readonly type="text" value="${escapeHtml(affiliate.affiliateUrl)}"><button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(affiliate.affiliateUrl)}" data-copy-label="Link">Copy link</button></div>
         </div>
       </header>
       <div class="affiliate-sheet__tabs" role="tablist" aria-label="Affiliate dashboard sections">
@@ -603,7 +655,7 @@ export class AffiliateUI {
                 aria-selected="${this.activeTab === tab}"
                 tabindex="${this.activeTab === tab ? "0" : "-1"}"
                 data-affiliate-tab="${tab}"
-              >${tab[0].toUpperCase()}${tab.slice(1)}</button>
+              >${tab === "share" ? "Share kit" : tab[0].toUpperCase() + tab.slice(1)}</button>
             `,
           )
           .join("")}
@@ -611,11 +663,21 @@ export class AffiliateUI {
       <div id="affiliate-panel-overview" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-overview" ${this.activeTab === "overview" ? "" : "hidden"}>${this.renderOverview()}</div>
       <div id="affiliate-panel-share" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-share" ${this.activeTab === "share" ? "" : "hidden"}>${this.renderShare(affiliate)}</div>
       <div id="affiliate-panel-payouts" class="affiliate-sheet__tab-content" role="tabpanel" aria-labelledby="affiliate-tab-payouts" ${this.activeTab === "payouts" ? "" : "hidden"}>${this.renderPayouts(affiliate)}</div>
-      <p class="affiliate-copy-status" role="status" aria-live="polite"></p>
+      <div class="affiliate-manual-copy" hidden>
+        <label for="affiliate-manual-copy-text">Copy this text manually</label>
+        <textarea id="affiliate-manual-copy-text" readonly rows="5"></textarea>
+      </div>
+      <p class="affiliate-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+      <footer class="affiliate-dashboard-footer"><a href="/affiliate-terms.html" target="_blank" rel="noopener">Affiliate terms</a><a href="mailto:support@sineday.app">Get help</a></footer>
     `;
   }
 
+  renderDataError() {
+    return `<section class="affiliate-inline-notice" role="status"><h3>Earnings are temporarily unavailable</h3><p>Your sharing tools still work. Try loading your balances again.</p><button class="btn btn-ghost btn-sm" type="button" data-affiliate-action="reload">Reload earnings</button></section>`;
+  }
+
   renderOverview() {
+    if (this.summaryError) return this.renderDataError();
     const summary = this.summary?.summary || {};
     const monthly = this.summary?.monthly || [];
     const max = Math.max(100, ...monthly.map((row) => Number(row.earnedCents || 0)));
@@ -637,60 +699,64 @@ export class AffiliateUI {
           )
           .join("")}
       </div>
-      <p class="affiliate-dashboard-note">Every active membership represents someone choosing to remember their days differently.</p>
+      <section class="affiliate-next-step">
+        <div><h3>${summary.activeSupporters ? "Ready to share again?" : "Start with one thoughtful post"}</h3><p>Choose a ready-made image and copy a caption with your link and disclosure included.</p></div>
+        <button class="btn btn-primary btn-sm" type="button" data-affiliate-go="share">Open share kit</button>
+      </section>
+      <p class="affiliate-dashboard-note">Estimates include eligible commissions before adjustments. Commissions have a 30-day hold; payouts are reviewed monthly.</p>
       <section>
         <h3>Monthly activity</h3>
-        <div class="affiliate-chart" aria-label="Affiliate earnings over the last 12 months">
+        ${monthly.some((row) => row.earnedCents > 0) ? `<p class="affiliate-dashboard-note">Eligible commissions over the last 12 months. Amounts are in USD.</p><div class="affiliate-chart" aria-label="Affiliate earnings over the last 12 months">
           ${monthly
             .map((row) => {
-              const height = Math.max(4, Math.round((row.earnedCents / max) * 100));
+              const height = Math.max(0, Math.round((row.earnedCents / max) * 100));
               const label = new Date(`${row.month}-01T00:00:00Z`).toLocaleDateString(
                 undefined,
                 { month: "short", timeZone: "UTC" },
               );
               return `
-                <div class="affiliate-chart__month">
-                  <span class="sr-only">${escapeHtml(row.month)}: ${escapeHtml(formatMoney(row.earnedCents))}, ${row.supporterCount} supporters</span>
+                <div class="affiliate-chart__month" title="${escapeHtml(row.month)}: ${escapeHtml(formatMoney(row.earnedCents))}">
+                  <span class="sr-only">${escapeHtml(row.month)}: ${escapeHtml(formatMoney(row.earnedCents))}, ${escapeHtml(row.supporterCount)} supporters</span>
                   <span class="affiliate-chart__bar" style="--affiliate-bar-height:${height}%" aria-hidden="true"></span>
                   <span aria-hidden="true">${escapeHtml(label)}</span>
                 </div>
               `;
             })
             .join("")}
-        </div>
+        </div>` : `<p class="affiliate-empty-state">No eligible commissions yet. Your monthly activity will appear here after a qualifying Premium payment, not a click or a free signup.</p>`}
       </section>
     `;
   }
 
   renderShare(affiliate) {
-    const shortMessage = `Use my SineDay Affiliate Code ${affiliate.code} at checkout to save $1 each month on Premium.`;
-    const disclosure =
-      "Disclosure: I may earn from qualifying SineDay Premium memberships connected to my link or code.";
+    const fullPost = affiliateShareText(affiliate);
     return `
       <section class="affiliate-share-card">
-        <h3>Share the wave</h3>
-        <label>Approved short message</label>
-        <p>${escapeHtml(shortMessage)}</p>
-        <button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(shortMessage)}">Copy message</button>
-        <label>Approved disclosure</label>
-        <p>${escapeHtml(disclosure)}</p>
-        <button class="btn btn-ghost btn-sm" type="button" data-affiliate-copy="${escapeHtml(disclosure)}">Copy disclosure</button>
+        <h3>A post, ready to share</h3>
+        <p class="affiliate-dashboard-note">Your code, link, and disclosure are already included. Pair this caption with an image below.</p>
+        <label for="affiliate-share-caption">Caption</label>
+        <textarea id="affiliate-share-caption" class="affiliate-share-caption" readonly rows="8">${escapeHtml(fullPost)}</textarea>
+        <div class="affiliate-sheet__actions">
+          <button class="btn btn-primary" type="button" data-affiliate-copy="${escapeHtml(fullPost)}" data-copy-label="Full post">Copy full post</button>
+          ${typeof navigator !== "undefined" && navigator.share ? `<button class="btn btn-ghost" type="button" data-affiliate-action="share">Share post</button>` : ""}
+        </div>
+        <p class="affiliate-disclosure">Keep the disclosure visible with your post. On a story, add it as visible text and use your referral link in the link sticker.</p>
       </section>
       <section class="affiliate-assets">
-        <h3>Approved SineDay assets</h3>
+        <h3>Choose your image</h3>
+        <p class="affiliate-dashboard-note">Download the size for your post. Images are ready to use; your personal link and code are in the caption above.</p>
+        ${this.assetsError ? `<div class="affiliate-inline-notice" role="status"><p>Images couldn’t load. You can still copy and share your post.</p><button class="btn btn-ghost btn-sm" type="button" data-affiliate-action="reload-assets">Retry images</button></div>` : `
         <div class="affiliate-assets__grid">
-          ${this.assets
-            .map(
-              (asset) => `
-                <a class="affiliate-asset-card" href="${escapeHtml(asset.path)}" download>
-                  <img src="${escapeHtml(asset.path)}" alt="${escapeHtml(asset.altText)}">
-                  <strong>${escapeHtml(asset.title)}</strong>
-                  <span>${escapeHtml(asset.format)} · ${escapeHtml(asset.dimensions)}</span>
-                </a>
-              `,
-            )
-            .join("")}
-        </div>
+          ${this.assets.map((asset) => `
+            <article class="affiliate-asset-card">
+              <a class="affiliate-asset-card__preview" href="${escapeHtml(asset.path)}" target="_blank" rel="noopener" aria-label="Preview ${escapeHtml(asset.title)} (opens in a new tab)"><img src="${escapeHtml(asset.path)}" alt="${escapeHtml(asset.altText)}" loading="lazy" decoding="async"></a>
+              <h4>${escapeHtml(asset.title)}</h4>
+              <p>${escapeHtml(asset.usage || "Use with your referral link and a clear disclosure.")}</p>
+              <span>${escapeHtml(asset.format)} · ${escapeHtml(asset.dimensions)}</span>
+              <a class="btn btn-ghost btn-sm" href="${escapeHtml(asset.path)}" download="${escapeHtml(asset.path.split("/").at(-1))}" aria-label="Download ${escapeHtml(asset.title)}">Download ${escapeHtml(asset.format)}</a>
+            </article>`).join("")}
+        </div>`}
+        <p class="affiliate-disclosure">Use the approved artwork as supplied. Do not stretch the SineDay or SineDuck artwork or promise health benefits, predictions, or guaranteed results.</p>
       </section>
     `;
   }
@@ -699,7 +765,7 @@ export class AffiliateUI {
     const summary = this.summary?.summary || {};
     const payouts = this.summary?.payouts || [];
     return `
-      <div class="affiliate-stat-grid">
+      ${this.summaryError ? this.renderDataError() : `<div class="affiliate-stat-grid">
         <article class="affiliate-stat-card"><span>Available balance</span><strong>${escapeHtml(formatMoney(summary.availableBalanceCents))}</strong></article>
         <article class="affiliate-stat-card"><span>Pending 30-day balance</span><strong>${escapeHtml(formatMoney(summary.pendingBalanceCents))}</strong></article>
       </div>
@@ -714,19 +780,20 @@ export class AffiliateUI {
                       <div class="affiliate-payout-row">
                         <span>${escapeHtml(payout.month)}</span>
                         <strong>${escapeHtml(formatMoney(payout.amountCents))}</strong>
-                        <span>${escapeHtml(payout.status)} · ${payout.commissionCount} commissions</span>
+                        <span>${escapeHtml(payout.status)} · ${escapeHtml(payout.commissionCount)} commissions</span>
                       </div>
                     `,
                   )
                   .join("")
-              : "<p>No payouts yet.</p>"
+              : "<p class=\"affiliate-empty-state\">No payouts yet. Completed and pending monthly payouts will appear here.</p>"
           }
         </div>
-      </section>
+      </section>`}
+      <p class="affiliate-dashboard-note">Commissions become eligible after a 30-day hold. Available balances are ordinarily reviewed for a monthly payout, subject to the program terms.</p>
       <section class="affiliate-payout-status">
         <h3>Payout & tax details</h3>
-        <p>Payout account: ${escapeHtml(affiliate.recipientPayoutsStatus)}</p>
-        <p>Tax setup: ${escapeHtml(affiliate.taxSetupStatus.replaceAll("_", " "))}</p>
+        <p>Payout account: ${escapeHtml(affiliate.recipientPayoutsStatus || "Not available")}</p>
+        <p>Tax setup: ${escapeHtml(String(affiliate.taxSetupStatus || "Not available").replaceAll("_", " "))}</p>
         <button class="btn btn-primary" type="button" data-affiliate-action="${affiliate.payoutsEnabled ? "login" : "onboarding"}">
           ${affiliate.payoutsEnabled ? "Manage payout & tax details" : "Complete payout setup"}
         </button>
@@ -736,50 +803,102 @@ export class AffiliateUI {
   }
 
   async handleClick(event) {
+    if (this.destroyed) return;
     if (event.target.closest("[data-affiliate-close]")) {
       this.close();
       return;
     }
-    const tab = event.target.closest("[data-affiliate-tab]")?.dataset.affiliateTab;
-    if (tab) {
+    const tab = event.target.closest("[data-affiliate-tab]")?.dataset.affiliateTab || event.target.closest("[data-affiliate-go]")?.dataset.affiliateGo;
+    if (["overview", "share", "payouts"].includes(tab)) {
       this.activeTab = tab;
       this.render();
       this.mount.querySelector(`[data-affiliate-tab="${tab}"]`)?.focus();
       return;
     }
 
-    const copyValue = event.target.closest("[data-affiliate-copy]")?.dataset
-      .affiliateCopy;
-    if (copyValue) {
-      try {
-        await navigator.clipboard.writeText(copyValue);
-      } catch {
-        const input = document.createElement("textarea");
-        input.value = copyValue;
-        input.style.position = "fixed";
-        input.style.opacity = "0";
-        document.body.append(input);
-        input.select();
-        document.execCommand("copy");
-        input.remove();
+    const copyButton = event.target.closest("[data-affiliate-copy]");
+    if (copyButton) {
+      if (copyButton.disabled) return;
+      const hadFocus = document.activeElement === copyButton;
+      copyButton.disabled = true;
+      try { await this.copyText(copyButton.dataset.affiliateCopy, copyButton.dataset.copyLabel); }
+      finally {
+        copyButton.disabled = false;
+        this.restoreActionFocus(copyButton, hadFocus);
       }
-      const status = this.mount.querySelector(".affiliate-copy-status");
-      if (status) status.textContent = "Copied.";
-      this.showSuccess?.("Copied to clipboard.");
       return;
     }
 
-    const action = event.target.closest("[data-affiliate-action]")?.dataset
-      .affiliateAction;
-    if (!action) return;
-    if (action === "refresh") {
-      await this.refreshStatus();
-    } else if (action === "onboarding") {
-      await this.openStripeRoute("/api/affiliate/onboarding-link");
-    } else if (action === "login") {
-      await this.openStripeRoute("/api/affiliate/login-link");
-    } else if (action === "share") {
-      await this.shareAffiliate();
+    const button = event.target.closest("[data-affiliate-action]");
+    const action = button?.dataset.affiliateAction;
+    if (!action || this.pendingActions.has(action)) return;
+    const hadFocus = document.activeElement === button;
+    this.pendingActions.add(action);
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    try {
+      if (action === "refresh") {
+        await this.refreshStatus();
+      } else if (action === "reload") {
+        await this.refresh();
+      } else if (action === "reload-assets") {
+        await this.loadAssets();
+        if (!this.destroyed) {
+          this.renderPreservingFocus();
+        }
+      } else if (action === "onboarding") {
+        await this.openStripeRoute("/api/affiliate/onboarding-link");
+      } else if (action === "login") {
+        await this.openStripeRoute("/api/affiliate/login-link");
+      } else if (action === "share") {
+        await this.shareAffiliate();
+      }
+    } finally {
+      this.pendingActions.delete(action);
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      this.restoreActionFocus(button, hadFocus);
+    }
+  }
+
+  restoreActionFocus(button, hadFocus) {
+    if (!hadFocus || this.destroyed || !this.isOpen() || document.activeElement !== document.body) return;
+    const target = button.isConnected ? button :
+      this.mount.querySelector('[data-affiliate-tab][aria-selected="true"], .affiliate-sheet__error button');
+    target?.focus({ preventScroll: true });
+  }
+
+  async copyText(value, label = "Text") {
+    if (this.destroyed || !this.isOpen()) return;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch {
+      if (this.destroyed || !this.isOpen()) return;
+      const input = document.createElement("textarea");
+      const focused = document.activeElement;
+      input.value = value;
+      input.setAttribute("aria-label", "Copy text");
+      input.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+      // Keep the fallback inside the active dialog, outside the inert background.
+      this.mount.append(input);
+      input.select();
+      try { copied = document.execCommand("copy") === true; } catch { /* Manual copy below. */ }
+      input.remove();
+      focused?.focus();
+    }
+    if (this.destroyed || !this.isOpen()) return;
+    const status = this.mount.querySelector(".affiliate-copy-status");
+    const fallback = this.mount.querySelector(".affiliate-manual-copy");
+    if (fallback) fallback.hidden = copied;
+    if (copied) {
+      if (status) status.textContent = `${label} copied.`;
+      this.showSuccess?.(`${label} copied to clipboard.`);
+    } else {
+      if (status) status.textContent = "Automatic copying is unavailable. Select and copy the text provided.";
+      const input = fallback?.querySelector("textarea");
+      if (input) { input.value = value; input.focus(); input.select(); }
     }
   }
 
@@ -789,8 +908,9 @@ export class AffiliateUI {
         method: "POST",
         body: JSON.stringify(body),
       });
-      window.location.assign(data.url);
+      if (!this.destroyed) window.location.assign(data.url);
     } catch (error) {
+      if (this.destroyed || error?.name === "AbortError") return;
       this.showError?.(error.message);
     }
   }
@@ -798,32 +918,24 @@ export class AffiliateUI {
   async shareAffiliate() {
     const affiliate = this.status?.affiliate;
     if (!affiliate) return;
-    const text = `Use my SineDay Affiliate Code ${affiliate.code} at checkout to save $1 each month on Premium.`;
+    const text = affiliateShareText(affiliate, { includeUrl: false });
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: "SineDay Affiliate",
-          text,
-          url: affiliate.affiliateUrl,
-        });
+        await navigator.share({ title: "SineDay", text, url: affiliate.affiliateUrl });
         return;
       } catch (error) {
         if (error?.name === "AbortError") return;
       }
     }
-    try {
-      await navigator.clipboard.writeText(`${text} ${affiliate.affiliateUrl}`);
-      this.showSuccess?.("Affiliate message copied.");
-    } catch {
-      this.showError?.("Sharing is unavailable. Copy your Affiliate Link instead.");
-    }
+    await this.copyText(affiliateShareText(affiliate), "Full post");
   }
 
   async handleSubmit(event) {
     const formType = event.target.dataset.affiliateForm;
-    if (!formType) return;
+    if (!formType || this.destroyed) return;
     event.preventDefault();
     const submit = event.target.querySelector('[type="submit"]');
+    if (submit.disabled) return;
     submit.disabled = true;
     try {
       if (formType === "application") {
@@ -843,6 +955,7 @@ export class AffiliateUI {
             introduction: form.get("introduction"),
           }),
         });
+        if (this.destroyed) return;
         this.showSuccess?.("Thanks — your Affiliate application has been received.");
         await this.refresh();
       } else if (formType === "apply") {
@@ -856,7 +969,7 @@ export class AffiliateUI {
             acceptedTermsVersion: this.termsVersion,
           }),
         });
-        window.location.assign(data.url);
+        if (!this.destroyed) window.location.assign(data.url);
       } else if (formType === "onboarding") {
         const form = new FormData(event.target);
         const data = await this.request("/api/affiliate/onboarding-link", {
@@ -865,9 +978,10 @@ export class AffiliateUI {
             country: form.get("country"),
           }),
         });
-        window.location.assign(data.url);
+        if (!this.destroyed) window.location.assign(data.url);
       }
     } catch (error) {
+      if (this.destroyed || error?.name === "AbortError") return;
       this.showError?.(error.message);
     } finally {
       submit.disabled = false;

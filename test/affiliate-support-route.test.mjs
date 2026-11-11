@@ -120,7 +120,7 @@ test("dashboard checkout carries a pending affiliate code and no longer posts su
   );
   assert.match(
     ui,
-    /Use my SineDay Affiliate Code \$\{affiliate\.code\} at checkout to save \$1 each month on Premium\./,
+    /Use my SineDay Affiliate Code \$\{affiliate\.code\} at checkout to save \$1 each month on Premium while the promotion remains valid\./,
   );
 });
 
@@ -128,7 +128,7 @@ test("public config and service worker keep affiliate secrets and APIs off the c
   const config = readFileSync(join(root, "api/config.js"), "utf8");
   const worker = readFileSync(join(root, "service-worker.js"), "utf8");
   assert.doesNotMatch(config, /STRIPE_AFFILIATE_COUPON_ID|STRIPE_SECRET_KEY/);
-  assert.match(worker, /sineday-v48/);
+  assert.match(worker, /sineday-v49/);
   assert.match(worker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(worker, /url\.pathname\.startsWith\('\/_vercel\/'\)/);
 });

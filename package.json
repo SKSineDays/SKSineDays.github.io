@@ -23,7 +23,10 @@
     "test:card-aligned-mailers:browser": "node scripts/verify-card-aligned-mailers.mjs",
     "generate:day-photos": "node scripts/generate-day-photo-collection.mjs",
     "check:day-photos": "node scripts/generate-day-photo-collection.mjs --check",
-    "test:day-photos:browser": "node test/day-photo-browser-smoke.mjs"
+    "test:day-photos:browser": "node test/day-photo-browser-smoke.mjs",
+    "generate:affiliate-assets": "node scripts/generate-affiliate-assets.mjs",
+    "check:affiliate-assets": "node scripts/generate-affiliate-assets.mjs --check",
+    "test:affiliate-dashboard:browser": "node test/affiliate-dashboard-browser-smoke.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

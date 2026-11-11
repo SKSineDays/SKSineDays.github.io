@@ -1,34 +1,50 @@
 [
   {
-    "id": "affiliate-wordmark",
-    "title": "SineDay Affiliate Wordmark",
-    "format": "SVG",
-    "dimensions": "700 × 240",
-    "path": "/assets/affiliate/sineday-affiliate-wordmark.svg",
-    "altText": "SineDay Affiliate wordmark on a dark background"
-  },
-  {
     "id": "affiliate-square",
-    "title": "Square Social Image",
+    "title": "Square post",
     "format": "PNG",
     "dimensions": "1080 × 1080",
+    "width": 1080,
+    "height": 1080,
     "path": "/assets/affiliate/sineday-affiliate-square.png",
-    "altText": "SineDay Affiliate square sharing image"
+    "placement": "Feed posts",
+    "usage": "Pair with your full post so your affiliate link and disclosure stay together.",
+    "altText": "SineDay: Your day, in your words. A journal built around an 18-day personal wave. SineDuck appears on an ivory journal card. Explore SineDay with my link. Affiliate link: I may earn a commission."
   },
   {
     "id": "affiliate-story",
-    "title": "Story Social Image",
+    "title": "Story",
     "format": "PNG",
     "dimensions": "1080 × 1920",
+    "width": 1080,
+    "height": 1920,
     "path": "/assets/affiliate/sineday-affiliate-story.png",
-    "altText": "SineDay Affiliate vertical story sharing image"
+    "placement": "Stories · 9:16",
+    "usage": "Add your affiliate link using the platform's link sticker. Keep the disclosure visible.",
+    "altText": "SineDay: Your day, in your words. A journal built around an 18-day personal wave. SineDuck appears on an ivory journal card. Explore SineDay. Affiliate link: I may earn a commission."
   },
   {
     "id": "affiliate-landscape",
-    "title": "Landscape Social Image",
+    "title": "Landscape post",
     "format": "PNG",
     "dimensions": "1200 × 628",
+    "width": 1200,
+    "height": 628,
     "path": "/assets/affiliate/sineday-affiliate-landscape.png",
-    "altText": "SineDay Affiliate landscape sharing image"
+    "placement": "Wide posts · Email",
+    "usage": "Use in a wide post or email alongside your affiliate link and clear disclosure.",
+    "altText": "SineDay: Your day, in your words. A journal built around an 18-day personal wave. SineDuck appears on an ivory journal card. Explore SineDay with my link. Affiliate link: I may earn a commission."
+  },
+  {
+    "id": "affiliate-wordmark",
+    "title": "Affiliate wordmark",
+    "format": "SVG",
+    "dimensions": "700 × 240",
+    "width": 700,
+    "height": 240,
+    "path": "/assets/affiliate/sineday-affiliate-wordmark.svg",
+    "placement": "Brand asset",
+    "usage": "Use at its original proportions with a clear affiliate disclosure. The file works offline.",
+    "altText": "SineDay Affiliate wordmark on a Violet Ash background"
   }
 ]

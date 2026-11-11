@@ -324,3 +324,15 @@ Each entry includes:
 **Notes:** Public-only content; no crawler permission or indexing guarantees. Focused guide and canonical tests pass. No full application suite run in this partial checkout.
 
 ---
+
+## 2026-11-11T15:40:36.103Z
+
+**Files:** js/affiliate-ui.js, css/dashboard.css, assets/affiliate/assets.json, assets/affiliate/sineday-affiliate-square.png, assets/affiliate/sineday-affiliate-story.png, assets/affiliate/sineday-affiliate-landscape.png, assets/affiliate/sineday-affiliate-wordmark.svg, scripts/generate-affiliate-assets.mjs, docs/affiliate-share-kit.md, service-worker.js, test/affiliate-dashboard.test.mjs, test/affiliate-dashboard-browser-smoke.cjs, test/helpers/affiliate-dashboard-fixture.cjs, .github/workflows/affiliate-dashboard.yml, package.json
+
+**Summary:** Polish the affiliate dashboard and add a focused customer-facing share kit
+
+**Rationale:** Make approved assets and complete disclosed posts easier to use while preserving program eligibility, attribution, earnings, and Stripe behavior.
+
+**Notes:** Three existing dashboard sections retained. Adds partial-failure recovery, honest copy feedback, keyboard and lifecycle safeguards, and isolated browser regression coverage. No school/group features or backend changes.
+
+---
