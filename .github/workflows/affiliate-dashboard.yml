@@ -2,12 +2,18 @@ name: Affiliate dashboard review
 on:
   pull_request:
     paths:
+      - 'affiliate.html'
+      - 'js/affiliate-application.js'
+      - 'api/_lib/affiliate-server.js'
       - 'js/affiliate-ui.js'
       - 'css/dashboard.css'
       - 'assets/affiliate/**'
       - 'scripts/generate-affiliate-assets.mjs'
       - 'scripts/generate-group-affiliate-assets.mjs'
       - 'test/affiliate-dashboard*'
+      - 'test/affiliate-public*'
+      - 'test/affiliate-application*'
+      - 'test/affiliate-group-invitation.test.mjs'
       - 'test/helpers/affiliate-dashboard-fixture.cjs'
       - '.github/workflows/affiliate-dashboard.yml'
 permissions:
@@ -32,6 +38,9 @@ jobs:
       # unrelated apt mirror refresh before running the actual browser checks.
       - run: npx playwright install chromium
       - run: npm run test:affiliate-dashboard:browser
+      - run: node test/affiliate-public-browser-smoke.cjs
+        env:
+          AFFILIATE_REVIEW_OUTPUT: artifacts/affiliate-dashboard/public-application
       - uses: actions/upload-artifact@v4
         if: always()
         with:

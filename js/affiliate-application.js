@@ -51,7 +51,7 @@ function validateForm(form) {
   }
 
   if (!hasSocialProfile(form)) {
-    errors.push({ names: SOCIAL_FIELDS, message: "Please share at least one social profile or website." });
+    errors.push({ names: SOCIAL_FIELDS, message: "Please share at least one social profile, website, or group." });
   }
 
   for (const name of SOCIAL_FIELDS) {

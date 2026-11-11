@@ -35,7 +35,7 @@ test("affiliate public CSS scopes [hidden] so display:grid cannot leak the succe
 
 test("public affiliate page remains an anonymous invitation without auth detection", () => {
   assert.match(html, /<script type="module" src="\/js\/affiliate-application\.js"><\/script>/);
-  assert.doesNotMatch(html, /whoami|supabase|localStorage|session|login|auth/i);
+  assert.doesNotMatch(html, /whoami|supabase|localStorage|session|login|\bauth\b/i);
   assert.doesNotMatch(html, /What you're sharing|A journal built around noticing\./);
   assert.equal((html.match(/No SineDay account is required/g) || []).length, 1);
 });
@@ -70,7 +70,7 @@ test("public affiliate form field contract is unchanged", () => {
   ]) {
     assert.match(html, new RegExp(field));
   }
-  assert.match(html, /At least one social, profile, or website field is required\./);
+  assert.match(html, /At least one social, profile, website, or group field is required\./);
 });
 
 test("affiliate application script still reveals success only after a successful POST", () => {

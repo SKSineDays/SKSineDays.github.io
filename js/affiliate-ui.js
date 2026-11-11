@@ -564,11 +564,13 @@ export class AffiliateUI {
       <section class="affiliate-sheet__hero">
         <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
         <h2>Help more people write with their own wave.</h2>
-        <p>Share SineDay with your community and help more people notice the wave inside their days. Tell us a little about yourself and where you share your work. Affiliate applications are reviewed before payout setup begins.</p>
+        <p>Individuals, creators, PTAs, and fundraiser groups are welcome to apply to share SineDay with their communities. Tell us a little about yourself and how you plan to share SineDay. Affiliate applications are reviewed before payout setup begins.</p>
+        <p>For a PTA or fundraiser group to participate, an individual representative must first be verified, including their authority to act for the group.</p>
       </section>
       <form class="affiliate-application-form" data-affiliate-form="application">
         <label for="affiliate-applicant-name">Name / creator name</label>
-        <input id="affiliate-applicant-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" value="${escapeHtml(application?.displayName || "")}" required>
+        <input id="affiliate-applicant-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" aria-describedby="affiliate-applicant-name-help" value="${escapeHtml(application?.displayName || "")}" required>
+        <p id="affiliate-applicant-name-help" class="affiliate-disclosure">For a group application, enter the individual representative's name.</p>
         <label for="affiliate-applicant-email">Email</label>
         <input id="affiliate-applicant-email" name="email" type="email" value="${escapeHtml(viewerEmail)}" maxlength="254" autocomplete="email" readonly>
         <div class="affiliate-application-form__social">
@@ -589,10 +591,11 @@ export class AffiliateUI {
             <input id="affiliate-applicant-website" name="website" type="text" maxlength="300" autocomplete="url" value="${escapeHtml(application?.website || "")}">
           </div>
         </div>
-        <label for="affiliate-applicant-other">Other social / profile</label>
-        <input id="affiliate-applicant-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" value="${escapeHtml(application?.otherSocial || "")}">
-        <label for="affiliate-applicant-intro">Tell us about yourself</label>
-        <textarea id="affiliate-applicant-intro" name="introduction" minlength="20" maxlength="1000" rows="5" required>${escapeHtml(application?.introduction || "")}</textarea>
+        <label for="affiliate-applicant-other">Group, community, or another profile</label>
+        <input id="affiliate-applicant-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" placeholder="PTA name, fundraiser group, or link" value="${escapeHtml(application?.otherSocial || "")}">
+        <label for="affiliate-applicant-intro">How would you like to share SineDay?</label>
+        <p id="affiliate-applicant-intro-help" class="affiliate-disclosure">Describe your community and how you plan to share SineDay. If applying for a PTA or fundraiser group, include its name and your role in the group.</p>
+        <textarea id="affiliate-applicant-intro" name="introduction" minlength="20" maxlength="1000" rows="5" aria-describedby="affiliate-applicant-intro-help" required>${escapeHtml(application?.introduction || "")}</textarea>
         <button class="btn btn-primary" type="submit">Submit Affiliate Application</button>
         <p class="affiliate-disclosure">Applications are reviewed before Affiliate Code and payout setup are unlocked.</p>
       </form>
@@ -1109,7 +1112,7 @@ export class AffiliateUI {
       } else if (formType === "application") {
         const form = new FormData(event.target);
         if (!hasSocialProfile(form)) {
-          throw new Error("Please share at least one social profile or website.");
+          throw new Error("Please share at least one social profile, website, or group.");
         }
         await this.request("/api/affiliate/application", {
           method: "POST",

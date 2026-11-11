@@ -92,6 +92,18 @@ module.exports = function affiliateFixture() {
       await check('Reload earnings keeps keyboard focus in the dashboard',async()=>{summaryFails=true;await view.refresh();await click('[data-affiliate-tab="overview"]');document.querySelector('#affiliate-panel-overview [data-affiliate-action="reload"]').focus();summaryFails=false;await click('#affiliate-panel-overview [data-affiliate-action="reload"]');assert(document.activeElement.id==='affiliate-tab-overview','Reload lost keyboard focus');await click('[data-affiliate-tab="share"]');});
       await check('Asset failure and retry preserve caption',async()=>{assetsFail=true;await view.refresh();assert(document.querySelector('[data-affiliate-action="reload-assets"]'),'No asset retry');assert(document.querySelector('#affiliate-share-caption').value.includes(AFFILIATE_DISCLOSURE),'Caption lost');assetsFail=false;await click('[data-affiliate-action="reload-assets"]');assert(document.querySelectorAll('.affiliate-asset-card').length===4,'Asset recovery failed');});
       await check('Rapid close/reopen restores original scroll and inert states',async()=>{view.close();assert(view.sheet.inert,'Closing panel still accepts focus');await view.open();assert(!view.sheet.inert,'Reopened panel stayed inert');view.close();assert(document.body.style.overflow==='','Body locked');assert(document.documentElement.style.overflow==='','Document locked');assert(!document.querySelector('main').inert,'Background inert');assert(document.querySelector('#preserved-inert').inert,'Original inert lost');assert(document.activeElement.id==='toggle','Focus not restored');await view.open();});
+      await check('Group application welcomes representatives and states verification before participation',async()=>{
+        state={affiliate:null,viewerEmail:'sample@example.test'};await view.refresh();
+        const copy=view.mount.textContent;
+        assert(copy.includes('Individuals, creators, PTAs, and fundraiser groups are welcome to apply'),'Group invitation missing');
+        assert(copy.includes('For a PTA or fundraiser group to participate, an individual representative must first be verified, including their authority to act for the group.'),'Verification requirement missing');
+        for(const field of ['name','intro']) {
+          const input=document.querySelector('#affiliate-applicant-'+field);
+          const help=document.getElementById(input.getAttribute('aria-describedby'));
+          assert(help && help.textContent.length>0,'Group guidance not associated with '+field);
+        }
+        assert(view.sheet.scrollWidth<=view.sheet.clientWidth,'Group application overflows panel');
+      });
       await check('Application and onboarding fields remain in focus trap',async()=>{state={affiliate:null,viewerEmail:'sample@example.test'};await view.refresh();assert(focusableElements(view.sheet).some(el=>el.tagName==='TEXTAREA'),'Textarea omitted');state={affiliate:{...affiliate,status:'onboarding'}};await view.refresh();assert(focusableElements(view.sheet).some(el=>el.tagName==='SELECT'),'Select omitted');const first=focusableElements(view.sheet)[0],last=focusableElements(view.sheet).at(-1);first.focus();first.dispatchEvent(new KeyboardEvent('keydown',{key:'Tab',shiftKey:true,bubbles:true,cancelable:true}));assert(document.activeElement===last,'Focus did not wrap');});
       await check('Paused and closed accounts never expose sharing',async()=>{for(const status of ['paused','closed']){state={affiliate:{...affiliate,status}};await view.refresh();assert(!document.querySelector('[data-copy-label]'),'Inactive sharing exposed');}});
       await check('Destroying the view silences a pending payout request',async()=>{const count=errors.length;const pending=view.openStripeRoute('/api/affiliate/login-link');await tick();view.destroy();document.querySelector('#mount').innerHTML='<p data-next-view>Next account</p>';pendingResolve();await pending;assert(errors.length===count,'Destroyed view reported a late error');assert(document.querySelector('[data-next-view]'),'Destroyed view overwrote the next account');state={affiliate};view=createView();await view.open();});
@@ -135,6 +147,7 @@ module.exports = function affiliateFixture() {
     } catch(error){document.querySelector('#results').textContent=JSON.stringify({status:'failed',checks:tests,error:error.message});document.body.dataset.testResult='failed';console.error(error);}
   }
   document.querySelector('#run-checks').addEventListener('click',run);
+  window.showApplicationForReview=async()=>{state={affiliate:null,viewerEmail:'sample@example.test'};await view.refresh();document.querySelector('.affiliate-sheet__content').scrollTop=0;};
   window.addEventListener('error',event=>{document.body.dataset.pageError=event.message;});
   await view.open();
   // Keep test controls outside the modal focus trap; regression checks are triggered by the harness.
