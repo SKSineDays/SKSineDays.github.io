@@ -336,3 +336,15 @@ Each entry includes:
 **Notes:** Three existing dashboard sections retained. Adds partial-failure recovery, honest copy feedback, keyboard and lifecycle safeguards, and isolated browser regression coverage. No school/group features or backend changes.
 
 ---
+
+## 2026-11-11T16:11:43.012Z
+
+**Files:** .github/workflows/affiliate-dashboard.yml, .github/workflows/day-photos.yml
+
+**Summary:** Use hosted runner browser libraries for dashboard verification
+
+**Rationale:** The first PR checks stopped at an Ubuntu mirror DNS outage before any browser tests ran. Install the pinned Playwright browser without reinstalling already available system libraries.
+
+**Notes:** All existing browser tests and failure conditions remain required; no application changes.
+
+---

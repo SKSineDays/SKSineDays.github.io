@@ -26,7 +26,9 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run check:affiliate-assets
-      - run: npx playwright install --with-deps chromium
+      # GitHub-hosted Ubuntu already has Chromium system libraries. Avoid an
+      # unrelated apt mirror refresh before running the actual browser checks.
+      - run: npx playwright install chromium
       - run: npm run test:affiliate-dashboard:browser
       - uses: actions/upload-artifact@v4
         if: always()
