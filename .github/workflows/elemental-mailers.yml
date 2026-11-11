@@ -1,0 +1,35 @@
+name: Elemental mailer review
+on:
+  pull_request:
+    paths:
+      - 'assets/email/20261111-elements/**'
+      - 'docs/email-templates/20261111-elements/**'
+      - 'test/fixtures/elemental-mailers/**'
+      - 'scripts/verify-elemental-mailers.mjs'
+      - '.github/workflows/elemental-mailers.yml'
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node scripts/verify-elemental-mailers.mjs --validate
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/verify-elemental-mailers.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: elemental-mailer-review
+          path: artifacts/elemental-mailers/
+          retention-days: 7
+          if-no-files-found: warn
