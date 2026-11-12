@@ -372,3 +372,15 @@ Each entry includes:
 **Notes:** Copy and regression coverage only. Existing application approval gate, input validation, Stripe setup, payout routing, and terms are unchanged. No dedicated representative verification field or technical enforcement was added; reviewer verification remains a separate operational requirement. Local npm test: 509 passed, 1 optional database test skipped. Both asset checks passed. Local Chromium could not launch because the environment blocks its process socket; browser checks require CI.
 
 ---
+
+## 2026-11-12T00:30:30.499Z
+
+**Files:** css/homepage.css, service-worker.js, test/homepage-landscape-browser-smoke.cjs, .github/workflows/day-photos.yml
+
+**Summary:** Preserve the homepage artwork headline on landscape iPads
+
+**Rationale:** Fit the portrait artwork to touch-tablet landscape height rather than cover-cropping its top, and keep the wave aligned to the resized image without altering portrait, desktop, or calculated results.
+
+**Notes:** Add six iPad viewport sizes, both motion settings, repeated rotation and calculate/reset coverage; refresh the offline CSS cache.
+
+---
