@@ -30,11 +30,13 @@ const { mkdir } = require('node:fs/promises');
           const art = getComputedStyle(background, '::before');
           const matrix = new DOMMatrix(art.transform);
           const canvas = document.getElementById('wave-canvas').getBoundingClientRect();
+          const copy = document.querySelector('.home-hero__content').getBoundingClientRect();
           const container = background.getBoundingClientRect();
           return {
             size: art.backgroundSize, width: parseFloat(art.width), height: parseFloat(art.height),
             scaleX: matrix.m11, scaleY: matrix.m22, offsetY: matrix.m42,
             containerHeight: container.height, waveY: canvas.y + canvas.height / 2, waveWidth: canvas.width,
+            waveX: canvas.x, copyRight: copy.right,
             headerBottom: document.querySelector('.top-bar').getBoundingClientRect().bottom,
             overflow: document.documentElement.scrollWidth > innerWidth,
           };
@@ -52,6 +54,8 @@ const { mkdir } = require('node:fs/promises');
           assert.ok(art.height * .24 + art.offsetY < height, 'complete tagline remains on screen');
           assert.ok(Math.abs(art.waveY - (art.height * .495 + art.offsetY)) < 8, `wave follows the resized wing junction: ${JSON.stringify(art)}`);
           assert.ok(art.waveWidth <= art.width, 'wave stays within the resized artwork, away from the hero copy');
+          assert.ok(art.waveX >= art.copyRight, 'landscape wave does not overlap the journal heading');
+          assert.ok(Math.abs(art.waveX + art.waveWidth / 2 - width * .7) < 1, 'wave and artwork share their right-side center');
           assert.equal(art.overflow, false, 'no horizontal overflow');
           for (const button of await page.locator('.hero-btn').all()) {
             const box = await button.boundingBox();

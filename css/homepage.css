@@ -149,12 +149,13 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
 .home-film__duration, .home-film__play { background: #24232cf2; color: var(--va-text); }
 
 /* A portrait cover crop hides the artwork's headline when an iPad rotates.
-   Fit the complete artwork to the available height on landscape tablets;
+   Fit the complete artwork to the available height on landscape tablets,
+   beside the introduction so the wave cannot cross the heading;
    feather its sides into the existing canvas without duplicating the image.
    Keep this after the reduced-motion rule so both modes use the same framing. */
 @media (min-width: 768px) and (max-width: 1400px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
   .homepage .background-image-container.hero-mode::before {
-    inset: 0 auto 0 50%;
+    inset: 0 auto 0 70%;
     width: auto;
     height: 100%;
     aspect-ratio: 2 / 3;
@@ -169,6 +170,6 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
      wave margin and half-canvas height, as in the portrait/desktop rules. */
   .homepage:not(:has(.result-card.visible)) .wave-container {
     width: min(760px, 56.6667dvh);
-    transform: translateY(calc(49.5dvh - 124px));
+    transform: translate(20vw, calc(49.5dvh - 124px));
   }
 }
