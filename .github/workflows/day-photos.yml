@@ -36,6 +36,7 @@ jobs:
       # unrelated apt mirror refresh before running the actual browser checks.
       - run: npx playwright install chromium
       - run: node test/homepage-browser-smoke.cjs
+      - run: node test/homepage-landscape-browser-smoke.cjs
       - name: Upload homepage review
         uses: actions/upload-artifact@v4
         if: always()
