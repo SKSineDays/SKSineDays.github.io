@@ -841,7 +841,7 @@ export function validateAffiliateApplicationInput(body = {}, { emailSource } = {
   if (!socialFields.some(Boolean)) {
     return {
       ok: false,
-      error: "Please share at least one social profile, website, or group.",
+      error: "Please share at least one social profile or website.",
     };
   }
 

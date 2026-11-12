@@ -80,55 +80,6 @@ async function revealSection(page, selector) {
         await capture(page, 'payouts', width);
         await revealSection(page, '.affiliate-payout-status');
         await capture(page, 'payouts-details', width);
-        await page.getByRole('tab', { name: 'Share kit', exact: true }).click();
-        for (const mode of ['community', 'pta']) {
-          await page.locator(`[data-affiliate-kit="${mode}"]`).click();
-          await page.locator('#affiliate-group-name').fill('River Community');
-          await page.locator('#affiliate-group-approved').check();
-          await page.getByRole('button', { name: 'Prepare group copy', exact: true }).click();
-          await revealSection(page, '.affiliate-group-intro');
-          await capture(page, `group-${mode}-intro`, width);
-          await revealSection(page, '.affiliate-share-card:has(#affiliate-group-caption)');
-          await capture(page, `group-${mode}-copy`, width);
-          await revealSection(page, '.affiliate-assets');
-          await capture(page, `group-${mode}-assets`, width);
-          const expected = JSON.parse(await fs.readFile(path.join(root, 'assets/affiliate/groups/assets.json'))).filter(asset => mode === 'pta' ? asset.id === 'pta-information-notice' : asset.id !== 'pta-information-notice');
-          const decoded = await page.locator('.affiliate-asset-card img').evaluateAll(async images => {
-            images.forEach(image => { image.loading = 'eager'; });
-            await Promise.all(images.map(image => image.decode()));
-            return images.map(image => ({ width: image.naturalWidth, height: image.naturalHeight }));
-          });
-          assert.deepEqual(decoded, expected.map(asset => ({ width: asset.width, height: asset.height })));
-          if (width === 390) {
-            for (const asset of expected) {
-              const downloadEvent = page.waitForEvent('download');
-              await page.getByRole('link', { name: `Download ${asset.title}`, exact: true }).click();
-              const download = await downloadEvent;
-              assert.equal(download.suggestedFilename(), path.basename(asset.path));
-              assert.deepEqual(await fs.readFile(await download.path()), await fs.readFile(path.join(root, asset.path)));
-            }
-            const copyEvent = page.waitForEvent('download');
-            await page.getByRole('button', { name: 'Download all copy', exact: true }).click();
-            const copy = await copyEvent;
-            assert.equal(copy.suggestedFilename(), `sineday-${mode}-share-copy.txt`);
-            const text = await fs.readFile(await copy.path(), 'utf8');
-            assert.ok(text.includes('River Community'));
-            assert.ok(text.includes('Our group may earn a commission'));
-            assert.ok(text.includes('https://www.sineday.app/?ref=WRITE-18'));
-            if (mode === 'community') {
-              const pdfEvent = page.waitForEvent('download');
-              await page.getByRole('link', { name: 'Download fillable flyer PDF', exact: true }).click();
-              const pdf = await pdfEvent;
-              assert.deepEqual(await fs.readFile(await pdf.path()), await fs.readFile(path.join(root, 'assets/affiliate/groups/sineday-group-flyer.pdf')));
-            }
-          }
-        }
-        result.checks.push('Community and PTA artwork, text exports and fillable PDF verified');
-        await page.evaluate(() => window.showApplicationForReview());
-        await capture(page, 'application', width);
-        await page.locator('#affiliate-applicant-intro').scrollIntoViewIfNeeded();
-        await capture(page, 'application-fields', width);
-
       } catch (error) {
         const fixtureResult = await page.locator('#results').textContent().catch(() => null);
         result = { ...result, status: 'failed', error: error.message, pageErrors, fixtureResult };

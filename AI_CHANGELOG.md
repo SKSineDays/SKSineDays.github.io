@@ -384,3 +384,15 @@ Each entry includes:
 **Notes:** Add six iPad viewport sizes, both motion settings, repeated rotation and calculate/reset coverage; refresh the offline CSS cache.
 
 ---
+
+## 2026-11-12T16:10:59.840Z
+
+**Files:** affiliate.html, js/affiliate-ui.js, js/affiliate-application.js, api/_lib/affiliate-server.js, css/dashboard.css, assets/affiliate/groups, service-worker.js, test/affiliate-individual-focus.test.mjs
+
+**Summary:** Focus SineDay affiliates on individuals and creators
+
+**Rationale:** Remove PTA and fundraising-group promotion and their separate share kit, keeping the polished regular affiliate program.
+
+**Notes:** Remove group-only assets, generator, state and UI; preserve personal assets, account eligibility, terms, commissions and payouts. Retain accessible application hints, add focused unit and offline browser regressions, refresh the service-worker cache. Local suite: 506 passed, 1 skipped; personal asset check passed. Local browser launch is environment-blocked; CI browser verification is pending. Blog audit found no corresponding promotion to change.
+
+---

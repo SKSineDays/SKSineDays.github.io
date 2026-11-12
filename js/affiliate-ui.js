@@ -18,32 +18,6 @@ export function affiliateShareText(affiliate, { includeUrl = true } = {}) {
   ].filter(Boolean).join("\n\n");
 }
 
-export const GROUP_AFFILIATE_DISCLOSURE =
-  "Our group may earn a commission on qualifying SineDay Premium payments through this link.";
-
-export function groupAffiliateTemplates(affiliate, groupName, { pta = false } = {}) {
-  const name = String(groupName || "").trim().slice(0, 80);
-  const product = "SineDay is a daily journal built around an 18-day personal wave.";
-  const link = `${GROUP_AFFILIATE_DISCLOSURE}\n${affiliate.affiliateUrl}`;
-  const code = `Group Affiliate Code: ${affiliate.code}. Apply it at checkout and check the displayed terms before paying.`;
-  const optional = "Participation is optional.";
-  const neutral = `${name} does not endorse, warrant or recommend SineDay or its services.`;
-  const joined = (...parts) => parts.filter(Boolean).join("\n\n");
-  if (pta) return [
-    { id: "newsletter", title: "Newsletter notice", text: joined("Optional subscription information", `${name} has a referral link for SineDay. ${product}`, link, optional, neutral) },
-    { id: "website", title: "Website information", text: joined("SineDay referral information", `Shared by ${name}. ${product}`, link, `Purchasing a subscription is optional and is not required for participation in ${name}.`, neutral) },
-    { id: "announcement", title: "Meeting announcement", text: joined(`An optional subscription notice from ${name}`, product, link, optional, neutral) },
-  ];
-  return [
-    { id: "social", title: "Social post", text: joined("A little reflection. A shared purpose.", `${name} is sharing SineDay, a daily journal built around an 18-day personal wave. Take a look and decide whether it fits your routine.`, link, code, optional) },
-    { id: "email", title: "Community email", text: joined("Subject: A little reflection. A shared purpose.", `${name} has a referral link for SineDay. ${product}`, "If you have been looking for a daily journaling practice, here is a place to explore.", link, code, optional, `Thanks for being part of ${name}.`) },
-    { id: "newsletter", title: "Newsletter blurb", text: joined("A little reflection. A shared purpose.", `${name} has a referral link for SineDay. ${product}`, link, code, optional) },
-    { id: "text", title: "Group message", text: joined(`${name} is sharing an optional journaling resource. ${product}`, link, code, optional) },
-    { id: "story", title: "Story caption", text: joined("A little reflection. A shared purpose.", `Shared by ${name}. ${product}`, link, optional) },
-    { id: "flyer", title: "Flyer companion text", text: joined("A little reflection. A shared purpose.", `Shared by ${name}. ${product}`, link, code, optional) },
-  ];
-}
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -143,12 +117,6 @@ export class AffiliateUI {
     this.summary = null;
     this.assets = [];
     this.assetsError = false;
-    this.groupAssets = [];
-    this.groupAssetsError = false;
-    this.shareAudience = "personal";
-    this.groupName = "";
-    this.groupConfirmed = false;
-    this.groupTemplate = "social";
     this.summaryError = false;
     this.pendingActions = new Set();
     this.activeTab = "overview";
@@ -203,7 +171,6 @@ export class AffiliateUI {
     this.mount.addEventListener("click", (event) => this.handleClick(event), {
       signal,
     });
-    this.mount.addEventListener("change", (event) => this.handleShareChange(event), { signal });
     this.mount.addEventListener("submit", (event) => this.handleSubmit(event), {
       signal,
     });
@@ -338,7 +305,6 @@ export class AffiliateUI {
       const [summary] = await Promise.allSettled([
         this.request("/api/affiliate/summary"),
         this.loadAssets(),
-        this.loadGroupAssets(),
       ]);
       if (this.destroyed) return;
       this.summaryError = summary.status !== "fulfilled";
@@ -346,9 +312,6 @@ export class AffiliateUI {
     } else {
       this.summary = null;
       this.assets = [];
-      this.groupAssets = [];
-      this.groupConfirmed = false;
-      this.groupName = "";
       this.summaryError = false;
       this.assetsError = false;
     }
@@ -373,34 +336,6 @@ export class AffiliateUI {
       this.assets = [];
       this.assetsError = true;
     }
-  }
-
-  async loadGroupAssets() {
-    try {
-      const response = await fetch("/assets/affiliate/groups/assets.json", { cache: "no-store", signal: this.abortController.signal });
-      if (!response.ok) throw new Error("Group assets unavailable");
-      const assets = await response.json();
-      if (this.destroyed) return;
-      if (!Array.isArray(assets)) throw new Error("Invalid group asset list");
-      this.groupAssets = assets.filter(asset => /^\/assets\/affiliate\/groups\/(?:pta\/)?[A-Za-z0-9._-]+\.png$/.test(asset?.path || ""));
-      this.groupAssetsError = this.groupAssets.length === 0;
-    } catch {
-      if (this.destroyed) return;
-      this.groupAssets = [];
-      this.groupAssetsError = true;
-    }
-  }
-
-  handleShareChange(event) {
-    const id = event.target.id;
-    if (["affiliate-group-name", "affiliate-group-approved"].includes(id) && this.groupConfirmed) {
-      this.groupName = this.mount.querySelector("#affiliate-group-name")?.value || "";
-      this.groupConfirmed = false;
-    } else if (id === "affiliate-group-template") {
-      this.groupTemplate = event.target.value;
-    } else return;
-    this.render();
-    this.mount.querySelector(`#${id}`)?.focus({ preventScroll: true });
   }
 
   async refreshStatus() {
@@ -564,13 +499,12 @@ export class AffiliateUI {
       <section class="affiliate-sheet__hero">
         <p class="affiliate-sheet__eyebrow">SineDay Affiliate</p>
         <h2>Help more people write with their own wave.</h2>
-        <p>Individuals, creators, PTAs, and fundraiser groups are welcome to apply to share SineDay with their communities. Tell us a little about yourself and how you plan to share SineDay. Affiliate applications are reviewed before payout setup begins.</p>
-        <p>For a PTA or fundraiser group to participate, an individual representative must first be verified, including their authority to act for the group.</p>
+        <p>Individuals and creators are welcome to apply to share SineDay with their communities. Tell us a little about yourself and how you plan to share SineDay. Affiliate applications are reviewed before payout setup begins.</p>
       </section>
       <form class="affiliate-application-form" data-affiliate-form="application">
         <label for="affiliate-applicant-name">Name / creator name</label>
         <input id="affiliate-applicant-name" name="displayName" type="text" minlength="2" maxlength="80" autocomplete="name" aria-describedby="affiliate-applicant-name-help" value="${escapeHtml(application?.displayName || "")}" required>
-        <p id="affiliate-applicant-name-help" class="affiliate-disclosure">For a group application, enter the individual representative's name.</p>
+        <p id="affiliate-applicant-name-help" class="affiliate-disclosure">Use your name or the name you share under. 2–80 characters.</p>
         <label for="affiliate-applicant-email">Email</label>
         <input id="affiliate-applicant-email" name="email" type="email" value="${escapeHtml(viewerEmail)}" maxlength="254" autocomplete="email" readonly>
         <div class="affiliate-application-form__social">
@@ -591,11 +525,11 @@ export class AffiliateUI {
             <input id="affiliate-applicant-website" name="website" type="text" maxlength="300" autocomplete="url" value="${escapeHtml(application?.website || "")}">
           </div>
         </div>
-        <label for="affiliate-applicant-other">Group, community, or another profile</label>
-        <input id="affiliate-applicant-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" placeholder="PTA name, fundraiser group, or link" value="${escapeHtml(application?.otherSocial || "")}">
-        <label for="affiliate-applicant-intro">How would you like to share SineDay?</label>
-        <p id="affiliate-applicant-intro-help" class="affiliate-disclosure">Describe your community and how you plan to share SineDay. If applying for a PTA or fundraiser group, include its name and your role in the group.</p>
-        <textarea id="affiliate-applicant-intro" name="introduction" minlength="20" maxlength="1000" rows="5" aria-describedby="affiliate-applicant-intro-help" required>${escapeHtml(application?.introduction || "")}</textarea>
+        <label for="affiliate-applicant-other">Another profile or website</label>
+        <input id="affiliate-applicant-other" name="otherSocial" type="text" maxlength="300" autocomplete="off" placeholder="A newsletter, podcast, or other link" value="${escapeHtml(application?.otherSocial || "")}">
+        <label for="affiliate-applicant-intro">Tell us about yourself</label>
+        <p id="affiliate-applicant-intro-help" class="affiliate-disclosure">Describe your audience and how you plan to share SineDay.</p>
+        <textarea id="affiliate-applicant-intro" aria-describedby="affiliate-applicant-intro-help" name="introduction" minlength="20" maxlength="1000" rows="5" required>${escapeHtml(application?.introduction || "")}</textarea>
         <button class="btn btn-primary" type="submit">Submit Affiliate Application</button>
         <p class="affiliate-disclosure">Applications are reviewed before Affiliate Code and payout setup are unlocked.</p>
       </form>
@@ -798,13 +732,7 @@ export class AffiliateUI {
 
   renderShare(affiliate) {
     const fullPost = affiliateShareText(affiliate);
-    const selector = `<section class="affiliate-share-audience"><h3>Share kit folders</h3><div class="affiliate-kit-folders" aria-label="Share kit folders">${[
-      ["personal", "Personal", "Your voice, your link"],
-      ["community", "Community groups", "Shared purpose, group copy"],
-      ["pta", "PTA / PTSA", "Information for local review"],
-    ].map(([id, title, detail]) => `<button type="button" class="affiliate-kit-folder" data-affiliate-kit="${id}" aria-pressed="${(this.shareAudience || "personal") === id}"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v10H3Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><strong>${title}</strong><span>${detail}</span></button>`).join("")}</div><p class="affiliate-dashboard-note">Open a folder for its wording and artwork. The same account, link and program terms apply.</p></section>`;
-    if (["community", "pta"].includes(this.shareAudience)) return selector + this.renderGroupShare(affiliate);
-    return selector + `
+    return `
       <section class="affiliate-share-card">
         <h3>A post, ready to share</h3>
         <p class="affiliate-dashboard-note">Your code, link, and disclosure are already included. Pair this caption with an image below.</p>
@@ -832,56 +760,6 @@ export class AffiliateUI {
         </div>`}
         <p class="affiliate-disclosure">Use the approved artwork as supplied. Do not stretch the SineDay or SineDuck artwork or promise health benefits, predictions, or guaranteed results.</p>
       </section>
-    `;
-  }
-
-  renderGroupShare(affiliate) {
-    const pta = this.shareAudience === "pta";
-    const templates = groupAffiliateTemplates(affiliate, this.groupName, { pta });
-    const selected = templates.find(template => template.id === this.groupTemplate) || templates[0];
-    const assets = (this.groupAssets || []).filter(asset => pta ? asset.id === "pta-information-notice" : asset.id !== "pta-information-notice");
-    return `
-      <section class="affiliate-group-intro">
-        <p class="affiliate-sheet__eyebrow">${pta ? "PTA / PTSA information kit" : "Community share kit"}</p>
-        <h3>${pta ? "Information, with room to decide." : "A little reflection.<br>A shared purpose."}</h3>
-        <p>${pta ? "Factual notices for a unit to review under its own policies before distribution." : "Thoughtful words for the people who make your group a community."}</p>
-      </section>
-      ${pta ? `<section class="affiliate-pta-note" role="note" aria-labelledby="affiliate-pta-note-title"><h4 id="affiliate-pta-note-title">Please read before sharing</h4><p>PTA rules limit commercial endorsements, so this folder uses factual, informational language. Your unit should review this referral arrangement and the materials under its state PTA and school policies before sharing.</p><p>Policies and approved arrangements vary. This is not a blanket prohibition or a statement of PTA approval. No National PTA affiliation or endorsement is implied.</p><a href="/assets/affiliate/groups/pta/READ-FIRST.txt" download="PTA-READ-FIRST.txt">Download this guidance</a></section>` : ""}
-      <details class="affiliate-group-guide">
-        <summary>Before your group shares</summary>
-        <ul>
-          <li>Use only an active affiliate account authorized for the named group. Selecting a kit does not enroll a group, change the payout recipient, or redirect an individual’s earnings.</li>
-          <li>Get the group’s approval for participation, its name and the channels you will use. Confirm how the group receives and records commissions.</li>
-          <li>${pta ? "PTA’s noncommercial rules restrict product endorsements. Your unit must review this arrangement with the applicable state PTA and school policies. A disclaimer or this kit is not approval." : "Share with adults who have agreed to hear from your group. Keep participation optional and follow your group’s communication rules."}</li>
-          <li>These are subscription referrals, not donation receipts. Do not promise tax deductions, earnings, payout dates, health benefits or student outcomes.</li>
-          <li>No National PTA affiliation or endorsement is implied. Do not add PTA logos, seals or school branding without the proper permission.</li>
-        </ul>
-        <p><a href="https://www.pta.org/local-leader-kit/fundraising/strategies/donations" target="_blank" rel="noopener">PTA fundraising guidance</a> · <a href="https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides-what-people-are-asking" target="_blank" rel="noopener">Disclosure guidance</a> · <a href="/affiliate-terms.html" target="_blank" rel="noopener">Current program terms</a></p>
-        <p class="affiliate-dashboard-note">Current terms: $1 per eligible successful monthly Premium invoice. Exclusions and a 30-day hold apply; available payouts are ordinarily reviewed monthly and are not guaranteed. This kit does not change those terms.</p>
-      </details>
-      <form class="affiliate-share-card affiliate-group-form" data-affiliate-form="group-kit">
-        <label for="affiliate-group-name">Group name</label>
-        <input id="affiliate-group-name" name="groupName" type="text" required minlength="2" maxlength="80" autocomplete="off" value="${escapeHtml(this.groupName)}" placeholder="Your authorized group name">
-        <label class="affiliate-group-confirm"><input id="affiliate-group-approved" name="groupApproved" type="checkbox" required ${this.groupConfirmed ? "checked" : ""}><span>I am authorized to share for this group, this account’s commissions belong to the group, and the group has approved this use${pta ? " under its applicable PTA and school policies" : ""}.</span></label>
-        <button class="btn btn-ghost" type="submit">Prepare group copy</button>
-        <p class="affiliate-dashboard-note">The name is used only in this open kit. No account or payout settings are changed.</p>
-      </form>
-      ${this.groupConfirmed ? `
-      <section class="affiliate-share-card">
-        <h3>${pta ? "Your information notice" : "Words for your community"}</h3>
-        <label for="affiliate-group-template">Format</label>
-        <select id="affiliate-group-template">${templates.map(template => `<option value="${template.id}" ${template.id === selected.id ? "selected" : ""}>${template.title}</option>`).join("")}</select>
-        <label for="affiliate-group-caption">${escapeHtml(selected.title)}</label>
-        <textarea id="affiliate-group-caption" class="affiliate-share-caption" readonly rows="10">${escapeHtml(selected.text)}</textarea>
-        <div class="affiliate-sheet__actions"><button class="btn btn-primary" type="button" data-affiliate-copy="${escapeHtml(selected.text)}" data-copy-label="Group copy">Copy ${escapeHtml(selected.title.toLowerCase())}</button><button class="btn btn-ghost" type="button" data-affiliate-action="download-group-copy">Download all copy</button></div>
-        <p class="affiliate-disclosure">Keep the disclosure next to the link. ${pta ? "A neutral notice still needs your unit’s approval; it may decide this arrangement is unsuitable." : "For Stories, keep the disclosure visible and add this account’s link sticker. Never cover it with platform controls."}</p>
-      </section>
-      <section class="affiliate-assets">
-        <h3>${pta ? "A neutral notice for review" : "Artwork for your group"}</h3>
-        ${!pta ? `<p><a class="btn btn-ghost" href="/assets/affiliate/groups/sineday-group-flyer.pdf" download="sineday-group-flyer.pdf" data-group-pdf>Download fillable flyer PDF</a></p><p class="affiliate-dashboard-note">For the PDF: fill both fields, save, inspect text fit, and test the complete referral link before printing.</p>` : ""}
-        <p class="affiliate-dashboard-note">${pta ? "Use with your approved notice above. This artwork does not certify compliance with PTA policy." : "Pair each image with the matching copy above. Write the group name and complete referral link on the printable flyer before distribution."}</p>
-        ${this.groupAssetsError ? `<div class="affiliate-inline-notice" role="status"><p>Group images couldn’t load. Your copy is still available.</p><button class="btn btn-ghost btn-sm" type="button" data-affiliate-action="reload-group-assets">Retry group images</button></div>` : `<div class="affiliate-assets__grid">${assets.map(asset => `<article class="affiliate-asset-card"><a class="affiliate-asset-card__preview" href="${escapeHtml(asset.path)}" target="_blank" rel="noopener" aria-label="Preview ${escapeHtml(asset.title)} (opens in a new tab)"><img src="${escapeHtml(asset.path)}" alt="${escapeHtml(asset.altText)}" loading="lazy" decoding="async"></a><h4>${escapeHtml(asset.title)}</h4><p>${escapeHtml(asset.usage)}</p><span>${escapeHtml(asset.format)} · ${escapeHtml(asset.dimensions)}</span><a class="btn btn-ghost btn-sm" href="${escapeHtml(asset.path)}" download="${escapeHtml(asset.path.split("/").at(-1))}" aria-label="Download ${escapeHtml(asset.title)}">Download PNG</a></article>`).join("")}</div>`}
-      </section>` : `<p class="affiliate-empty-state">Confirm the group and its approval to prepare the copy and artwork. If this is your individual account, use the personal kit instead.</p>`}
     `;
   }
 
@@ -932,17 +810,6 @@ export class AffiliateUI {
       this.close();
       return;
     }
-    const kit = event.target.closest("[data-affiliate-kit]")?.dataset.affiliateKit;
-    if (["personal", "community", "pta"].includes(kit)) {
-      if (this.shareAudience !== kit) {
-        this.shareAudience = kit;
-        this.groupConfirmed = false;
-        this.groupTemplate = kit === "pta" ? "newsletter" : "social";
-      }
-      this.render();
-      this.mount.querySelector(`[data-affiliate-kit="${kit}"]`)?.focus({ preventScroll: true });
-      return;
-    }
     const tab = event.target.closest("[data-affiliate-tab]")?.dataset.affiliateTab || event.target.closest("[data-affiliate-go]")?.dataset.affiliateGo;
     if (["overview", "share", "payouts"].includes(tab)) {
       this.activeTab = tab;
@@ -982,19 +849,6 @@ export class AffiliateUI {
         if (!this.destroyed) {
           this.renderPreservingFocus();
         }
-      } else if (action === "reload-group-assets") {
-        await this.loadGroupAssets();
-        if (!this.destroyed) this.renderPreservingFocus();
-      } else if (action === "download-group-copy") {
-        if (!this.groupConfirmed || !["community", "pta"].includes(this.shareAudience)) return;
-        const templates = groupAffiliateTemplates(this.status.affiliate, this.groupName, { pta: this.shareAudience === "pta" });
-        const content = ["SineDay group share kit", "Use only with the named group’s approval. Keep each commission disclosure beside its link. This kit does not change account ownership, program eligibility or payout terms.", ...templates.map(template => `${template.title}\n\n${template.text}`)].join("\n\n---\n\n");
-        const url = URL.createObjectURL(new Blob([content], { type: "text/plain;charset=utf-8" }));
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `sineday-${this.shareAudience}-share-copy.txt`;
-        link.click();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       } else if (action === "onboarding") {
         await this.openStripeRoute("/api/affiliate/onboarding-link");
       } else if (action === "login") {
@@ -1101,18 +955,10 @@ export class AffiliateUI {
     if (submit.disabled) return;
     submit.disabled = true;
     try {
-      if (formType === "group-kit") {
-        const form = new FormData(event.target);
-        const name = String(form.get("groupName") || "").trim();
-        if (name.length < 2 || name.length > 80 || !form.get("groupApproved")) throw new Error("Enter the group name and confirm its approval before using this kit.");
-        this.groupName = name;
-        this.groupConfirmed = true;
-        this.render();
-        this.mount.querySelector("#affiliate-group-template")?.focus();
-      } else if (formType === "application") {
+      if (formType === "application") {
         const form = new FormData(event.target);
         if (!hasSocialProfile(form)) {
-          throw new Error("Please share at least one social profile, website, or group.");
+          throw new Error("Please share at least one social profile or website.");
         }
         await this.request("/api/affiliate/application", {
           method: "POST",

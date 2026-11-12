@@ -26,9 +26,7 @@
     "test:day-photos:browser": "node test/day-photo-browser-smoke.mjs",
     "generate:affiliate-assets": "node scripts/generate-affiliate-assets.mjs",
     "check:affiliate-assets": "node scripts/generate-affiliate-assets.mjs --check",
-    "test:affiliate-dashboard:browser": "node test/affiliate-dashboard-browser-smoke.cjs",
-    "generate:group-affiliate-assets": "node scripts/generate-group-affiliate-assets.mjs",
-    "check:group-affiliate-assets": "node scripts/generate-group-affiliate-assets.mjs --check"
+    "test:affiliate-dashboard:browser": "node test/affiliate-dashboard-browser-smoke.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
