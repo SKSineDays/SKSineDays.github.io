@@ -167,6 +167,7 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
   /* The wings meet at 49.5% of the uncropped artwork. Remove the header,
      wave margin and half-canvas height, as in the portrait/desktop rules. */
   .homepage:not(:has(.result-card.visible)) .wave-container {
+    width: min(760px, 56.6667dvh);
     transform: translateY(calc(49.5dvh - 124px));
   }
 }

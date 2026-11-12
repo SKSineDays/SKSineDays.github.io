@@ -37,6 +37,10 @@ jobs:
       - run: npx playwright install chromium
       - run: node test/homepage-browser-smoke.cjs
       - run: node test/homepage-landscape-browser-smoke.cjs
+      - run: npx playwright install --with-deps webkit
+      - run: node test/homepage-landscape-browser-smoke.cjs
+        env:
+          HOMEPAGE_BROWSER: webkit
       - name: Upload homepage review
         uses: actions/upload-artifact@v4
         if: always()

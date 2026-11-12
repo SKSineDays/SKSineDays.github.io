@@ -1,4 +1,4 @@
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
 const { spawn } = require('node:child_process');
 const assert = require('node:assert/strict');
 const { mkdir } = require('node:fs/promises');
@@ -11,7 +11,9 @@ const { mkdir } = require('node:fs/promises');
       try { if ((await fetch('http://127.0.0.1:4192')).ok) break; } catch {}
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    browser = await chromium.launch();
+    const engine = process.env.HOMEPAGE_BROWSER || 'chromium';
+    assert.ok(['chromium', 'webkit'].includes(engine), 'supported browser engine');
+    browser = await ({ chromium, webkit }[engine]).launch();
     await mkdir('artifacts/homepage', { recursive: true });
     // Include the browser toolbar's lost height, the original screenshot's
     // proportions, and mini/Air/Pro sizes. Rotation is tested without a reload.
@@ -32,13 +34,14 @@ const { mkdir } = require('node:fs/promises');
           return {
             size: art.backgroundSize, width: parseFloat(art.width), height: parseFloat(art.height),
             scaleX: matrix.m11, scaleY: matrix.m22, offsetY: matrix.m42,
-            containerHeight: container.height, waveY: canvas.y + canvas.height / 2,
+            containerHeight: container.height, waveY: canvas.y + canvas.height / 2, waveWidth: canvas.width,
             headerBottom: document.querySelector('.top-bar').getBoundingClientRect().bottom,
             overflow: document.documentElement.scrollWidth > innerWidth,
           };
         });
         const checkLandscape = async () => {
           await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+          await page.waitForFunction(() => window.scrollY === 0);
           const art = await inspect();
           assert.equal(art.size, 'contain', `uncropped tablet art at ${width}x${height}`);
           assert.ok(Math.abs(art.width / art.height - 2 / 3) < .001, 'art retains its original proportions');
@@ -47,7 +50,8 @@ const { mkdir } = require('node:fs/promises');
           assert.ok(Math.abs(art.height - art.containerHeight) < 1, 'art fits the current viewport height');
           assert.ok(art.height * .118 + art.offsetY >= art.headerBottom - 3, 'artwork headline is below the header');
           assert.ok(art.height * .24 + art.offsetY < height, 'complete tagline remains on screen');
-          assert.ok(Math.abs(art.waveY - (art.height * .495 + art.offsetY)) < 8, 'wave follows the resized wing junction');
+          assert.ok(Math.abs(art.waveY - (art.height * .495 + art.offsetY)) < 8, `wave follows the resized wing junction: ${JSON.stringify(art)}`);
+          assert.ok(art.waveWidth <= art.width, 'wave stays within the resized artwork, away from the hero copy');
           assert.equal(art.overflow, false, 'no horizontal overflow');
           for (const button of await page.locator('.hero-btn').all()) {
             const box = await button.boundingBox();
@@ -56,7 +60,7 @@ const { mkdir } = require('node:fs/promises');
           if (reducedMotion === 'reduce') assert.equal(art.offsetY, 0, 'reduced-motion framing stays still');
         };
         await checkLandscape();
-        await page.screenshot({ path: `artifacts/homepage/ipad-${width}x${height}-${reducedMotion}.png` });
+        await page.screenshot({ path: `artifacts/homepage/${engine}-ipad-${width}x${height}-${reducedMotion}.png` });
         await page.setViewportSize({ width: height, height: width });
         assert.equal((await inspect()).size, 'cover', 'rotation back restores original portrait composition');
         await page.setViewportSize({ width, height });
@@ -73,6 +77,10 @@ const { mkdir } = require('node:fs/promises');
         await page.locator('#home-find-wave').click();
         await page.locator('#input-container.visible').waitFor();
         await page.waitForFunction(() => document.getElementById('background-image').classList.contains('hero-mode'));
+        // Reset deliberately scrolls after 120ms and focuses the input after
+        // 400ms. Finish that flow before measuring landing geometry at scroll 0.
+        await page.waitForTimeout(450);
+        assert.equal(await page.locator('#birthdate-input').evaluate(el => el === document.activeElement), true);
         await checkLandscape();
         assert.deepEqual(errors, [], 'no browser errors');
         await page.close();
