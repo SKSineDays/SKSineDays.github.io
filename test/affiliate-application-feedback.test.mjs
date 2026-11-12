@@ -155,7 +155,7 @@ test("missing social input has one inline error associated with every eligible f
   await page.send();
   const socialNames = ["instagram", "tiktok", "youtube", "website", "otherSocial"];
   assert.equal(page.document.activeElement, page.fields.instagram);
-  assert.equal(page.nodes.get("affiliate-public-instagram-error").textContent, "Please share at least one social profile, website, or group.");
+  assert.equal(page.nodes.get("affiliate-public-instagram-error").textContent, "Please share at least one social profile or website.");
   for (const name of socialNames) {
     assert.equal(page.fields[name].getAttribute("aria-invalid"), "true");
     assert.ok(page.fields[name].getAttribute("aria-describedby").endsWith("affiliate-public-instagram-error"));

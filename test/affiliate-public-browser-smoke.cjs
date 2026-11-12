@@ -12,7 +12,7 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
 (async () => {
   await fs.mkdir(OUTPUT, { recursive: true });
   const browser = await chromium.launch({ headless: true, ...(process.env.AFFILIATE_BROWSER_EXECUTABLE ? { executablePath: process.env.AFFILIATE_BROWSER_EXECUTABLE } : {}), args: ['--no-sandbox'] });
-  let posts = 0, reply = 'success', pendingRoute, lastPayload;
+  let posts = 0, reply = 'success', pendingRoute;
   const errors = [];
   async function prepare(viewport, reducedMotion = 'no-preference') {
     const page = await browser.newPage({ viewport, reducedMotion, deviceScaleFactor: 1 });
@@ -24,7 +24,6 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
         posts++;
         assert.equal(route.request().method(), 'POST');
         const payload = route.request().postDataJSON();
-        lastPayload = payload;
         assert.deepEqual(Object.keys(payload).sort(), ['company', 'displayName', 'email', 'instagram', 'introduction', 'otherSocial', 'tiktok', 'website', 'youtube'].sort());
         if (reply === 'pending') { pendingRoute = route; return; }
         if (reply === 'network') return route.abort('internetdisconnected');
@@ -38,6 +37,8 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
       return route.fulfill({ contentType: contentTypes[path.extname(file)], body: await fs.readFile(path.join(ROOT, file)) });
     });
     await page.goto(`${ORIGIN}/affiliate.html`);
+    assert.match(await page.locator('main').innerText(), /Individuals and creators/);
+    assert.doesNotMatch(await page.locator('main').innerText(), /\bPTAs?\b|fundrais|group application/i);
     return page;
   }
   async function fill(page) { for (const [name, value] of Object.entries(valid)) await page.locator(`[name="${name}"]`).fill(value); }
@@ -98,21 +99,6 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
     await page.goBack();
     assert.ok(page.url().includes('/affiliate.html'));
     assert.equal(posts, currentPosts, 'Back navigation never resubmits');
-    const groupPage = await prepare({ width: 390, height: 844 });
-    reply = 'success';
-    await fill(groupPage);
-    await groupPage.locator('[name="displayName"]').fill('Sample Representative');
-    await groupPage.locator('[name="instagram"]').fill('');
-    await groupPage.locator('[name="otherSocial"]').fill('Sample School PTA');
-    await groupPage.locator('[name="introduction"]').fill('I am the PTA treasurer and plan to share SineDay with our school community.');
-    assert.ok(await groupPage.getByText('For a PTA or fundraiser group to participate, an individual representative must first be verified, including their authority to act for the group.', { exact: true }).isVisible());
-    await groupPage.getByRole('button', { name: 'Send application' }).click();
-    await groupPage.locator('#affiliate-public-success').waitFor({ state: 'visible' });
-    assert.equal(lastPayload.displayName, 'Sample Representative');
-    assert.equal(lastPayload.otherSocial, 'Sample School PTA');
-    assert.equal(lastPayload.instagram, '');
-    assert.equal(posts, currentPosts + 1, 'Group application uses the existing submission flow once');
-    await groupPage.close();
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ status: 'passed', viewports: [320, 390, 768, 1440], mockedPosts: posts, realPosts: 0, output: OUTPUT }, null, 2));
   } finally { await browser.close(); }

@@ -9,11 +9,10 @@ on:
       - 'css/dashboard.css'
       - 'assets/affiliate/**'
       - 'scripts/generate-affiliate-assets.mjs'
-      - 'scripts/generate-group-affiliate-assets.mjs'
       - 'test/affiliate-dashboard*'
       - 'test/affiliate-public*'
       - 'test/affiliate-application*'
-      - 'test/affiliate-group-invitation.test.mjs'
+      - 'test/affiliate-individual-focus.test.mjs'
       - 'test/helpers/affiliate-dashboard-fixture.cjs'
       - '.github/workflows/affiliate-dashboard.yml'
 permissions:
@@ -33,7 +32,6 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run check:affiliate-assets
-      - run: npm run check:group-affiliate-assets
       # GitHub-hosted Ubuntu already has Chromium system libraries. Avoid an
       # unrelated apt mirror refresh before running the actual browser checks.
       - run: npx playwright install chromium
