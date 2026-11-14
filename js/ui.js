@@ -691,19 +691,25 @@ export class SineDayUI {
    * Set app content as inert (or aria-hidden fallback)
    */
   setAppInert(isInert) {
-    const header = document.querySelector('header.top-bar');
-    const main = document.querySelector('main.main-content');
-    const targets = [header, main].filter(Boolean);
-
-    targets.forEach(el => {
-      // Prefer inert when available
-      if ('inert' in el) {
-        el.inert = isInert;
-      } else {
-        // Fallback: aria-hidden (not perfect, but helpful)
-        el.setAttribute('aria-hidden', isInert ? 'true' : 'false');
+    if (isInert) {
+      if (this._inertBackground) return;
+      // The footer and skip link are outside main, but are still background
+      // content. Preserve existing states rather than un-hiding them on close.
+      this._inertBackground = Array.from(document.body.children)
+        .filter(el => el !== this.elements.infoModal && !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName))
+        .map(el => ({ el, inert: el.inert, ariaHidden: el.getAttribute('aria-hidden') }));
+      for (const { el } of this._inertBackground) {
+        if ('inert' in el) el.inert = true;
+        else el.setAttribute('aria-hidden', 'true');
       }
-    });
+    } else {
+      for (const { el, inert, ariaHidden } of this._inertBackground || []) {
+        if ('inert' in el) el.inert = inert;
+        else if (ariaHidden === null) el.removeAttribute('aria-hidden');
+        else el.setAttribute('aria-hidden', ariaHidden);
+      }
+      this._inertBackground = null;
+    }
   }
 
   /**
@@ -731,7 +737,7 @@ export class SineDayUI {
 
   openInfoModal() {
     const modal = this.elements.infoModal;
-    if (!modal) return;
+    if (!modal || this._modalOpen) return;
 
     this._lastFocus = document.activeElement;
     this._modalOpen = true;
@@ -739,8 +745,6 @@ export class SineDayUI {
     document.body.classList.add('modal-open');
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-
-    this.setAppInert(true);
 
     const panel = modal.querySelector('.sd-modal-panel');
     this._modalFocusables = this.getFocusableElements(panel);
@@ -750,6 +754,7 @@ export class SineDayUI {
     // Focus first focusable element (close button is ideal)
     const focusTarget = this.elements.infoModalClose || this._modalFocusables[0];
     if (focusTarget) focusTarget.focus();
+    this.setAppInert(true);
   }
 
   closeInfoModal() {
@@ -759,9 +764,6 @@ export class SineDayUI {
     this._modalOpen = false;
 
     document.body.classList.remove('modal-open');
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-
     this.setAppInert(false);
 
     if (this._boundModalKeydown) {
@@ -775,6 +777,8 @@ export class SineDayUI {
     } else if (this.elements.infoBtn) {
       this.elements.infoBtn.focus();
     }
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
   }
 
   /**
@@ -934,6 +938,7 @@ export class SineDayUI {
    * Cleanup
    */
   destroy() {
+    this.closeInfoModal();
     cancelDayPhoto(this.elements.dayImage, this.elements.dayPhotoCredit);
     if (this.waveRenderer) {
       this.waveRenderer.destroy();
