@@ -372,7 +372,9 @@ async function visitSemantics(browser) {
     }
     await page.reload();
     await page.waitForFunction(() => Boolean(window.__dayPhotoQA?.ui));
-    assert.equal(await waitPhoto(page, HOME_IMAGE, 1), id, 'Saved DOB auto-reload changed the photo');
+    assert.equal(await page.locator('#birthdate-input').inputValue(), '', 'Reload must not restore a guest date');
+    await showHomeDay(page, 1);
+    assert.equal(await waitPhoto(page, HOME_IMAGE, 1), id, 'Explicit recalculation after reload changed the photo');
     await goDashboard(fixture);
     await showDashboardDay(page, 1);
     assert.equal(await waitPhoto(page, DASH_IMAGE, 1), id);
@@ -380,6 +382,8 @@ async function visitSemantics(browser) {
     await page.locator('#explore-today-wave').click();
     assert.equal(await waitPhoto(page, DASH_IMAGE, 1), id, 'Dashboard rerender changed the photo');
     await goHome(fixture);
+    assert.equal(await page.locator('#birthdate-input').inputValue(), '', 'Navigation must not restore a guest date');
+    await showHomeDay(page, 1);
     assert.equal(await waitPhoto(page, HOME_IMAGE, 1), id);
     assert.equal(await page.evaluate(key => localStorage.getItem(key), PHOTO_HISTORY_KEY), history, 'Renders advanced the persisted cursor');
     const remotePaths = new Set(fixture.requests.filter(item => new URL(item.url).hostname === 'images.unsplash.com').map(item => new URL(item.url).pathname));

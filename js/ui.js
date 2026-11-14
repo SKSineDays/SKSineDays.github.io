@@ -119,8 +119,14 @@ export class SineDayUI {
     };
     window.addEventListener('scroll', this._onScroll, { passive: true });
 
-    // Check for saved birthdate
-    this.loadSavedBirthdate();
+    // Guest dates belong only to this open page, never browser storage.
+    this.clearGuestBirthdate();
+    this._onGuestPageHide = () => this.clearGuestBirthdate();
+    this._onGuestPageShow = (event) => {
+      if (event.persisted) this.resetToInput();
+    };
+    window.addEventListener('pagehide', this._onGuestPageHide);
+    window.addEventListener('pageshow', this._onGuestPageShow);
 
     this.showInput();
   }
@@ -273,9 +279,6 @@ export class SineDayUI {
       this.showError(result.error);
       return;
     }
-
-    // Save birthdate for next visit
-    this.saveBirthdate(birthdateValue);
 
     // Update UI with result
     this.displayResult(result);
@@ -606,31 +609,16 @@ export class SineDayUI {
   }
 
   /**
-   * Save birthdate to localStorage
+   * Clear guest input and remove only the obsolete guest date, not account data.
+   * No sessionStorage fallback: the date stays in the live input only.
    */
-  saveBirthdate(birthdate) {
+  clearGuestBirthdate() {
+    if (this.elements.birthdateInput) this.elements.birthdateInput.value = '';
+    this.currentDay = null;
     try {
-      localStorage.setItem('sineday_birthdate', birthdate);
-    } catch (e) {
-      // LocalStorage might be disabled
-      console.warn('Could not save birthdate', e);
-    }
-  }
-
-  /**
-   * Load saved birthdate from localStorage
-   */
-  loadSavedBirthdate() {
-    try {
-      const saved = localStorage.getItem('sineday_birthdate');
-      if (saved && this.elements.birthdateInput) {
-        this.elements.birthdateInput.value = saved;
-        // Auto-calculate on load
-        setTimeout(() => this.handleCalculate(), 500);
-      }
-    } catch (e) {
-      // LocalStorage might be disabled
-      console.warn('Could not load saved birthdate', e);
+      localStorage.removeItem('sineday_birthdate');
+    } catch {
+      // Storage may be blocked. Never read or restore the old value.
     }
   }
 
@@ -938,6 +926,9 @@ export class SineDayUI {
    * Cleanup
    */
   destroy() {
+    this.clearGuestBirthdate();
+    window.removeEventListener('pagehide', this._onGuestPageHide);
+    window.removeEventListener('pageshow', this._onGuestPageShow);
     this.closeInfoModal();
     cancelDayPhoto(this.elements.dayImage, this.elements.dayPhotoCredit);
     if (this.waveRenderer) {
