@@ -47,10 +47,10 @@ export function signFlow(flow, secret) {
   return `${payload}.${createHmac('sha256', secret).update(payload).digest('base64url')}`;
 }
 
-export function readFlow(cookie, secret, now = Date.now()) {
-  const matches = String(cookie || '').split(';').map(x => x.trim()).filter(x => x.startsWith(`${FLOW_COOKIE}=`));
+export function readFlow(cookie, secret, now = Date.now(), cookieName = FLOW_COOKIE) {
+  const matches = String(cookie || '').split(';').map(x => x.trim()).filter(x => x.startsWith(`${cookieName}=`));
   if (matches.length !== 1) throw new Error('Start registration again');
-  const raw = matches[0].slice(FLOW_COOKIE.length + 1);
+  const raw = matches[0].slice(cookieName.length + 1);
   if (raw.length > 4096) throw new Error('Invalid registration');
   const [payload, signature, extra] = raw.split('.');
   if (!payload || !signature || extra) throw new Error('Invalid registration');
@@ -74,8 +74,8 @@ export function createFlow(provider, eligibility, now = Date.now()) {
       minimumAge: eligibility.minimumAge, ageBand: eligibility.ageBand } };
 }
 
-export function flowCookie(value = '', maxAge = FLOW_SECONDS) {
-  return `${FLOW_COOKIE}=${value}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
+export function flowCookie(value = '', maxAge = FLOW_SECONDS, cookieName = FLOW_COOKIE) {
+  return `${cookieName}=${value}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
 }
 
 export function providerSettings(provider, config) {

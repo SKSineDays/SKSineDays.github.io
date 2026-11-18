@@ -146,7 +146,7 @@ self.addEventListener('fetch', (event) => {
 
   // Confirmation pages can be opened with a token fragment. Never serve or
   // persist these visits from the service-worker cache.
-  if (url.pathname === '/provider-diagnostic.html' || url.pathname === '/js/provider-diagnostic.js' || url.pathname === '/auth/callback.html' || url.pathname === '/daily/confirm' || url.pathname === '/daily-confirm.html') {
+  if (url.pathname === '/provider-diagnostic.html' || url.pathname === '/js/provider-diagnostic.js' || url.pathname === '/signup-canary.html' || url.pathname === '/js/signup-canary.js' || url.pathname === '/auth/callback.html' || url.pathname === '/daily/confirm' || url.pathname === '/daily-confirm.html') {
     event.respondWith(
       fetch(request, { cache: 'no-store' }).catch(() => new Response('Offline', {
         status: 503,
