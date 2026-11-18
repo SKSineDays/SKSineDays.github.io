@@ -14,6 +14,14 @@ jobs:
           persist-credentials: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps webkit chromium
+      - name: Wait for the new public login page
+        run: |
+          for i in {1..40}; do
+            curl -fsSL https://www.sineday.app/login.html -o /tmp/public-login.html
+            if grep -q 'id="login-panel"' /tmp/public-login.html; then exit 0; fi
+            sleep 8
+          done
+          exit 1
       - name: Inspect deployed form without submitting
         run: |
           mkdir -p phone-qa
@@ -21,7 +29,7 @@ jobs:
           const { webkit, chromium, devices } = require('playwright');
           const assert = require('node:assert/strict');
           (async () => {
-            for (const [name, engine, device, width] of [['webkit-320',webkit,'iPhone SE',320],['webkit-390',webkit,'iPhone 13',390],['chromium-390',chromium,'Pixel 7',390]]) {
+            for (const [name, engine, device, width] of [['webkit-320',webkit,'iPhone SE',320],['webkit-390',webkit,'iPhone 13',390],['chromium-390',chromium,'Pixel 7',390],['desktop',chromium,'Desktop Chrome',1280]]) {
               const b=await engine.launch();
               try {
                 const p=await b.newPage({...devices[device], viewport:{width,height:844}, deviceScaleFactor:1});
@@ -30,8 +38,20 @@ jobs:
                 const later=p.getByRole('button',{name:'Not now',exact:true});
                 if(await later.isVisible()) await later.click();
                 const summary=p.locator('#registration-panel summary');
-                await summary.waitFor({state:'visible'});assert.equal(await summary.innerText(),'Create Account');
+                const login=p.locator('#login-panel summary'), email=p.locator('#signin-email'), age=p.locator('#registration-birthdate');
+                const region=p.locator('.container');
+                await login.waitFor({state:'visible'});await summary.waitFor({state:'visible'});
+                assert.equal(await login.innerText(),'Log in');
+                assert.ok(!(await email.isVisible()) && !(await age.isVisible()));
+                await region.screenshot({path:'phone-qa/'+name+'-landing.png'});
+                await login.press('Space');
+                assert.ok(await email.isVisible() && await p.locator('#google-signin-btn').isVisible() && await p.locator('#apple-signin-btn').isVisible());
+                assert.ok(!(await summary.isVisible()) && !(await age.isVisible()));
+                await region.screenshot({path:'phone-qa/'+name+'-login.png'});
+                await login.press('Enter');assert.ok(await summary.isVisible());
+                await summary.waitFor({state:'visible'});assert.equal(await summary.innerText(),'Create account');
                 await summary.press('Enter');
+                assert.ok(!(await login.isVisible()) && !(await email.isVisible()));
                 const form=p.locator('#registration-panel');
                 await p.getByText('SineDay is for ages 13 and up.',{exact:true}).waitFor();
                 const boxes=await form.locator('summary,.registration-intro,label,input,select,.email-help,button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {label:el.id||el.textContent.slice(0,32),x:r.x,y:r.y,w:r.width,h:r.height}}).filter(x=>x.h));
@@ -40,6 +60,7 @@ jobs:
                 for(const id of ['registration-birthdate','registration-country','registration-method']){const e=boxes.find(x=>x.label===id);assert.ok(e.h>=44 && e.w>=190);}
                 assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
                 await form.screenshot({path:'phone-qa/'+name+'.png'});
+                await p.locator('#registration-cancel').click();assert.ok(await login.isVisible() && await summary.isVisible() && !(await age.isVisible()));
                 console.log(name,JSON.stringify(boxes));
               } finally {await b.close();}
             }
