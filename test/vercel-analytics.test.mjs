@@ -74,7 +74,7 @@ test("authentication callback, email signup and confirmation pages stay tracker-
 });
 
 test("service worker lets Vercel insights traffic bypass the cache", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v55'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v56'/);
   assert.match(
     serviceWorker,
     /if \(url\.pathname\.startsWith\('\/_vercel\/'\)\) \{\s*return;\s*\}/,

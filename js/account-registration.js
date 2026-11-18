@@ -97,6 +97,7 @@ form.addEventListener('submit', async event => {
   const version = ++generation;
   setBusy(true);
   status.textContent = 'Checking account eligibility…';
+  let configuringApple = false;
   try {
     const result = await request({ action: 'begin', birthdate: birthdate.value, country: country.value, provider: method.value });
     birthdate.value = '';
@@ -118,6 +119,7 @@ form.addEventListener('submit', async event => {
       window.google.accounts.id.renderButton(document.getElementById('registration-google-button'),
         { theme: 'outline', size: 'large', text: 'continue_with' });
     } else {
+      configuringApple = true;
       await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js');
       if (version !== generation) return;
       window.AppleID.auth.init({ clientId: flow.clientId, scope: 'name email', redirectURI: flow.redirectUri,
@@ -128,25 +130,63 @@ form.addEventListener('submit', async event => {
   } catch (error) {
     if (version !== generation) return;
     reset();
-    status.textContent = error.message;
+    status.textContent = configuringApple ? appleSignupFailure(error) : error.message;
   } finally {
     if (version === generation) setBusy(false);
   }
 });
+// Only these fixed references/messages may leave the Apple SDK error boundary.
+// Never display/log SDK error_description, message, authorization data or tokens.
+function appleSignupFailure(error) {
+  const messages = {
+    APPLE_CANCELED: 'Apple authorization ended before returning to SineDay. Please try again.',
+    APPLE_POPUP_CLOSED: 'The Apple authorization window closed before returning a result. Please try again.',
+    APPLE_POPUP_BLOCKED: 'The browser could not open Apple authorization. Allow the sign-in window, or try Safari directly.',
+    APPLE_UNAUTHORIZED_CLIENT: 'Apple did not authorize this sign-up configuration. Please share this reference with SineDay support.',
+    APPLE_INVALID_CLIENT: 'Apple could not accept the configured sign-up client. Please share this reference with SineDay support.',
+    APPLE_INVALID_REQUEST: 'Apple could not accept the authorization request. Please share this reference with SineDay support.',
+    APPLE_INVALID_REDIRECT: 'Apple could not accept the sign-up return address. Please share this reference with SineDay support.',
+    APPLE_STATE_MISSING: 'Apple returned without the required sign-up state. No account request was sent. Please start again.',
+    APPLE_STATE_MISMATCH: 'The Apple sign-up state did not match. No account request was sent. Please start again.',
+    APPLE_TOKEN_MISSING: 'Apple returned without the required identity token. No account request was sent. Please start again.',
+    APPLE_UNAVAILABLE: 'Apple sign-up is unavailable in this browser right now. Please start again.',
+    APPLE_UNKNOWN: 'Apple authorization could not finish. Please share this reference with SineDay support.'
+  };
+  const sdkCodes = {
+    user_cancelled_authorize: 'APPLE_CANCELED',
+    popup_closed_by_user: 'APPLE_POPUP_CLOSED',
+    popup_blocked_by_browser: 'APPLE_POPUP_BLOCKED',
+    popup_blocked: 'APPLE_POPUP_BLOCKED',
+    unauthorized_client: 'APPLE_UNAUTHORIZED_CLIENT',
+    invalid_client: 'APPLE_INVALID_CLIENT',
+    invalid_request: 'APPLE_INVALID_REQUEST',
+    invalid_redirect_uri: 'APPLE_INVALID_REDIRECT'
+  };
+  const raw = typeof error === 'string' ? error :
+    typeof error?.error === 'string' ? error.error : typeof error?.code === 'string' ? error.code : '';
+  const code = Object.prototype.hasOwnProperty.call(messages, raw) ? raw :
+    Object.prototype.hasOwnProperty.call(sdkCodes, raw) ? sdkCodes[raw] : 'APPLE_UNKNOWN';
+  return `${messages[code]} Reference: ${code}.`;
+}
+function appleFlowError(code) { return { code }; }
+
 document.getElementById('registration-apple-button').addEventListener('click', async () => {
   if (busy || flow?.provider !== 'apple') return;
   const version = generation;
   setBusy(true);
   try {
+    if (typeof window.AppleID?.auth?.signIn !== 'function') throw appleFlowError('APPLE_UNAVAILABLE');
     const result = await window.AppleID.auth.signIn();
     if (version !== generation) return;
-    if (result.authorization?.state !== flow.nonce) throw new Error('Sign-up state did not match. Please start again.');
+    if (typeof result?.authorization?.state !== 'string' || !result.authorization.state) throw appleFlowError('APPLE_STATE_MISSING');
+    if (result.authorization.state !== flow.nonce) throw appleFlowError('APPLE_STATE_MISMATCH');
+    if (typeof result.authorization.id_token !== 'string' || !result.authorization.id_token) throw appleFlowError('APPLE_TOKEN_MISSING');
     setBusy(false);
     await complete(result.authorization?.id_token, version);
-  } catch {
+  } catch (error) {
     if (version !== generation) return;
     reset();
-    status.textContent = 'Apple sign-up was canceled or could not finish. Please try again.';
+    status.textContent = appleSignupFailure(error);
   } finally { if (version === generation) setBusy(false); }
 });
 document.getElementById('registration-cancel').addEventListener('click', () => { cancel(); panel.open = false; });
