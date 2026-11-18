@@ -34,6 +34,7 @@ export async function fetchConfig() {
       supabaseAnonKey: data.supabaseAnonKey,
       appUrl: data.appUrl,
       accountRegistrationEnabled: data.accountRegistrationEnabled === true,
+      accountEligibilityEnabled: data.accountEligibilityEnabled === true,
       mailerEligibilityEnabled: data.mailerEligibilityEnabled === true,
       affiliateProgramEnabled: data.affiliateProgramEnabled === true,
       affiliateTermsVersion: data.affiliateTermsVersion || '2026-07-24'
