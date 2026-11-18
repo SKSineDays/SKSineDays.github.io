@@ -196,7 +196,6 @@ window.addEventListener('pageshow', event => { if (event.persisted) reset(); });
 fetchConfig().then(async config => {
   if (config.accountRegistrationEnabled !== true) return;
   registrationEnabled = true; panel.hidden = false;
-  document.getElementById('email-signin-help').textContent = 'Use your existing account email, or create an account below.';
   const response = await fetch('/api/eligibility-policy', { cache: 'no-store' });
   const result = await response.json();
   if (!response.ok || !result.ok) throw new Error();

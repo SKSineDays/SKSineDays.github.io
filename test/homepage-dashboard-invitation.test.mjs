@@ -39,8 +39,18 @@ test("existing result and reset flows relocate the same intro and invitation", (
 });
 
 test("login welcomes new and returning users while retaining both providers", () => {
-  assert.match(login, /<strong>Welcome to SineDay<\/strong>/);
-  assert.match(login, /New here or returning\? Sign in with Google, Apple, or email to open your dashboard\./);
+  assert.match(login, /<h2 class="auth-welcome">Welcome to SineDay<\/h2>/);
+  const choices = [...login.matchAll(/<details ([^>]*name="account-path"[^>]*)>([\s\S]*?)<\/details>/g)];
+  assert.equal(choices.length, 2);
+  assert.ok(choices.every(([, attrs]) => !/\bopen\b/.test(attrs)));
+  const [[, createAttrs, create], [, , signIn]] = choices;
+  assert.match(createAttrs, /\bhidden\b/);
+  assert.match(create, /<summary>Create account<\/summary>/);
+  assert.match(create, /id="registration-birthdate"/);
+  assert.doesNotMatch(create, /id="(?:google|apple)-signin-btn"/);
+  assert.match(signIn, /<summary>Log in<\/summary>/);
+  assert.match(signIn, /id="email-signin-form"/);
+  assert.doesNotMatch(signIn, /id="registration-form"/);
   assert.doesNotMatch(login, /Welcome back|Sign in to continue your SineDay journal\./);
   for (const provider of ["google", "apple"]) {
     assert.match(login, new RegExp(`<button id="${provider}-signin-btn"[^>]*type="button"`));
