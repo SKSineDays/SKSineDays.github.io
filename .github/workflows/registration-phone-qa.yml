@@ -1,0 +1,53 @@
+name: Registration phone layout QA
+on:
+  push:
+    branches: [qa/registration-phone-layout-20261118]
+permissions:
+  contents: read
+jobs:
+  phones:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps webkit chromium
+      - name: Inspect deployed form without submitting
+        run: |
+          mkdir -p phone-qa
+          node <<'JS'
+          const { webkit, chromium, devices } = require('playwright');
+          const assert = require('node:assert/strict');
+          (async () => {
+            for (const [name, engine, device, width] of [['webkit-320',webkit,'iPhone SE',320],['webkit-390',webkit,'iPhone 13',390],['chromium-390',chromium,'Pixel 7',390]]) {
+              const b=await engine.launch();
+              try {
+                const p=await b.newPage({...devices[device], viewport:{width,height:844}, deviceScaleFactor:1});
+                await p.route('**/api/account-registration',route=>route.abort());
+                await p.goto('https://www.sineday.app/login.html');
+                const later=p.getByRole('button',{name:'Not now',exact:true});
+                if(await later.isVisible()) await later.click();
+                const summary=p.locator('#registration-panel summary');
+                await summary.waitFor({state:'visible'});assert.equal(await summary.innerText(),'Create Account');
+                await summary.press('Enter');
+                const form=p.locator('#registration-panel');
+                await p.getByText('SineDay is for ages 13 and up.',{exact:true}).waitFor();
+                const boxes=await form.locator('summary,.registration-intro,label,input,select,.email-help,button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {label:el.id||el.textContent.slice(0,32),x:r.x,y:r.y,w:r.width,h:r.height}}).filter(x=>x.h));
+                for(let i=1;i<boxes.length;i++)assert.ok(boxes[i].y>=boxes[i-1].y+boxes[i-1].h-0.1,JSON.stringify(boxes));
+                for(const e of boxes)assert.ok(e.x>=0 && e.x+e.w<=width+1,JSON.stringify(e));
+                for(const id of ['registration-birthdate','registration-country','registration-method']){const e=boxes.find(x=>x.label===id);assert.ok(e.h>=44 && e.w>=190);}
+                assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+                await form.screenshot({path:'phone-qa/'+name+'.png'});
+                console.log(name,JSON.stringify(boxes));
+              } finally {await b.close();}
+            }
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: registration-phone-render
+          path: phone-qa/
+          retention-days: 2
