@@ -681,3 +681,8 @@ body.daily-page {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Author grid/flex rules must not expose fields hidden by the eligibility flow. */
+.daily-form [hidden] {
+  display: none !important;
+}
