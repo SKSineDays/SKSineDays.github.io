@@ -36,7 +36,7 @@ test("package.json pins @vercel/analytics", () => {
 
 test("analytics bootstrap injects the official Vercel insights script", () => {
   assert.match(analyticsJs, /\/_vercel\/insights\/script\.js/);
-  assert.match(analyticsJs, /window\.va = function va\(\)/);
+  assert.match(analyticsJs, /window\.va = window\.va \|\| function va\(\)/);
   assert.match(analyticsJs, /window\.vaq\.push\(arguments\)/);
   assert.match(analyticsJs, /script\.defer = true/);
   assert.match(analyticsJs, /document\.head\.appendChild\(script\)/);
@@ -72,9 +72,10 @@ test("authentication callback, email signup and confirmation pages stay tracker-
 });
 
 test("service worker lets Vercel insights traffic bypass the cache", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v51'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v52'/);
   assert.match(
     serviceWorker,
     /if \(url\.pathname\.startsWith\('\/_vercel\/'\)\) \{\s*return;\s*\}/,
   );
 });
+

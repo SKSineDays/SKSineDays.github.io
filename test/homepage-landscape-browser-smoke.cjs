@@ -24,6 +24,7 @@ const { mkdir } = require('node:fs/promises');
         page.on('pageerror', error => errors.push(error.message));
         await page.goto('http://127.0.0.1:4192');
         await page.locator('#input-container.visible').waitFor();
+        if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
         await page.evaluate(async () => { const image = new Image(); image.src = '/assets/og-hero.png'; await image.decode(); });
         const inspect = () => page.evaluate(() => {
           const background = document.getElementById('background-image');
@@ -44,6 +45,13 @@ const { mkdir } = require('node:fs/promises');
         const checkLandscape = async () => {
           await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
           await page.waitForFunction(() => window.scrollY === 0);
+          // WebKit may expose the new media-query sizing before its previous
+          // portrait transform is recomputed after a viewport rotation.
+          await page.waitForFunction(() => {
+            const style = getComputedStyle(document.getElementById('background-image'), '::before');
+            const matrix = new DOMMatrix(style.transform);
+            return style.backgroundSize === 'contain' && matrix.m11 === 1 && matrix.m22 === 1;
+          });
           const art = await inspect();
           assert.equal(art.size, 'contain', `uncropped tablet art at ${width}x${height}`);
           assert.ok(Math.abs(art.width / art.height - 2 / 3) < .001, 'art retains its original proportions');
@@ -82,6 +90,7 @@ const { mkdir } = require('node:fs/promises');
         assert.equal(await page.locator('.wave-container').evaluate(el => getComputedStyle(el).transform), 'none');
         await page.locator('#home-find-wave').click();
         await page.locator('#input-container.visible').waitFor();
+        if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
         await page.waitForFunction(() => document.getElementById('background-image').classList.contains('hero-mode'));
         // Reset deliberately scrolls after 120ms and focuses the input after
         // 400ms. Finish that flow before measuring landing geometry at scroll 0.
@@ -105,3 +114,4 @@ const { mkdir } = require('node:fs/promises');
     server.kill();
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

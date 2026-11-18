@@ -29,10 +29,11 @@ test("linked story text retains the meaning and explains the silent visuals", ()
 });
 
 test("homepage cache advances for the controller change without preloading video or retired animation", () => {
-  assert.match(sw, /CACHE_NAME = 'sineday-v51'/);
+  assert.match(sw, /CACHE_NAME = 'sineday-v52'/);
   const assets = sw.slice(sw.indexOf('const ASSETS_TO_CACHE'), sw.indexOf('const OPTIONAL_ASSETS'));
   assert.match(assets, /'\/styles\.css'/);
   assert.match(assets, /'\/js\/ui\.js'/);
   assert.match(assets, /'\/js\/home-video\.js'/);
   assert.doesNotMatch(assets, /sineduck-intro-animation\.js|intro-video\.js|\.mp4/);
 });
+
