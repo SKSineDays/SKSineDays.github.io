@@ -38,10 +38,37 @@
       justify-content: center;
     }
 
-    .registration-panel { margin-top: 24px; line-height: 1.5; }
-    .registration-panel summary { cursor: pointer; padding: 12px 0; }
-    .registration-panel select { width: 100%; padding: 12px; font: inherit; border-radius: 8px; }
-    .registration-panel [hidden] { display: none !important; }
+    .registration-panel { margin-top: 14px; min-width: 0; line-height: 1.55; }
+    .registration-panel[hidden], .registration-panel [hidden] { display: none !important; }
+    .registration-panel summary {
+      display: grid; grid-template-columns: 1.25rem 1fr 1.25rem; align-items: center;
+      gap: .6rem; padding: 14px 18px; min-height: 52px; box-sizing: border-box;
+      list-style: none; cursor: pointer; text-align: center; font-size: 16px; font-weight: 700;
+      border: 1px solid #c8b7dc; border-radius: 12px; color: #faf2ff;
+      background: linear-gradient(135deg, #5b5069, #4a4259);
+    }
+    .registration-panel summary::-webkit-details-marker { display: none; }
+    .registration-panel summary::before { content: ""; }
+    .registration-panel summary::after {
+      content: ""; width: 8px; height: 8px; justify-self: center;
+      border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    .registration-panel[open] summary::after { transform: rotate(225deg); }
+    .registration-panel summary:hover { background: #62556f; }
+    .registration-panel :is(summary, input, select, button):focus-visible {
+      outline: 3px solid #f7d998; outline-offset: 3px;
+    }
+    .registration-intro { margin: 22px 0; color: #f5dfba; font-size: 17px; font-weight: 600; }
+    .registration-panel :is(input, select) {
+      display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%;
+      min-height: 48px; padding: 10px 12px; border: 1px solid #9790aa; border-radius: 10px;
+      background: #302e39; color: #f6eedf; color-scheme: dark; font: inherit; font-size: 16px;
+    }
+    .registration-panel .email-help { margin: 8px 0 0; line-height: 1.5; }
+    .registration-panel .btn { min-height: 48px; }
+    #registration-cancel { background: transparent; color: #e4d9ee; border: 1px solid #92869e; margin-bottom: 0; }
+    #registration-status:not(:empty) { margin: 16px 0 0; }
+    #registration-status:empty { margin: 0; }
 
     /* Background */
     body::before {
@@ -534,16 +561,17 @@
     </form>
 
     <details id="registration-panel" class="registration-panel" hidden>
-      <summary>Create a new SineDay account</summary>
-      <p>These details are for the person who will use this account, not a person added to your journal or Duck Globe. Independent SineDay accounts require age 13 or older. This is our product minimum, not an identity or age-verification service. We check the declaration once for a new account. Your birthdate is not saved by this check.</p>
+      <summary>Create Account</summary>
+      <p class="registration-intro">SineDay is for ages 13 and up.</p>
       <form id="registration-form">
         <div class="form-group">
           <label for="registration-birthdate">Your birthdate</label>
-          <input id="registration-birthdate" type="date" required autocomplete="off">
+          <input id="registration-birthdate" aria-describedby="registration-birthdate-help" type="date" required autocomplete="off">
+          <p id="registration-birthdate-help" class="email-help">Use the account holder’s birthdate. This one-time check doesn’t save it.</p>
         </div>
         <div class="form-group">
           <label for="registration-country">Country where you live</label>
-          <select id="registration-country" required>
+          <select id="registration-country" aria-describedby="registration-country-help" required>
             <option value="">Choose your country</option>
           </select>
           <p id="registration-country-help" class="email-help">If your country is not available yet, please contact support. Do not choose a different country.</p>
