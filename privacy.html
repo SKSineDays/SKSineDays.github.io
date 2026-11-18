@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Privacy Policy for SineDay, including account data, profile data, notes, and payment processing information.">
+  <meta name="description" content="Privacy Policy for SineDay, including account data, browser storage, privacy choices, analytics, and payment processing.">
   <link rel="canonical" href="https://www.sineday.app/privacy.html">
   <title>Privacy Policy - SineDay</title>
   <!-- Icons -->
@@ -54,15 +54,30 @@
         <p class="legal-eyebrow">SineDay</p>
         <h1 class="legal-title">Privacy Policy</h1>
         <p class="legal-subline">Operated by RaLux LLC DBA SineDay</p>
-        <p class="legal-updated">Last updated: September 30, 2026</p>
+        <p class="legal-updated">Last updated: November 18, 2026</p>
 
         <h2>Optional globe participation</h2>
         <p>You can choose to add one light for your account to the SineDay globe. Participation is off by default. If you opt in, we save your selected country or territory and optional public city key, participation setting, consent version and time, and the record’s update time. We do not request GPS access or infer your globe location from IP address, timezone, locale, or private profiles.</p>
-        <p>Other signed-in dashboard members see approximate country or city lights derived from participating account counts and public map positions, without member names or account identifiers. A city choice is more specific than a country choice and requires updated consent. This is self-selected representation, not verified residency, guaranteed anonymity, or an indication that you are online. Family profiles and email-only subscriptions do not become globe members.</p>
+        <p>Other signed-in dashboard members see approximate country or city lights derived from participating account counts and public map positions, without member names or account identifiers. A city choice is more specific than a country choice and requires updated consent. This is self-selected representation, not verified residency, guaranteed anonymity, or an indication that you are online. Email-only subscriptions do not become globe members.</p>
         <p>Use “Manage my light” below the globe to change your country or city, return to country-only precision, or remove your light. Removal deletes the participation record and updates your local globe immediately after confirmation. Other viewers’ cached snapshots refresh within five minutes while the globe is visible. Account deletion also deletes the participation record.</p>
 
         <h2>Information collected</h2>
-        <p>SineDay collects account information, profile/birthdate information, timezone/settings information, planner notes, technical/device data needed to operate the service, and payment-related data processed through Stripe.</p>
+        <p>SineDay collects account information, profile/birthdate information, timezone/settings information, and technical/device data needed to operate the service, and payment-related data processed through Stripe.</p>
+
+        <h2>Browser storage and your privacy choices</h2>
+        <p>This policy covers the SineDay app and SineDay Blog. Browser storage includes local storage, session storage, and cached files, not just cookies. Select “Privacy choices” on either site to review or change optional settings. Accepting and rejecting optional uses are both available. You can use the app and read the blog without accepting optional analytics or storage.</p>
+        <p>We save your privacy choices in local storage for up to 180 days so we can respect them on later visits. Choices apply to the browser and site where you make them. The app and blog use separate origins, so a choice on one does not automatically apply to the other. Clearing site data or using another browser may cause the choice to be requested again.</p>
+        <ul>
+          <li><strong>Service storage:</strong> The app uses authentication session storage to keep you signed in, short-lived session messages to complete sign-in flows, and a local cache of account language, region, and calendar settings. Initial language and region defaults may come from your browser. Its service worker caches app files for loading and offline support. Rejecting optional uses does not turn off these service functions or sign you out.</li>
+          <li><strong>Optional photo history:</strong> With your permission, the app remembers which day photos it has shown so later visits can show different pictures. Local storage holds per-day photo selection indices, not your identity, birthdate, or journal text. Session storage keeps the current selection across same-tab navigation, with a 30-minute inactivity window. Photo history remains until you clear it, withdraw this permission, or the stored data is replaced. Without permission, pictures still work without this saved history.</li>
+          <li><strong>Optional affiliate referral storage:</strong> With your permission, the app remembers an Affiliate Code from a referral link for up to 30 days. Details and limits are described below.</li>
+          <li><strong>Optional analytics:</strong> With your permission, the app and blog load Vercel Web Analytics to understand aggregate site use. Analytics is off until you opt in on that site.</li>
+        </ul>
+        <p>You can withdraw any optional permission through “Privacy choices.” This stops the corresponding optional use and removes the app’s saved photo history or pending referral code when those permissions are withdrawn. Changing analytics permission may reload the page to stop the loaded analytics script. Withdrawal does not undo information already sent or delete account, payment, or completed affiliate records. You can also clear storage through your browser settings; doing so may sign you out and remove saved preferences and offline files.</p>
+
+        <h2>Website analytics</h2>
+        <p>Vercel Web Analytics does not use third-party cookies for its analytics. Even so, we ask for your permission before loading it. It processes page visits and technical information such as the page path, referring site, browser and device type, and approximate location derived from the request. Vercel describes its visitor identification as a request-derived hash with a lifespan of up to 24 hours, rather than a persistent cross-site cookie.</p>
+        <p>Our analytics configuration sends page-view events only and removes query strings and URL fragments from the page URL. We do not intentionally send birthdates, account identifiers, journal text, or Affiliate Codes as custom analytics events. For the provider’s details, see <a href="https://vercel.com/docs/analytics/privacy-policy">Vercel’s analytics privacy information</a>.</p>
 
         <h2>How information is used</h2>
         <p>SineDay uses this information to authenticate users, provide the dashboard and premium features, generate personalized SineDay outputs, process subscriptions, support customers, and improve service reliability.</p>
@@ -76,12 +91,14 @@
         <p>Payments are processed by Stripe.</p>
         <p>Authentication and data infrastructure may use Supabase.</p>
         <p>Transactional email services may use Resend.</p>
+        <p>Vercel provides website hosting and, when you permit it, the analytics described above. Like other web services, hosting and delivery providers receive technical request information needed to serve and protect the site.</p>
+        <p>Some app images are delivered by Unsplash, and the Supabase browser library is delivered through jsDelivr. Requests for those resources expose normal connection information, such as IP address and browser request headers, to the provider. The homepage videos are hosted as SineDay video files, rather than embedded YouTube or Vimeo players. Optional analytics settings do not block the ordinary requests needed to deliver site content.</p>
 
         <h2>Affiliate Program information</h2>
         <p>When a member applies to the SineDay Affiliate Program, SineDay stores their account identifier, public display name, Affiliate Code, accepted terms version and time, internal program status, Stripe connected-account identifier, and non-sensitive setup and capability statuses.</p>
         <p>When a member applies an Affiliate Code at Stripe Checkout, SineDay stores the Affiliate Code, attribution, and attribution time. SineDay also retains commission, adjustment, payout, invoice, refund, dispute, and transfer metadata needed to operate and audit the program.</p>
         <p>Affiliates receive aggregate performance information such as supporter counts and earnings totals. They do not receive supporter names, email addresses, user identifiers, or individual journal information.</p>
-        <p>When a visitor follows an Affiliate link, SineDay may temporarily store the normalized code and capture time in that browser for up to 30 days so the code can be applied at Stripe Checkout if the visitor upgrades to Premium. The link does not silently create an attribution.</p>
+        <p>When a visitor follows an Affiliate link and permits affiliate referral storage, SineDay stores the normalized code and capture time in that browser for up to 30 days so it can be offered during checkout. Before a choice, the code may be held only in the current page’s memory. Rejecting this storage means the code is not remembered for later visits, so referral attribution cannot be guaranteed. A visitor may still enter an Affiliate Code themselves where checkout allows it. Following a link or allowing its storage does not by itself create a completed attribution.</p>
 
         <h2>Affiliate payout and identity information</h2>
         <p>Stripe collects and handles an affiliate’s bank, identity, tax, payout, and available tax-document information through Stripe-hosted services. SineDay does not store an affiliate’s bank account number, Social Security number, tax identification number, identity-verification documents, or copies of tax forms.</p>
@@ -91,7 +108,7 @@
 
         <h2>Data sharing</h2>
         <p>We do not sell customer personal data.</p>
-        <p>Apart from the optional aggregate globe representation described above, we only share data with service providers necessary to operate SineDay or where required by law.</p>
+        <p>Apart from the optional aggregate globe representation described above, we share data with the service providers described in this policy to deliver SineDay, provide optional features you permit, or meet legal requirements.</p>
 
         <h2>User controls</h2>
         <p>Users can contact support regarding account questions, billing questions, or requests related to their data.</p>
@@ -137,3 +154,4 @@
   </footer>
 </body>
 </html>
+

@@ -20,7 +20,7 @@ function validIndex(value, count) {
  * repeating. Storage contains no identity, birthdate, or journal information.
  * Dependency injection keeps the policy testable without a browser or account.
  */
-export function createPhotoSelector({ collection, version, sessionStorage, localStorage, now = Date.now }) {
+export function createPhotoSelector({ collection, version, sessionStorage, localStorage, now = Date.now, canPersist = () => true }) {
   const chosen = new Map();
   let visit;
   function startVisit() {
@@ -32,7 +32,7 @@ export function createPhotoSelector({ collection, version, sessionStorage, local
       ? saved : { version, lastUsed: now(), indices: {} };
     return visit;
   }
-  return function selectDayPhoto(day) {
+  function selectDayPhoto(day) {
     if (!Number.isInteger(day) || day < 1 || day > 18) return null;
     if (chosen.has(day)) {
       visit.lastUsed = now();
@@ -57,5 +57,19 @@ export function createPhotoSelector({ collection, version, sessionStorage, local
     write(sessionStorage, PHOTO_VISIT_KEY, current);
     chosen.set(day, photos[index]);
     return photos[index];
+  }
+  // A photo may be chosen while optional storage is denied. Permission granted
+  // later records that exact selection, without rotating or replacing the image.
+  selectDayPhoto.persistCurrentSelection = () => {
+    if (!canPersist() || !visit || !chosen.size) return;
+    const saved = read(localStorage, PHOTO_HISTORY_KEY);
+    const history = saved?.version === version && saved?.indices && typeof saved.indices === 'object'
+      && !Array.isArray(saved.indices) ? saved : { version, indices: {} };
+    for (const day of chosen.keys()) history.indices[day] = visit.indices[day];
+    visit.lastUsed = now();
+    write(localStorage, PHOTO_HISTORY_KEY, history);
+    write(sessionStorage, PHOTO_VISIT_KEY, visit);
   };
+  return selectDayPhoto;
 }
+

@@ -1,14 +1,26 @@
 import { DAY_PHOTOS, DAY_PHOTO_COLLECTION_VERSION } from './day-photo-collection.js';
 import { createPhotoSelector } from './day-photo-selection.js';
 
+import { privacyAllowed } from './privacy-consent.js';
+// Check permission for every operation, not just at module initialization, so
+// accepting later works and withdrawing cannot be undone by a delayed rerender.
 function browserStorage(name) {
-  try { return globalThis[name]; } catch { return undefined; }
+  return {
+    getItem(key) { if (!privacyAllowed('photos')) return null; try { return globalThis[name]?.getItem(key); } catch { return null; } },
+    setItem(key, value) { if (!privacyAllowed('photos')) return; try { globalThis[name]?.setItem(key, value); } catch {} },
+  };
 }
 const select = createPhotoSelector({
   collection: DAY_PHOTOS, version: DAY_PHOTO_COLLECTION_VERSION,
+  canPersist: () => privacyAllowed('photos'),
   sessionStorage: browserStorage('sessionStorage'), localStorage: browserStorage('localStorage'),
 });
 export const selectDayPhoto = select;
+if (typeof window !== 'undefined') {
+  window.addEventListener('sineday:privacy-change', () => {
+    if (privacyAllowed('photos')) select.persistCurrentSelection();
+  });
+}
 
 /** Keep the API-provided Unsplash URL (especially ixid); change delivery size only. */
 export function photoImageUrl(photo, width = 960) {
@@ -118,3 +130,4 @@ export function presentDayPhoto({ image, credit, result, sizes, onLoad, onUnavai
   };
   apply();
 }
+

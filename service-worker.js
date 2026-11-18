@@ -3,7 +3,7 @@
  * Provides offline functionality and caching
  */
 
-const CACHE_NAME = 'sineday-v51';
+const CACHE_NAME = 'sineday-v52';
 const DAY_IMAGE_PATH = /^\/Day(?:[1-9]|1[0-8])\.(?:jpeg|avif)$/;
 const ASSETS_TO_CACHE = [
   '/',
@@ -18,6 +18,8 @@ const ASSETS_TO_CACHE = [
   '/js/sineday-engine.js',
   '/js/wave-canvas.js',
   '/js/ui.js',
+  '/js/privacy-consent.js',
+  '/js/vercel-analytics.js',
   '/js/day-photo-collection.js',
   '/js/day-photo-selection.js',
   '/js/day-photo-view.js',
@@ -244,3 +246,4 @@ self.addEventListener('message', (event) => {
     );
   }
 });
+

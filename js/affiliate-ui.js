@@ -1,10 +1,8 @@
+import { privacy } from './privacy-consent.js';
 const MONEY = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
-const PENDING_CODE_KEY = "sineday_pending_affiliate_code";
-const PENDING_CODE_SAVED_AT_KEY = "sineday_pending_affiliate_code_saved_at";
-const PENDING_CODE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export const AFFILIATE_DISCLOSURE =
   "Disclosure: I may earn from qualifying SineDay Premium memberships connected to my link or code.";
@@ -31,29 +29,8 @@ function formatMoney(cents) {
   return MONEY.format(Number(cents || 0) / 100);
 }
 
-export function getPendingAffiliateCode() {
-  try {
-    const savedAt = Number(localStorage.getItem(PENDING_CODE_SAVED_AT_KEY));
-    if (!savedAt || Date.now() - savedAt > PENDING_CODE_TTL_MS) {
-      localStorage.removeItem(PENDING_CODE_KEY);
-      localStorage.removeItem(PENDING_CODE_SAVED_AT_KEY);
-      return "";
-    }
-    const code = localStorage.getItem(PENDING_CODE_KEY) || "";
-    return /^[A-Z0-9-]{4,20}$/.test(code) ? code : "";
-  } catch {
-    return "";
-  }
-}
-
-export function clearPendingAffiliateCode() {
-  try {
-    localStorage.removeItem(PENDING_CODE_KEY);
-    localStorage.removeItem(PENDING_CODE_SAVED_AT_KEY);
-  } catch {
-    // Storage can be unavailable in strict privacy modes.
-  }
-}
+export function getPendingAffiliateCode() { return privacy.pendingReferral(); }
+export function clearPendingAffiliateCode() { privacy.clearReferral(); }
 
 function formatSubmittedDate(value) {
   const date = new Date(value);
@@ -1025,3 +1002,4 @@ export class AffiliateUI {
     this.mount.innerHTML = "";
   }
 }
+

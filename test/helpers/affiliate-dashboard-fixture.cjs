@@ -6,7 +6,7 @@ module.exports = function affiliateFixture() {
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/affiliate/assets.json')));
   const assetData = Object.fromEntries(manifest.map(asset => [asset.path, `data:image/${asset.format === 'SVG' ? 'svg+xml' : 'png'};base64,${fs.readFileSync(path.join(ROOT, asset.path)).toString('base64')}`]));
   const css = ['styles.css', 'css/dashboard.css'].map(file => fs.readFileSync(path.join(ROOT, file), 'utf8')).join('\n').replace(/url\([^)]*\)/g, 'none');
-  const source = fs.readFileSync(path.join(ROOT, 'js/affiliate-ui.js'), 'utf8').replaceAll('export ', '');
+  const source = fs.readFileSync(path.join(ROOT, 'js/affiliate-ui.js'), 'utf8').replaceAll('export ', '').replace(/^import .*privacy-consent.*;\n/m, "const privacy = { pendingReferral: () => '', clearReferral() {} };\n");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Affiliate dashboard offline review</title><style>${css}</style></head><body>
   <main><h1>Affiliate dashboard review</h1><button id="toggle" aria-expanded="false">Open affiliate dashboard</button><button id="run-checks">Run regression checks</button><output id="results">Ready</output></main><div id="preserved-inert" inert></div>
   <div id="backdrop" class="sheet-backdrop affiliate-backdrop" hidden></div><section id="sheet" class="sheet affiliate-sheet" role="dialog" aria-modal="true" aria-labelledby="title" hidden><div class="sheet__content affiliate-sheet__content"><h2 id="title" class="sr-only">Affiliate program</h2><button class="affiliate-sheet__close" type="button" data-affiliate-close aria-label="Close Affiliate program">×</button><div id="mount"></div></div></section>
@@ -115,3 +115,4 @@ module.exports = function affiliateFixture() {
   document.body.dataset.fixtureReady='true';
   </script></body></html>`;
 };
+

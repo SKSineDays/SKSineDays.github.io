@@ -17,31 +17,8 @@ import {
   duckSvgUrlFromSinedayNumber
 } from './sineducks.js';
 
-function capturePendingAffiliateCode() {
-  try {
-    const savedAt = Number(
-      localStorage.getItem("sineday_pending_affiliate_code_saved_at"),
-    );
-    if (savedAt && Date.now() - savedAt > 30 * 24 * 60 * 60 * 1000) {
-      localStorage.removeItem("sineday_pending_affiliate_code");
-      localStorage.removeItem("sineday_pending_affiliate_code_saved_at");
-    }
-
-    const rawCode = new URLSearchParams(window.location.search).get("ref");
-    if (!rawCode) return;
-    const code = rawCode.trim().toUpperCase();
-    if (!/^[A-Z0-9-]{4,20}$/.test(code)) return;
-    localStorage.setItem("sineday_pending_affiliate_code", code);
-    localStorage.setItem(
-      "sineday_pending_affiliate_code_saved_at",
-      String(Date.now()),
-    );
-  } catch {
-    // Storage can be unavailable in strict privacy modes; attribution remains opt-in.
-  }
-}
-
-capturePendingAffiliateCode();
+// Referral capture is consent-gated by the shared privacy controller.
+import './privacy-consent.js';
 
 export class SineDayUI {
   constructor() {
@@ -966,3 +943,4 @@ if (document.readyState === 'loading') {
 }
 
 export default SineDayUI;
+
