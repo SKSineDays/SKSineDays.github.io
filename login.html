@@ -38,26 +38,33 @@
       justify-content: center;
     }
 
-    .registration-panel { margin-top: 14px; min-width: 0; line-height: 1.55; }
+    .auth-paths { display: grid; gap: 12px; min-width: 0; }
+    .auth-welcome { text-align: center; color: #f6eedf; font-size: 22px; line-height: 1.3; margin: 2px 0 10px; }
+    .auth-choice { min-width: 0; line-height: 1.55; }
+    .auth-paths:has(.auth-choice[open]) > .auth-choice:not([open]),
+    .auth-paths:has(.auth-choice[open]) > .auth-welcome { display: none; }
+    .login-intro { color: #ddd7e5; margin: 20px 0 16px; font-size: 15px; line-height: 1.55; }
     .registration-panel[hidden], .registration-panel [hidden] { display: none !important; }
-    .registration-panel summary {
+    .auth-choice summary {
       display: grid; grid-template-columns: 1.25rem 1fr 1.25rem; align-items: center;
       gap: .6rem; padding: 14px 18px; min-height: 52px; box-sizing: border-box;
       list-style: none; cursor: pointer; text-align: center; font-size: 16px; font-weight: 700;
       border: 1px solid #c8b7dc; border-radius: 12px; color: #faf2ff;
       background: linear-gradient(135deg, #5b5069, #4a4259);
     }
-    .registration-panel summary::-webkit-details-marker { display: none; }
-    .registration-panel summary::before { content: ""; }
-    .registration-panel summary::after {
+    .auth-choice summary::-webkit-details-marker { display: none; }
+    .auth-choice summary::before { content: ""; }
+    .auth-choice summary::after {
       content: ""; width: 8px; height: 8px; justify-self: center;
       border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg);
     }
-    .registration-panel[open] summary::after { transform: rotate(225deg); }
-    .registration-panel summary:hover { background: #62556f; }
-    .registration-panel :is(summary, input, select, button):focus-visible {
+    .auth-choice[open] summary::after { transform: rotate(225deg); }
+    .auth-choice summary:hover { background: #62556f; }
+    .auth-choice :is(summary, input, select, button):focus-visible {
       outline: 3px solid #f7d998; outline-offset: 3px;
     }
+    .registration-panel summary { color: #30252b; background: linear-gradient(135deg, #edac9e, #e6b6b0); border-color: #efc0b5; }
+    .registration-panel summary:hover { background: #f4c3b7; }
     .registration-intro { margin: 22px 0; color: #f5dfba; font-size: 17px; font-weight: 600; }
     .registration-panel :is(input, select) {
       display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%;
@@ -359,32 +366,6 @@
       margin-left: 16px;
     }
 
-    .login-copy {
-      margin: 0 0 18px;
-      padding: 16px 18px;
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg, rgba(255, 239, 205, 0.07), rgba(255, 255, 255, 0.035));
-      border: 1px solid rgba(255, 239, 205, 0.13);
-      color: rgba(246, 238, 223, 0.84);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
-    .login-copy strong {
-      display: block;
-      color: #F6EEDF;
-      font-size: 16px;
-      line-height: 1.25;
-      margin-bottom: 5px;
-    }
-
-    .login-copy span {
-      display: block;
-      font-size: 14px;
-      line-height: 1.45;
-      color: #C7C2D1;
-    }
-
     .provider-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -520,48 +501,10 @@
       <p class="login-brand__purpose">Your private space to reflect on today’s wave.</p>
     </div>
 
-    <div class="login-copy">
-      <strong>Welcome to SineDay</strong>
-      <span>New here or returning? Sign in with Google, Apple, or email to open your dashboard.</span>
-    </div>
-
-    <div class="provider-grid" aria-label="Sign in options">
-      <button id="google-signin-btn" class="btn provider-card provider-card--google" type="button">
-        <span class="provider-icon provider-icon--google" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-        </span>
-        <span class="provider-text">Google</span>
-      </button>
-
-      <button id="apple-signin-btn" class="btn provider-card provider-card--apple" type="button">
-        <span class="provider-icon provider-icon--apple" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16.365 1.43c0 1.14-.46 2.19-1.2 2.99-.78.84-2.07 1.49-3.11 1.4-.14-1.1.43-2.25 1.16-3.01.8-.84 2.2-1.46 3.15-1.38Zm3.39 16.41c-.61 1.38-.91 2-1.7 3.22-1.1 1.69-2.65 3.79-4.57 3.81-1.7.02-2.14-1.11-4.45-1.1-2.31.01-2.8 1.12-4.5 1.1-1.92-.02-3.39-1.91-4.49-3.6-3.07-4.71-3.39-10.24-1.5-13.17 1.34-2.08 3.45-3.29 5.44-3.29 2.03 0 3.31 1.11 4.99 1.11 1.63 0 2.62-1.11 4.97-1.11 1.78 0 3.66.97 5 2.64-4.39 2.41-3.68 8.69.81 10.39Z"/>
-          </svg>
-        </span>
-        <span class="provider-text">Apple</span>
-      </button>
-    </div>
-
-    <div class="divider">or continue with email</div>
-    <form id="email-signin-form" novalidate>
-      <div class="form-group">
-        <label for="signin-email">Email address</label>
-        <input id="signin-email" type="email" autocomplete="email"
-          inputmode="email" autocapitalize="none" spellcheck="false" required disabled
-          aria-describedby="email-signin-help login-status" placeholder="you@example.com">
-      </div>
-      <p id="email-signin-help" class="email-help">New here or returning? Enter your email. If you use Apple’s Hide My Email, continue with Apple.</p>
-      <button id="email-signin-btn" class="btn btn-primary" type="submit" disabled>Email me a sign-in link</button>
-    </form>
-
-    <details id="registration-panel" class="registration-panel" hidden>
-      <summary>Create Account</summary>
+    <div class="auth-paths">
+      <h2 class="auth-welcome">Welcome to SineDay</h2>
+    <details id="registration-panel" class="registration-panel auth-choice" name="account-path" hidden>
+      <summary>Create account</summary>
       <p class="registration-intro">SineDay is for ages 13 and up.</p>
       <form id="registration-form">
         <div class="form-group">
@@ -601,6 +544,46 @@
       <button id="registration-cancel" class="btn" type="button">Cancel registration</button>
       <p id="registration-status" role="status" aria-live="polite"></p>
     </details>
+    <details id="login-panel" class="auth-choice" name="account-path">
+      <summary>Log in</summary>
+      <p class="login-intro">Use the same sign-in method you used to create your account.</p>
+    <div class="provider-grid" aria-label="Sign in options">
+      <button id="google-signin-btn" class="btn provider-card provider-card--google" type="button">
+        <span class="provider-icon provider-icon--google" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+        </span>
+        <span class="provider-text">Google</span>
+      </button>
+
+      <button id="apple-signin-btn" class="btn provider-card provider-card--apple" type="button">
+        <span class="provider-icon provider-icon--apple" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.365 1.43c0 1.14-.46 2.19-1.2 2.99-.78.84-2.07 1.49-3.11 1.4-.14-1.1.43-2.25 1.16-3.01.8-.84 2.2-1.46 3.15-1.38Zm3.39 16.41c-.61 1.38-.91 2-1.7 3.22-1.1 1.69-2.65 3.79-4.57 3.81-1.7.02-2.14-1.11-4.45-1.1-2.31.01-2.8 1.12-4.5 1.1-1.92-.02-3.39-1.91-4.49-3.6-3.07-4.71-3.39-10.24-1.5-13.17 1.34-2.08 3.45-3.29 5.44-3.29 2.03 0 3.31 1.11 4.99 1.11 1.63 0 2.62-1.11 4.97-1.11 1.78 0 3.66.97 5 2.64-4.39 2.41-3.68 8.69.81 10.39Z"/>
+          </svg>
+        </span>
+        <span class="provider-text">Apple</span>
+      </button>
+    </div>
+
+    <div class="divider">or continue with email</div>
+    <form id="email-signin-form" novalidate>
+      <div class="form-group">
+        <label for="signin-email">Email address</label>
+        <input id="signin-email" type="email" autocomplete="email"
+          inputmode="email" autocapitalize="none" spellcheck="false" required disabled
+          aria-describedby="email-signin-help login-status" placeholder="you@example.com">
+      </div>
+      <p id="email-signin-help" class="email-help">Enter the email you use for your SineDay account. If you use Apple’s Hide My Email, continue with Apple.</p>
+      <button id="email-signin-btn" class="btn btn-primary" type="submit" disabled>Email me a sign-in link</button>
+    </form>
+    </details>
+    </div>
+
 
     <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
 
@@ -643,7 +626,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Load our modules -->
-  <script type="module" src="/js/account-registration.js"></script>
+  <script type="module" src="/js/account-registration.js?v=account-choices-1"></script>
   <script type="module" src="/js/login.js"></script>
 </body>
 </html>
