@@ -129,11 +129,12 @@ async function makeFixture(browser, { width = 390, reducedMotion = 'reduce', pol
     viewport: { width, height: width >= 1000 ? 1000 : 844 }, deviceScaleFactor: 1,
     timezoneId: 'UTC', locale: 'en-US', reducedMotion, serviceWorkers: 'block',
   });
-  const state = { context, page: null, policy, requests: [], errors: [], routeErrors: [], pages: [], unknownPhotos: [] };
-  await context.addInitScript(({ blocked }) => {
+  const state = { context, page: null, policy, storageBlocked, requests: [], errors: [], routeErrors: [], pages: [], unknownPhotos: [] };
+  await context.addInitScript(({ blocked, fixedTime }) => {
     // This rotation suite represents a visitor who opted into photo history.
+    // Use the explicit fixture clock: Playwright clock/init-script order is not guaranteed.
     // Default-deny and withdrawal are covered by privacy-browser-smoke.cjs.
-    localStorage.setItem('sineday:privacy:v1', JSON.stringify({version:1,savedAt:Date.now(),analytics:false,referrals:false,photos:true}));
+    localStorage.setItem('sineday:privacy:v1', JSON.stringify({version:1,savedAt:Date.parse(fixedTime),analytics:false,referrals:false,photos:true}));
     window.__dayPhotoQA = { decodeWaiters: [], deferDecodeId: null, scrollCalls: [] };
     const originalDecode = HTMLImageElement.prototype.decode;
     HTMLImageElement.prototype.decode = function (...args) {
@@ -151,7 +152,7 @@ async function makeFixture(browser, { width = 390, reducedMotion = 'reduce', pol
       Storage.prototype.getItem = function () { throw new DOMException('QA storage disabled', 'SecurityError'); };
       Storage.prototype.setItem = function () { throw new DOMException('QA storage disabled', 'SecurityError'); };
     }
-  }, { blocked: storageBlocked });
+  }, { blocked: storageBlocked, fixedTime: FIXED_TIME });
   await context.route('**/*', async route => {
     try {
       const request = route.request();
@@ -221,6 +222,7 @@ async function makeFixture(browser, { width = 390, reducedMotion = 'reduce', pol
 async function goHome(fixture) {
   await fixture.page.goto(`${ORIGIN}/index.html`);
   await fixture.page.waitForFunction(() => Boolean(window.__dayPhotoQA?.ui));
+  if (!fixture.storageBlocked) assert.equal(await fixture.page.evaluate(async () => (await import('/js/privacy-consent.js')).privacyAllowed('photos')), true, 'Photo-rotation fixture must have valid affirmative consent');
 }
 async function goDashboard(fixture) {
   await fixture.page.goto(`${ORIGIN}/dashboard.html`);
