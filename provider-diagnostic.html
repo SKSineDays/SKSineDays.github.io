@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<title>Preview-only provider diagnostic | SineDay</title>
+<style>body{font:18px/1.5 system-ui;max-width:40rem;margin:3rem auto;padding:1.5rem;background:#24232c;color:#f6eedf}button{font:inherit;padding:.8rem;margin:.5rem 0;cursor:pointer}button:focus-visible{outline:3px solid #d0b7ff} [hidden]{display:none!important}</style>
+</head><body><h1>Preview-only provider diagnostic</h1>
+<p>This tests Google or Apple identity proof only. It never creates a SineDay account or signs you in to SineDay. It does not test age eligibility or the Supabase signup hook.</p>
+<p>You choose whether to open a provider. The provider may show its usual sign-in or permission screen. This diagnostic checks the identity token in memory and does not write it to application logs or storage. Google or Apple may use their own cookies and account state. Only pass or fail is shown.</p>
+<button id="test-google" type="button">Prepare Google test</button>
+<button id="test-apple" type="button">Prepare Apple test</button>
+<div id="google-button"></div><button id="apple-button" type="button" hidden>Continue with Apple for this test</button>
+<button id="cancel" type="button">Cancel test</button>
+<p id="status" role="status" aria-live="polite">Available only on an explicitly configured preview. No provider starts automatically.</p>
+<script type="module" src="/js/provider-diagnostic.js"></script></body></html>
