@@ -25,6 +25,9 @@ export default async function handler(req, res) {
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('Vary', 'Authorization');
   if (!['GET', 'POST'].includes(req.method)) return res.status(405).json({ ok: false, error: 'Method not allowed' });
+  if (process.env.AGE_EXISTING_ENFORCEMENT_READY !== 'true') {
+    return res.status(503).json({ ok: false, error: 'Account eligibility checks are not enabled.' });
+  }
   const authorization = req.headers?.authorization;
   if (typeof authorization !== 'string' || !authorization.startsWith('Bearer ') || authorization.length <= 7 || authorization.length > 16384) {
     return res.status(401).json({ ok: false, error: 'Please sign in again.' });

@@ -1,4 +1,6 @@
 let eligibilityScreened = false;
+let ageEnabled = true;
+let rolloutReady = false;
 const form = document.getElementById("daily-signup");
 const emailInput = document.getElementById("daily-email");
 const birthdateInput = document.getElementById("daily-birthdate");
@@ -129,7 +131,7 @@ function validate() {
     setFieldError(timezoneInput);
   }
 
-  if (!countryInput?.value) {
+  if (ageEnabled && !countryInput?.value) {
     setFieldError(countryInput, "Choose your country of residence.");
     firstInvalid ||= countryInput;
   } else setFieldError(countryInput);
@@ -160,7 +162,7 @@ populateTimeZones();
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (submitButton.disabled || !validate()) return;
+  if (!rolloutReady || submitButton.disabled || !validate()) return;
 
   if (!eligibilityScreened) {
     submitButton.disabled = true;
@@ -228,19 +230,34 @@ form?.addEventListener("submit", async (event) => {
   }
 });
 
+submitButton.disabled = true;
 // No implicit country default: a timezone is not a jurisdiction declaration.
-fetch("/api/eligibility-policy", { cache: "no-store" }).then(async response => {
-  const data = await response.json();
-  if (!response.ok || !data.ok || !Array.isArray(data.countries)) throw new Error();
-  for (const country of data.countries) {
-    const option = document.createElement("option");
-    option.value = country.code; option.textContent = country.name;
-    countryInput?.append(option);
+fetch("/api/config", { cache: "no-store" }).then(async response => {
+  const config = await response.json();
+  if (!response.ok || !config.ok) throw new Error();
+  ageEnabled = config.mailerEligibilityEnabled === true;
+  countryInput.closest('.daily-field').hidden = !ageEnabled;
+  countryInput.required = ageEnabled;
+  if (!ageEnabled) {
+    eligibilityScreened = true;
+    for (const section of document.querySelectorAll("[data-email-step]")) section.hidden = false;
+    submitButton.textContent = "Send me my daily SineDay";
+  } else {
+    response = await fetch("/api/eligibility-policy", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok || !data.ok || !Array.isArray(data.countries)) throw new Error();
+    for (const country of data.countries) {
+      const option = document.createElement("option");
+      option.value = country.code; option.textContent = country.name;
+      countryInput?.append(option);
+    }
   }
+  rolloutReady = true; submitButton.disabled = false;
 }).catch(() => setStatus("Signup is temporarily unavailable. Please try again later.", "error"));
 
 for (const input of [birthdateInput, countryInput]) {
   input?.addEventListener("input", () => {
+    if (!ageEnabled) return;
     eligibilityScreened = false;
     for (const section of document.querySelectorAll("[data-email-step]")) section.hidden = true;
     emailInput.value = ""; consentInput.checked = false;

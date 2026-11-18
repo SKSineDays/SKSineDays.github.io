@@ -1,3 +1,4 @@
+import { mailerAgeEnabled } from './_lib/age-rollout.js';
 /**
  * Public Daily SineDay double-opt-in request.
  *
@@ -68,15 +69,23 @@ export default async function handler(req, res) {
 
   const birthdate = body.birthdate;
   body.birthdate = "";
+  let supabase, ageEnabled;
+  try { supabase = getAdminClient(); ageEnabled = await mailerAgeEnabled(supabase); }
+  catch { return json(res, 503, { ok: false, error: 'Signup is temporarily unavailable.' }); }
   let eligibility;
-  try { eligibility = evaluateEligibility({ birthdate, country: body.country, policies: getConfiguredPolicies() }); }
-  catch { return json(res, 503, { ok: false, error: "Signup is temporarily unavailable." }); }
-  if (!eligibility.ok || !eligibility.eligible) {
-    return json(res, eligibility.ok ? 403 : 400, eligibilityFailure(eligibility));
+  if (ageEnabled) {
+    try { eligibility = evaluateEligibility({ birthdate, country: body.country, policies: getConfiguredPolicies() }); }
+    catch { return json(res, 503, { ok: false, error: "Signup is temporarily unavailable." }); }
+    if (!eligibility.ok || !eligibility.eligible) {
+      return json(res, eligibility.ok ? 403 : 400, eligibilityFailure(eligibility));
+    }
+    // First UI step sends only age/country, not an email address. This response
+    // is NOT an admission token: final submission independently screens again.
+    if (body.action === "screen") return json(res, 200, { ok: true });
+
+  } else if (body.action === 'screen') {
+    return json(res, 409, { ok: false, error: 'Signup has changed. Please reload this page.' });
   }
-  // First UI step sends only age/country, not an email address. This response
-  // is NOT an admission token: final submission independently screens again.
-  if (body.action === "screen") return json(res, 200, { ok: true });
 
   const email = normalizeMailerEmail(body.email);
   if (!email) {
@@ -125,12 +134,11 @@ export default async function handler(req, res) {
     return json(res, 500, { ok: false, error: "Server configuration error." });
   }
 
-  const supabase = getAdminClient();
-  const { data, error } = await supabase.rpc("create_eligible_mailer_signup_request", {
-    p_country: eligibility.country,
+  const { data, error } = await supabase.rpc(ageEnabled ? "create_eligible_mailer_signup_request" : "create_mailer_signup_request", {
+    ...(ageEnabled ? { p_country: eligibility.country,
     p_policy_version: eligibility.policyVersion,
     p_minimum_age: eligibility.minimumAge,
-    p_age_band: eligibility.ageBand,
+    p_age_band: eligibility.ageBand } : {}),
     p_token_hash: tokenHash,
     p_email: email,
     p_timezone: body.timezone,

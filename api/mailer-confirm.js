@@ -1,3 +1,4 @@
+import { mailerAgeEnabled } from './_lib/age-rollout.js';
 /**
  * POST /api/mailer-confirm
  *
@@ -101,9 +102,12 @@ export default async function handler(req, res) {
 
   try {
     const supabase = getAdminClient();
-    const { data, error } = await supabase.rpc("confirm_eligible_mailer_signup", {
+    let ageEnabled;
+    try { ageEnabled = await mailerAgeEnabled(supabase); }
+    catch { return json(res, 503, { ok: false, error: 'Confirmation is temporarily unavailable.' }); }
+    const { data, error } = await supabase.rpc(ageEnabled ? "confirm_eligible_mailer_signup" : "confirm_mailer_signup", {
       p_token_hash: tokenHash,
-      p_policies: getConfiguredPolicies()
+      ...(ageEnabled ? { p_policies: getConfiguredPolicies() } : {})
     });
     if (error) throw error;
 

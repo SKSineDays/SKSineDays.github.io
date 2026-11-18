@@ -1,3 +1,4 @@
+process.env.AGE_MAILER_ENFORCEMENT_READY = "true";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mock } from "node:test";
@@ -10,6 +11,7 @@ process.env.PUBLIC_SITE_URL = "https://sineday.app";
 process.env.MAILER_SIGNUP_SECRET = "mailer-signup-secret-at-least-32-bytes";
 
 const REQUEST_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+let forcedDbMode;
 const store = {
   createState: "created",
   rpcCalls: [],
@@ -25,11 +27,12 @@ mock.module("@supabase/supabase-js", {
     createClient() {
       return {
         async rpc(name, args) {
+          if (name === "mailer_age_enforcement_is_enabled") return {data: forcedDbMode === undefined ? process.env.AGE_MAILER_ENFORCEMENT_READY === "true" : forcedDbMode};
           store.rpcCalls.push({ name, args });
-          if (store.rpcError && name === "create_eligible_mailer_signup_request") {
+          if (store.rpcError && ["create_eligible_mailer_signup_request", "create_mailer_signup_request"].includes(name)) {
             return { data: null, error: store.rpcError };
           }
-          if (name === "create_eligible_mailer_signup_request") {
+          if (["create_eligible_mailer_signup_request", "create_mailer_signup_request"].includes(name)) {
             return {
               data: [{
                 result_state: store.createState,
@@ -125,7 +128,7 @@ test("public signup stores only derived rhythm and sends a fragment confirmation
   reset();
   const body = validBody();
   const res = await post(body);
-  const create = store.rpcCalls.find((call) => call.name === "create_eligible_mailer_signup_request");
+  const create = store.rpcCalls.find((call) => ["create_eligible_mailer_signup_request", "create_mailer_signup_request"].includes(call.name));
   const mark = store.rpcCalls.find((call) => call.name === "mark_mailer_confirmation_sent");
 
   assert.equal(res.statusCode, 202);
@@ -258,4 +261,22 @@ test("client eligibility spoof does not bypass independently calculated age", as
 test("first screen requires only age/country and writes no identity or email",async()=>{
  reset(); const res=await post({action:"screen",birthdate:"1985-04-20",country:"US"});
  assert.equal(res.statusCode,200); assert.equal(store.rpcCalls.length,0); assert.equal(store.sends.length,0);
+});
+
+test('dormant mailer accepts original no-country signup through original double-opt-in RPC', async () => {
+  reset(); delete process.env.AGE_MAILER_ENFORCEMENT_READY;
+  try {
+    const body = validBody(); delete body.country;
+    const res = await post(body);
+    assert.equal(res.statusCode,202);
+    assert.ok(store.rpcCalls.some(c=>c.name==='create_mailer_signup_request'));
+    assert.ok(!store.rpcCalls.some(c=>c.name==='create_eligible_mailer_signup_request'));
+  } finally { process.env.AGE_MAILER_ENFORCEMENT_READY='true'; }
+});
+test('mailer signup DB/env mismatch in either direction sends nothing',async()=>{
+  try { for(const enabled of [false,true]) {
+    reset();process.env.AGE_MAILER_ENFORCEMENT_READY=String(enabled);forcedDbMode=!enabled;
+    assert.equal((await post()).statusCode,503);
+    assert.equal(store.rpcCalls.length,0);assert.equal(store.sends.length,0);
+  }} finally {forcedDbMode=undefined;process.env.AGE_MAILER_ENFORCEMENT_READY='true';}
 });

@@ -1,4 +1,4 @@
-import { getSupabaseClient } from './supabase-client.js';
+import { getSupabaseClient, fetchConfig } from './supabase-client.js';
 
 const panel = document.getElementById('registration-panel');
 const form = document.getElementById('registration-form');
@@ -9,12 +9,14 @@ const birthdate = document.getElementById('registration-birthdate');
 const method = document.getElementById('registration-method');
 const email = document.getElementById('registration-email');
 const submit = document.getElementById('registration-continue');
+let registrationEnabled = false;
 let generation = 0;
 let busy = false;
 let flow = null;
 const scripts = new Map();
 
 async function request(body) {
+  if (!registrationEnabled) throw new Error('New account registration is not enabled.');
   const response = await fetch('/api/account-registration', { method: 'POST', credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' });
   const result = await response.json();
@@ -151,7 +153,11 @@ document.getElementById('registration-cancel').addEventListener('click', () => {
 panel.addEventListener('toggle', () => { if (!panel.open) cancel(); });
 window.addEventListener('pagehide', reset);
 window.addEventListener('pageshow', event => { if (event.persisted) reset(); });
-fetch('/api/eligibility-policy', { cache: 'no-store' }).then(async response => {
+fetchConfig().then(async config => {
+  if (config.accountRegistrationEnabled !== true) return;
+  registrationEnabled = true; panel.hidden = false;
+  document.getElementById('email-signin-help').textContent = 'Use your existing account email, or create an account below.';
+  const response = await fetch('/api/eligibility-policy', { cache: 'no-store' });
   const result = await response.json();
   if (!response.ok || !result.ok) throw new Error();
   for (const entry of result.countries) {

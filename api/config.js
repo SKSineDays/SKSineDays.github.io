@@ -57,6 +57,8 @@ export default async function handler(req, res) {
     supabaseUrl: supabaseUrl,
     supabaseAnonKey: supabaseAnonKey,
     appUrl: process.env.APP_URL || 'https://sineday.app',
+    accountRegistrationEnabled: process.env.AGE_AUTH_HOOK_READY === 'true',
+    mailerEligibilityEnabled: process.env.AGE_MAILER_ENFORCEMENT_READY === 'true',
     accountEligibilityEnabled: process.env.AGE_EXISTING_ENFORCEMENT_READY === 'true',
     affiliateProgramEnabled: process.env.AFFILIATE_PROGRAM_ENABLED === 'true',
     affiliateTermsVersion: process.env.AFFILIATE_TERMS_VERSION || '2026-07-24'

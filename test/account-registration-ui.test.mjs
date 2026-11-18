@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const source = (await readFile(new URL('../js/account-registration.js', import.meta.url),'utf8')).replace(/^import .*;\n/, '');
 const deferred = () => { let resolve; const promise = new Promise(r=>resolve=r); return {promise,resolve}; };
 const flush = () => new Promise(r=>setImmediate(r));
-function setup(completeResponse) {
+function setup(completeResponse, enabled = true) {
   const elements=new Map(), requests=[], scripts=[], redirects=[];
   let sessions=0;
   function element(id) {
@@ -16,6 +16,7 @@ function setup(completeResponse) {
   }
   const window={ addEventListener(){},location:{assign(url){redirects.push(url);}} };
   const context=vm.createContext({console,window,document:{ getElementById:element,createElement:()=>element(`new-${elements.size}`),head:{appendChild(s){scripts.push(s);}} },
+    fetchConfig:async()=>{ if (enabled === 'error') throw new Error(); return {accountRegistrationEnabled:enabled}; },
     getSupabaseClient:async()=>({auth:{async setSession(){sessions++;return {error:null};}}}),
     fetch:async(url,options)=>{
       if(url==='/api/eligibility-policy') return {ok:true,json:async()=>({ok:true,countries:[{code:'US',name:'United States'}]})};
@@ -30,7 +31,7 @@ function setup(completeResponse) {
   return {element,requests,scripts,redirects,sessions:()=>sessions};
 }
 test('duplicate submit is ignored and email success clears sensitive inputs',async()=>{
-  const result=deferred();const app=setup(result);
+  const result=deferred();const app=setup(result);await flush();
   const submit=app.element('registration-form').listeners.submit;
   const pending=submit({preventDefault(){}});
   await submit({preventDefault(){}});await pending;await flush();
@@ -45,7 +46,7 @@ test('duplicate submit is ignored and email success clears sensitive inputs',asy
   assert.match(app.element('registration-status').textContent,/Check your inbox/);
 });
 test('cancel during completion ignores late session and clears DOB/email',async()=>{
-  const result=deferred();const app=setup(result);
+  const result=deferred();const app=setup(result);await flush();
   const pending=app.element('registration-form').listeners.submit({preventDefault(){}});
   await pending;await flush();
   const emailForm=app.element('registration-email-form');
@@ -67,3 +68,12 @@ test('provider SDK is not loaded before eligibility flow and canceled late compl
   assert.equal(app.requests.filter(x=>x.action==='cancel').length,1);
   assert.equal(app.element('registration-birthdate').value,'');
 });
+
+ test('dormant and config-failed registration stays hidden and never begins a provider flow', async()=>{
+   for (const enabled of [false, null, 'error']) {
+     const app=setup(null,enabled);app.element('registration-panel').hidden=true;await flush();
+     await app.element('registration-form').listeners.submit({preventDefault(){}});
+     assert.equal(app.element('registration-panel').hidden,true);
+     assert.equal(app.requests.length,0);assert.equal(app.scripts.length,0);
+   }
+ });

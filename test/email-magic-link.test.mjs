@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const source = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const quiet = { log() {}, error() {} };
 
-function helperHarness(path = '/login.html') {
+function helperHarness(path = '/login.html', enabled = true) {
   const calls = [];
   let options;
   const client = { auth: {
@@ -14,7 +14,7 @@ function helperHarness(path = '/login.html') {
     signInWithOAuth: async args => { calls.push(args); return { data: {}, error: null }; },
     linkIdentity: async args => { calls.push(args); return { data: {}, error: null }; }
   }};
-  const context = vm.createContext({ URL, console: quiet, fetch: async () => ({ ok: true, json: async () => ({ ok: true, supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'public-test', appUrl: 'https://sineday.app' }) }), window: { location: { origin: 'https://preview.example', pathname: path }, supabase: { createClient: (_url, _key, opts) => { options = opts; return client; } } } });
+  const context = vm.createContext({ URL, console: quiet, fetch: async () => ({ ok: true, json: async () => ({ ok: true, accountRegistrationEnabled: enabled, supabaseUrl: 'https://example.supabase.co', supabaseAnonKey: 'public-test', appUrl: 'https://sineday.app' }) }), window: { location: { origin: 'https://preview.example', pathname: path }, supabase: { createClient: (_url, _key, opts) => { options = opts; return client; } } } });
   vm.runInContext(source('js/supabase-client.js').replace(/export /g, ''), context);
   return { context, calls, client, get options() { return options; } };
 }
@@ -159,4 +159,12 @@ test('email controls start disabled until JavaScript binds, without an email GET
   assert.match(html, /id="signin-email"[^>]*disabled/);
   assert.match(html, /id="email-signin-btn"[^>]*disabled/);
   assert.doesNotMatch(html, /name="email"/);
+});
+
+test('dormant or absent registration flag preserves legacy email account creation', async () => {
+  for (const enabled of [false, undefined]) {
+    const h = helperHarness('/login.html', enabled === undefined ? null : enabled);
+    await h.context.signInWithEmail('new@example.com');
+    assert.equal(h.calls[0].options.shouldCreateUser, true);
+  }
 });

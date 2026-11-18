@@ -1,5 +1,6 @@
 import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
+process.env.AGE_EXISTING_ENFORCEMENT_READY = 'true';
 process.env.SUPABASE_URL = 'https://example.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service';
 process.env.APP_URL = 'https://sineday.app';
@@ -77,4 +78,12 @@ test('existing-owner POST uses dedicated canonical origin override too', async (
     const response = await send('POST', { birthdate: '2000-01-01', country: 'US' }, { origin: 'https://www.sineday.app' });
     assert.equal(response.statusCode, 200); assert.equal(response.body.state, 'eligible');
   } finally { delete process.env.SIGNUP_APP_URL; }
+});
+
+test('dormant owner gate refuses reads and writes before any authentication or database access', async () => {
+  reset(); delete process.env.AGE_EXISTING_ENFORCEMENT_READY;
+  try {
+    for (const method of ['GET','POST']) assert.equal((await send(method, {birthdate:'2000-01-01',country:'US'})).statusCode,503);
+    assert.equal(calls.length,0);
+  } finally { process.env.AGE_EXISTING_ENFORCEMENT_READY = 'true'; }
 });

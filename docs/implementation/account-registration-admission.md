@@ -231,3 +231,40 @@ renders correctly but registration remains deliberately blocked by dormant setti
 Fresh remote main is an ancestor of the PR head and git merge-tree reports no conflicts.
 Connector mergeable:false is not evidence of a source conflict; keep draft/check gates,
 do not force-rewrite history or mark ready just to change this status.
+
+## Backward-compatible dormant application deployment
+
+The application now preserves original sign-in/signup behavior while readiness is off.
+`AGE_AUTH_HOOK_READY` controls the separate Create Account panel and whether the existing
+email link may create a user. Its protected endpoint still requires BOTH valid secret/
+provider configuration and database signup enforcement. Legacy OAuth remains available;
+when database enforcement is on, its new-account attempts without admission are denied.
+A stale/off client setting cannot defeat that database boundary. No age protection is
+claimed while both signup controls are off.
+
+`AGE_MAILER_ENFORCEMENT_READY` is a separate explicit mailer setting. All three mutation
+routes (public signup, public confirmation, authenticated activation) require exact
+agreement with service-only `mailer_age_enforcement_is_enabled()` before proceeding.
+Missing RPC, read error, nonboolean result or either disagreement returns503; it does
+not choose the legacy branch. Install the additive dormant-mailer migration BEFORE
+this application deployment. The database flag defaults false.
+
+- Both false: original create/confirm/activation RPCs, no-country public signup and
+  existing pending confirmations continue to work. No eligibility decision is needed.
+- Both true: age-first public signup, eligible confirmation and eligible authenticated
+  activation. Legacy RPCs are denied by the additional database boundary.
+- Mismatch: unavailable without consuming tokens, activating recipients or sending mail.
+
+The public config exposes booleans only; it is display/flow selection, never authority.
+The daily form remains disabled if configuration cannot load. The registration panel
+is hidden unless explicitly enabled; provider SDKs do not load in dormant mode.
+`/api/account-eligibility` now refuses GET/POST before authentication/database access
+unless `AGE_EXISTING_ENFORCEMENT_READY=true`. This prevents accidental immutable owner
+records while the owner check is dormant. It is not a founder-canary consent mechanism.
+
+Pending legacy email confirmations require an explicit activation plan: after enabling
+mailer enforcement they cannot bypass eligibility. Existing active subscriptions,
+ongoing deliveries, unsubscribe and billing management are not altered by these guards.
+Rollback disables corresponding application/database flags together; disagreement is
+intentionally unavailable rather than permissive. Do not enable production flags merely
+to test deployment. Provider/OTP and hosted full-path checks are still prerequisites.
