@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>SineDay authorized email signup test</title></head>
+<body><main><h1>Authorized email signup test</h1>
+<p>This is a real, narrowly authorized signup test. It can create one retained account and send one sign-in email to the configured test address. It does not subscribe to daily emails, make purchases, or change other accounts. It does not enable age checks for everyone.</p>
+<p>Sign in to your authorized operator account first. Enter the actual account owner's birthdate and country below. Do not enter a child's profile birthday or invented test details.</p>
+<p id="canary-target"></p><p id="canary-status" role="status" aria-live="polite">Checking authorization…</p>
+<form id="canary-form" hidden><label>Your birthdate <input id="canary-birthdate" type="date" autocomplete="off" required></label>
+<label>Country where you live <select id="canary-country" required><option value="">Choose country</option></select></label>
+<button type="submit">Check eligibility</button></form>
+<button id="canary-send" type="button" hidden>Create test account and send email</button>
+<button id="canary-cancel" type="button">Cancel</button>
+<p><a href="/login.html">Sign in</a> · <a href="mailto:support@sineday.app">Get help</a></p>
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="/js/signup-canary.js"></script></body></html>

@@ -25,6 +25,7 @@ const publicHtmlFiles = [
 const trackerFreeHtmlFiles = [
   "auth/callback.html",
   "provider-diagnostic.html",
+  "signup-canary.html",
   "daily.html",
   "video-transcripts.html",
   "daily-confirm.html",
