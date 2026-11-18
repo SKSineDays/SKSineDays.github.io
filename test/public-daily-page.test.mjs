@@ -16,7 +16,7 @@ test("public signup page contains the required copy, fields, consent, and one fo
     "Meet today's SineDuck, explore the day's theme, and take a quiet moment for your own thoughts.",
     "A personal morning ritual, around 6:00 AM in your chosen time zone.",
     "Free daily emails. No account required.",
-    "Send me my daily SineDay",
+    "Continue",
     "Yes, send me my daily SineDay emails. I can unsubscribe anytime.",
     "We use your birthdate to calculate your SineDay rhythm. This email-only signup stores the derived rhythm values needed for your daily emails, not your full birthdate."
   ]) {
@@ -86,7 +86,7 @@ test("Vercel keeps cron and vCard behavior while adding targeted daily rewrites"
 });
 
 test("service worker bypasses APIs and never caches confirmation visits", () => {
-  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v52'/);
+  assert.match(serviceWorker, /CACHE_NAME = 'sineday-v53'/);
   assert.match(serviceWorker, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.match(serviceWorker, /url\.pathname === '\/daily\/confirm'/);
   assert.match(serviceWorker, /url\.pathname === '\/daily-confirm\.html'/);

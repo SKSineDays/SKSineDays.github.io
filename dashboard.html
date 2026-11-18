@@ -274,6 +274,14 @@
           </p>
 
           <form id="daily-email-setup-form">
+            <fieldset id="daily-owner-eligibility" hidden>
+              <legend>One-time account-owner eligibility check</legend>
+              <p>These details are yours, not a family or Duck Globe profile. We save the eligibility result, not this birthdate.</p>
+              <label for="daily-owner-birthdate">Your birthdate</label>
+              <input type="date" id="daily-owner-birthdate" autocomplete="off">
+              <label for="daily-owner-country">Country of residence</label>
+              <select id="daily-owner-country"><option value="">Choose your country</option></select>
+            </fieldset>
             <div class="form-group">
               <label for="daily-email-birthdate">Birthdate</label>
               <input type="date" id="daily-email-birthdate" required>

@@ -5,6 +5,7 @@
  * No subscriber is created and no welcome/daily email is sent until the
  * recipient confirms ownership from the dedicated confirmation page.
  */
+import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from "./_lib/age-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import {
@@ -65,6 +66,18 @@ export default async function handler(req, res) {
     return json(res, 202, publicSignupAcceptedPayload());
   }
 
+  const birthdate = body.birthdate;
+  body.birthdate = "";
+  let eligibility;
+  try { eligibility = evaluateEligibility({ birthdate, country: body.country, policies: getConfiguredPolicies() }); }
+  catch { return json(res, 503, { ok: false, error: "Signup is temporarily unavailable." }); }
+  if (!eligibility.ok || !eligibility.eligible) {
+    return json(res, eligibility.ok ? 403 : 400, eligibilityFailure(eligibility));
+  }
+  // First UI step sends only age/country, not an email address. This response
+  // is NOT an admission token: final submission independently screens again.
+  if (body.action === "screen") return json(res, 200, { ok: true });
+
   const email = normalizeMailerEmail(body.email);
   if (!email) {
     return json(res, 400, { ok: false, error: "Enter a valid email address." });
@@ -79,8 +92,6 @@ export default async function handler(req, res) {
     return json(res, 400, { ok: false, error: "Invalid signup source." });
   }
 
-  const birthdate = body.birthdate;
-  body.birthdate = "";
   const rhythm = deriveEmailRhythmFromBirthdate(birthdate, {
     timezone: body.timezone
   });
@@ -115,7 +126,11 @@ export default async function handler(req, res) {
   }
 
   const supabase = getAdminClient();
-  const { data, error } = await supabase.rpc("create_mailer_signup_request", {
+  const { data, error } = await supabase.rpc("create_eligible_mailer_signup_request", {
+    p_country: eligibility.country,
+    p_policy_version: eligibility.policyVersion,
+    p_minimum_age: eligibility.minimumAge,
+    p_age_band: eligibility.ageBand,
     p_token_hash: tokenHash,
     p_email: email,
     p_timezone: body.timezone,

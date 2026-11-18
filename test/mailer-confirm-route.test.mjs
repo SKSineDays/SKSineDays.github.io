@@ -26,7 +26,7 @@ mock.module("@supabase/supabase-js", {
       return {
         async rpc(name, args) {
           store.rpcCalls.push({ name, args });
-          if (name === "confirm_mailer_signup") {
+          if (name === "confirm_eligible_mailer_signup") {
             if (store.confirmError) return { data: null, error: store.confirmError };
             return {
               data: [{

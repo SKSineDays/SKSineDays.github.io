@@ -117,7 +117,7 @@ function buildAuthCallbackUrl(config, params = {}) {
   return url.toString();
 }
 
-/** Send a magic link through the existing Supabase email provider. */
+/** Existing-member sign in only. New users must use server-screened account registration. */
 export async function signInWithEmail(email) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
@@ -129,7 +129,7 @@ export async function signInWithEmail(email) {
     email: normalizedEmail,
     options: {
       emailRedirectTo: buildAuthCallbackUrl(config),
-      shouldCreateUser: true
+      shouldCreateUser: false
     }
   });
   if (error) throw error;

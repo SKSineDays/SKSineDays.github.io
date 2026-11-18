@@ -396,3 +396,15 @@ Each entry includes:
 **Notes:** Remove group-only assets, generator, state and UI; preserve personal assets, account eligibility, terms, commissions and payouts. Retain accessible application hints, add focused unit and offline browser regressions, refresh the service-worker cache. Local suite: 506 passed, 1 skipped; personal asset check passed. Local browser launch is environment-blocked; CI browser verification is pending. Blog audit found no corresponding promotion to change.
 
 ---
+
+## 2026-11-18T17:34:27.103Z
+
+**Files:** api/account-registration.js, api/_lib/account-registration.js, api/_lib/age-eligibility.js, api/eligibility-policy.js, api/mailer-signup.js, api/mailer-confirm.js, api/subscribe.js, api/cron/daily-email.js, js/account-registration.js, js/supabase-client.js, js/daily-signup.js, js/dashboard.js, login.html, daily.html, dashboard.html, supabase/migrations/20261118190000_independent_signup_eligibility.sql, service-worker.js, docs/implementation/account-registration-admission.md, test
+
+**Summary:** Stage US13+ independent signup and mailer safeguards for review
+
+**Rationale:** Screen account owners before collecting signup credentials; enforce server admissions across email and social creation without modifying existing accounts or scheduled subscriptions.
+
+**Notes:** Draft only, no production migration/configuration. Rebased over privacy PR143; cache v53. Clean npm ci + full suite:561 passed,1 skipped. PGlite SQL and signed-token/API/VM tests pass. Browser launch blocked by sandbox EPERM. Hosted Google/Apple/OTP hook payload tests, explicit EU policy and coordinated deployment remain blockers. No age verification or parental-consent claim.
+
+---

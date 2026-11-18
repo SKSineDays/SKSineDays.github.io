@@ -4,6 +4,7 @@
  * Consumes a public double-opt-in token. GET requests and page loads never
  * activate email. Subscriber identity is kept inside the server/RPC boundary.
  */
+import { getConfiguredPolicies } from "./_lib/age-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import {
@@ -24,6 +25,8 @@ function firstRow(data) {
 
 function publicFailure(state) {
   switch (state) {
+    case "eligibility_required":
+      return { status: 409, body: { ok: false, state: "eligibility-required", error: "Please start a new signup to complete the eligibility check." } };
     case "expired":
       return {
         status: 410,
@@ -98,8 +101,9 @@ export default async function handler(req, res) {
 
   try {
     const supabase = getAdminClient();
-    const { data, error } = await supabase.rpc("confirm_mailer_signup", {
-      p_token_hash: tokenHash
+    const { data, error } = await supabase.rpc("confirm_eligible_mailer_signup", {
+      p_token_hash: tokenHash,
+      p_policies: getConfiguredPolicies()
     });
     if (error) throw error;
 

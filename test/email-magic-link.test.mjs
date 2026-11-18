@@ -19,10 +19,10 @@ function helperHarness(path = '/login.html') {
   return { context, calls, client, get options() { return options; } };
 }
 
-test('email helper normalizes and uses shared configured callback with new-user support', async () => {
+test('email sign-in helper normalizes and uses configured callback without creating new users', async () => {
   const h = helperHarness();
   await h.context.signInWithEmail('  Member@Example.com  ');
-  assert.deepEqual(JSON.parse(JSON.stringify(h.calls[0])), { email: 'member@example.com', options: { emailRedirectTo: 'https://sineday.app/auth/callback.html', shouldCreateUser: true } });
+  assert.deepEqual(JSON.parse(JSON.stringify(h.calls[0])), { email: 'member@example.com', options: { emailRedirectTo: 'https://sineday.app/auth/callback.html', shouldCreateUser: false } });
 });
 test('email helper rejects malformed input before calling provider', async () => {
   const h = helperHarness();

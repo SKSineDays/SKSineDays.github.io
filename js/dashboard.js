@@ -608,7 +608,7 @@ function closeDailyEmailSetup() {
   }, prefersReducedDashboardMotion() ? 0 : 220);
 }
 
-async function enableDailyEmail({ birthdate } = {}) {
+async function enableDailyEmail({ birthdate, ownerBirthdate, country } = {}) {
   if (!currentUser?.email) {
     showError("Sign in to enable Daily Duck email.");
     renderDailyEmailBox();
@@ -630,7 +630,8 @@ async function enableDailyEmail({ birthdate } = {}) {
       email: currentUser.email.toLowerCase().trim(),
       consent: true,
       timezone: getClientTimezone(),
-      source: DAILY_EMAIL_SOURCE
+      source: DAILY_EMAIL_SOURCE,
+      ownerBirthdate, country
     };
     if (birthdate) {
       payload.birthdate = birthdate;
@@ -644,6 +645,12 @@ async function enableDailyEmail({ birthdate } = {}) {
 
     const data = await response.json();
     if (!response.ok || !data.ok) {
+      if (data?.code === "eligibility_required") {
+        const fields = document.getElementById("daily-owner-eligibility");
+        if (fields) fields.hidden = false;
+        openDailyEmailSetup();
+        loadDailyEligibilityCountries();
+      }
       throw new Error(data?.error || "Failed to enable daily email");
     }
 
@@ -686,7 +693,15 @@ async function submitDailyEmailSetup(event) {
   }
   setDailyEmailStatus("Saving your Daily Duck email rhythm…");
 
-  const ok = await enableDailyEmail({ birthdate });
+  const ownerBirthdate = document.getElementById("daily-owner-birthdate")?.value;
+  const country = document.getElementById("daily-owner-country")?.value;
+  const fields = document.getElementById("daily-owner-eligibility");
+  if (fields && !fields.hidden && (!ownerBirthdate || !country)) {
+    setDailyEmailStatus("Enter your birthdate and country for the one-time eligibility check.", "error");
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Turn On Daily Duck"; }
+    return;
+  }
+  const ok = await enableDailyEmail({ birthdate, ownerBirthdate, country });
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Turn On Daily Duck";
@@ -2857,4 +2872,19 @@ if (document.readyState === 'loading') {
     const loading = document.getElementById('loading');
     if (loading) loading.innerText = 'Something went wrong. Please refresh.';
   });
+}
+
+async function loadDailyEligibilityCountries() {
+  const select = document.getElementById("daily-owner-country");
+  if (!select || select.options.length > 1) return;
+  try {
+    const response = await fetch("/api/eligibility-policy", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error();
+    for (const country of data.countries) {
+      const option = document.createElement("option");
+      option.value = country.code; option.textContent = country.name;
+      select.append(option);
+    }
+  } catch { setDailyEmailStatus("Eligibility setup is temporarily unavailable.", "error"); }
 }

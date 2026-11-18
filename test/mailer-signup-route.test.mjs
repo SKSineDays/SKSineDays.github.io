@@ -26,10 +26,10 @@ mock.module("@supabase/supabase-js", {
       return {
         async rpc(name, args) {
           store.rpcCalls.push({ name, args });
-          if (store.rpcError && name === "create_mailer_signup_request") {
+          if (store.rpcError && name === "create_eligible_mailer_signup_request") {
             return { data: null, error: store.rpcError };
           }
-          if (name === "create_mailer_signup_request") {
+          if (name === "create_eligible_mailer_signup_request") {
             return {
               data: [{
                 result_state: store.createState,
@@ -99,6 +99,7 @@ function validBody() {
   return {
     email: "Person@Example.com ",
     birthdate: "1985-04-20",
+    country: "US",
     timezone: "America/Chicago",
     consent: true,
     company: "",
@@ -124,7 +125,7 @@ test("public signup stores only derived rhythm and sends a fragment confirmation
   reset();
   const body = validBody();
   const res = await post(body);
-  const create = store.rpcCalls.find((call) => call.name === "create_mailer_signup_request");
+  const create = store.rpcCalls.find((call) => call.name === "create_eligible_mailer_signup_request");
   const mark = store.rpcCalls.find((call) => call.name === "mark_mailer_confirmation_sent");
 
   assert.equal(res.statusCode, 202);
@@ -239,4 +240,22 @@ test("invalid consent, dates, timezones, and sources fail before writes", async 
     assert.equal(store.rpcCalls.length, 0);
     assert.equal(store.sends.length, 0);
   }
+});
+
+test("under13, missing country and unsupported jurisdiction fail before database/provider writes", async () => {
+  for (const body of [ {...validBody(),birthdate:"2020-01-01"}, {...validBody(),country:""}, {...validBody(),country:"FR"} ]) {
+    reset(); const res=await post(body);
+    assert.ok([400,403].includes(res.statusCode));
+    assert.equal(store.rpcCalls.length,0); assert.equal(store.sends.length,0);
+    assert.equal(body.birthdate, "");
+  }
+});
+test("client eligibility spoof does not bypass independently calculated age", async () => {
+  reset(); const res=await post({...validBody(),birthdate:"2020-01-01",eligible:true,age:30,policyVersion:"yes"});
+  assert.equal(res.statusCode,403); assert.equal(store.sends.length,0);
+});
+
+test("first screen requires only age/country and writes no identity or email",async()=>{
+ reset(); const res=await post({action:"screen",birthdate:"1985-04-20",country:"US"});
+ assert.equal(res.statusCode,200); assert.equal(store.rpcCalls.length,0); assert.equal(store.sends.length,0);
 });

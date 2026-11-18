@@ -53,7 +53,7 @@
         </div>
 
         <form id="daily-signup" class="daily-form" novalidate>
-          <div class="daily-field">
+          <div class="daily-field" data-email-step hidden>
             <label for="daily-email">Email</label>
             <input
               id="daily-email"
@@ -71,12 +71,12 @@
           </div>
 
           <div class="daily-field">
-            <label for="daily-birthdate">Birthdate</label>
+            <label for="daily-birthdate">Your birthdate</label>
             <input
               id="daily-birthdate"
               name="birthdate"
               type="date"
-              autocomplete="bday"
+              autocomplete="off"
               required
               aria-describedby="daily-birthdate-help daily-birthdate-error"
             >
@@ -84,7 +84,7 @@
             <p id="daily-birthdate-error" class="daily-field-error" aria-live="polite"></p>
           </div>
 
-          <div class="daily-field">
+          <div class="daily-field" data-email-step hidden>
             <label for="daily-timezone">Time zone</label>
             <input
               id="daily-timezone"
@@ -106,7 +106,15 @@
             <input id="daily-company" name="company" type="text" tabindex="-1" autocomplete="off">
           </div>
 
-          <div class="daily-consent">
+          <div class="daily-field">
+            <label for="daily-country">Country of residence</label>
+            <select id="daily-country" name="country" required aria-describedby="daily-country-error">
+              <option value="">Choose your country</option>
+            </select>
+            <p class="daily-field-help">This signup is for your own emails. Eligibility is checked before we send confirmation.</p>
+            <p id="daily-country-error" class="daily-field-error" aria-live="polite"></p>
+          </div>
+          <div class="daily-consent" data-email-step hidden>
             <input
               id="daily-consent"
               name="consent"
@@ -119,7 +127,7 @@
           <p id="daily-consent-error" class="daily-field-error" aria-live="polite"></p>
 
           <button id="daily-submit" class="daily-submit" type="submit">
-            Send me my daily SineDay
+            Continue
           </button>
           <p id="daily-form-status" class="daily-form-status" role="status" aria-live="polite" aria-atomic="true"></p>
         </form>

@@ -1,8 +1,10 @@
+let eligibilityScreened = false;
 const form = document.getElementById("daily-signup");
 const emailInput = document.getElementById("daily-email");
 const birthdateInput = document.getElementById("daily-birthdate");
 const timezoneInput = document.getElementById("daily-timezone");
 const timezoneList = document.getElementById("daily-timezone-list");
+const countryInput = document.getElementById("daily-country");
 const consentInput = document.getElementById("daily-consent");
 const submitButton = document.getElementById("daily-submit");
 const status = document.getElementById("daily-form-status");
@@ -103,9 +105,9 @@ function validate() {
   let firstInvalid = null;
   const email = emailInput.value.trim();
   if (
-    !email ||
+    eligibilityScreened && (!email ||
     email.length > 320 ||
-    !emailInput.validity.valid
+    !emailInput.validity.valid)
   ) {
     setFieldError(emailInput, "Enter a valid email address.");
     firstInvalid ||= emailInput;
@@ -120,14 +122,19 @@ function validate() {
     setFieldError(birthdateInput);
   }
 
-  if (!isValidTimeZone(timezoneInput.value)) {
+  if (eligibilityScreened && !isValidTimeZone(timezoneInput.value)) {
     setFieldError(timezoneInput, "Enter a valid IANA time zone, such as America/Chicago.");
     firstInvalid ||= timezoneInput;
   } else {
     setFieldError(timezoneInput);
   }
 
-  if (!consentInput.checked) {
+  if (!countryInput?.value) {
+    setFieldError(countryInput, "Choose your country of residence.");
+    firstInvalid ||= countryInput;
+  } else setFieldError(countryInput);
+
+  if (eligibilityScreened && !consentInput.checked) {
     setFieldError(consentInput, "Please check the consent box to continue.");
     firstInvalid ||= consentInput;
   } else {
@@ -142,7 +149,7 @@ function validate() {
   return true;
 }
 
-for (const input of [emailInput, birthdateInput, timezoneInput, consentInput]) {
+for (const input of [emailInput, birthdateInput, timezoneInput, countryInput, consentInput]) {
   input?.addEventListener("input", () => setFieldError(input));
   input?.addEventListener("change", () => setFieldError(input));
 }
@@ -154,6 +161,28 @@ populateTimeZones();
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (submitButton.disabled || !validate()) return;
+
+  if (!eligibilityScreened) {
+    submitButton.disabled = true;
+    const screenedBirthdate = birthdateInput.value;
+    const screenedCountry = countryInput.value;
+    try {
+      const response = await fetch("/api/mailer-signup", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "screen", birthdate: screenedBirthdate, country: screenedCountry })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || "Eligibility could not be checked.");
+      if (birthdateInput.value !== screenedBirthdate || countryInput.value !== screenedCountry) return;
+      eligibilityScreened = true;
+      for (const section of document.querySelectorAll("[data-email-step]")) section.hidden = false;
+      submitButton.textContent = "Send me my daily SineDay";
+      setStatus("Now choose where to receive your daily emails.");
+      emailInput.focus();
+    } catch (error) { setStatus(error.message || "Eligibility could not be checked.", "error"); }
+    finally { submitButton.disabled = false; }
+    return;
+  }
 
   submitButton.disabled = true;
   submitButton.textContent = "Sending confirmation…";
@@ -169,6 +198,7 @@ form?.addEventListener("submit", async (event) => {
       body: JSON.stringify({
         email: emailInput.value.trim(),
         birthdate: birthdateInput.value,
+        country: countryInput.value,
         timezone: timezoneInput.value,
         consent: consentInput.checked,
         company: form.elements.company.value,
@@ -197,3 +227,24 @@ form?.addEventListener("submit", async (event) => {
     form.removeAttribute("aria-busy");
   }
 });
+
+// No implicit country default: a timezone is not a jurisdiction declaration.
+fetch("/api/eligibility-policy", { cache: "no-store" }).then(async response => {
+  const data = await response.json();
+  if (!response.ok || !data.ok || !Array.isArray(data.countries)) throw new Error();
+  for (const country of data.countries) {
+    const option = document.createElement("option");
+    option.value = country.code; option.textContent = country.name;
+    countryInput?.append(option);
+  }
+}).catch(() => setStatus("Signup is temporarily unavailable. Please try again later.", "error"));
+
+for (const input of [birthdateInput, countryInput]) {
+  input?.addEventListener("input", () => {
+    eligibilityScreened = false;
+    for (const section of document.querySelectorAll("[data-email-step]")) section.hidden = true;
+    emailInput.value = ""; consentInput.checked = false;
+    submitButton.textContent = "Continue";
+  });
+}
+window.addEventListener("pagehide", () => { birthdateInput.value = ""; });

@@ -14,6 +14,7 @@ const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const store = {
   authEmail: "member@sineday.app",
+  eligibility: {country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"},
   rpcCalls: [],
   resendSends: [],
   activationError: null,
@@ -35,8 +36,14 @@ mock.module("@supabase/supabase-js", {
             if (!store.authEmail) {
               return { data: { user: null }, error: new Error("invalid token") };
             }
-            return { data: { user: { email: store.authEmail } }, error: null };
+            return { data: { user: { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", email: store.authEmail } }, error: null };
           }
+        },
+        from(name) {
+          assert.equal(name, "account_eligibility");
+          return { select() { return this; }, eq() { return this; },
+            async maybeSingle() { return { data: store.eligibility, error: null }; },
+            async insert(row) { store.eligibility = row; return { error: null }; } };
         },
         async rpc(name, args) {
           store.rpcCalls.push({ name, args });
@@ -101,6 +108,7 @@ function mockRes() {
 
 function reset() {
   store.authEmail = "member@sineday.app";
+  store.eligibility = {country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"};
   store.rpcCalls.length = 0;
   store.resendSends.length = 0;
   store.activationError = null;
@@ -230,4 +238,25 @@ test("suppressed recipients are never automatically reactivated", async () => {
   });
   assert.equal(res.statusCode, 409);
   assert.equal(store.resendSends.length, 0);
+});
+
+test("legacy account without eligibility cannot activate mailer by omitting DOB or spoofing user flags", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",eligible:true});
+ assert.equal(res.statusCode,403); assert.equal(res.body.code,"eligibility_required");
+ assert.equal(store.rpcCalls.length,0); assert.equal(store.resendSends.length,0);
+});
+test("authenticated under13 independent email activation stops before subscription or welcome", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",ownerBirthdate:"2020-01-01",country:"US"});
+ assert.equal(res.statusCode,403); assert.equal(store.eligibility,null);
+ assert.equal(store.rpcCalls.length,0); assert.equal(store.resendSends.length,0);
+});
+test("legacy adult owner screens once and server remembers eligibility, without saving DOB", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",ownerBirthdate:"1985-04-20",country:"US"});
+ assert.equal(res.statusCode,200); assert.equal(store.eligibility.age_band,"adult");
+ assert.equal(JSON.stringify(store.eligibility).includes('1985'),false);
+ const again=await post({consent:true,timezone:"America/Chicago"});
+ assert.equal(again.statusCode,200);
 });

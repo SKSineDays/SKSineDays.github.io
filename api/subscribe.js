@@ -7,6 +7,7 @@
  * Client-provided rhythm values are ignored. A supplied birthdate is reduced
  * to email-safe values in request memory and is never stored or logged.
  */
+import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from "./_lib/age-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import { deriveEmailRhythmFromBirthdate } from "./_lib/email-rhythm.js";
@@ -27,7 +28,7 @@ async function getAuthedEmail(req, serviceClient) {
   if (!token) return null;
   const { data: { user } = {}, error } = await serviceClient.auth.getUser(token);
   if (error || !user) return null;
-  return normalizeMailerEmail(user.email);
+  return { id: user.id, email: normalizeMailerEmail(user.email) };
 }
 
 function firstRow(data) {
@@ -59,7 +60,8 @@ export default async function handler(req, res) {
     }
 
     const supabase = getAdminClient();
-    const authEmail = await getAuthedEmail(req, supabase);
+    const authUser = await getAuthedEmail(req, supabase);
+    const authEmail = authUser?.email;
     if (!authEmail) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
@@ -90,6 +92,40 @@ export default async function handler(req, res) {
         : "America/Chicago";
     if (!validateMailerTimeZone(timezone)) {
       return res.status(400).json({ ok: false, error: "Invalid timezone" });
+    }
+
+    // Missing legacy eligibility does not invalidate sign-in. It must be resolved
+    // before NEW mailer activation; existing scheduled subscriptions are untouched.
+    const { data: savedEligibility, error: eligibilityReadError } = await supabase
+      .from("account_eligibility").select("country,policy_version,minimum_age,age_band")
+      .eq("user_id", authUser.id).maybeSingle();
+    if (eligibilityReadError) throw eligibilityReadError;
+    const policies = getConfiguredPolicies();
+    const currentPolicy = savedEligibility && policies[savedEligibility.country];
+    const currentEligibility = currentPolicy && currentPolicy.version === savedEligibility.policy_version
+      && currentPolicy.minimumAge === savedEligibility.minimum_age
+      && ["13-15", "16-17", "adult"].includes(savedEligibility.age_band);
+    if (!currentEligibility) {
+      if (!body.ownerBirthdate || !body.country) {
+        return res.status(403).json({ ok: false, code: "eligibility_required", error: "Please confirm the account owner's birthdate and country before enabling email." });
+      }
+      const decision = evaluateEligibility({ birthdate: body.ownerBirthdate, country: body.country, policies });
+      body.ownerBirthdate = "";
+      if (!decision.ok || !decision.eligible) return res.status(decision.ok ? 403 : 400).json(eligibilityFailure(decision));
+      const { error: eligibilityWriteError } = await supabase.from("account_eligibility").insert({
+        user_id: authUser.id, country: decision.country, policy_version: decision.policyVersion,
+        minimum_age: decision.minimumAge, age_band: decision.ageBand
+      });
+      if (eligibilityWriteError) {
+        if (eligibilityWriteError.code !== "23505") throw eligibilityWriteError;
+        // Concurrent first checks must not clobber each other. A material policy
+        // change needs explicit support/migration, not a blind upsert of old evidence.
+        const { data: winner, error: rereadError } = await supabase.from("account_eligibility")
+          .select("country,policy_version,minimum_age,age_band").eq("user_id", authUser.id).maybeSingle();
+        if (rereadError || winner?.country !== decision.country || winner?.policy_version !== decision.policyVersion || winner?.minimum_age !== decision.minimumAge || !["13-15", "16-17", "adult"].includes(winner?.age_band)) {
+          return res.status(409).json({ ok: false, code: "eligibility_review_required", error: "Your eligibility information needs review. Please contact support." });
+        }
+      }
     }
 
     let derived = null;
