@@ -28,7 +28,7 @@ function setup(completeResponse, enabled = true) {
   vm.runInContext(source,context);
   element('registration-method').value='email';element('registration-birthdate').value='2000-01-01';
   element('registration-country').value='US';element('registration-email').value='test@example.com';
-  return {element,requests,scripts,redirects,sessions:()=>sessions};
+  return {element,requests,scripts,redirects,window,context,sessions:()=>sessions};
 }
 test('duplicate submit is ignored and email success clears sensitive inputs',async()=>{
   const result=deferred();const app=setup(result);await flush();
@@ -77,3 +77,50 @@ test('provider SDK is not loaded before eligibility flow and canceled late compl
      assert.equal(app.requests.length,0);assert.equal(app.scripts.length,0);
    }
  });
+
+async function appleSetup(signIn) {
+  const app=setup();await flush();
+  app.window.AppleID={auth:{init(){},signIn}};
+  app.element('registration-method').value='apple';
+  const pending=app.element('registration-form').listeners.submit({preventDefault(){}});
+  await flush();app.scripts[0].onload();await pending;
+  return app;
+}
+test('Apple errors show only fixed allowlisted references, never raw SDK or personal data',async()=>{
+  for(const [error,code] of [
+    [{error:'user_cancelled_authorize',message:'private@example.invalid'},'APPLE_CANCELED'],
+    [{error:'popup_closed_by_user'},'APPLE_POPUP_CLOSED'],
+    [{error:'popup_blocked_by_browser'},'APPLE_POPUP_BLOCKED'],
+    [{error:'invalid_client',error_description:'private-token'},'APPLE_INVALID_CLIENT'],
+    [{error:'unauthorized_client',error_description:'private-return-uri'},'APPLE_UNAUTHORIZED_CLIENT'],
+    [{error:'private@example.invalid',message:'private-token',authorization:{id_token:'private-token'}},'APPLE_UNKNOWN']
+  ]){
+    const app=await appleSetup(async()=>{throw error;});
+    await app.element('registration-apple-button').listeners.click();
+    const text=app.element('registration-status').textContent;
+    assert.match(text,new RegExp(code));assert.doesNotMatch(text,/private@|private-token|private-return/);
+    assert.equal(app.requests.some(r=>r.action==='complete'),false);
+  }
+});
+test('Apple missing/mismatched state and absent token fail closed with distinct safe references',async()=>{
+  for(const [authorization,code] of [[{id_token:'private-token'},'APPLE_STATE_MISSING'],[{state:'wrong',id_token:'private-token'},'APPLE_STATE_MISMATCH'],[{state:'test'},'APPLE_TOKEN_MISSING']]){
+    const app=await appleSetup(async()=>({authorization}));
+    await app.element('registration-apple-button').listeners.click();
+    assert.match(app.element('registration-status').textContent,new RegExp(code));
+    assert.equal(app.requests.some(r=>r.action==='complete'),false);
+  }
+});
+test('valid Apple state and token proceed to the existing server admission endpoint',async()=>{
+ const app=await appleSetup(async()=>({authorization:{state:'test',id_token:'synthetic-token'}}));
+ await app.element('registration-apple-button').listeners.click();
+ const complete=app.requests.filter(r=>r.action==='complete');assert.equal(complete.length,1);assert.equal(complete[0].token,'synthetic-token');
+});
+
+test('Apple SDK initialization failure also uses safe allowlisted copy',async()=>{
+ const app=setup();await flush();app.element('registration-method').value='apple';
+ app.window.AppleID={auth:{init(){throw {error:'invalid_redirect_uri',message:'private@example.invalid',error_description:'secret-return-query'};}}};
+ const pending=app.element('registration-form').listeners.submit({preventDefault(){}});await flush();app.scripts[0].onload();await pending;
+ assert.match(app.element('registration-status').textContent,/APPLE_INVALID_REDIRECT/);
+ assert.doesNotMatch(app.element('registration-status').textContent,/private@|secret-return/);
+ assert.equal(app.requests.some(r=>r.action==='complete'),false);
+});

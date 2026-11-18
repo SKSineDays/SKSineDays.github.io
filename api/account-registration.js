@@ -57,36 +57,45 @@ export default async function handler(req, res) {
   if (body.action !== 'complete') return res.status(400).json({ ok: false, error: 'Invalid action.' });
   let flow;
   try { flow = readFlow(req.headers.cookie, config.secret); } catch {
+    console.warn('[signup-complete] FLOW_INVALID');
     return res.status(403).json({ ok: false, error: 'Please start account registration again.' });
   }
   // End the browser transaction on any completion attempt. DB uniqueness additionally
   // prevents replay of a captured signed cookie. Existing accounts are never modified.
   res.setHeader('Set-Cookie', flowCookie('', 0));
+  // Fixed, internal-only phase labels. Never attach the caught error or request data.
+  let failurePhase = 'POLICY_CHECK';
   try {
     // An operator may withdraw a regional policy while a signup is in flight.
     const currentPolicy = getConfiguredPolicies()[flow.eligibility.country];
     if (!currentPolicy || currentPolicy.version !== flow.eligibility.policyVersion || currentPolicy.minimumAge !== flow.eligibility.minimumAge) throw new Error('Policy changed');
     let subject;
     if (flow.provider === 'email') {
+      failurePhase = 'EMAIL_INPUT';
       subject = String(body.email || '').trim().toLowerCase();
       if (subject.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject)) throw new Error('Invalid email');
     } else {
+      failurePhase = 'PROVIDER_PROOF';
       ({ subject } = await verifyProviderProof(body.token, flow, config));
     }
+    failurePhase = 'ADMISSION_ISSUE';
     const { error: grantError } = await admin.rpc('issue_account_admission', {
       p_provider: flow.provider, p_subject: subject, p_flow_hash: hash(flow.id),
       p_country: flow.eligibility.country, p_policy_version: flow.eligibility.policyVersion,
       p_minimum_age: flow.eligibility.minimumAge, p_age_band: flow.eligibility.ageBand
     });
     if (grantError?.message === 'signup_rate_limited') {
+      console.warn('[signup-complete] ADMISSION_RATE_LIMITED');
       res.setHeader('Retry-After', '3600');
       return res.status(429).json({ ok: false, error: 'Too many registration attempts. Please try again later.' });
     }
     if (grantError) throw new Error('Admission unavailable');
+    failurePhase = 'AUTH_CLIENT_SETUP';
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) throw new Error('Auth unavailable');
     const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY,
       { auth: { persistSession: false, autoRefreshToken: false } });
     if (flow.provider === 'email') {
+      failurePhase = 'EMAIL_OTP_SEND';
       const { error } = await client.auth.signInWithOtp({ email: subject, options: {
         shouldCreateUser: true, emailRedirectTo: new URL('/auth/callback.html', config.origin).href,
         data: { signup_admission_token: flow.id }
@@ -94,6 +103,7 @@ export default async function handler(req, res) {
       if (error) throw new Error('Auth unavailable');
       return res.status(200).json({ ok: true, emailSent: true });
     }
+    failurePhase = 'PROVIDER_TOKEN_EXCHANGE';
     const { data, error } = await client.auth.signInWithIdToken({ provider: flow.provider, token: body.token, nonce: flow.nonce });
     if (error || !data?.session?.access_token || !data?.session?.refresh_token) throw new Error('Auth unavailable');
     return res.status(200).json({ ok: true, session: {
@@ -101,6 +111,8 @@ export default async function handler(req, res) {
     } });
   } catch {
     // Never log DOB, provider proofs, cookies, emails, admission secrets or sessions.
+    // failurePhase is assigned only the fixed literals above, never external values.
+    console.warn(`[signup-complete] ${failurePhase}`);
     return res.status(400).json({ ok: false, error: 'Registration could not be completed. Please start again, or use Sign in if you already have an account.' });
   }
 }
