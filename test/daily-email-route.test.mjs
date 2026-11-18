@@ -297,3 +297,13 @@ test("Resend error objects mark the delivery failed without leaking addresses", 
   assert.equal(delivery.error.includes("@"), false);
   assert.equal(JSON.stringify(res.body).includes("@"), false);
 });
+
+test("admission cleanup failure never interrupts existing scheduled email delivery",async()=>{
+  resetStore(); seedEligibleSubscriber(store,{id:SUB_ID});
+  process.env.AGE_AUTH_HOOK_READY="true";
+  try {
+    // Mock returns unknown-RPC error for cleanup_account_admissions.
+    const res=await runCron();
+    assert.equal(res.statusCode,200); assert.equal(sent.length,1);
+  } finally { delete process.env.AGE_AUTH_HOOK_READY; }
+});

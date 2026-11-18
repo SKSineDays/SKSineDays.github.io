@@ -60,6 +60,16 @@ export default async function handler(req, res) {
     return json(res, 500, { ok: false, error: "Mailer cleanup failed" });
   }
 
+  // Admission housekeeping must never stop unrelated, existing email delivery.
+  if (process.env.AGE_AUTH_HOOK_READY === "true") {
+    try {
+      const { error } = await supabase.rpc("cleanup_account_admissions");
+      if (error) throw error;
+    } catch {
+      console.error("[signup-admissions] scheduled cleanup failed; operator review required");
+    }
+  }
+
   if (!isDailyEmailCronEnabled()) {
     console.warn("[daily-email] sending disabled");
     return json(res, 200, {

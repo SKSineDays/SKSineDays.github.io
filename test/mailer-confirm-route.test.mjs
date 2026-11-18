@@ -1,3 +1,4 @@
+process.env.AGE_MAILER_ENFORCEMENT_READY = "true";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mock } from "node:test";
@@ -12,6 +13,7 @@ process.env.PUBLIC_SITE_URL = "https://sineday.app";
 const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const TOKEN = "a".repeat(43);
+let forcedDbMode;
 const store = {
   confirmationState: "active",
   rpcCalls: [],
@@ -25,8 +27,9 @@ mock.module("@supabase/supabase-js", {
     createClient() {
       return {
         async rpc(name, args) {
+          if (name === "mailer_age_enforcement_is_enabled") return {data: forcedDbMode === undefined ? process.env.AGE_MAILER_ENFORCEMENT_READY === "true" : forcedDbMode};
           store.rpcCalls.push({ name, args });
-          if (name === "confirm_mailer_signup") {
+          if (["confirm_eligible_mailer_signup", "confirm_mailer_signup"].includes(name)) {
             if (store.confirmError) return { data: null, error: store.confirmError };
             return {
               data: [{
@@ -174,4 +177,21 @@ test("malformed tokens fail before database access", async () => {
   const res = await request({ token: "short" });
   assert.equal(res.statusCode, 400);
   assert.equal(store.rpcCalls.length, 0);
+});
+
+test('dormant mailer confirms original pending link with original RPC', async () => {
+  reset(); delete process.env.AGE_MAILER_ENFORCEMENT_READY;
+  try {
+    const res = await request();
+    assert.equal(res.statusCode,200);
+    assert.ok(store.rpcCalls.some(c=>c.name==='confirm_mailer_signup'));
+    assert.ok(!store.rpcCalls.some(c=>c.name==='confirm_eligible_mailer_signup'));
+  } finally { process.env.AGE_MAILER_ENFORCEMENT_READY='true'; }
+});
+test('confirmation DB/env mismatch never consumes token or sends mail',async()=>{
+  try { for(const enabled of [false,true]) {
+    reset();process.env.AGE_MAILER_ENFORCEMENT_READY=String(enabled);forcedDbMode=!enabled;
+    assert.equal((await request()).statusCode,503);
+    assert.equal(store.rpcCalls.length,0);assert.equal(store.sends.length,0);
+  }} finally {forcedDbMode=undefined;process.env.AGE_MAILER_ENFORCEMENT_READY='true';}
 });

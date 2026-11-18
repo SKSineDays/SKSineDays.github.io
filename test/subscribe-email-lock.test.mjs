@@ -1,3 +1,4 @@
+process.env.AGE_MAILER_ENFORCEMENT_READY = "true";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mock } from "node:test";
@@ -12,8 +13,10 @@ process.env.MAILER_SIGNUP_SECRET = "mailer-signup-secret-at-least-32-bytes";
 
 const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+let forcedDbMode;
 const store = {
   authEmail: "member@sineday.app",
+  eligibility: {status: "eligible", country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"},
   rpcCalls: [],
   resendSends: [],
   activationError: null,
@@ -35,12 +38,23 @@ mock.module("@supabase/supabase-js", {
             if (!store.authEmail) {
               return { data: { user: null }, error: new Error("invalid token") };
             }
-            return { data: { user: { email: store.authEmail } }, error: null };
+            return { data: { user: { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", email: store.authEmail } }, error: null };
           }
         },
+        from(name) {
+          assert.equal(name, "account_eligibility");
+          return { select() { return this; }, eq() { return this; },
+            async maybeSingle() { return { data: store.eligibility, error: null }; },
+            async insert(row) { store.eligibility = row; return { error: null }; } };
+        },
         async rpc(name, args) {
+          if (name === "mailer_age_enforcement_is_enabled") return {data: forcedDbMode === undefined ? process.env.AGE_MAILER_ENFORCEMENT_READY === "true" : forcedDbMode};
           store.rpcCalls.push({ name, args });
-          if (name === "activate_authenticated_email_subscriber") {
+          if (name === "record_account_eligibility_decision") {
+            store.eligibility ||= { country:args.p_country,policy_version:args.p_policy_version,minimum_age:args.p_minimum_age,age_band:args.p_age_band,status:args.p_eligible ? "eligible" : "review_required" };
+            return {data:[store.eligibility],error:null};
+          }
+          if (["activate_eligible_authenticated_email_subscriber", "activate_authenticated_email_subscriber"].includes(name)) {
             return { data: store.activation ? [store.activation] : null, error: store.activationError };
           }
           if (name === "claim_due_mailer_welcomes") {
@@ -101,6 +115,7 @@ function mockRes() {
 
 function reset() {
   store.authEmail = "member@sineday.app";
+  store.eligibility = {status: "eligible", country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"};
   store.rpcCalls.length = 0;
   store.resendSends.length = 0;
   store.activationError = null;
@@ -162,7 +177,7 @@ test("authenticated setup derives rhythm server-side and ignores client rhythm v
   };
   const res = await post(body);
   const activation = store.rpcCalls.find(
-    (call) => call.name === "activate_authenticated_email_subscriber"
+    (call) => call.name === "activate_eligible_authenticated_email_subscriber"
   );
 
   assert.equal(res.statusCode, 200);
@@ -230,4 +245,51 @@ test("suppressed recipients are never automatically reactivated", async () => {
   });
   assert.equal(res.statusCode, 409);
   assert.equal(store.resendSends.length, 0);
+});
+
+test("legacy account without eligibility cannot activate mailer by omitting DOB or spoofing user flags", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",eligible:true});
+ assert.equal(res.statusCode,403); assert.equal(res.body.code,"eligibility_required");
+ assert.equal(store.rpcCalls.length,0); assert.equal(store.resendSends.length,0);
+});
+test("authenticated under13 independent email activation stops before subscription or welcome", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",ownerBirthdate:"2020-01-01",country:"US"});
+ assert.equal(res.statusCode,403); assert.equal(store.eligibility.status,"review_required");
+ assert.equal(store.rpcCalls.length,1); assert.equal(store.resendSends.length,0);
+});
+test("legacy adult owner screens once and server remembers eligibility, without saving DOB", async()=>{
+ reset(); store.eligibility=null;
+ const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",ownerBirthdate:"1985-04-20",country:"US"});
+ assert.equal(res.statusCode,200); assert.equal(store.eligibility.age_band,"adult");
+ assert.equal(JSON.stringify(store.eligibility).includes('1985'),false);
+ const again=await post({consent:true,timezone:"America/Chicago"});
+ assert.equal(again.statusCode,200);
+});
+
+test("rejected owner cannot activate mailer by resubmitting adult DOB", async()=>{
+ reset(); store.eligibility=null;
+ await post({consent:true,ownerBirthdate:"2020-01-01",country:"US"});
+ const res=await post({consent:true,ownerBirthdate:"1985-01-01",country:"US"});
+ assert.equal(res.statusCode,403); assert.equal(store.eligibility.status,"review_required");
+ assert.equal(store.rpcCalls.filter(x=>x.name==="activate_eligible_authenticated_email_subscriber").length,0);
+});
+
+test('dormant authenticated activation preserves legacy behavior without owner declaration', async () => {
+  reset(); delete process.env.AGE_MAILER_ENFORCEMENT_READY; store.eligibility=null;
+  try {
+    const res=await post({consent:true,timezone:'America/Chicago',birthdate:'1985-04-20'});
+    assert.equal(res.statusCode,200);
+    const activation=store.rpcCalls.find(c=>c.name==='activate_authenticated_email_subscriber');
+    assert.ok(activation); assert.equal(activation.args.p_user_id,undefined);
+    assert.ok(!store.rpcCalls.some(c=>c.name==='record_account_eligibility_decision'));
+  } finally { process.env.AGE_MAILER_ENFORCEMENT_READY='true'; }
+});
+test('authenticated activation DB/env mismatch never writes eligibility/subscriber or sends mail',async()=>{
+  try {for(const enabled of [false,true]) {
+    reset();process.env.AGE_MAILER_ENFORCEMENT_READY=String(enabled);forcedDbMode=!enabled;
+    assert.equal((await post({consent:true,timezone:'America/Chicago',birthdate:'1985-04-20'})).statusCode,503);
+    assert.equal(store.rpcCalls.length,0);assert.equal(store.resendSends.length,0);
+  }} finally {forcedDbMode=undefined;process.env.AGE_MAILER_ENFORCEMENT_READY='true';}
 });

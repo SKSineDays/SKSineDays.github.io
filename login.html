@@ -38,6 +38,11 @@
       justify-content: center;
     }
 
+    .registration-panel { margin-top: 24px; line-height: 1.5; }
+    .registration-panel summary { cursor: pointer; padding: 12px 0; }
+    .registration-panel select { width: 100%; padding: 12px; font: inherit; border-radius: 8px; }
+    .registration-panel [hidden] { display: none !important; }
+
     /* Background */
     body::before {
       content: '';
@@ -524,9 +529,50 @@
           inputmode="email" autocapitalize="none" spellcheck="false" required disabled
           aria-describedby="email-signin-help login-status" placeholder="you@example.com">
       </div>
-      <p id="email-signin-help" class="email-help">Use the email on your existing SineDay account. If you use Apple’s Hide My Email, continue with Apple.</p>
+      <p id="email-signin-help" class="email-help">New here or returning? Enter your email. If you use Apple’s Hide My Email, continue with Apple.</p>
       <button id="email-signin-btn" class="btn btn-primary" type="submit" disabled>Email me a sign-in link</button>
     </form>
+
+    <details id="registration-panel" class="registration-panel" hidden>
+      <summary>Create a new SineDay account</summary>
+      <p>These details are for the person who will use this account, not a person added to your journal or Duck Globe. We check eligibility once for a new account. Your birthdate is not saved by this check.</p>
+      <form id="registration-form">
+        <div class="form-group">
+          <label for="registration-birthdate">Your birthdate</label>
+          <input id="registration-birthdate" type="date" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="registration-country">Country where you live</label>
+          <select id="registration-country" required>
+            <option value="">Choose your country</option>
+          </select>
+          <p id="registration-country-help" class="email-help">If your country is not available yet, please contact support. Do not choose a different country.</p>
+        </div>
+        <div class="form-group">
+          <label for="registration-method">Create your account with</label>
+          <select id="registration-method">
+            <option value="google">Google</option>
+            <option value="apple">Apple</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+        <button id="registration-continue" class="btn btn-primary" type="submit">Continue</button>
+      </form>
+      <div id="registration-provider" hidden>
+        <p>Eligibility check complete. Continue with your chosen sign-up method.</p>
+        <form id="registration-email-form" hidden>
+          <div class="form-group">
+            <label for="registration-email">Your email address</label>
+            <input id="registration-email" type="email" autocomplete="email" maxlength="254" required>
+          </div>
+          <button id="registration-email-submit" class="btn btn-primary" type="submit">Email my account link</button>
+        </form>
+        <div id="registration-google-button"></div>
+        <button id="registration-apple-button" class="btn btn-primary" type="button" hidden>Continue with Apple</button>
+      </div>
+      <button id="registration-cancel" class="btn" type="button">Cancel registration</button>
+      <p id="registration-status" role="status" aria-live="polite"></p>
+    </details>
 
     <div id="login-status" class="status-message" role="status" aria-live="polite" aria-atomic="true" style="display: none;"></div>
 
@@ -569,6 +615,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Load our modules -->
+  <script type="module" src="/js/account-registration.js"></script>
   <script type="module" src="/js/login.js"></script>
 </body>
 </html>

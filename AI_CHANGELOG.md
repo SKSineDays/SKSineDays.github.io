@@ -396,3 +396,31 @@ Each entry includes:
 **Notes:** Remove group-only assets, generator, state and UI; preserve personal assets, account eligibility, terms, commissions and payouts. Retain accessible application hints, add focused unit and offline browser regressions, refresh the service-worker cache. Local suite: 506 passed, 1 skipped; personal asset check passed. Local browser launch is environment-blocked; CI browser verification is pending. Blog audit found no corresponding promotion to change.
 
 ---
+
+## 2026-11-18T17:34:27.103Z
+
+**Files:** api/account-registration.js, api/_lib/account-registration.js, api/_lib/age-eligibility.js, api/eligibility-policy.js, api/mailer-signup.js, api/mailer-confirm.js, api/subscribe.js, api/cron/daily-email.js, js/account-registration.js, js/supabase-client.js, js/daily-signup.js, js/dashboard.js, login.html, daily.html, dashboard.html, supabase/migrations/20261118190000_independent_signup_eligibility.sql, service-worker.js, docs/implementation/account-registration-admission.md, test
+
+**Summary:** Stage US13+ independent signup and mailer safeguards for review
+
+**Rationale:** Screen account owners before collecting signup credentials; enforce server admissions across email and social creation without modifying existing accounts or scheduled subscriptions.
+
+**Notes:** Draft only, no production migration/configuration. Rebased over privacy PR143; cache v53. Clean npm ci + full suite:561 passed,1 skipped. PGlite SQL and signed-token/API/VM tests pass. Browser launch blocked by sandbox EPERM. Hosted Google/Apple/OTP hook payload tests, explicit EU policy and coordinated deployment remain blockers. No age verification or parental-consent claim.
+
+---
+
+## 2026-11-18T17:55:57.114431+00:00
+
+- Summary: Extend draft age gate to immutable existing-owner screen and restrictive app access
+- Rationale: Existing owners must check once; review-needed declarations cannot be overwritten, with billing/help preserved.
+- Notes/Risks: Draft only, no production changes. Read-only live catalog audit. RLS + server flags disabled; 580 tests pass,1 skipped. Real hosted/provider/storage tests and EU policy still blocked. Known signed URL residual expiry. Billing sync now requires affirmative checkout ownership.
+
+## 2026-11-18T19:41:51.971161+00:00
+
+- Summary: Stage dormant age schema in existing project with rollback-only hosted verification
+- Notes/Risks: Applied migration20261118193907. Both DB switches false,hook unconfigured,no frontend/env changes. Hosted rollback-only synthetic SQL passed;8accounts/7subscribers/5active preserved;0decisions/admissions. Role checks deny client writes.584local tests pass1skip. Physical backup confirmed; emergency non-destructive rollback script tested locally. Full provider/canary/EU blockers remain.
+
+## 2026-11-18T19:50:22.988483+00:00
+
+- Summary: Add explicit registration canonical-origin override without changing legacy OAuth configuration
+- Notes/Risks: 587 tests passed1skipped; no runtime config or live provider changes. Preview form renders; Google console unavailable/Apple login pending; dormant flags retained.

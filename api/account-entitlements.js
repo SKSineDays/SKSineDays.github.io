@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { user } = await authenticateUser(req);
+    const { user } = await authenticateUser(req, { safeAccountControl: true });
     const entitlement = await getPremiumEntitlement(getAdminClient(), user.id);
     return res.status(200).json({ ok: true, ...entitlement });
   } catch (error) {

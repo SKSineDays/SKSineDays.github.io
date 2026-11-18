@@ -33,6 +33,8 @@ export async function fetchConfig() {
       supabaseUrl: data.supabaseUrl,
       supabaseAnonKey: data.supabaseAnonKey,
       appUrl: data.appUrl,
+      accountRegistrationEnabled: data.accountRegistrationEnabled === true,
+      mailerEligibilityEnabled: data.mailerEligibilityEnabled === true,
       affiliateProgramEnabled: data.affiliateProgramEnabled === true,
       affiliateTermsVersion: data.affiliateTermsVersion || '2026-07-24'
     };
@@ -117,7 +119,7 @@ function buildAuthCallbackUrl(config, params = {}) {
   return url.toString();
 }
 
-/** Send a magic link through the existing Supabase email provider. */
+/** Legacy signup stays available until coordinated admission enforcement is enabled. */
 export async function signInWithEmail(email) {
   const normalizedEmail = String(email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
@@ -129,7 +131,7 @@ export async function signInWithEmail(email) {
     email: normalizedEmail,
     options: {
       emailRedirectTo: buildAuthCallbackUrl(config),
-      shouldCreateUser: true
+      shouldCreateUser: config.accountRegistrationEnabled !== true
     }
   });
   if (error) throw error;

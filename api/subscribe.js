@@ -1,3 +1,4 @@
+import { mailerAgeEnabled } from './_lib/age-rollout.js';
 /**
  * Authenticated Daily Duck setup.
  *
@@ -7,6 +8,7 @@
  * Client-provided rhythm values are ignored. A supplied birthdate is reduced
  * to email-safe values in request memory and is never stored or logged.
  */
+import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from "./_lib/age-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import { deriveEmailRhythmFromBirthdate } from "./_lib/email-rhythm.js";
@@ -27,7 +29,7 @@ async function getAuthedEmail(req, serviceClient) {
   if (!token) return null;
   const { data: { user } = {}, error } = await serviceClient.auth.getUser(token);
   if (error || !user) return null;
-  return normalizeMailerEmail(user.email);
+  return { id: user.id, email: normalizeMailerEmail(user.email) };
 }
 
 function firstRow(data) {
@@ -59,7 +61,8 @@ export default async function handler(req, res) {
     }
 
     const supabase = getAdminClient();
-    const authEmail = await getAuthedEmail(req, supabase);
+    const authUser = await getAuthedEmail(req, supabase);
+    const authEmail = authUser?.email;
     if (!authEmail) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
@@ -92,6 +95,43 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "Invalid timezone" });
     }
 
+    let ageEnabled;
+    try { ageEnabled = await mailerAgeEnabled(supabase); }
+    catch { return res.status(503).json({ ok: false, error: 'Email setup is temporarily unavailable.' }); }
+
+    // Immutable account-owner declaration, shared with the one-time app check.
+    // Existing sends and safe account recovery are not changed by this activation route.
+    if (ageEnabled) {
+      const policies = getConfiguredPolicies();
+      let { data: savedEligibility, error: eligibilityReadError } = await supabase
+        .from("account_eligibility").select("country,policy_version,minimum_age,age_band,status")
+        .eq("user_id", authUser.id).maybeSingle();
+      if (eligibilityReadError) throw eligibilityReadError;
+      if (!savedEligibility) {
+        if (!body.ownerBirthdate || !body.country) {
+          return res.status(403).json({ ok: false, code: "eligibility_required", error: "Please confirm the account owner's birthdate and country before enabling email." });
+        }
+        const decision = evaluateEligibility({ birthdate: body.ownerBirthdate, country: body.country, policies });
+        body.ownerBirthdate = "";
+        if (!decision.ok) return res.status(400).json(eligibilityFailure(decision));
+        const { data: recorded, error: writeError } = await supabase.rpc("record_account_eligibility_decision", {
+          p_user_id: authUser.id, p_country: decision.country, p_policy_version: decision.policyVersion,
+          p_minimum_age: decision.minimumAge, p_age_band: decision.ageBand, p_eligible: decision.eligible
+        });
+        if (writeError) throw writeError;
+        savedEligibility = Array.isArray(recorded) ? recorded[0] : recorded;
+      }
+      const currentPolicy = savedEligibility && policies[savedEligibility.country];
+      const currentEligibility = savedEligibility?.status === "eligible" && currentPolicy
+        && currentPolicy.version === savedEligibility.policy_version
+        && currentPolicy.minimumAge === savedEligibility.minimum_age
+        && ["13-15", "16-17", "adult"].includes(savedEligibility.age_band);
+      if (!currentEligibility) {
+        return res.status(403).json({ ok: false, code: "eligibility_review_required", error: "Your account eligibility needs review. Contact support@sineday.app for help or to correct a mistake." });
+      }
+
+    }
+
     let derived = null;
     if (typeof body.birthdate === "string" && body.birthdate.length > 0) {
       derived = deriveEmailRhythmFromBirthdate(body.birthdate, { timezone });
@@ -102,8 +142,9 @@ export default async function handler(req, res) {
     }
 
     const { data, error } = await supabase.rpc(
-      "activate_authenticated_email_subscriber",
+      ageEnabled ? "activate_eligible_authenticated_email_subscriber" : "activate_authenticated_email_subscriber",
       {
+        ...(ageEnabled ? { p_user_id: authUser.id } : {}),
         p_email: authEmail,
         p_recipient_key_hash: hashRateLimitKey("recipient", authEmail),
         p_timezone: timezone,

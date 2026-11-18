@@ -63,7 +63,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { user } = await authenticateUser(req);
+    const { user } = await authenticateUser(req, { safeAccountControl: true });
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
         session?.client_reference_id ||
         null;
 
-      if (sessionUserId && sessionUserId !== user.id) {
+      if (!sessionUserId || sessionUserId !== user.id) {
         return res.status(403).json({
           ok: false,
           error: 'Checkout session does not belong to this user'

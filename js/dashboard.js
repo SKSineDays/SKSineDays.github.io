@@ -1,3 +1,4 @@
+import { ensureAccountEligibility } from './account-eligibility.js';
 /**
  * Dashboard Logic
  *
@@ -100,6 +101,21 @@ async function init() {
     if (session) {
       currentUser = session.user;
       publicConfig = await fetchConfig();
+      if (publicConfig.accountEligibilityEnabled === true) {
+        const gateAbort = new AbortController();
+        const gateSubscription = await onAuthStateChange((event, nextSession) => {
+          if (event === 'SIGNED_OUT' || (nextSession && nextSession.user?.id !== session.user.id)) gateAbort.abort();
+        });
+        let allowed = false;
+        try {
+          const beforeGate = await getCurrentSession();
+          if (beforeGate?.user?.id !== session.user.id) gateAbort.abort();
+          allowed = await ensureAccountEligibility({ accessToken: session.access_token, signal: gateAbort.signal });
+        } finally { gateSubscription?.unsubscribe(); }
+        if (!allowed) { window.location.replace('/index.html'); return; }
+        const verifiedSession = await getCurrentSession();
+        if (verifiedSession?.user?.id !== currentUser.id) { window.location.reload(); return; }
+      }
 
       // Load per-account settings (locale/weekstart)
       userSettings = await loadUserSettings(currentUser.id);
@@ -135,19 +151,9 @@ async function init() {
     // Listen to auth changes
     onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        if (currentUser?.id !== session.user.id) {
-          duckCarousel?.destroy();
-          duckCarousel = null;
-        }
-        currentUser = session.user;
-
-        loadLinkedIdentities()
-          .then(() => renderIdentityLinkUI())
-          .catch((err) => console.error('[Auth Identity] Refresh failed:', err));
-
-        loadUserData();
-        loadDailyEmailState();
-        showAuthenticatedView();
+        // Re-enter the server check before any data load on an identity change.
+        // Defer navigation outside Supabase's auth callback.
+        if (currentUser?.id !== session.user.id) setTimeout(() => window.location.reload(), 0);
       } else if (event === 'SIGNED_OUT') {
         dailyEmailLoadGen += 1;
         currentUser = null;
@@ -608,7 +614,7 @@ function closeDailyEmailSetup() {
   }, prefersReducedDashboardMotion() ? 0 : 220);
 }
 
-async function enableDailyEmail({ birthdate } = {}) {
+async function enableDailyEmail({ birthdate, ownerBirthdate, country } = {}) {
   if (!currentUser?.email) {
     showError("Sign in to enable Daily Duck email.");
     renderDailyEmailBox();
@@ -630,7 +636,8 @@ async function enableDailyEmail({ birthdate } = {}) {
       email: currentUser.email.toLowerCase().trim(),
       consent: true,
       timezone: getClientTimezone(),
-      source: DAILY_EMAIL_SOURCE
+      source: DAILY_EMAIL_SOURCE,
+      ownerBirthdate, country
     };
     if (birthdate) {
       payload.birthdate = birthdate;
@@ -644,6 +651,12 @@ async function enableDailyEmail({ birthdate } = {}) {
 
     const data = await response.json();
     if (!response.ok || !data.ok) {
+      if (data?.code === "eligibility_required") {
+        const fields = document.getElementById("daily-owner-eligibility");
+        if (fields) fields.hidden = false;
+        openDailyEmailSetup();
+        loadDailyEligibilityCountries();
+      }
       throw new Error(data?.error || "Failed to enable daily email");
     }
 
@@ -686,7 +699,15 @@ async function submitDailyEmailSetup(event) {
   }
   setDailyEmailStatus("Saving your Daily Duck email rhythm…");
 
-  const ok = await enableDailyEmail({ birthdate });
+  const ownerBirthdate = document.getElementById("daily-owner-birthdate")?.value;
+  const country = document.getElementById("daily-owner-country")?.value;
+  const fields = document.getElementById("daily-owner-eligibility");
+  if (fields && !fields.hidden && (!ownerBirthdate || !country)) {
+    setDailyEmailStatus("Enter your birthdate and country for the one-time eligibility check.", "error");
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Turn On Daily Duck"; }
+    return;
+  }
+  const ok = await enableDailyEmail({ birthdate, ownerBirthdate, country });
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Turn On Daily Duck";
@@ -2857,4 +2878,19 @@ if (document.readyState === 'loading') {
     const loading = document.getElementById('loading');
     if (loading) loading.innerText = 'Something went wrong. Please refresh.';
   });
+}
+
+async function loadDailyEligibilityCountries() {
+  const select = document.getElementById("daily-owner-country");
+  if (!select || select.options.length > 1) return;
+  try {
+    const response = await fetch("/api/eligibility-policy", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error();
+    for (const country of data.countries) {
+      const option = document.createElement("option");
+      option.value = country.code; option.textContent = country.name;
+      select.append(option);
+    }
+  } catch { setDailyEmailStatus("Eligibility setup is temporarily unavailable.", "error"); }
 }

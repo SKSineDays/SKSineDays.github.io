@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { user, supabaseAdmin } = await requireAffiliateContext(req);
+    const { user, supabaseAdmin } = await requireAffiliateContext(req, { safeAccountControl: true });
     const affiliate = await getAffiliateForUser(supabaseAdmin, user.id);
     if (
       !affiliate?.stripe_connect_account_id ||
