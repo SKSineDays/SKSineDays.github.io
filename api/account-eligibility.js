@@ -1,6 +1,6 @@
 import { getAdminClient } from './_lib/auth.js';
 import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from './_lib/age-eligibility.js';
-import { parseRegistrationBody, requireSameOrigin } from './_lib/account-registration.js';
+import { parseRegistrationBody, requireSameOrigin, registrationOrigin } from './_lib/account-registration.js';
 
 const FIELDS = 'country,policy_version,minimum_age,age_band,status';
 const REVIEW_MESSAGE = 'This account needs an eligibility review. Please ask a parent or guardian to contact support if needed. Your existing account and saved information have not been deleted.';
@@ -47,9 +47,7 @@ export default async function handler(req, res) {
     const state = describeEligibility(saved, policies);
     if (req.method === 'GET') return res.status(200).json(state);
     try {
-      const origin = new URL(process.env.APP_URL || 'https://sineday.app').origin;
-      if (!origin.startsWith('https://')) throw new Error('HTTPS required');
-      requireSameOrigin(req, origin);
+      requireSameOrigin(req, registrationOrigin());
     } catch {
       return res.status(400).json({ ok: false, error: 'Unable to process this request.' });
     }

@@ -69,3 +69,12 @@ test('unknown/missing status is not treated as eligible',()=>{
   assert.equal(describeEligibility({...ELIGIBLE,status:undefined},policies).state,'review_required');
   assert.equal(describeEligibility({...ELIGIBLE,age_band:'under13'},policies).state,'review_required');
 });
+
+test('existing-owner POST uses dedicated canonical origin override too', async () => {
+  reset(); process.env.SIGNUP_APP_URL = 'https://www.sineday.app';
+  try {
+    assert.equal((await send('POST', { birthdate: '2000-01-01', country: 'US' })).statusCode, 400);
+    const response = await send('POST', { birthdate: '2000-01-01', country: 'US' }, { origin: 'https://www.sineday.app' });
+    assert.equal(response.statusCode, 200); assert.equal(response.body.state, 'eligible');
+  } finally { delete process.env.SIGNUP_APP_URL; }
+});

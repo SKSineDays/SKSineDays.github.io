@@ -48,14 +48,17 @@ verified age or verified parental consent.
    remain unaffected.
 4. Set the dedicated `SIGNUP_ADMISSION_SECRET` (at least 32 high-entropy characters),
    `GOOGLE_SIGNUP_CLIENT_ID`, `APPLE_SIGNUP_CLIENT_ID`, `SUPABASE_URL`,
-   `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and canonical HTTPS `APP_URL`.
+   `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and canonical HTTPS
+   `SIGNUP_APP_URL` (falls back to existing `APP_URL` only when not set). Keep legacy
+   `APP_URL` and old OAuth flows unchanged. For the current apex-to-www redirect,
+   the new-flow override must be `https://www.sineday.app`.
    Both JS provider client IDs must be accepted by the test Supabase provider config.
    Register the site's JS origin with Google and `/login.html` as the Apple JS return
    URL. Apple popup behavior, relay identities, Safari and repeat authorizations must be
    tested. Neither email verification nor Google/Apple identity proves age.
 5. `AGE_AUTH_HOOK_READY=true` is an operator deployment interlock, **not an automatic
    proof that hooks are installed**. Enable only after the tests above. Otherwise the
-   registration endpoint returns 503. Strict POST Origin must match `APP_URL`; redirect
+   registration endpoint returns 503. Strict POST Origin must match `SIGNUP_APP_URL` (or its `APP_URL` fallback); redirect
    alternate domains to the canonical origin rather than broadly allowing arbitrary hosts.
 6. Test new and returning Google/Apple/email users, Apple Hide My Email, linked identities,
    direct signUp/OTP/OAuth/ID-token calls, unsupported providers, expired/replayed grants,
@@ -211,3 +214,20 @@ Remaining:real provider/OTP config and end-to-end tests, verified founder canary
 EU availability policy, approved support correction process, coordinated app deployment.
 Vercel dashboard signed in but age secrets/client IDs not yet configured. No global
 activation or readiness claim.
+
+
+### Provider/origin inspection
+Google and Apple are enabled in Supabase; Google nonce checking is on. Existing OAuth
+callback uses auth.sineday.app. Supabase site URL and production redirects currently
+use apex sineday.app, while the live website redirects apex to www.sineday.app.
+Set dedicated SIGNUP_APP_URL only after verifying the intended testing/production
+origin; this does not change legacy APP_URL or old OAuth callbacks. Keep exact origin
+checks. Add only the corresponding explicit callback to Supabase and verify Google JS
+origin and Apple JS return URL in their provider consoles before real testing.
+Google Cloud console is unavailable in current cloud browser; Apple Developer needs
+sign-in. No provider-console or redirect changes were made. The current preview form
+renders correctly but registration remains deliberately blocked by dormant settings.
+
+Fresh remote main is an ancestor of the PR head and git merge-tree reports no conflicts.
+Connector mergeable:false is not evidence of a source conflict; keep draft/check gates,
+do not force-rewrite history or mark ready just to change this status.

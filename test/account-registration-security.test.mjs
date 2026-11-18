@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { createFlow, flowCookie, FLOW_COOKIE, hash, parseRegistrationBody, providerSettings,
-  readFlow, registrationConfig, requireSameOrigin, signFlow, verifyProviderProof } from '../api/_lib/account-registration.js';
+  readFlow, registrationConfig, registrationOrigin, requireSameOrigin, signFlow, verifyProviderProof } from '../api/_lib/account-registration.js';
 const now = Date.parse('2026-11-18T12:00:00Z');
 const secret = 'test-secret-at-least-32-characters-long';
 const config = { googleClientId: 'google-test-client', appleClientId: 'apple-test-client' };
@@ -60,4 +60,20 @@ test('Apple token uses Apple audience/issuer and same nonce binding', async () =
   const value = token({ iss: 'https://appleid.apple.com', aud: config.appleClientId });
   assert.deepEqual(await verifyProviderProof(value, appleFlow, config, { now, keys: [jwk] }), { subject: 'provider-subject' });
   await assert.rejects(verifyProviderProof(value, flow, config, { now, keys: [jwk] }));
+});
+
+test('dedicated signup canonical origin overrides APP_URL without trusting incoming hosts', () => {
+  const env = { AGE_AUTH_HOOK_READY: 'true', SIGNUP_ADMISSION_SECRET: secret,
+    APP_URL: 'https://sineday.app', SIGNUP_APP_URL: 'https://www.sineday.app' };
+  const settings = registrationConfig(env);
+  assert.equal(settings.origin, 'https://www.sineday.app');
+  assert.equal(settings.appleRedirectUri, 'https://www.sineday.app/login.html');
+  assert.equal(env.APP_URL, 'https://sineday.app');
+  assert.doesNotThrow(() => requireSameOrigin({ headers: { origin: 'https://www.sineday.app', 'content-type': 'application/json' } }, settings.origin));
+  for (const origin of ['https://sineday.app', 'https://evil.test', 'https://www.sineday.app.evil.test']) {
+    assert.throws(() => requireSameOrigin({ headers: { origin, host: 'www.sineday.app', 'x-forwarded-host': 'www.sineday.app', 'content-type': 'application/json' } }, settings.origin));
+  }
+  assert.equal(registrationOrigin({ APP_URL: 'https://sineday.app' }), 'https://sineday.app');
+  assert.throws(() => registrationOrigin({ SIGNUP_APP_URL: 'http://www.sineday.app' }));
+  assert.throws(() => registrationOrigin({ SIGNUP_APP_URL: 'https://user:pass@www.sineday.app' }));
 });

@@ -115,3 +115,22 @@ test('disabling admission between begin and complete prevents auth or grants', a
     assert.equal(calls.length, 0);
   } finally { signupEnabled = true; }
 });
+
+test('canonical signup override accepts www and sets email callback without changing legacy APP_URL', async () => {
+  calls.length = 0;
+  process.env.SIGNUP_APP_URL = 'https://www.sineday.app';
+  try {
+    const payload = { action: 'begin', birthdate: '2000-01-01', country: 'US', provider: 'email' };
+    assert.equal((await send({ ...payload }, undefined, { origin: 'https://sineday.app' })).statusCode, 400);
+    assert.equal((await send({ ...payload }, undefined, { origin: 'https://evil.test' })).statusCode, 400);
+    const start = await send({ ...payload }, undefined, { origin: 'https://www.sineday.app' });
+    assert.equal(start.statusCode, 200);
+    const cookie = start.headers['Set-Cookie'].split(';')[0];
+    const done = await send({ action: 'complete', email: 'canonical@example.com' }, cookie, { origin: 'https://www.sineday.app' });
+    assert.equal(done.statusCode, 200);
+    assert.equal(calls.find(x => x.type === 'otp').args.options.emailRedirectTo, 'https://www.sineday.app/auth/callback.html');
+    assert.equal(process.env.APP_URL, 'https://sineday.app');
+    const apple = await send({ ...payload, provider: 'apple' }, undefined, { origin: 'https://www.sineday.app' });
+    assert.equal(apple.body.redirectUri, 'https://www.sineday.app/login.html');
+  } finally { delete process.env.SIGNUP_APP_URL; }
+});

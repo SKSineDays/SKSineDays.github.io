@@ -6,9 +6,15 @@ const jwksCache = new Map();
 const b64 = value => Buffer.from(value).toString('base64url');
 export const hash = value => createHash('sha256').update(value).digest('hex');
 
+/** Explicit canonical origin only; never infer trust from Host or forwarded headers. */
+export function registrationOrigin(env = process.env) {
+  const url = new URL(env.SIGNUP_APP_URL || env.APP_URL || 'https://sineday.app');
+  if (url.protocol !== 'https:' || url.username || url.password) throw new Error('Registration requires a trusted HTTPS origin');
+  return url.origin;
+}
+
 export function registrationConfig(env = process.env) {
-  const origin = new URL(env.APP_URL || 'https://sineday.app').origin;
-  if (!origin.startsWith('https://')) throw new Error('Registration requires HTTPS');
+  const origin = registrationOrigin(env);
   if (env.AGE_AUTH_HOOK_READY !== 'true' || !env.SIGNUP_ADMISSION_SECRET || env.SIGNUP_ADMISSION_SECRET.length < 32) {
     throw new Error('Registration is not configured');
   }
