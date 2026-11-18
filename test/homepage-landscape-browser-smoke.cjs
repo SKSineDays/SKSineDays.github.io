@@ -45,6 +45,13 @@ const { mkdir } = require('node:fs/promises');
         const checkLandscape = async () => {
           await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
           await page.waitForFunction(() => window.scrollY === 0);
+          // WebKit may expose the new media-query sizing before its previous
+          // portrait transform is recomputed after a viewport rotation.
+          await page.waitForFunction(() => {
+            const style = getComputedStyle(document.getElementById('background-image'), '::before');
+            const matrix = new DOMMatrix(style.transform);
+            return style.backgroundSize === 'contain' && matrix.m11 === 1 && matrix.m22 === 1;
+          });
           const art = await inspect();
           assert.equal(art.size, 'contain', `uncropped tablet art at ${width}x${height}`);
           assert.ok(Math.abs(art.width / art.height - 2 / 3) < .001, 'art retains its original proportions');

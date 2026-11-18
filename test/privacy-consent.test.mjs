@@ -150,3 +150,12 @@ test('analytics beforeSend strips query/hash and refuses custom events and malfo
   assert.equal(h.filter({ type: 'event', url: 'https://sineday.app/' }), null);
   assert.equal(h.filter({ type: 'pageview', url: 'http://[' }), null);
 });
+
+test('accepting referral permission in another tab preserves this page’s pending URL code', () => {
+  const h = controller({ search: '?ref=LOCAL-CODE' });
+  assert.equal(h.local.getItem(REF), null);
+  h.local.setItem(PRIVACY_KEY, JSON.stringify(record({ ...none, referrals: true })));
+  h.api.refresh();
+  assert.equal(h.api.pendingReferral(), 'LOCAL-CODE');
+  assert.equal(h.local.getItem(REF), 'LOCAL-CODE');
+});
