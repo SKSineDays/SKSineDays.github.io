@@ -54,7 +54,7 @@ test('concurrent opposing decision returns persisted winner, not submitted eligi
   assert.equal(response.statusCode,403);assert.equal(response.body.state,'review_required');
 });
 test('invalid data and unsupported countries do not record an age decision',async()=>{
-  for(const body of [{birthdate:'not-a-date',country:'US'},{birthdate:'2000-01-01',country:'DE'}]) {
+  for(const body of [{birthdate:'not-a-date',country:'US'},{birthdate:'2000-01-01',country:'ZZ'}]) {
     reset();assert.equal((await send('POST',body)).statusCode,400);assert.equal(calls.some(x=>x.name),false);
   }
 });

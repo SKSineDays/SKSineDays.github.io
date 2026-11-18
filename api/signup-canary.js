@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie',cookie());
     if (body.provider && body.provider !== 'email') return res.status(400).json({ok:false,error:'This test supports email only.'});
     let decision;
-    try { decision = evaluateEligibility({birthdate:body.birthdate,country:body.country,policies:getConfiguredPolicies()}); }
+    try { decision = evaluateEligibility({birthdate:body.birthdate,country:body.country,policies:{US:getConfiguredPolicies().US}}); }
     catch { return res.status(503).json({ok:false,error:'Eligibility is unavailable.'}); }
     finally { body.birthdate = ''; }
     if (!decision.ok || !decision.eligible) return res.status(403).json({ok:false,error:'An independent account is not available for the information provided.'});

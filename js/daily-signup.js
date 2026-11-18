@@ -243,7 +243,7 @@ fetch("/api/config", { cache: "no-store" }).then(async response => {
     for (const section of document.querySelectorAll("[data-email-step]")) section.hidden = false;
     submitButton.textContent = "Send me my daily SineDay";
   } else {
-    response = await fetch("/api/eligibility-policy", { cache: "no-store" });
+    response = await fetch("/api/eligibility-policy?purpose=mailer", { cache: "no-store" });
     const data = await response.json();
     if (!response.ok || !data.ok || !Array.isArray(data.countries)) throw new Error();
     for (const country of data.countries) {

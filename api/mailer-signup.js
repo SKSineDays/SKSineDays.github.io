@@ -6,7 +6,8 @@ import { mailerAgeEnabled } from './_lib/age-rollout.js';
  * No subscriber is created and no welcome/daily email is sent until the
  * recipient confirms ownership from the dedicated confirmation page.
  */
-import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from "./_lib/age-eligibility.js";
+import { eligibilityFailure } from "./_lib/age-eligibility.js";
+import { evaluateMailerEligibility, getConfiguredMailerPolicies } from "./_lib/mailer-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import {
@@ -74,7 +75,7 @@ export default async function handler(req, res) {
   catch { return json(res, 503, { ok: false, error: 'Signup is temporarily unavailable.' }); }
   let eligibility;
   if (ageEnabled) {
-    try { eligibility = evaluateEligibility({ birthdate, country: body.country, policies: getConfiguredPolicies() }); }
+    try { eligibility = evaluateMailerEligibility({ birthdate, country: body.country, policies: getConfiguredMailerPolicies() }); }
     catch { return json(res, 503, { ok: false, error: "Signup is temporarily unavailable." }); }
     if (!eligibility.ok || !eligibility.eligible) {
       return json(res, eligibility.ok ? 403 : 400, eligibilityFailure(eligibility));
@@ -151,6 +152,8 @@ export default async function handler(req, res) {
   });
 
   if (error) {
+    // Do not reveal an existing account or its review status to an anonymous caller.
+    if (error.message === "mailer_age_eligibility_required") return json(res, 202, publicSignupAcceptedPayload());
     console.error("[mailer-signup] request creation failed");
     return json(res, 500, { ok: false, error: "Unable to start signup. Please try again." });
   }

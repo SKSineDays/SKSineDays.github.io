@@ -12,7 +12,7 @@ function setup(mode){
  const context=vm.createContext({console,Date,Intl,URLSearchParams,window:{location:{search:''},addEventListener(){}},document:{getElementById:element,createElement:()=>({}),createDocumentFragment:()=>({append(){}}),querySelectorAll:()=>sections},
  fetch:async(url,options)=>{requests.push({url,body:options?.body&&JSON.parse(options.body)});
  if(url==='/api/config'){if(mode==='error')throw new Error();return {ok:true,json:async()=>({ok:true,mailerEligibilityEnabled:mode})};}
- if(url==='/api/eligibility-policy')return {ok:true,json:async()=>({ok:true,countries:[{code:'US',name:'United States'}]})};
+ if(url==='/api/eligibility-policy?purpose=mailer')return {ok:true,json:async()=>({ok:true,countries:[{code:'US',name:'United States'}]})};
  return {ok:true,json:async()=>({ok:true,message:'Check your email'})};}});
  vm.runInContext(source,context);return {element,requests,sections};
 }

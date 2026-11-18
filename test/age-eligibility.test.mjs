@@ -17,15 +17,15 @@ test('dates must be real, not future, and leap birthday waits until March in non
   assert.equal(check('2012-02-29','US',{now:new Date('2025-02-28T12:00Z')}).eligible,false);
   assert.equal(check('2012-02-29','US',{now:new Date('2025-03-01T12:00Z')}).eligible,true);
 });
-test('no silent US fallback for missing or unconfigured jurisdiction', () => {
+test('missing and noncatalog jurisdictions never silently use a country policy', () => {
   assert.equal(check('2000-01-01','').code,'country_required');
-  assert.equal(check('2000-01-01','FR').code,'policy_unavailable');
+  assert.equal(check('2000-01-01','ZZ').code,'country_required');
   assert.equal(check('2000-01-01','us').ok,false);
 });
 test('explicit versioned country policy can be tested without changing approved US minimum', () => {
-  const policies={US:{minimumAge:13,version:'us-v1'},XX:{minimumAge:16,version:'test-only'}};
-  assert.equal(check('2012-01-01','XX',{policies}).eligible,false);
-  assert.equal(check('2010-01-01','XX',{policies}).eligible,true);
+  const policies={US:{minimumAge:13,version:'us-v1'},DE:{minimumAge:16,version:'test-only'}};
+  assert.equal(check('2012-01-01','DE',{policies}).eligible,false);
+  assert.equal(check('2010-01-01','DE',{policies}).eligible,true);
 });
 test('malformed configuration and weakening US policy fail closed', () => {
   const original=process.env.AGE_ELIGIBILITY_POLICIES_JSON;

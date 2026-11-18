@@ -31,7 +31,7 @@ async function begin(provider = 'email') {
 }
 test('underage or unconfigured country cannot produce admission, persist DOB or send auth messages', async () => {
   calls.length = 0;
-  for (const payload of [{ birthdate: '2020-01-01', country: 'US' }, { birthdate: '2000-01-01', country: 'DE' }]) {
+  for (const payload of [{ birthdate: '2020-01-01', country: 'US' }, { birthdate: '2000-01-01', country: 'ZZ' }]) {
     const res = await send({ action: 'begin', provider: 'email', ...payload });
     assert.equal(res.statusCode, 403);
     assert.match(res.headers['Set-Cookie'], /Max-Age=0/);
@@ -133,4 +133,13 @@ test('canonical signup override accepts www and sets email callback without chan
     const apple = await send({ ...payload, provider: 'apple' }, undefined, { origin: 'https://www.sineday.app' });
     assert.equal(apple.body.redirectUri, 'https://www.sineday.app/login.html');
   } finally { delete process.env.SIGNUP_APP_URL; }
+});
+test('policy version change while registration is in flight denies old signed eligibility before admission',async()=>{
+ calls.length=0;signupEnabled=true;denied=false;const original=process.env.AGE_ELIGIBILITY_POLICIES_JSON;
+ try{
+   delete process.env.AGE_ELIGIBILITY_POLICIES_JSON;const started=await begin('email');
+   process.env.AGE_ELIGIBILITY_POLICIES_JSON=JSON.stringify({US:{minimumAge:13,version:'withdrawn-test-version'}});
+   const res=await send({action:'complete',email:'test@example.invalid'},started.headers['Set-Cookie']);
+   assert.equal(res.statusCode,400);assert.equal(calls.length,0);
+ }finally{if(original===undefined)delete process.env.AGE_ELIGIBILITY_POLICIES_JSON;else process.env.AGE_ELIGIBILITY_POLICIES_JSON=original;}
 });

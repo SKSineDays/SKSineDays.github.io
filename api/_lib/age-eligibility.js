@@ -1,9 +1,10 @@
-/** Server-owned independent-account policy. A declaration is not verified age.
- * No country inference, full DOB persistence, or worldwide US-policy fallback.
+import { COUNTRY_CODES, isCountryCode } from './country-catalog.js';
+/** Product minimum for independent accounts, not verified age or legal consent.
+ * No country inference or full DOB persistence. Every default country is explicit.
  */
-export const DEFAULT_POLICIES = Object.freeze({
-  US: Object.freeze({ minimumAge: 13, version: 'us-independent-13-v1' })
-});
+export const DEFAULT_POLICIES = Object.freeze(Object.fromEntries(COUNTRY_CODES.map(country => [country,
+  Object.freeze({ minimumAge: 13, version: country === 'US' ? 'us-independent-13-v1' : 'independent-baseline-13-v1' })
+])));
 
 export function getConfiguredPolicies() {
   const raw = process.env.AGE_ELIGIBILITY_POLICIES_JSON;
@@ -12,15 +13,17 @@ export function getConfiguredPolicies() {
   try { policies = JSON.parse(raw); } catch { throw new Error('Invalid age policy configuration'); }
   if (!policies || Array.isArray(policies) || typeof policies !== 'object') throw new Error('Invalid age policy configuration');
   for (const [country, policy] of Object.entries(policies)) {
-    if (!/^[A-Z]{2}$/.test(country) || !policy || !Number.isInteger(policy.minimumAge) || policy.minimumAge < 13 || policy.minimumAge > 18 || typeof policy.version !== 'string' || !/^[a-zA-Z0-9._-]{1,80}$/.test(policy.version)) throw new Error('Invalid age policy configuration');
+    if (!isCountryCode(country) || !policy || !Number.isInteger(policy.minimumAge) || policy.minimumAge < 13 || policy.minimumAge > 18 || typeof policy.version !== 'string' || !/^[a-zA-Z0-9._-]{1,80}$/.test(policy.version)) throw new Error('Invalid age policy configuration');
   }
   // Stephen has approved US 13+; env configuration may not weaken or silently raise it.
   if (policies.US?.minimumAge !== 13) throw new Error('US independent signup policy must be 13');
-  return policies;
+  // Explicit overrides augment the complete baseline; an old US-only environment
+  // value must not silently reintroduce a country lockout. DB rows must match.
+  return { ...DEFAULT_POLICIES, ...policies };
 }
 
 export function evaluateEligibility({ birthdate, country, now = new Date(), policies = DEFAULT_POLICIES } = {}) {
-  if (typeof country !== 'string' || !/^[A-Z]{2}$/.test(country)) return { ok: false, code: 'country_required', error: 'Choose your country of residence.' };
+  if (!isCountryCode(country)) return { ok: false, code: 'country_required', error: 'Choose your country of residence.' };
   const policy = policies[country];
   if (!policy) return { ok: false, code: 'policy_unavailable', error: 'Independent signup is not configured for your country yet. Please contact support.' };
   const match = typeof birthdate === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthdate);

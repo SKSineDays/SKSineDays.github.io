@@ -42,7 +42,7 @@ mock.module("@supabase/supabase-js", {
           }
         },
         from(name) {
-          assert.equal(name, "account_eligibility");
+          assert.equal(name, "account_mailer_eligibility");
           return { select() { return this; }, eq() { return this; },
             async maybeSingle() { return { data: store.eligibility, error: null }; },
             async insert(row) { store.eligibility = row; return { error: null }; } };
@@ -50,7 +50,7 @@ mock.module("@supabase/supabase-js", {
         async rpc(name, args) {
           if (name === "mailer_age_enforcement_is_enabled") return {data: forcedDbMode === undefined ? process.env.AGE_MAILER_ENFORCEMENT_READY === "true" : forcedDbMode};
           store.rpcCalls.push({ name, args });
-          if (name === "record_account_eligibility_decision") {
+          if (name === "record_mailer_eligibility_decision") {
             store.eligibility ||= { country:args.p_country,policy_version:args.p_policy_version,minimum_age:args.p_minimum_age,age_band:args.p_age_band,status:args.p_eligible ? "eligible" : "review_required" };
             return {data:[store.eligibility],error:null};
           }
@@ -247,7 +247,7 @@ test("suppressed recipients are never automatically reactivated", async () => {
   assert.equal(store.resendSends.length, 0);
 });
 
-test("legacy account without eligibility cannot activate mailer by omitting DOB or spoofing user flags", async()=>{
+test("account without separate mailer eligibility cannot activate mailer by omitting DOB or spoofing user flags", async()=>{
  reset(); store.eligibility=null;
  const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",eligible:true});
  assert.equal(res.statusCode,403); assert.equal(res.body.code,"eligibility_required");
@@ -283,7 +283,7 @@ test('dormant authenticated activation preserves legacy behavior without owner d
     assert.equal(res.statusCode,200);
     const activation=store.rpcCalls.find(c=>c.name==='activate_authenticated_email_subscriber');
     assert.ok(activation); assert.equal(activation.args.p_user_id,undefined);
-    assert.ok(!store.rpcCalls.some(c=>c.name==='record_account_eligibility_decision'));
+    assert.ok(!store.rpcCalls.some(c=>c.name==='record_mailer_eligibility_decision'));
   } finally { process.env.AGE_MAILER_ENFORCEMENT_READY='true'; }
 });
 test('authenticated activation DB/env mismatch never writes eligibility/subscriber or sends mail',async()=>{
@@ -292,4 +292,15 @@ test('authenticated activation DB/env mismatch never writes eligibility/subscrib
     assert.equal((await post({consent:true,timezone:'America/Chicago',birthdate:'1985-04-20'})).statusCode,503);
     assert.equal(store.rpcCalls.length,0);assert.equal(store.resendSends.length,0);
   }} finally {forcedDbMode=undefined;process.env.AGE_MAILER_ENFORCEMENT_READY='true';}
+});
+
+test('account-level baseline13 evidence does not qualify as higher-threshold mailer proof',async()=>{
+ reset();store.eligibility={status:'eligible',country:'FR',minimum_age:13,policy_version:'independent-baseline-13-v1',age_band:'13-15'};
+ const res=await post({consent:true,timezone:'America/Chicago'});assert.equal(res.statusCode,403);
+ assert.ok(!store.rpcCalls.some(c=>c.name==='activate_eligible_authenticated_email_subscriber'));
+});
+test('missing separate mailer evidence requires actual owner declaration, never a client account eligibility claim',async()=>{
+ reset();store.eligibility=null;
+ const res=await post({consent:true,timezone:'America/Chicago',accountEligibility:{eligible:true,country:'FR',minimumAge:13},country:'FR'});
+ assert.equal(res.statusCode,403);assert.equal(res.body.code,'eligibility_required');assert.equal(store.rpcCalls.length,0);
 });
