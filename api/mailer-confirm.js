@@ -5,7 +5,7 @@ import { mailerAgeEnabled } from './_lib/age-rollout.js';
  * Consumes a public double-opt-in token. GET requests and page loads never
  * activate email. Subscriber identity is kept inside the server/RPC boundary.
  */
-import { getConfiguredPolicies } from "./_lib/age-eligibility.js";
+import { getConfiguredMailerPolicies } from "./_lib/mailer-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import {
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
     catch { return json(res, 503, { ok: false, error: 'Confirmation is temporarily unavailable.' }); }
     const { data, error } = await supabase.rpc(ageEnabled ? "confirm_eligible_mailer_signup" : "confirm_mailer_signup", {
       p_token_hash: tokenHash,
-      ...(ageEnabled ? { p_policies: getConfiguredPolicies() } : {})
+      ...(ageEnabled ? { p_policies: getConfiguredMailerPolicies() } : {})
     });
     if (error) throw error;
 

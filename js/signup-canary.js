@@ -14,7 +14,7 @@ async function initialize(){
   const response=await fetch('/api/eligibility-policy',{cache:'no-store'}),policy=await response.json();
   if(!response.ok||!policy.ok)throw new Error('Eligibility policy unavailable.');
   if(stopped)return;
-  for(const entry of policy.countries){const option=document.createElement('option');option.value=entry.code;option.textContent=entry.name;country.append(option);}
+  for(const entry of policy.countries.filter(entry=>entry.code==='US')){const option=document.createElement('option');option.value=entry.code;option.textContent=entry.name;country.append(option);}
   target.textContent=`Authorized email: ${result.targetEmail}`;form.hidden=false;status.textContent='Confirm eligibility before sending. Your birthdate is not saved by this check.';
  }catch(error){status.textContent=error.message;}
 }

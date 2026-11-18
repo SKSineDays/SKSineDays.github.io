@@ -246,7 +246,7 @@ test("invalid consent, dates, timezones, and sources fail before writes", async 
 });
 
 test("under13, missing country and unsupported jurisdiction fail before database/provider writes", async () => {
-  for (const body of [ {...validBody(),birthdate:"2020-01-01"}, {...validBody(),country:""}, {...validBody(),country:"FR"} ]) {
+  for (const body of [ {...validBody(),birthdate:"2020-01-01"}, {...validBody(),country:""}, {...validBody(),country:"CA"} ]) {
     reset(); const res=await post(body);
     assert.ok([400,403].includes(res.statusCode));
     assert.equal(store.rpcCalls.length,0); assert.equal(store.sends.length,0);
@@ -279,4 +279,9 @@ test('mailer signup DB/env mismatch in either direction sends nothing',async()=>
     assert.equal((await post()).statusCode,503);
     assert.equal(store.rpcCalls.length,0);assert.equal(store.sends.length,0);
   }} finally {forcedDbMode=undefined;process.env.AGE_MAILER_ENFORCEMENT_READY='true';}
+});
+test('known account/mail consent denial never sends confirmation or reveals account status anonymously',async()=>{
+ reset();store.rpcError={message:'mailer_age_eligibility_required'};
+ const res=await post();assert.equal(res.statusCode,202);assert.equal(res.body.ok,true);
+ assert.equal(store.sends.length,0);assert.doesNotMatch(JSON.stringify(res.body),/review|account exists|underage/i);
 });

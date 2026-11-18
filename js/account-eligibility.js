@@ -34,6 +34,7 @@ export async function ensureAccountEligibility({ accessToken, signal, mount = do
     dialog.style.cssText = 'max-width:30rem;width:calc(100% - 2rem);border-radius:1rem;padding:1.5rem;box-sizing:border-box;';
     dialog.innerHTML = `
       <h2 id="owner-eligibility-title">A one-time account check</h2>
+      <p>Independent SineDay accounts require age 13 or older. This product minimum is checked from your declaration; it is not verified age.</p>
       <p>Tell us about the person who uses this account, not someone added to Duck Globe or your journal. We save the eligibility result, not your full birthdate from this check.</p>
       <p data-status role="status" aria-live="polite"></p>
       <form data-form hidden>

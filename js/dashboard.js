@@ -708,6 +708,8 @@ async function submitDailyEmailSetup(event) {
     return;
   }
   const ok = await enableDailyEmail({ birthdate, ownerBirthdate, country });
+  const ownerInput = document.getElementById("daily-owner-birthdate");
+  if (ownerInput) ownerInput.value = "";
   if (submitBtn) {
     submitBtn.disabled = false;
     submitBtn.textContent = "Turn On Daily Duck";
@@ -2884,7 +2886,7 @@ async function loadDailyEligibilityCountries() {
   const select = document.getElementById("daily-owner-country");
   if (!select || select.options.length > 1) return;
   try {
-    const response = await fetch("/api/eligibility-policy", { cache: "no-store" });
+    const response = await fetch("/api/eligibility-policy?purpose=mailer", { cache: "no-store" });
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error();
     for (const country of data.countries) {

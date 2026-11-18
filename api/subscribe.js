@@ -8,7 +8,8 @@ import { mailerAgeEnabled } from './_lib/age-rollout.js';
  * Client-provided rhythm values are ignored. A supplied birthdate is reduced
  * to email-safe values in request memory and is never stored or logged.
  */
-import { evaluateEligibility, getConfiguredPolicies, eligibilityFailure } from "./_lib/age-eligibility.js";
+import { eligibilityFailure } from "./_lib/age-eligibility.js";
+import { evaluateMailerEligibility, getConfiguredMailerPolicies } from "./_lib/mailer-eligibility.js";
 import { Resend } from "resend";
 import { getAdminClient } from "./_lib/auth.js";
 import { deriveEmailRhythmFromBirthdate } from "./_lib/email-rhythm.js";
@@ -99,25 +100,26 @@ export default async function handler(req, res) {
     try { ageEnabled = await mailerAgeEnabled(supabase); }
     catch { return res.status(503).json({ ok: false, error: 'Email setup is temporarily unavailable.' }); }
 
-    // Immutable account-owner declaration, shared with the one-time app check.
+    // Separate immutable mailer consent-age declaration. Account baseline13 is not proof.
     // Existing sends and safe account recovery are not changed by this activation route.
     if (ageEnabled) {
-      const policies = getConfiguredPolicies();
+      const policies = getConfiguredMailerPolicies();
       let { data: savedEligibility, error: eligibilityReadError } = await supabase
-        .from("account_eligibility").select("country,policy_version,minimum_age,age_band,status")
+        .from("account_mailer_eligibility").select("country,policy_version,minimum_age,age_band,status")
         .eq("user_id", authUser.id).maybeSingle();
       if (eligibilityReadError) throw eligibilityReadError;
       if (!savedEligibility) {
         if (!body.ownerBirthdate || !body.country) {
-          return res.status(403).json({ ok: false, code: "eligibility_required", error: "Please confirm the account owner's birthdate and country before enabling email." });
+          return res.status(403).json({ ok: false, code: "eligibility_required", error: "Please confirm your birthdate and country for the separate daily email consent check." });
         }
-        const decision = evaluateEligibility({ birthdate: body.ownerBirthdate, country: body.country, policies });
+        const decision = evaluateMailerEligibility({ birthdate: body.ownerBirthdate, country: body.country, policies });
         body.ownerBirthdate = "";
         if (!decision.ok) return res.status(400).json(eligibilityFailure(decision));
-        const { data: recorded, error: writeError } = await supabase.rpc("record_account_eligibility_decision", {
+        const { data: recorded, error: writeError } = await supabase.rpc("record_mailer_eligibility_decision", {
           p_user_id: authUser.id, p_country: decision.country, p_policy_version: decision.policyVersion,
           p_minimum_age: decision.minimumAge, p_age_band: decision.ageBand, p_eligible: decision.eligible
         });
+        if (writeError?.message === "account_eligibility_review_required") return res.status(403).json({ok:false,code:"eligibility_review_required",error:"Your eligibility needs support review before daily email can be enabled."});
         if (writeError) throw writeError;
         savedEligibility = Array.isArray(recorded) ? recorded[0] : recorded;
       }
@@ -127,7 +129,7 @@ export default async function handler(req, res) {
         && currentPolicy.minimumAge === savedEligibility.minimum_age
         && ["13-15", "16-17", "adult"].includes(savedEligibility.age_band);
       if (!currentEligibility) {
-        return res.status(403).json({ ok: false, code: "eligibility_review_required", error: "Your account eligibility needs review. Contact support@sineday.app for help or to correct a mistake." });
+        return res.status(403).json({ ok: false, code: "eligibility_review_required", error: "Your daily email eligibility needs review. Your account access is separate. Contact support@sineday.app for help or to correct a mistake." });
       }
 
     }
@@ -156,6 +158,7 @@ export default async function handler(req, res) {
     );
 
     if (error) {
+      if (error.message === "mailer_age_eligibility_required") return res.status(403).json({ok:false,code:"eligibility_review_required",error:"Your daily email eligibility needs support review."});
       if (String(error.message || "").includes("birthdate_required")) {
         return res.status(400).json({ ok: false, error: "Enter a valid birthdate." });
       }
