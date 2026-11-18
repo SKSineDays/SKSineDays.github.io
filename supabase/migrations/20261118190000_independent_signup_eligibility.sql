@@ -26,13 +26,31 @@ create table public.account_eligibility (
   country text not null check (country ~ '^[A-Z]{2}$'),
   policy_version text not null check (length(policy_version) between 1 and 80),
   minimum_age integer not null check (minimum_age between 13 and 18),
-  age_band text not null check (age_band in ('13-15','16-17','adult')),
+  age_band text not null check (age_band in ('under13','13-15','16-17','adult')),
+  status text not null default 'eligible' check (status in ('eligible','review_required')),
+  constraint eligible_age_band check (status <> 'eligible' or age_band <> 'under13'),
   method text not null default 'self_declared' check (method = 'self_declared'),
   checked_at timestamptz not null default clock_timestamp()
 );
 alter table public.account_eligibility enable row level security;
 revoke all on public.account_eligibility from public, anon, authenticated;
 grant select, insert, update, delete on public.account_eligibility to service_role;
+
+-- Atomic first declaration: a rejected owner cannot retry with a different DOB.
+-- Support corrections require a separate audited privileged workflow, not this RPC.
+create function public.record_account_eligibility_decision(p_user_id uuid,p_country text,p_policy_version text,p_minimum_age integer,p_age_band text,p_eligible boolean)
+returns setof public.account_eligibility language plpgsql security invoker set search_path = '' as $$
+begin
+  if p_eligible is null then raise exception 'eligibility_decision_required'; end if;
+  perform pg_advisory_xact_lock(hashtextextended(p_user_id::text,91814));
+  insert into public.account_eligibility(user_id,country,policy_version,minimum_age,age_band,status)
+  values(p_user_id,p_country,p_policy_version,p_minimum_age,p_age_band,case when p_eligible then 'eligible' else 'review_required' end)
+  on conflict (user_id) do nothing;
+  return query select * from public.account_eligibility where user_id=p_user_id;
+end;
+$$;
+revoke all on function public.record_account_eligibility_decision(uuid,text,text,integer,text,boolean) from public, anon, authenticated;
+grant execute on function public.record_account_eligibility_decision(uuid,text,text,integer,text,boolean) to service_role;
 
 create function public.cleanup_account_admissions()
 returns void language sql security invoker set search_path = '' as $$
@@ -171,4 +189,57 @@ end;
 $$;
 revoke all on function public.confirm_eligible_mailer_signup(text,jsonb) from public, anon, authenticated;
 grant execute on function public.confirm_eligible_mailer_signup(text,jsonb) to service_role;
+-- EXISTING-OWNER ACCESS: staged, disabled until all provider and recovery tests pass.
+-- Keep DB policy configuration aligned with AGE_ELIGIBILITY_POLICIES_JSON.
+create table public.account_age_policy_config (
+  country text primary key check (country ~ '^[A-Z]{2}$'),
+  policy_version text not null,
+  minimum_age integer not null check (minimum_age between 13 and 18)
+);
+insert into public.account_age_policy_config values ('US','us-independent-13-v1',13);
+create table public.account_age_enforcement (
+  singleton boolean primary key default true check (singleton),
+  enabled boolean not null default false
+);
+insert into public.account_age_enforcement values (true,false);
+alter table public.account_age_policy_config enable row level security;
+alter table public.account_age_enforcement enable row level security;
+revoke all on public.account_age_policy_config,public.account_age_enforcement from public,anon,authenticated;
+grant select,insert,update,delete on public.account_age_policy_config,public.account_age_enforcement to service_role;
+
+-- Narrow own-account predicate. No user_id argument and no user-editable JWT claims.
+create function public.current_account_age_eligible()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select auth.uid() is not null and (
+    not coalesce((select enabled from public.account_age_enforcement where singleton),true)
+    or exists (
+      select 1 from public.account_eligibility e
+      join public.account_age_policy_config p on p.country=e.country
+        and p.policy_version=e.policy_version and p.minimum_age=e.minimum_age
+      where e.user_id=auth.uid() and e.status='eligible'
+        and e.age_band in ('13-15','16-17','adult')
+    )
+  );
+$$;
+revoke all on function public.current_account_age_eligible() from public,anon;
+grant execute on function public.current_account_age_eligible() to authenticated;
+
+-- Restrictive AND policy covers every currently RLS-enabled public base table,
+-- including live-only planner tables and duplicate permissive owner policies.
+-- Deployment audit must reject any new exposed table missing this boundary.
+do $$
+declare r record;
+begin
+ for r in select n.nspname,c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace
+   where n.nspname='public' and c.relkind in ('r','p') and c.relrowsecurity
+ loop
+   execute format('create policy account_age_access on %I.%I as restrictive for all to authenticated using ((select public.current_account_age_eligible())) with check ((select public.current_account_age_eligible()))',r.nspname,r.relname);
+ end loop;
+ -- No changes to bucket data or existing objects. Public signed URLs already issued
+ -- can remain valid until their expiry; test/review that residual access separately.
+ if to_regclass('storage.objects') is not null then
+   execute 'create policy account_age_access on storage.objects as restrictive for all to authenticated using ((select public.current_account_age_eligible())) with check ((select public.current_account_age_eligible()))';
+ end if;
+end $$;
+
 commit;

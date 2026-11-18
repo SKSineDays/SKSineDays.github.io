@@ -1,9 +1,10 @@
+import { requireAccountEligibility } from './account-access.js';
 import { createClient } from "@supabase/supabase-js";
 
 /**
  * Authenticate user from Authorization header
  */
-export async function authenticateUser(req) {
+export async function authenticateUser(req, { safeAccountControl = false } = {}) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new Error("Missing or invalid Authorization header");
@@ -26,6 +27,7 @@ export async function authenticateUser(req) {
   const { data: { user }, error } = await supabase.auth.getUser(accessToken);
   if (error || !user) throw new Error("Invalid or expired token");
 
+  if (!safeAccountControl) await requireAccountEligibility(getAdminClient(), user.id);
   return { user, supabase, accessToken };
 }
 

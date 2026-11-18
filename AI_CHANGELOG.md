@@ -408,3 +408,9 @@ Each entry includes:
 **Notes:** Draft only, no production migration/configuration. Rebased over privacy PR143; cache v53. Clean npm ci + full suite:561 passed,1 skipped. PGlite SQL and signed-token/API/VM tests pass. Browser launch blocked by sandbox EPERM. Hosted Google/Apple/OTP hook payload tests, explicit EU policy and coordinated deployment remain blockers. No age verification or parental-consent claim.
 
 ---
+
+## 2026-11-18T17:55:57.114431+00:00
+
+- Summary: Extend draft age gate to immutable existing-owner screen and restrictive app access
+- Rationale: Existing owners must check once; review-needed declarations cannot be overwritten, with billing/help preserved.
+- Notes/Risks: Draft only, no production changes. Read-only live catalog audit. RLS + server flags disabled; 580 tests pass,1 skipped. Real hosted/provider/storage tests and EU policy still blocked. Known signed URL residual expiry. Billing sync now requires affirmative checkout ownership.

@@ -1,3 +1,4 @@
+import { ensureAccountEligibility } from './account-eligibility.js';
 /**
  * Dashboard Logic
  *
@@ -100,6 +101,21 @@ async function init() {
     if (session) {
       currentUser = session.user;
       publicConfig = await fetchConfig();
+      if (publicConfig.accountEligibilityEnabled === true) {
+        const gateAbort = new AbortController();
+        const gateSubscription = await onAuthStateChange((event, nextSession) => {
+          if (event === 'SIGNED_OUT' || (nextSession && nextSession.user?.id !== session.user.id)) gateAbort.abort();
+        });
+        let allowed = false;
+        try {
+          const beforeGate = await getCurrentSession();
+          if (beforeGate?.user?.id !== session.user.id) gateAbort.abort();
+          allowed = await ensureAccountEligibility({ accessToken: session.access_token, signal: gateAbort.signal });
+        } finally { gateSubscription?.unsubscribe(); }
+        if (!allowed) { window.location.replace('/index.html'); return; }
+        const verifiedSession = await getCurrentSession();
+        if (verifiedSession?.user?.id !== currentUser.id) { window.location.reload(); return; }
+      }
 
       // Load per-account settings (locale/weekstart)
       userSettings = await loadUserSettings(currentUser.id);
@@ -135,19 +151,9 @@ async function init() {
     // Listen to auth changes
     onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        if (currentUser?.id !== session.user.id) {
-          duckCarousel?.destroy();
-          duckCarousel = null;
-        }
-        currentUser = session.user;
-
-        loadLinkedIdentities()
-          .then(() => renderIdentityLinkUI())
-          .catch((err) => console.error('[Auth Identity] Refresh failed:', err));
-
-        loadUserData();
-        loadDailyEmailState();
-        showAuthenticatedView();
+        // Re-enter the server check before any data load on an identity change.
+        // Defer navigation outside Supabase's auth callback.
+        if (currentUser?.id !== session.user.id) setTimeout(() => window.location.reload(), 0);
       } else if (event === 'SIGNED_OUT') {
         dailyEmailLoadGen += 1;
         currentUser = null;

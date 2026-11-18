@@ -1,3 +1,5 @@
+import { requireAccountEligibility } from './_lib/account-access.js';
+import { getAdminClient } from './_lib/auth.js';
 /**
  * Create Stripe Checkout Session for subscription
  *
@@ -59,6 +61,7 @@ async function authenticateUser(req) {
     throw new Error('Invalid or expired token');
   }
 
+  await requireAccountEligibility(getAdminClient(), user.id);
   return { user, supabase };
 }
 

@@ -128,3 +128,46 @@ hook-only rollback with the trigger still installed also blocks new users. Remov
 without a replacement restores the prior unguarded creation paths. Existing users need
 not be deleted for any rollback. Treat rollback as an explicit operator action, not an
 automatic account migration.
+
+
+## Existing-owner one-time check (draft revision)
+
+A new auth-bound `/api/account-eligibility` endpoint and dashboard interruption check
+run before member data loads. Missing owners enter their own DOB/country once, distinct
+from family profiles. The service-only atomic decision RPC stores `eligible` or
+`review_required`, never full DOB. Opposite retries, another device, and concurrent
+submissions cannot overwrite the first result. Mistakes require support review; this
+is not a permanent suspension, data deletion, parental-consent flow or age verification.
+The dialog keeps support and existing Stripe billing management accessible. Stripe's
+portal configuration controls what actions are offered; no new checkout is invoked.
+
+Database enforcement adds an AND/RESTRICTIVE authenticated policy to every currently
+RLS-enabled public base table, plus storage.objects, without replacing ownership policies.
+A narrow SECURITY DEFINER predicate checks only auth.uid() against server-owned evidence
+and current DB policy configuration. The live catalog audit found planner_tasks and
+planner_task_completions absent from versioned history; the generic policy covers them.
+No public views were found. Existing public authenticated-callable non-trigger functions
+are SECURITY INVOKER. New tables/views/RPCs require a fresh exposure audit.
+
+Privileged protected API routes use a server guard before application access, including
+prints, export, social, globe, affiliates and new checkout. Explicit safe controls remain:
+identity status, account entitlements, billing reconciliation/portal, existing affiliate
+payout dashboard, eligibility, sign-out, support, email-status and unsubscribe. New mailer
+activation requires immutable eligible status. Background mail/Stripe processing is not
+age-gated or modified by an owner denial. Previously issued signed image URLs can remain
+valid for 15 minutes, print URLs for 10 minutes; downloaded content cannot be recalled.
+
+### Additional activation blockers
+
+- DB `account_age_enforcement.enabled` defaults false; server
+  `AGE_EXISTING_ENFORCEMENT_READY` defaults off. Neither alone enables complete coverage.
+- Synchronize DB `account_age_policy_config` with reviewed server
+  `AGE_ELIGIBILITY_POLICIES_JSON`. Both validate exact policy version/minimum.
+- No EU defaults have been selected. Review unsupported-country handling before rollout.
+- Test old JWTs/direct REST, both RPCs, all storage operations, each privileged API,
+  identity changes, ambiguous submissions, existing billing cancellation and unsubscribe.
+- Test real hosted RLS/storage roles; PGlite SQL and mocked route tests are not hosted proof.
+- Authorize an audited support correction/parental-consent procedure before activation.
+  The current implementation intentionally does not expose a self-service overwrite.
+- Do not use a Vercel preview with production credentials as an isolated test environment.
+- No child/owner records or saved content were read or changed in the catalog audit.

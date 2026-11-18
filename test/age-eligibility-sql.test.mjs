@@ -7,6 +7,13 @@ const migration=await readFile(new URL('../supabase/migrations/20261118190000_in
 const db=new PGlite();
 await db.exec(`create role anon; create role authenticated; create role service_role; create role supabase_auth_admin;
 create schema auth;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.user_id',true),'')::uuid $$;
+grant usage on schema auth to authenticated;
+create table public.protected_test(id integer primary key);
+alter table public.protected_test enable row level security;
+grant select,insert,update,delete on public.protected_test to authenticated;
+create policy test_allow on public.protected_test to authenticated using(true) with check(true);
+insert into public.protected_test values(1);
 create table auth.users(id uuid primary key,email text,raw_app_meta_data jsonb,raw_user_meta_data jsonb);
 create table public.mailer_signup_requests(id uuid primary key, token_hash text);
 create function public.create_mailer_signup_request(text,text,text,smallint,smallint,text,text,text,text)
@@ -104,4 +111,35 @@ test('scheduled admission cleanup removes expired subjects without deleting acco
  await db.query('select public.cleanup_account_admissions()');
  assert.equal((await db.query('select count(*)::integer as n from public.account_signup_admissions')).rows[0].n,0);
  assert.equal((await db.query('select count(*)::integer as n from public.account_eligibility')).rows[0].n,before);
+});
+
+test('legacy underage decision is immutable and cannot be overwritten by adult resubmission',async()=>{
+ const user='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ const args=[user,'US','us-independent-13-v1',13,'under13',false];
+ const first=await db.query('select * from public.record_account_eligibility_decision($1,$2,$3,$4,$5,$6)',args);
+ assert.equal(first.rows[0].status,'review_required');
+ args[4]='adult';args[5]=true;
+ const retry=await db.query('select * from public.record_account_eligibility_decision($1,$2,$3,$4,$5,$6)',args);
+ assert.equal(retry.rows[0].status,'review_required');assert.equal(retry.rows[0].age_band,'under13');
+ for(const role of ['anon','authenticated']) {
+  await db.exec(`set role ${role}`);
+  await assert.rejects(()=>db.query('select * from public.record_account_eligibility_decision($1,$2,$3,$4,$5,$6)',args),/permission denied/);
+  await db.exec('reset role');
+ }
+});
+
+test('restrictive policies deny existing missing/rejected owners despite permissive table policy',async()=>{
+ await db.exec("update public.account_age_enforcement set enabled=true; select set_config('test.user_id','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',false); set role authenticated");
+ assert.equal((await db.query('select * from public.protected_test')).rows.length,0);
+ await assert.rejects(()=>db.exec('insert into public.protected_test values(2)'),/row-level security/);
+ await assert.rejects(()=>db.exec('update public.account_age_enforcement set enabled=false'),/permission denied/);
+ await db.exec('reset role');
+ const eligible=await db.query("select user_id from public.account_eligibility where status='eligible' limit 1");
+ await db.query("select set_config('test.user_id',$1,false)",[eligible.rows[0].user_id]);
+ await db.exec('set role authenticated');
+ assert.equal((await db.query('select * from public.protected_test')).rows.length,1);
+ await db.exec('reset role');
+ await db.exec("update public.account_age_policy_config set policy_version='withdrawn'; set role authenticated");
+ assert.equal((await db.query('select * from public.protected_test')).rows.length,0);
+ await db.exec('reset role');
 });

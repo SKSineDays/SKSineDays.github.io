@@ -55,19 +55,20 @@ export function handleOptions(req, res) {
   return true;
 }
 
-export async function requireAffiliateContext(req) {
+export async function requireAffiliateContext(req, { safeAccountControl = false } = {}) {
   if (!isAffiliateProgramEnabled()) {
     const error = new Error("Affiliate program unavailable");
     error.code = "AFFILIATE_DISABLED";
     throw error;
   }
 
-  const { user } = await authenticateUser(req);
+  const { user } = await authenticateUser(req, { safeAccountControl });
   return { user, supabaseAdmin: getAdminClient() };
 }
 
 export function affiliateApiError(res, error, context) {
   const code = error?.code;
+  if (code === "ACCOUNT_ELIGIBILITY_REQUIRED") return res.status(403).json({ ok: false, code, error: "Account eligibility review required. Contact support@sineday.app." });
   if (code === "AFFILIATE_DISABLED") {
     return res.status(404).json({ ok: false, error: "Affiliate program unavailable" });
   }

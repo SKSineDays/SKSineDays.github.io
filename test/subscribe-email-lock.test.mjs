@@ -14,7 +14,7 @@ const SUBSCRIBER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WELCOME_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const store = {
   authEmail: "member@sineday.app",
-  eligibility: {country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"},
+  eligibility: {status: "eligible", country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"},
   rpcCalls: [],
   resendSends: [],
   activationError: null,
@@ -47,6 +47,10 @@ mock.module("@supabase/supabase-js", {
         },
         async rpc(name, args) {
           store.rpcCalls.push({ name, args });
+          if (name === "record_account_eligibility_decision") {
+            store.eligibility ||= { country:args.p_country,policy_version:args.p_policy_version,minimum_age:args.p_minimum_age,age_band:args.p_age_band,status:args.p_eligible ? "eligible" : "review_required" };
+            return {data:[store.eligibility],error:null};
+          }
           if (name === "activate_authenticated_email_subscriber") {
             return { data: store.activation ? [store.activation] : null, error: store.activationError };
           }
@@ -108,7 +112,7 @@ function mockRes() {
 
 function reset() {
   store.authEmail = "member@sineday.app";
-  store.eligibility = {country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"};
+  store.eligibility = {status: "eligible", country: "US", minimum_age: 13, policy_version: "us-independent-13-v1", age_band: "adult"};
   store.rpcCalls.length = 0;
   store.resendSends.length = 0;
   store.activationError = null;
@@ -249,8 +253,8 @@ test("legacy account without eligibility cannot activate mailer by omitting DOB 
 test("authenticated under13 independent email activation stops before subscription or welcome", async()=>{
  reset(); store.eligibility=null;
  const res=await post({consent:true,timezone:"America/Chicago",birthdate:"1985-04-20",ownerBirthdate:"2020-01-01",country:"US"});
- assert.equal(res.statusCode,403); assert.equal(store.eligibility,null);
- assert.equal(store.rpcCalls.length,0); assert.equal(store.resendSends.length,0);
+ assert.equal(res.statusCode,403); assert.equal(store.eligibility.status,"review_required");
+ assert.equal(store.rpcCalls.length,1); assert.equal(store.resendSends.length,0);
 });
 test("legacy adult owner screens once and server remembers eligibility, without saving DOB", async()=>{
  reset(); store.eligibility=null;
@@ -259,4 +263,12 @@ test("legacy adult owner screens once and server remembers eligibility, without 
  assert.equal(JSON.stringify(store.eligibility).includes('1985'),false);
  const again=await post({consent:true,timezone:"America/Chicago"});
  assert.equal(again.statusCode,200);
+});
+
+test("rejected owner cannot activate mailer by resubmitting adult DOB", async()=>{
+ reset(); store.eligibility=null;
+ await post({consent:true,ownerBirthdate:"2020-01-01",country:"US"});
+ const res=await post({consent:true,ownerBirthdate:"1985-01-01",country:"US"});
+ assert.equal(res.statusCode,403); assert.equal(store.eligibility.status,"review_required");
+ assert.equal(store.rpcCalls.filter(x=>x.name==="activate_authenticated_email_subscriber").length,0);
 });

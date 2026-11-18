@@ -94,38 +94,34 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "Invalid timezone" });
     }
 
-    // Missing legacy eligibility does not invalidate sign-in. It must be resolved
-    // before NEW mailer activation; existing scheduled subscriptions are untouched.
-    const { data: savedEligibility, error: eligibilityReadError } = await supabase
-      .from("account_eligibility").select("country,policy_version,minimum_age,age_band")
+    // Immutable account-owner declaration, shared with the one-time app check.
+    // Existing sends and safe account recovery are not changed by this activation route.
+    const policies = getConfiguredPolicies();
+    let { data: savedEligibility, error: eligibilityReadError } = await supabase
+      .from("account_eligibility").select("country,policy_version,minimum_age,age_band,status")
       .eq("user_id", authUser.id).maybeSingle();
     if (eligibilityReadError) throw eligibilityReadError;
-    const policies = getConfiguredPolicies();
-    const currentPolicy = savedEligibility && policies[savedEligibility.country];
-    const currentEligibility = currentPolicy && currentPolicy.version === savedEligibility.policy_version
-      && currentPolicy.minimumAge === savedEligibility.minimum_age
-      && ["13-15", "16-17", "adult"].includes(savedEligibility.age_band);
-    if (!currentEligibility) {
+    if (!savedEligibility) {
       if (!body.ownerBirthdate || !body.country) {
         return res.status(403).json({ ok: false, code: "eligibility_required", error: "Please confirm the account owner's birthdate and country before enabling email." });
       }
       const decision = evaluateEligibility({ birthdate: body.ownerBirthdate, country: body.country, policies });
       body.ownerBirthdate = "";
-      if (!decision.ok || !decision.eligible) return res.status(decision.ok ? 403 : 400).json(eligibilityFailure(decision));
-      const { error: eligibilityWriteError } = await supabase.from("account_eligibility").insert({
-        user_id: authUser.id, country: decision.country, policy_version: decision.policyVersion,
-        minimum_age: decision.minimumAge, age_band: decision.ageBand
+      if (!decision.ok) return res.status(400).json(eligibilityFailure(decision));
+      const { data: recorded, error: writeError } = await supabase.rpc("record_account_eligibility_decision", {
+        p_user_id: authUser.id, p_country: decision.country, p_policy_version: decision.policyVersion,
+        p_minimum_age: decision.minimumAge, p_age_band: decision.ageBand, p_eligible: decision.eligible
       });
-      if (eligibilityWriteError) {
-        if (eligibilityWriteError.code !== "23505") throw eligibilityWriteError;
-        // Concurrent first checks must not clobber each other. A material policy
-        // change needs explicit support/migration, not a blind upsert of old evidence.
-        const { data: winner, error: rereadError } = await supabase.from("account_eligibility")
-          .select("country,policy_version,minimum_age,age_band").eq("user_id", authUser.id).maybeSingle();
-        if (rereadError || winner?.country !== decision.country || winner?.policy_version !== decision.policyVersion || winner?.minimum_age !== decision.minimumAge || !["13-15", "16-17", "adult"].includes(winner?.age_band)) {
-          return res.status(409).json({ ok: false, code: "eligibility_review_required", error: "Your eligibility information needs review. Please contact support." });
-        }
-      }
+      if (writeError) throw writeError;
+      savedEligibility = Array.isArray(recorded) ? recorded[0] : recorded;
+    }
+    const currentPolicy = savedEligibility && policies[savedEligibility.country];
+    const currentEligibility = savedEligibility?.status === "eligible" && currentPolicy
+      && currentPolicy.version === savedEligibility.policy_version
+      && currentPolicy.minimumAge === savedEligibility.minimum_age
+      && ["13-15", "16-17", "adult"].includes(savedEligibility.age_band);
+    if (!currentEligibility) {
+      return res.status(403).json({ ok: false, code: "eligibility_review_required", error: "Your account eligibility needs review. Contact support@sineday.app for help or to correct a mistake." });
     }
 
     let derived = null;
