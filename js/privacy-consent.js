@@ -119,7 +119,7 @@ function mountPrivacyChoices() {
     customize.setAttribute('aria-expanded', String(focus));
     if (focus) panel.querySelector('h2').focus();
   }
-  function close(focus = true) { panel.hidden = true; if (focus) openButton.focus(); }
+  function close(focus = true) { panel.hidden = true; if (focus) openButton.focus({ preventScroll: true }); }
   openButton.addEventListener('click', () => show(true));
   panel.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
   panel.addEventListener('click', event => {
