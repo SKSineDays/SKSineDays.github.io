@@ -2,6 +2,25 @@
 -- Existing accounts/subscribers are neither scanned nor modified. No DOB is stored.
 begin;
 
+-- New-account admission is staged independently of existing-owner enforcement.
+-- Installing this migration does not change legacy signup behavior. Activation is
+-- a separate privileged step after the hook/provider/end-to-end checks pass.
+create table public.account_signup_enforcement (
+  singleton boolean primary key default true check (singleton),
+  enabled boolean not null default false
+);
+insert into public.account_signup_enforcement values (true,false);
+alter table public.account_signup_enforcement enable row level security;
+revoke all on public.account_signup_enforcement from public,anon,authenticated;
+grant select,update on public.account_signup_enforcement to service_role;
+
+create function public.account_signup_enforcement_is_enabled()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select coalesce((select enabled from public.account_signup_enforcement where singleton),true);
+$$;
+revoke all on function public.account_signup_enforcement_is_enabled() from public,anon,authenticated;
+grant execute on function public.account_signup_enforcement_is_enabled() to service_role;
+
 create table public.account_signup_admissions (
   id uuid primary key default gen_random_uuid(),
   provider text not null check (provider in ('email','google','apple')),
@@ -85,6 +104,7 @@ declare
   v_flow_hash text;
   v_id uuid;
 begin
+  if not public.account_signup_enforcement_is_enabled() then return '{}'::jsonb; end if;
   if v_provider = 'email' then
     v_subject := lower(btrim(event->'user'->>'email'));
     v_flow_hash := encode(sha256(convert_to(event->'user'->'user_metadata'->>'signup_admission_token','UTF8')),'hex');
@@ -117,6 +137,7 @@ declare
   v_flow_hash text;
   v_admission public.account_signup_admissions%rowtype;
 begin
+  if not public.account_signup_enforcement_is_enabled() then return new; end if;
   if v_provider = 'email' then
     v_subject := lower(btrim(new.email));
     v_flow_hash := encode(sha256(convert_to(new.raw_user_meta_data->>'signup_admission_token','UTF8')),'hex');

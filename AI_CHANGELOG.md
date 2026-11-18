@@ -414,3 +414,8 @@ Each entry includes:
 - Summary: Extend draft age gate to immutable existing-owner screen and restrictive app access
 - Rationale: Existing owners must check once; review-needed declarations cannot be overwritten, with billing/help preserved.
 - Notes/Risks: Draft only, no production changes. Read-only live catalog audit. RLS + server flags disabled; 580 tests pass,1 skipped. Real hosted/provider/storage tests and EU policy still blocked. Known signed URL residual expiry. Billing sync now requires affirmative checkout ownership.
+
+## 2026-11-18T19:41:51.971161+00:00
+
+- Summary: Stage dormant age schema in existing project with rollback-only hosted verification
+- Notes/Risks: Applied migration20261118193907. Both DB switches false,hook unconfigured,no frontend/env changes. Hosted rollback-only synthetic SQL passed;8accounts/7subscribers/5active preserved;0decisions/admissions. Role checks deny client writes.584local tests pass1skip. Physical backup confirmed; emergency non-destructive rollback script tested locally. Full provider/canary/EU blockers remain.

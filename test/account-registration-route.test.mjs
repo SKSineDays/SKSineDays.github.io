@@ -12,8 +12,9 @@ process.env.SUPABASE_ANON_KEY = 'test-anon';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service';
 const calls = [];
 let denied = false;
+let signupEnabled = true;
 mock.module('@supabase/supabase-js', { namedExports: { createClient(url, key) {
-  return { async rpc(name, args) { calls.push({ name, args, key }); return { error: denied ? new Error('denied') : null }; },
+  return { async rpc(name, args) { if (name === 'account_signup_enforcement_is_enabled') return { data: signupEnabled, error: null }; calls.push({ name, args, key }); return { error: denied ? new Error('denied') : null }; },
     auth: { async signInWithOtp(args) { calls.push({ type: 'otp', args, key }); return { data: {}, error: null }; },
       async signInWithIdToken(args) { calls.push({ type: 'id-token', args, key });
         return { data: { session: { access_token: 'test-access', refresh_token: 'test-refresh' } }, error: null }; } } };
@@ -91,4 +92,26 @@ test('Google proof is checked before DB admission and raw nonce only reaches Sup
     assert.equal(calls[1].args.nonce, flow.nonce);
     assert.deepEqual(done.body.session, { access_token: 'test-access', refresh_token: 'test-refresh' });
   } finally { globalThis.fetch = oldFetch; }
+});
+
+test('database switch disabled rejects new flow even when environment readiness is true', async () => {
+  calls.length = 0;
+  signupEnabled = false;
+  try {
+    const response = await begin();
+    assert.equal(response.statusCode, 503);
+    assert.match(response.headers['Set-Cookie'], /Max-Age=0/);
+    assert.equal(calls.length, 0);
+  } finally { signupEnabled = true; }
+});
+test('disabling admission between begin and complete prevents auth or grants', async () => {
+  calls.length = 0;
+  const start = await begin();
+  const cookie = start.headers['Set-Cookie'].split(';')[0];
+  signupEnabled = false;
+  try {
+    const response = await send({ action: 'complete', email: 'test@example.com' }, cookie);
+    assert.equal(response.statusCode, 503);
+    assert.equal(calls.length, 0);
+  } finally { signupEnabled = true; }
 });

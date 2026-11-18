@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { createHash } from 'node:crypto';
-const migration=await readFile(new URL('../supabase/migrations/20261118190000_independent_signup_eligibility.sql',import.meta.url),'utf8');
+const migration=await readFile(new URL('../supabase/migrations/20261118193907_stage_dormant_account_age_eligibility.sql',import.meta.url),'utf8');
 const db=new PGlite();
 await db.exec(`create role anon; create role authenticated; create role service_role; create role supabase_auth_admin;
 create schema auth;
@@ -38,6 +38,21 @@ async function insertUser(provider,subject,proof) {
  await db.query('insert into auth.users values($1,$2,$3,$4)',[id,provider==='email'?subject:'example@test.test',JSON.stringify({provider}),JSON.stringify(provider==='email'?{signup_admission_token:proof}:{sub:subject})]);
  return id;
 }
+test('staged signup switch defaults off and leaves legacy new-account inserts unchanged',async()=>{
+ assert.equal((await db.query('select public.account_signup_enforcement_is_enabled() as enabled')).rows[0].enabled,false);
+ assert.deepEqual(await hook('email','legacy-stage@test.test'),{});
+ const id=await insertUser('email','legacy-stage@test.test');
+ assert.equal((await db.query('select * from public.account_eligibility where user_id=$1',[id])).rows.length,0);
+ for(const role of ['anon','authenticated']) {
+  await db.exec(`set role ${role}`);
+  await assert.rejects(()=>db.query('select public.account_signup_enforcement_is_enabled()'),/permission denied/);
+  await assert.rejects(()=>db.query('update public.account_signup_enforcement set enabled=true'),/permission denied/);
+  await db.exec('reset role');
+ }
+ // Explicit test activation; no remote database or production configuration touched.
+ await db.query('update public.account_signup_enforcement set enabled=true');
+ assert.equal((await db.query('select public.account_signup_enforcement_is_enabled() as enabled')).rows[0].enabled,true);
+});
 test('anonymous/authenticated cannot issue admissions, write proofs, or invoke hook',async()=>{
  for(const role of ['anon','authenticated']) {
   await db.exec(`set role ${role}`);
@@ -142,4 +157,14 @@ test('restrictive policies deny existing missing/rejected owners despite permiss
  await db.exec("update public.account_age_policy_config set policy_version='withdrawn'; set role authenticated");
  assert.equal((await db.query('select * from public.protected_test')).rows.length,0);
  await db.exec('reset role');
+});
+test('non-destructive deactivation removes only new boundaries and retains decisions and original policies',async()=>{
+ const before=await db.query('select count(*)::int as n from public.account_eligibility');
+ const rollback=await readFile(new URL('../scripts/age/deactivate-staged-age.sql',import.meta.url),'utf8');
+ await db.exec(rollback);
+ assert.equal((await db.query('select count(*)::int as n from public.account_eligibility')).rows[0].n,before.rows[0].n);
+ assert.equal((await db.query("select count(*)::int as n from pg_policies where policyname='account_age_access'")).rows[0].n,0);
+ assert.equal((await db.query("select count(*)::int as n from pg_policies where policyname='test_allow'")).rows[0].n,1);
+ assert.equal((await db.query('select enabled from public.account_signup_enforcement')).rows[0].enabled,false);
+ await db.exec("insert into auth.users values('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','rollback@example.test','{}','{}')");
 });

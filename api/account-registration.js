@@ -21,6 +21,18 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', flowCookie('', 0));
     return res.status(200).json({ ok: true });
   }
+  // Environment readiness alone is not activation. The database admission switch
+  // must also be on before starting or completing this new flow. Staged migration
+  // installs leave old signup paths untouched and this endpoint unavailable.
+  let admin;
+  try {
+    admin = getAdminClient();
+    const { data: enabled, error } = await admin.rpc('account_signup_enforcement_is_enabled');
+    if (error || enabled !== true) throw new Error('Admission not activated');
+  } catch {
+    res.setHeader('Set-Cookie', flowCookie('', 0));
+    return res.status(503).json({ ok: false, error: 'New account registration is temporarily unavailable. Existing members can still sign in.' });
+  }
   if (body.action === 'begin') {
     // Clear stale admission even when the new screening fails.
     res.setHeader('Set-Cookie', flowCookie('', 0));
@@ -61,7 +73,6 @@ export default async function handler(req, res) {
     } else {
       ({ subject } = await verifyProviderProof(body.token, flow, config));
     }
-    const admin = getAdminClient();
     const { error: grantError } = await admin.rpc('issue_account_admission', {
       p_provider: flow.provider, p_subject: subject, p_flow_hash: hash(flow.id),
       p_country: flow.eligibility.country, p_policy_version: flow.eligibility.policyVersion,

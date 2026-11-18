@@ -171,3 +171,43 @@ valid for 15 minutes, print URLs for 10 minutes; downloaded content cannot be re
   The current implementation intentionally does not expose a self-service overwrite.
 - Do not use a Vercel preview with production credentials as an isolated test environment.
 - No child/owner records or saved content were read or changed in the catalog audit.
+
+
+## Authorized dormant production staging, 2026-11-18
+
+Owner explicitly authorized testing within the existing project, no new paid project.
+The revised migration was installed as stage_dormant_account_age_eligibility. Both
+account_signup_enforcement.enabled and account_age_enforcement.enabled remain FALSE.
+Before User Created hook remains unconfigured. No frontend or Vercel configuration was
+changed. Signup hook/insert trigger now return without enforcement when the separate
+signup switch is false; new registration endpoint refuses both begin/complete until it
+is true. The prior warning about unconditional staging blockage is superseded by this
+revised guard, not permission to enable untested signup.
+
+Hosted rollback-only SQL smoke passed after correcting a test-fixture email mismatch:
+dormant auth insertion, missing admission denial, valid email-bound admission, eligibility
+binding, missing owner denial, immutable underage review, eligible-owner predicate.
+All synthetic rows and temporary switches rolled back. Postcheck:8 auth accounts,
+7 subscribers,5 active/not-unsubscribed,0 decisions,0 admissions; both flags FALSE.
+No actual provider/OTP flow or outbound email was exercised. SQL fixture uses reserved
+example.invalid addresses and never sends mail.
+
+Storage policy creation succeeded via the migration service without granting roles or
+changing ownership.42 new restrictive policies include storage.objects. Existing policy
+names/targets were recorded before staging. Security advisor warns on the intentional
+no-argument SECURITY DEFINER own-account predicate; fixed search_path, auth.uid(), no
+arbitrary-user parameter, and no client metadata are the intended narrow boundary.
+
+Latest visible physical backup:2026-11-18 12:38:27 UTC. Storage objects excluded; restore
+not tested. Do not use backup restoration for ordinary rollback, which would lose newer
+user writes. Precise non-destructive emergency script:scripts/age/deactivate-staged-age.sql.
+It disables both controls and removes only the new trigger/policies, retaining all user,
+subscriber and eligibility data. Local PGlite rollback test verifies retention and original
+policy preservation. Normal deactivation only needs switches off, application flags off,
+and Auth hook unconfigured. Never turn off signup enforcement while the new signup UI
+is advertised as protected.
+
+Remaining:real provider/OTP config and end-to-end tests, verified founder canary identity,
+EU availability policy, approved support correction process, coordinated app deployment.
+Vercel dashboard signed in but age secrets/client IDs not yet configured. No global
+activation or readiness claim.
