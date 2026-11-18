@@ -37,6 +37,7 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
       return route.fulfill({ contentType: contentTypes[path.extname(file)], body: await fs.readFile(path.join(ROOT, file)) });
     });
     await page.goto(`${ORIGIN}/affiliate.html`);
+    if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
     assert.match(await page.locator('main').innerText(), /Individuals and creators/);
     assert.doesNotMatch(await page.locator('main').innerText(), /\bPTAs?\b|fundrais|group application/i);
     return page;
@@ -103,3 +104,4 @@ const valid = { displayName: 'Review Creator', email: 'review@example.test', ins
     console.log(JSON.stringify({ status: 'passed', viewports: [320, 390, 768, 1440], mockedPosts: posts, realPosts: 0, output: OUTPUT }, null, 2));
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+

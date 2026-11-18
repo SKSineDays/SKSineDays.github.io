@@ -131,6 +131,9 @@ async function makeFixture(browser, { width = 390, reducedMotion = 'reduce', pol
   });
   const state = { context, page: null, policy, requests: [], errors: [], routeErrors: [], pages: [], unknownPhotos: [] };
   await context.addInitScript(({ blocked }) => {
+    // This rotation suite represents a visitor who opted into photo history.
+    // Default-deny and withdrawal are covered by privacy-browser-smoke.cjs.
+    localStorage.setItem('sineday:privacy:v1', JSON.stringify({version:1,savedAt:Date.now(),analytics:false,referrals:false,photos:true}));
     window.__dayPhotoQA = { decodeWaiters: [], deferDecodeId: null, scrollCalls: [] };
     const originalDecode = HTMLImageElement.prototype.decode;
     HTMLImageElement.prototype.decode = function (...args) {
@@ -792,3 +795,4 @@ if (process.env.NODE_TEST_CONTEXT) {
 } else {
   await main();
 }
+

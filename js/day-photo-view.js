@@ -17,7 +17,7 @@ const select = createPhotoSelector({
 });
 export const selectDayPhoto = select;
 if (typeof window !== 'undefined') {
-  window.addEventListener('sineday:privacy-change', () => {
+  window.addEventListener?.('sineday:privacy-change', () => {
     if (privacyAllowed('photos')) select.persistCurrentSelection();
   });
 }

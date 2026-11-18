@@ -20,6 +20,7 @@ const { mkdir } = require('node:fs/promises');
       });
       await page.goto('http://127.0.0.1:4189');
       await page.locator('#input-container.visible').waitFor();
+        if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
       assert.equal(await page.locator('#birthdate-input').inputValue(), '');
       assert.equal(await page.evaluate(() => localStorage.getItem('sineday_birthdate')), null);
       assert.equal(await page.evaluate(() => localStorage.getItem('guest-unrelated-test')), 'preserve');
@@ -95,9 +96,11 @@ const { mkdir } = require('node:fs/promises');
       assert.equal(await page.evaluate(() => sessionStorage.getItem('sineday_birthdate')), null);
       await page.reload();
       await page.locator('#input-container.visible').waitFor();
+        if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
       assert.equal(await page.locator('#birthdate-input').inputValue(), '');
       await page.locator('#home-find-wave').click();
       await page.locator('#input-container.visible').waitFor();
+        if (await page.locator('[data-choice="reject"]').isVisible()) await page.locator('[data-choice="reject"]').click();
       assert.equal(await page.locator('#wave-intro.bottom-placement').count(),0);
       await page.waitForTimeout(200);
       await page.evaluate(()=>window.scrollTo(0,0));
@@ -108,3 +111,4 @@ const { mkdir } = require('node:fs/promises');
     console.log('Homepage mobile/desktop full-bleed, reduced-motion, opt-in media and wave reset checks passed.');
   } finally { await browser?.close(); server.kill(); }
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

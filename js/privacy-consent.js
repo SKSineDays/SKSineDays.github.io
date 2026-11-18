@@ -68,7 +68,8 @@ export function createPrivacyController({ local, session, now = Date.now, search
     clearReferral() { referral = ''; remove(local, CODE_KEY); remove(local, CODE_TIME_KEY); },
   };
 }
-const browser = typeof window !== 'undefined' && typeof document !== 'undefined';
+const browser = typeof window !== 'undefined' && typeof document !== 'undefined'
+  && Boolean(window.location) && typeof document.createElement === 'function';
 export const privacy = createPrivacyController({
   local: browser ? storage('localStorage') : undefined,
   session: browser ? storage('sessionStorage') : undefined,
