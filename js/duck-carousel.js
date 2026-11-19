@@ -80,7 +80,18 @@ export class DuckCarousel {
     this.viewportEl.appendChild(this.trackEl);
 
     this.emptyEl = _el("div", "duck-ring__empty");
-    this.emptyEl.textContent = "Add a profile to see your first Origin Duck 🦆";
+    const speaker = _duck(
+      "duck-ring__welcome-duck",
+      duckSvgUrlFromSinedayNumber(17),
+      duckPngUrlFromSinedayNumber(17)
+    );
+    const bubble = _el("div", "duck-ring__welcome-bubble");
+    const speakerName = _el("span", "duck-ring__welcome-name");
+    speakerName.textContent = "SineDuck 17";
+    const message = _el("p", "duck-ring__welcome-message");
+    message.textContent = "Add a profile to see your first Origin Duck.";
+    bubble.append(speakerName, message);
+    this.emptyEl.append(speaker, bubble);
 
     this.sceneEl.appendChild(this.sphereBackEl);
     this.sceneEl.appendChild(this.viewportEl);

@@ -21,7 +21,7 @@ import {
   clearPendingAffiliateCode,
   getPendingAffiliateCode,
 } from "./affiliate-ui.js";
-import { DuckCarousel } from "./duck-carousel.js?v=earth-2";
+import { DuckCarousel } from "./duck-carousel.js?v=origin-welcome-1";
 import { getOriginTypeForDob, ORIGIN_ANCHOR_DATE } from "../shared/origin-wave.js";
 import {
   duckPlacementOnDayArtwork,
