@@ -1,4 +1,5 @@
 {
+  "git": { "deploymentEnabled": { "draft/provider-controls-20261119": false, "qa/provider-controls-20261119": false } },
   "functions": {
     "api/stripe/webhook.js": {
       "maxDuration": 10
