@@ -35,6 +35,7 @@ jobs:
       # GitHub-hosted Ubuntu already has Chromium system libraries. Avoid an
       # unrelated apt mirror refresh before running the actual browser checks.
       - run: npx playwright install chromium
+      - run: node test/origin-welcome-browser-smoke.cjs
       - run: node test/homepage-browser-smoke.cjs
       - run: node test/homepage-landscape-browser-smoke.cjs
       - run: npx playwright install --with-deps webkit

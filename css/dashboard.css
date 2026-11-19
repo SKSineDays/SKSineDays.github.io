@@ -1610,11 +1610,76 @@ option {
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 16px;
+  gap: 12px;
+  padding: 24px clamp(12px, 4vw, 24px);
+  pointer-events: none;
   z-index: 2;
+}
+
+.duck-ring__welcome-duck {
+  position: relative;
+  flex: 0 0 clamp(60px, 18vw, 76px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid rgba(208, 190, 227, 0.34);
+  border-radius: 50%;
+  background: #2d2739;
+}
+
+.duck-ring__welcome-duck img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 168%;
+  max-width: none;
+  height: auto;
+  transform: translate(-50%, -50%);
+}
+
+.duck-ring__welcome-bubble {
+  --welcome-paper: #342c40;
+  --welcome-border: #776887;
+  position: relative;
+  min-width: 0;
+  max-width: 15rem;
+  padding: 10px 14px;
+  border: 1px solid var(--welcome-border);
+  border-radius: 14px;
+  background: var(--welcome-paper);
+  color: var(--va-text, #f6eedf);
+  text-align: start;
+}
+
+.duck-ring__welcome-duck:not([hidden]) + .duck-ring__welcome-bubble::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -5px;
+  top: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  border: solid var(--welcome-border);
+  border-width: 0 0 1px 1px;
+  background: var(--welcome-paper);
+  transform: rotate(45deg);
+}
+
+.duck-ring__welcome-bubble:dir(rtl)::before {
+  transform: rotate(225deg);
+}
+
+.duck-ring__welcome-name {
+  display: block;
+  margin-bottom: 3px;
+  color: #ddc9ee;
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.duck-ring__welcome-message {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.35;
 }
 
 @keyframes duckSphereSpin {
