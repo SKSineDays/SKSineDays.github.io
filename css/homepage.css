@@ -148,12 +148,13 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
 .homepage .hero-btn--secondary { background: #24232ce6; }
 .home-film__duration, .home-film__play { background: #24232cf2; color: var(--va-text); }
 
-/* A portrait cover crop hides the artwork's headline when an iPad rotates.
-   Fit the complete artwork to the available height on landscape tablets,
+/* A portrait cover crop hides the artwork’s headline on wide desktops and landscape tablets.
+   Fit the complete artwork to the available height on those screens,
    beside the introduction so the wave cannot cross the heading;
    feather its sides into the existing canvas without duplicating the image.
    Keep this after the reduced-motion rule so both modes use the same framing. */
-@media (min-width: 768px) and (max-width: 1400px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+@media (min-width: 768px) and (max-width: 1400px) and (orientation: landscape) and (hover: none) and (pointer: coarse),
+       (min-width: 801px) and (min-aspect-ratio: 4/3) and (hover: hover) and (pointer: fine) {
   .homepage .background-image-container.hero-mode::before {
     inset: 0 auto 0 70%;
     width: auto;

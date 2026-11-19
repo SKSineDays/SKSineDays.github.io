@@ -101,12 +101,32 @@ const { mkdir } = require('node:fs/promises');
         await page.close();
       }
     }
-    // Pointer-equipped desktop/laptop windows retain the existing cover design,
-    // even at the same dimensions as the iPad screenshot.
-    const desktop = await browser.newPage({ viewport: { width: 1180, height: 688 }, serviceWorkers: 'block' });
+    // Resize one pointer-equipped desktop window: artwork and canvas must
+    // change framing together, without changing the narrow desktop/mobile crop.
+    const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
     await desktop.goto('http://127.0.0.1:4192');
     await desktop.locator('#input-container.visible').waitFor();
-    assert.equal(await desktop.locator('#background-image').evaluate(el => getComputedStyle(el, '::before').backgroundSize), 'cover');
+    if (await desktop.locator('[data-choice="reject"]').isVisible()) await desktop.locator('[data-choice="reject"]').click();
+    await desktop.evaluate(async () => { const img = new Image(); img.src = '/assets/og-hero.png'; await img.decode(); });
+    for (const [width,height,fit] of [[1440,900,true],[1920,1080,true],[1180,688,true],[650,820,false],[390,844,false],[1440,900,true]]) {
+      await desktop.setViewportSize({width,height});
+      await desktop.waitForFunction(expected => getComputedStyle(document.getElementById('background-image'),'::before').backgroundSize === expected, fit ? 'contain':'cover');
+      const frame = await desktop.evaluate(() => {
+        const a=getComputedStyle(document.getElementById('background-image'),'::before');
+        const w=document.getElementById('wave-canvas').getBoundingClientRect();
+        return {artW:parseFloat(a.width),artH:parseFloat(a.height),waveX:w.x+w.width/2,waveY:w.y+w.height/2,
+          waveLeft:w.left,copyRight:document.querySelector('.home-hero__content').getBoundingClientRect().right,
+          header:document.querySelector('.top-bar').getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
+      });
+      assert.equal(frame.overflow,false);
+      if (fit) {
+        assert.ok(Math.abs(frame.artH-height)<2 && Math.abs(frame.artW/frame.artH-2/3)<.002,'original complete portrait');
+        assert.ok(frame.artH*.118>=frame.header-3,'art headline clears the nav');
+        assert.ok(Math.abs(frame.waveY-frame.artH*.495)<8 && Math.abs(frame.waveX-width*.7)<2,'ribbon stays on wings');
+        assert.ok(frame.waveLeft>=frame.copyRight,'ribbon stays clear of heading');
+      }
+      await desktop.screenshot({path:`artifacts/homepage/${engine}-desktop-framing-${width}x${height}.png`});
+    }
     await desktop.close();
     console.log('iPad landscape artwork, both motion settings, repeated rotation, calculation/reset and desktop regression checks passed.');
   } finally {
