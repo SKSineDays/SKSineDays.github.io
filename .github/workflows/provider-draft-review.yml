@@ -1,0 +1,25 @@
+name: Provider draft visual review
+on:
+  push:
+    branches: [qa/provider-controls-20261119]
+permissions: {contents: read}
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - run: node --test test/provider-presentation.test.mjs test/account-registration-ui.test.mjs test/email-magic-link.test.mjs test/homepage-dashboard-invitation.test.mjs
+      - name: Check draft against local fixtures; never sign in
+        run: |
+          node scripts/preview.mjs --port 4197 &
+          node test/provider-draft-review.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-draft-review
+          path: provider-qa/
+          retention-days: 3
