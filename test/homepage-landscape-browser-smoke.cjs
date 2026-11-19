@@ -108,21 +108,23 @@ const { mkdir } = require('node:fs/promises');
     await desktop.locator('#input-container.visible').waitFor();
     if (await desktop.locator('[data-choice="reject"]').isVisible()) await desktop.locator('[data-choice="reject"]').click();
     await desktop.evaluate(async () => { const img = new Image(); img.src = '/assets/og-hero.png'; await img.decode(); });
-    for (const [width,height,fit] of [[1440,900,true],[1920,1080,true],[1180,688,true],[650,820,false],[390,844,false],[1440,900,true]]) {
+    for (const [width,height,fit] of [[1440,900,true],[1920,1080,true],[1180,688,true],[1024,480,true],[650,820,false],[390,844,false],[1440,900,true]]) {
       await desktop.setViewportSize({width,height});
       await desktop.waitForFunction(expected => getComputedStyle(document.getElementById('background-image'),'::before').backgroundSize === expected, fit ? 'contain':'cover');
       const frame = await desktop.evaluate(() => {
         const a=getComputedStyle(document.getElementById('background-image'),'::before');
         const w=document.getElementById('wave-canvas').getBoundingClientRect();
-        return {artW:parseFloat(a.width),artH:parseFloat(a.height),waveX:w.x+w.width/2,waveY:w.y+w.height/2,
+        return {artTop:parseFloat(a.top),artW:parseFloat(a.width),artH:parseFloat(a.height),waveX:w.x+w.width/2,waveY:w.y+w.height/2,
           waveLeft:w.left,copyRight:document.querySelector('.home-hero__content').getBoundingClientRect().right,
           header:document.querySelector('.top-bar').getBoundingClientRect().bottom, overflow:document.documentElement.scrollWidth>innerWidth};
       });
       assert.equal(frame.overflow,false);
       if (fit) {
-        assert.ok(Math.abs(frame.artH-height)<2 && Math.abs(frame.artW/frame.artH-2/3)<.002,'original complete portrait');
-        assert.ok(frame.artH*.118>=frame.header-3,'art headline clears the nav');
-        assert.ok(Math.abs(frame.waveY-frame.artH*.495)<8 && Math.abs(frame.waveX-width*.7)<2,'ribbon stays on wings');
+        assert.ok(Math.abs(frame.artTop+frame.artH-height)<2 && Math.abs(frame.artW/frame.artH-2/3)<.002,'original complete portrait');
+        assert.ok(frame.artTop+frame.artH*.118>=frame.header+(height===480 ? 7 : -3),'art headline clears the nav');
+        if (height===480) assert.ok(frame.artTop>20 && frame.artTop<28,'short window gets only the needed inset');
+        else assert.equal(frame.artTop,0,'taller windows are unchanged');
+        assert.ok(Math.abs(frame.waveY-(frame.artTop+frame.artH*.495))<8 && Math.abs(frame.waveX-width*.7)<2,'ribbon stays on wings');
         assert.ok(frame.waveLeft>=frame.copyRight,'ribbon stays clear of heading');
       }
       await desktop.screenshot({path:`artifacts/homepage/${engine}-desktop-framing-${width}x${height}.png`});

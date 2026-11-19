@@ -174,3 +174,18 @@ body:has(.home-video-dialog[open]) { overflow: hidden; }
     transform: translate(20vw, calc(49.5dvh - 124px));
   }
 }
+
+/* In short laptop windows the 69px sticky header can cross the wordmark.
+   Its first ink is 11.8% down the portrait. Fit below a small computed
+   inset so the wordmark starts around y=77; do not just shift/crop the art. */
+@media (min-width: 801px) and (min-aspect-ratio: 4/3) and (max-height: 656px) and (hover: hover) and (pointer: fine) {
+  .homepage { --hero-top-inset: max(0px, calc(88px - 13.4dvh)); }
+  .homepage .background-image-container.hero-mode::before {
+    top: var(--hero-top-inset);
+    height: calc(100% - var(--hero-top-inset));
+  }
+  .homepage:not(:has(.result-card.visible)) .wave-container {
+    width: min(760px, calc((100dvh - var(--hero-top-inset)) * .566667));
+    transform: translate(20vw, calc(49.5dvh + var(--hero-top-inset) * .505 - 124px));
+  }
+}
