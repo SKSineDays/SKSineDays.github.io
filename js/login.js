@@ -174,7 +174,7 @@ async function handleGoogleSignIn(e) {
     }
 
     if (googleText) {
-      googleText.textContent = 'Google';
+      googleText.textContent = 'Continue with Google';
     }
   }
 }

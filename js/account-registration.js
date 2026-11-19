@@ -117,7 +117,7 @@ form.addEventListener('submit', async event => {
       window.google.accounts.id.initialize({ client_id: flow.clientId, nonce: flow.nonce,
         auto_select: false, callback: response => complete(response.credential, version) });
       window.google.accounts.id.renderButton(document.getElementById('registration-google-button'),
-        { theme: 'outline', size: 'large', text: 'continue_with' });
+        { type: 'standard', theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with', width: '200' });
     } else {
       configuringApple = true;
       await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js');
@@ -126,7 +126,10 @@ form.addEventListener('submit', async event => {
         nonce: flow.nonce, state: flow.nonce, usePopup: true });
       document.getElementById('registration-apple-button').hidden = false;
     }
-    status.textContent = 'Continue below to finish. This step expires in five minutes.';
+    status.textContent = 'Complete this step within five minutes.';
+    if (document.activeElement === document.body || document.activeElement === submit) {
+      document.getElementById('registration-provider-heading').focus();
+    }
   } catch (error) {
     if (version !== generation) return;
     reset();
